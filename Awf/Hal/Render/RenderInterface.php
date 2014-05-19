@@ -1,0 +1,23 @@
+<?php
+/**
+ * @package		awf
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license		GNU GPL version 3 or later
+ */
+
+namespace Awf\Hal\Render;
+
+/**
+ * Interface for HAL document renderers
+ */
+interface RenderInterface
+{
+	/**
+	 * Render a HAL document into a representation suitable for consumption.
+	 *
+	 * @param   array  $options  Renderer-specific options
+	 *
+	 * @return  string
+	 */
+	public function render($options = array());
+}

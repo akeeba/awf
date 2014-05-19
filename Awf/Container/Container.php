@@ -1,0 +1,160 @@
+<?php
+/**
+ * @package        solo
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
+
+namespace Awf\Container;
+
+use Awf\Application\Application;
+use Awf\Database\Driver;
+use Awf\Pimple\Pimple;
+use Awf\Session;
+
+/**
+ * Dependency injection container for Awf's Application
+ *
+ * @property  string                                         $application_name      The name of the application
+ * @property  string                                         $session_segment_name  The name of the session segment
+ *
+ * @property-read  \Awf\Application\Application              $application           The application instance
+ * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
+ * @property-read  \Awf\Database\Driver                      $db                    The global database connection object
+ * @property-read  \Awf\Dispatcher\Dispatcher                $dispatcher            The application dispatcher
+ * @property-read  \Awf\Event\Dispatcher                     $eventDispatcher       The global event dispatched
+ * @property-read  \Awf\Filesystem\FilesystemInterface       $fileSystem            The filesystem manager, created in hybrid mode
+ * @property-read  \Awf\Input\Input                          $input                 The global application input object
+ * @property-read  \Awf\Mailer\Mailer                        $mailer                The email sender. Note: this is a factory method
+ * @property-read  \Awf\Router\Router                        $router                The URL router
+ * @property-read  \Awf\Session\Segment                      $segment               The session segment, where values are stored
+ * @property-read  \Awf\Session\Manager                      $session               The session manager
+ * @property-read  \Awf\User\ManagerInterface                $userManager           The user manager object
+ */
+class Container extends Pimple
+{
+	public function __construct(array $values = array())
+	{
+		$this->application_name = '';
+		$this->session_segment_name = null;
+		$this->basePath = null;
+
+		parent::__construct($values);
+
+		if (!isset($this['application']))
+		{
+			$this['application'] = function (Container $c)
+			{
+				return Application::getInstance($c->application_name, $c);
+			};
+		}
+
+		if (!isset($this['appConfig']))
+		{
+			$this['appConfig'] = function (Container $c)
+			{
+				return new \Awf\Application\Configuration($c);
+			};
+		}
+
+		if (!isset($this['db']))
+		{
+			$this['db'] = function (Container $c)
+			{
+				return Driver::getInstance($c);
+			};
+		}
+
+		if (!isset($this['dispatcher']))
+		{
+			$this['dispatcher'] = function (Container $c)
+			{
+				$className = '\\' . ucfirst($c->application_name) . '\Dispatcher';
+
+				if (!class_exists($className))
+				{
+					$className = '\Awf\Dispatcher\Dispatcher';
+				}
+
+				return new $className($c);
+			};
+		}
+
+		if (!isset($this['eventDispatcher']))
+		{
+			$this['eventDispatcher'] = function (Container $c)
+			{
+				return new \Awf\Event\Dispatcher($c);
+			};
+		}
+
+		if (!isset($this['fileSystem']))
+		{
+			$this['fileSystem'] = function (Container $c)
+			{
+				return \Awf\Filesystem\Factory::getAdapter($c, true);
+			};
+		}
+
+		if (!isset($this['input']))
+		{
+			$this['input'] = function (Container $c)
+			{
+				return new \Awf\Input\Input();
+			};
+		}
+
+		if (!isset($this['mailer']))
+		{
+			$this['mailer'] = $this->factory(function (Container $c)
+			{
+				return new \Awf\Mailer\Mailer($c);
+			});
+		}
+
+		if (!isset($this['router']))
+		{
+			$this['router'] = function (Container $c)
+			{
+				return new \Awf\Router\Router($c);
+			};
+		}
+
+		if (!isset($this['session']))
+		{
+			$this['session'] = function ()
+			{
+				return new Session\Manager(
+					new Session\SegmentFactory,
+					new Session\CsrfTokenFactory(
+						new Session\Randval(
+							new Session\Phpfunc
+						)
+					),
+					$_COOKIE
+				);
+			};
+		}
+
+		if (!isset($this['segment']))
+		{
+			$this['segment'] = function (Container $c)
+			{
+				if (empty($c->session_segment_name))
+				{
+					$c->session_segment_name = 'Akeeba\\Awf\\' . $c->application_name;
+				}
+
+				return $c->session->newSegment($c->session_segment_name);
+			};
+		}
+
+		if (!isset($this['userManager']))
+		{
+			$this['userManager'] = function (Container $c)
+			{
+				return new \Awf\User\Manager($c);
+			};
+		}
+	}
+}

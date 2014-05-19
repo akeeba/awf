@@ -1,0 +1,19 @@
+<?php
+/**
+ * @package     Awf
+ * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license     GNU GPL version 3 or later
+ */
+
+namespace Awf\Exception;
+
+/**
+ * Interface Generic
+ *
+ * The generic root Awf exception
+ *
+ * @package Awf\Exception
+ */
+interface Generic
+{
+}
