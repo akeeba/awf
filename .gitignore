@@ -1,0 +1,14 @@
+/.buildpath
+/.idea/
+/.project
+/.settings
+
+/build/bin
+/build/buildlang
+/build/epub
+/build/phingext
+/build/tools
+/build/templates/release.json
+/build/templates/release-app.json
+/build/templates/release-wp.json
+/build/build.properties

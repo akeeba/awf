@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<project name="AWF" description="AWF" default="git">
+    <property file="./build.properties" />
+
+    <!-- Default properties, set only if not already assigned in the build.properties file -->
+    <property name="dirs.root" value=".." />
+    <property name="dirs.library" value="../Awf" />
+    <property name="version" value="git" />
+
+    <property name="dirs.bin" value="bin" />
+    <property name="dirs.bin.libxml" value="${dirs.bin}/libxml" />
+    <property name="dirs.bin.fop" value="${dirs.bin}/fop" />
+    <property name="dirs.bin.dbxsl" value="${dirs.bin}/dbxsl" />
+    <property name="dirs.bin.release" value="../release" />
+    <property name="dirs.documentation" value="../documentation" />
+
+    <taskdef name="zipme" classname="phingext.ZipmeTask" />
+    <taskdef name="gitversion" classname="phingext.GitVersionTask" />
+
+    <!--
+    ====================================================================================================
+    File sets
+    ====================================================================================================
+    -->
+
+    <!-- AWF -->
+    <fileset dir="${dirs.library}" id="library" expandsymboliclinks="true">
+        <include name="**" />
+    </fileset>
+
+    <!--
+    ====================================================================================================
+    Tasks - General
+    ====================================================================================================
+    -->
+
+    <target name="all" description="Makes everything"
+            depends="git,documentation">
+    </target>
+
+    <target name="git" description="Makes only packages, not the documentation"
+            depends="new-release,setup-properties,package-lib">
+    </target>
+
+
+    <target name="documentation" description="Creates the documentation packages"
+            depends="doc-pdf">
+    </target>
+
+    <target name="new-release" description="Create afresh the release directory">
+        <echo>Cleaning "release" directory</echo>
+        <!-- Recreate the release directory -->
+        <delete quiet="true">
+            <fileset dir="${dirs.bin.release}">
+                <include name="*.zip" />
+                <include name="*.pdf" />
+                <include name="*.fo" />
+                <include name="*.xml" />
+                <include name="*.ini" />
+            </fileset>
+        </delete>
+
+        <exec command="sh killDS.sh" dir="${dirs.root}" />
+    </target>
+
+    <target name="setup-properties" description="Set up version and build properties">
+        <!-- Initialize the build.date timestamp -->
+        <tstamp>
+            <format property="build.date" pattern="%Y-%m-%d" />
+        </tstamp>
+
+        <!-- Initialize the version if it's not set -->
+        <if>
+            <equals arg1="${version}" arg2="git" />
+            <then>
+                <gitversion workingcopy="${dirs.root}" propertyname="git.lastrevision" />
+                <property name="version" value="rev${git.lastrevision}" override="true" />
+            </then>
+        </if>
+
+        <filterchain id="standard-tokens">
+            <replacetokens begintoken="##" endtoken="##">
+                <token key="DATE" value="${build.date}" />
+                <token key="VERSION" value="${version}" />
+                <token key="PRO" value="1" />
+            </replacetokens>
+        </filterchain>
+    </target>
+
+    <!--
+    ====================================================================================================
+    Tasks - Packages
+    ====================================================================================================
+    -->
+
+    <target name="package-lib" description="Library package build"
+            depends="new-release,setup-properties">>
+        <zipme basedir="${dirs.phpapp}" destfile="${dirs.bin.release}/awf-${version}.zip" includeemptydirs="true">
+            <fileset refid="library" />
+        </zipme>
+    </target>
+
+    <!--
+    ====================================================================================================
+    Tasks - Documentation
+    ====================================================================================================
+    -->
+
+    <target name="doc-pdf" description="Documentation in PDF format">
+        <exec command="xsltproc --nonet --xinclude --novalid --stringparam img.src.path ${dirs.documentation}/ --stringparam body.start.indent 0 --stringparam variablelist.term.break.after 1 --stringparam variablelist.term.separator &quot;&quot; --stringparam variablelist.max.termlength 12 --stringparam section.autolabel 1 --stringparam toc.section.depth 5 --stringparam fop1.extensions 1 --output ${dirs.bin.release}/awf-guide.fo ${dirs.bin.dbxsl}/fo/docbook.xsl ${dirs.documentation}/awf-guide.xml" dir="${project.basedir}" />
+        <exec command="${dirs.bin.fop}/fop -fo ${dirs.bin.release}/awf-guide.fo -pdf ${dirs.bin.release}/awf-guide.pdf" logoutput="true" />
+        <delete file="${dirs.bin.release}/awf-guide.fo" quiet="true" />
+    </target>
+
+    <target name="doc-epub" description="Documentation in ePub format">
+        <mkdir dir="${dirs.bin.release}/tmp" />
+        <mkdir dir="${dirs.bin.release}/tmp/OEBPS" />
+        <mkdir dir="${dirs.bin.release}/tmp/OEBPS/images" />
+        <copy todir="${dirs.bin.release}/tmp/OEBPS/images">
+            <fileset dir="${dirs.documentation}/images">
+                <include name="*.png" />
+                <include name="*.jpg" />
+                <include name="*.jpeg" />
+                <include name="*.gif" />
+            </fileset>
+        </copy>
+
+        <exec command="xsltproc --nonet --xinclude --novalid --stringparam epub.stylesheet style.css --stringparam body.start.indent 0 --stringparam variablelist.term.break.after 1 --stringparam variablelist.term.separator &quot;&quot; --stringparam variablelist.max.termlength 12 --stringparam section.autolabel 1 --stringparam toc.section.depth 5 --output ${dirs.bin.release}/tmp/awf-guide.epub ${dirs.bin.dbxsl}/epub3/chunk.xsl ${dirs.documentation}/awf-guide.xml" dir="${project.basedir}" />
+
+        <copy file="./epub/mimetype" tofile="${dirs.bin.release}/tmp/mimetype" overwrite="true" />
+        <copy file="./epub/com.apple.ibooks.display-options.xml" tofile="${dirs.bin.release}/tmp/META-INF/com.apple.ibooks.display-options.xml" overwrite="true" />
+        <copy file="./epub/docbook-epub.css" tofile="${dirs.bin.release}/tmp/OEBPS/docbook-epub.css" overwrite="true" />
+
+        <zip destfile="${dirs.bin.release}/awf-guide.epub" basedir="${dirs.bin.release}/tmp">
+            <fileset dir="${dirs.bin.release}/tmp">
+                <include name="**" />
+            </fileset>
+        </zip>
+
+        <delete dir="${dirs.bin.release}/tmp" quiet="true" />
+    </target>
+
+    <!--
+    ====================================================================================================
+    Tasks - Project management
+    ====================================================================================================
+    -->
+
+    <target name="link" description="Internal linker">
+        <exec command="php ../buildfiles/tools/link.php ${application.startdir}/.." dir="${application.startdir}/.." passthru="true" />
+        <!--<exec command="php ../buildfiles/tools/langlink.php ${application.startdir}/.." dir="${application.startdir}/.." passthru="true" />-->
+    </target>
+
+</project>
