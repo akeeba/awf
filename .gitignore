@@ -3,6 +3,8 @@
 /.project
 /.settings
 
+/000
+
 /build/bin
 /build/buildlang
 /build/epub
