@@ -17,6 +17,7 @@ use Awf\Date\Date;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
+use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
 /**
@@ -73,6 +74,9 @@ class DataModel extends Model
 
 	/** @var   array  A collection of custom, additional where clauses to apply during buildQuery */
 	protected $whereClauses = array();
+
+	/** @var   RelationManager  The relation manager of this model */
+	protected $relationManager = null;
 
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
@@ -257,6 +261,37 @@ class DataModel extends Model
 				{
 					$this->setFieldValue($field, $stateValue);
 				}
+			}
+		}
+
+		// Create a relation manager
+		$this->relationManager = new RelationManager($this);
+
+		// Do I have a list of relations?
+		if (isset($this->config['relations']) && is_array($this->config['relations']))
+		{
+			foreach ($this->config['relations'] as $name => $relConfig)
+			{
+				if (!is_array($relConfig))
+				{
+					continue;
+				}
+
+				$defaultRelConfig = array(
+					'type'				=> 'hasOne',
+					'foreignModelClass'	=> null,
+					'localKey'			=> null,
+					'foreignKey'		=> null,
+					'pivotTable'		=> null,
+					'pivotLocalKey'		=> null,
+					'pivotForeignKey'	=> null,
+				);
+
+				$relConfig = array_merge($defaultRelConfig, $relConfig);
+
+				$this->relationManager->addRelation($name, $relConfig['type'], $relConfig['foreignModelClass'],
+					$relConfig['localKey'],	$relConfig['foreignKey'], $relConfig['pivotTable'],
+					$relConfig['pivotLocalKey'], $relConfig['pivotForeignKey']);
 			}
 		}
 
@@ -1118,7 +1153,11 @@ class DataModel extends Model
 			$limit = $this->getState('limit', 0);
 		}
 
-		return DataCollection::make($this->getItemsArray($limitstart, $limit));
+		$dataCollection = DataCollection::make($this->getItemsArray($limitstart, $limit));
+
+		// @todo Apply eager loaded relations
+
+		return $dataCollection;
 	}
 
 	/**
