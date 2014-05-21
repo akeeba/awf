@@ -41,6 +41,46 @@ class RelationManager
 	}
 
 	/**
+	 * Implements deep cloning of the relation object
+	 */
+	function __clone()
+	{
+		$relations = array();
+
+		if (!empty($this->relations))
+		{
+			/** @var Relation $relation */
+			foreach ($this->relations as $key => $relation)
+			{
+				$relations[$key] = clone($relation);
+				$relations[$key]->reset();
+			}
+		}
+
+		$this->relations = $relations;
+	}
+
+
+	/**
+	 * Rebase a relation manager
+	 *
+	 * @param DataModel $parentModel
+	 */
+	public function rebase(DataModel $parentModel)
+	{
+		$this->parentModel = $parentModel;
+
+		if (count($this->relations))
+		{
+			foreach ($this->relations as $name => $relation)
+			{
+				/** @var Relation $relation */
+				$relation->rebase($parentModel);
+			}
+		}
+	}
+
+	/**
 	 * Populates the static map of relation type methods and relation handling classes
 	 *
 	 * @return array Key = method name, Value = relation handling class
@@ -162,6 +202,16 @@ class RelationManager
 	}
 
 	/**
+	 * Returns a list of all known relations' names
+	 *
+	 * @return array
+	 */
+	public function getRelationNames()
+	{
+		return array_keys($this->relations);
+	}
+
+	/**
 	 * Get a new related item which satisfies relation $name and adds it to this relation's data list.
 	 *
 	 * @param string $name The relation based on which a new item is returned
@@ -228,7 +278,7 @@ class RelationManager
 	 *
 	 * @see Relation::getData()
 	 *
-	 * @return Collection
+	 * @return Collection|DataModel
 	 *
 	 * @throws Relation\Exception\RelationNotFound
 	 */
@@ -304,6 +354,45 @@ class RelationManager
 
 		// Throw an exception otherwise
 		throw new DataModel\Relation\Exception\RelationTypeNotFound("Relation type '$name' not known to relation manager");
+	}
+
+	/**
+	 * Is $name a magic-callable method?
+	 *
+	 * @param string $name The name of a potential magic-callable method
+	 *
+	 * @return bool
+	 */
+	public function isMagicMethod($name)
+	{
+		if (isset(static::$relationTypes[$name]))
+		{
+			return true;
+		}
+		elseif (substr($name, 0, 3) == 'get')
+		{
+			$relationName = substr($name, 3);
+			$relationName = strtolower($relationName[0]) . substr($relationName, 1);
+
+			if (isset($this->relations[$relationName]))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Is $name a magic property? Corollary: returns true if a relation of this name is known to the relation manager.
+	 *
+	 * @param string $name The name of a potential magic property
+	 *
+	 * @return bool
+	 */
+	public function isMagicProperty($name)
+	{
+		return isset($this->relations[$name]);
 	}
 
 	/**

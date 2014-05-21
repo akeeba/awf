@@ -79,6 +79,32 @@ abstract class Relation
 	}
 
 	/**
+	 * Reset the relation data
+	 *
+	 * @return $this For chaining
+	 */
+	public function reset()
+	{
+		$this->data = null;
+
+		return $this;
+	}
+
+	/**
+	 * Rebase the relation to a different model
+	 *
+	 * @param DataModel $model
+	 *
+	 * @return $this For chaining
+	 */
+	public function rebase(DataModel $model)
+	{
+		$this->parentModel = $model;
+
+		return $this->reset();
+	}
+
+	/**
 	 * Get the relation data.
 	 *
 	 * If you want to apply additional filtering to the foreign model, use the $callback. It can be any function,
@@ -89,7 +115,7 @@ abstract class Relation
 	 * @param callable              $callback        The callback to run on the remote model.
 	 * @param \Awf\Utils\Collection $dataCollection
 	 *
-	 * @return DataModel\Collection
+	 * @return DataModel\Collection|DataModel
 	 */
 	public function &getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
 	{

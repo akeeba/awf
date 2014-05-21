@@ -9,6 +9,7 @@ namespace Awf\Mvc\DataModel\Relation;
 
 use Awf\Application\Application;
 use Awf\Mvc\DataModel;
+use Awf\Utils\Collection;
 
 /**
  * HasOne (straight 1-to-1) relation: this model is a parent which has exactly one child in the foreign table
@@ -44,6 +45,12 @@ class HasOne extends DataModel\Relation
 			$this->foreignKey = $this->localKey;
 		}
 	}
+
+	public function &getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	{
+		return parent::getData($callback, $dataCollection)->first();
+	}
+
 
 	/**
 	 * Applies the relation filters to the foreign model when getData is called

@@ -505,6 +505,11 @@ class DataModel extends Model
 			}
 		}
 
+		if ($this->relationManager->isMagicMethod($name))
+		{
+			return call_user_func_array(array($this->relationManager, $name), $arguments);
+		}
+
 		$arg1 = array_shift($arguments);
 		$this->$name = $arg1;
 
@@ -544,6 +549,10 @@ class DataModel extends Model
 			$name = $this->aliasFields[$name];
 
 			return $this->getFieldValue($name);
+		}
+		elseif ($this->relationManager->isMagicProperty($name))
+		{
+			return $this->relationManager->$name;
 		}
 		// If $name is not a field name, get the value of a state variable
 		else
@@ -1190,6 +1199,8 @@ class DataModel extends Model
 			$item = new $className($this->container);
 			$item->bind($data);
 			$items[$item->getId()] = $item;
+			$item->relationManager = clone $this->relationManager;
+			$item->relationManager->rebase($item);
 		}
 
 		if (method_exists($this, 'onAfterGetItemsArray'))
@@ -2265,6 +2276,37 @@ class DataModel extends Model
 	public function whereRaw($rawWhereClause)
 	{
 		$this->whereClauses[] = $rawWhereClause;
+
+		return $this;
+	}
+
+	/**
+	 * Returns the relations manager of the model
+	 *
+	 * @return RelationManager
+	 */
+	public function &getRelations()
+	{
+		return $this->relationManager;
+	}
+
+	public function with(array $relations)
+	{
+		// @todo Implement eager loaded relations
+
+		return $this;
+	}
+
+	public function has($relation, $operator = '=', $value = 1)
+	{
+		// @todo Implement filtering by relations
+
+		return $this;
+	}
+
+	public function whereHas($relation, callable $callBack)
+	{
+		// @todo Implement advanced filtering by relations
 
 		return $this;
 	}
