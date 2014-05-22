@@ -873,6 +873,11 @@ class DataModel extends Model
 
 				if (!empty($records))
 				{
+					if ($records instanceof DataModel)
+					{
+						$records = array($records);
+					}
+
 					/** @var DataModel $record */
 					foreach ($records as $record)
 					{
@@ -941,6 +946,11 @@ class DataModel extends Model
 
 				if (!empty($relationData))
 				{
+					if ($relationData instanceof DataModel)
+					{
+						$relationData = array($relationData);
+					}
+
 					/** @var DataModel $record */
 					foreach ($relationData as $record)
 					{
