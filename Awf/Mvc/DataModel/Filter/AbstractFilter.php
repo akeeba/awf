@@ -39,7 +39,7 @@ abstract class AbstractFilter
 	 * Constructor
 	 *
 	 * @param   Driver   $db           The database object
-	 * @param   object   $field        The field informations as taken from the db
+	 * @param   object   $field        The field information as taken from the db
 	 */
 	public function __construct($db, $field)
 	{
@@ -257,7 +257,7 @@ abstract class AbstractFilter
 	}
 
 	/**
-	 * Get the clas sname based on the field Type
+	 * Get the class name based on the field Type
 	 *
 	 * @param   string  $type  The type of the field
 	 *
