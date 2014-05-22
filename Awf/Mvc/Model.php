@@ -84,7 +84,7 @@ class Model
 	 * @param   string    $modelName The model name
 	 * @param   Container $container Configuration variables to the model
 	 *
-	 * @return  Model
+	 * @return  static
 	 *
 	 * @throws  \RuntimeException  If the Model is not found
 	 */
@@ -162,7 +162,7 @@ class Model
 	 * @param   string    $modelName The model name
 	 * @param   Container $container Configuration variables to the model
 	 *
-	 * @return  Model
+	 * @return  static
 	 *
 	 * @throws  \RuntimeException  If the Model is not found
 	 */
@@ -204,8 +204,6 @@ class Model
 	 * ignore_request	Boolean. When true the model will not set its state from the request. Otherwise populateState() will be used.
 	 *
 	 * @param   Container $container The configuration variables to this model
-	 *
-	 * @return  Model
 	 */
 	public function __construct(\Awf\Container\Container $container = null)
 	{
