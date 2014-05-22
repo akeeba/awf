@@ -2351,7 +2351,7 @@ class DataModel extends Model
 
 			if (in_array($relName, $knownRelations))
 			{
-				$relations[$relName] = $callback;
+				$this->eagerRelations[$relName] = $callback;
 			}
 		}
 

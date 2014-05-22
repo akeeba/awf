@@ -87,7 +87,7 @@ class RelationManager
 			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
 		}
 
-		$this->relations[$name]->setDataFromColelction($name);
+		$this->relations[$name]->setDataFromCollection($data);
 	}
 
 	/**
