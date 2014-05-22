@@ -78,6 +78,9 @@ class DataModel extends Model
 	/** @var   RelationManager  The relation manager of this model */
 	protected $relationManager = null;
 
+	/** @var   array  A list of all eager loaded relations and their attached callbacks */
+	protected $eagerRelations = array();
+
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
@@ -1164,7 +1167,20 @@ class DataModel extends Model
 
 		$dataCollection = DataCollection::make($this->getItemsArray($limitstart, $limit));
 
-		// @todo Apply eager loaded relations
+		// Apply eager loaded relations
+		if (!empty($dataCollection) && !empty($this->eagerRelations))
+		{
+			foreach ($this->eagerRelations as $relation => $callback)
+			{
+				$relationData = $this->relationManager->getData($relation, $callback, $dataCollection);
+
+				/** @var DataModel $item */
+				foreach($dataCollection as $item)
+				{
+					$item->getRelations()->setDataFromCollection($relation, $relationData);
+				}
+			}
+		}
 
 		return $dataCollection;
 	}
@@ -2290,13 +2306,69 @@ class DataModel extends Model
 		return $this->relationManager;
 	}
 
+	/**
+	 * Instructs the model to eager load the specified relations. The $relations array can have the format:
+	 *
+	 * array('relation1', 'relation2')
+	 * 		Eager load relation1 and relation2 without any callbacks
+	 * array('relation1' => $callable1, 'relation2' => $callable2)
+	 * 		Eager load relation1 with callback $callable1 etc
+	 * array('relation1', 'relation2' => $callable2)
+	 * 		Eager load relation1 without a callback, relation2 with callback $callable2
+	 *
+	 * The callback must have the signature function(\Awf\Database\Query $query) and doesn't return a value. It is
+	 * supposed to modify the query directly.
+	 *
+	 * Please note that eager loaded relations produce their queries without going through the respective model. Instead
+	 * they generate a SQL query directly, then map the loaded results into a DataCollection.
+	 *
+	 * @param array $relations The relations to eager load. See above for more information.
+	 *
+	 * @return $this For chaining
+	 */
 	public function with(array $relations)
 	{
-		// @todo Implement eager loaded relations
+		if (empty($relations))
+		{
+			$this->eagerRelations = array();
+			return $this;
+		}
+
+		$knownRelations = $this->relationManager->getRelationNames();
+
+		foreach ($relations as $k => $v)
+		{
+			if (is_callable($v))
+			{
+				$relName = $k;
+				$callback = $v;
+			}
+			else
+			{
+				$relName = $v;
+				$callback = null;
+			}
+
+			if (in_array($relName, $knownRelations))
+			{
+				$relations[$relName] = $callback;
+			}
+		}
 
 		return $this;
 	}
 
+	/**
+	 * Filter the model based on the fulfilment of relations. For example:
+	 * $posts->has('comments', '>=', 10)->get();
+	 * will return all posts with at least 10 comments.
+	 *
+	 * @param string $relation The relation to query
+	 * @param string $operator The comparison operator. Same operators as the where() method.
+	 * @param mixed  $value    The value(s) to compare against.
+	 *
+	 * @return $this
+	 */
 	public function has($relation, $operator = '=', $value = 1)
 	{
 		// @todo Implement filtering by relations
@@ -2304,6 +2376,20 @@ class DataModel extends Model
 		return $this;
 	}
 
+	/**
+	 * Advanced model filtering on the fulfilment of relations. Unlike has() you can provide your own callback which
+	 * modifies the COUNT subquery used to compare against the relation. The $callBack has the signature
+	 * function(\Awf\Database\Query $query)
+	 * and MUST return a string. The $query you are passed is the COUNT subquery of the relation, e.g.
+	 * SELECT COUNT(*) FROM #__comments AS reltbl WHERE reltbl.user_id = user_id
+	 * You have to return a WHERE clause for the model's query, e.g.
+	 * (SELECT COUNT(*) FROM #__comments AS reltbl WHERE reltbl.user_id = user_id) BETWEEN 1 AND 20
+	 *
+	 * @param string   $relation The relation to query against
+	 * @param callable $callBack The callback to use for filtering
+	 *
+	 * @return $this
+	 */
 	public function whereHas($relation, callable $callBack)
 	{
 		// @todo Implement advanced filtering by relations

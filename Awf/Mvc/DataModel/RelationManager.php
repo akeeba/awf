@@ -15,7 +15,7 @@ class RelationManager
 	/** @var DataModel The data model we are attached to */
 	protected $parentModel = null;
 
-	/** @var array The relations known to us */
+	/** @var array[Relation] The relations known to us */
 	protected $relations = array();
 
 	/** @var array A list of the names of eager loaded relations */
@@ -78,6 +78,16 @@ class RelationManager
 				$relation->rebase($parentModel);
 			}
 		}
+	}
+
+	public function setDataFromCollection($name, Collection &$data)
+	{
+		if (!isset($this->relations[$name]))
+		{
+			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
+		}
+
+		$this->relations[$name]->setDataFromColelction($name);
 	}
 
 	/**
@@ -282,7 +292,7 @@ class RelationManager
 	 *
 	 * @throws Relation\Exception\RelationNotFound
 	 */
-	public function &getData($name, callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData($name, callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
 	{
 		if (!isset($this->relations[$name]))
 		{

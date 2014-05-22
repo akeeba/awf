@@ -42,7 +42,7 @@ class Collection extends BaseCollection
 	 *
 	 * @param  mixed  $item
 	 *
-*@return Collection
+	 * @return Collection
 	 */
 	public function add($item)
 	{
@@ -68,7 +68,7 @@ class Collection extends BaseCollection
 	 *
 	 * @param  string  $key
 	 *
-*@return Collection
+	 * @return Collection
 	 */
 	public function fetch($key)
 	{

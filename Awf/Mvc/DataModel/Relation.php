@@ -117,7 +117,7 @@ abstract class Relation
 	 *
 	 * @return DataModel\Collection|DataModel
 	 */
-	public function &getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
 	{
 		if (is_null($this->data))
 		{
@@ -148,6 +148,16 @@ abstract class Relation
 
 		return $this->data;
 	}
+
+	/**
+	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
+	 * DataModel to push the eager loaded data into each item's relation.
+	 *
+	 * @param Collection $data The relation data to push into this relation
+	 *
+	 * @return void
+	 */
+	abstract public function setDataFromCollection(Collection &$data);
 
 	/**
 	 * Applies the relation filters to the foreign model when getData is called
