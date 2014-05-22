@@ -21,7 +21,16 @@ use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
 /**
- * Data-aware model
+ * Data-aware model, implementing a convenient ORM
+ *
+ * Type hinting -- start
+ *
+ * @method DataModel hasOne() hasOne(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel belongsTo() belongsTo(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel hasMany() hasMany(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null)
+ * @method DataModel belongsToMany() belongsToMany(string $name, string $foreignModelClass = null, string $localKey = null, string $foreignKey = null, string $pivotTable = null, string $pivotLocalKey = null, string $pivotForeignKey = null)
+ *
+ * Type hinting -- end
  *
  * @package Awf\Mvc
  */
