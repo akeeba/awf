@@ -11,6 +11,7 @@
 
 namespace Awf\Mvc\DataModel;
 
+use Awf\Mvc\DataModel;
 use Awf\Utils\Collection as BaseCollection;
 
 /**
