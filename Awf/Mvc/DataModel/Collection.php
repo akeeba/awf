@@ -223,4 +223,63 @@ class Collection extends BaseCollection
 		return new BaseCollection($this->items);
 	}
 
-} 
+	/**
+	 * Magic method which allows you to run a DataModel method to all items in the collection.
+	 *
+	 * For example, you can do $collection->save('foobar' => 1) to update the 'foobar' column to 1 across all items in
+	 * the collection.
+	 *
+	 * IMPORTANT: The return value of the method call is not returned back to you!
+	 *
+	 * @param string $name       The method to call
+	 * @param array  $arguments  The arguments to the method
+	 */
+	function __call($name, $arguments)
+	{
+		if (empty($this))
+		{
+			return;
+		}
+
+		if (method_exists('Awf\Mvc\DataModel', $name))
+		{
+			foreach ($this as $item)
+			{
+				switch (count($arguments))
+				{
+					case 0:
+						$item->$name();
+						break;
+
+					case 1:
+						$item->$name($arguments[0]);
+						break;
+
+					case 2:
+						$item->$name($arguments[0], $arguments[1]);
+						break;
+
+					case 3:
+						$item->$name($arguments[0], $arguments[1], $arguments[2]);
+						break;
+
+					case 4:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3]);
+						break;
+
+					case 5:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4]);
+						break;
+
+					case 6:
+						$item->$name($arguments[0], $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5]);
+						break;
+
+					default:
+						call_user_func_array(array($item, $name), $arguments);
+						break;
+				}
+			}
+		}
+	}
+}
