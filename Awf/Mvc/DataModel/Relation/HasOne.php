@@ -47,6 +47,19 @@ class HasOne extends DataModel\Relation
 		}
 	}
 
+	/**
+	 * Get the relation data.
+	 *
+	 * If you want to apply additional filtering to the foreign model, use the $callback. It can be any function,
+	 * static method, public method or closure with an interface of function(DataModel $foreignModel). You are not
+	 * supposed to return anything, just modify $foreignModel's state directly. For example, you may want to do:
+	 * $foreignModel->setState('foo', 'bar')
+	 *
+	 * @param callable              $callback        The callback to run on the remote model.
+	 * @param \Awf\Utils\Collection $dataCollection
+	 *
+	 * @return DataModel\Collection|DataModel
+	 */
 	public function getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
 	{
 		if (is_null($dataCollection))
@@ -201,5 +214,4 @@ class HasOne extends DataModel\Relation
 
 		return $this->data->last();
 	}
-
 }
