@@ -894,6 +894,70 @@ class DataModel extends Model
 	}
 
 	/**
+	 * Save a record, creating it if it doesn't exist or updating it if it exists. By default it uses the currently set
+	 * data, unless you provide a $data array. On top of that, it also saves all specified relations. If $relations is
+	 * null it will save all relations known to this model.
+	 *
+	 * @param   null|array $data           [Optional] Data to bind
+	 * @param   string     $orderingFilter A WHERE clause used to apply table item reordering
+	 * @param   array      $ignore         A list of fields to ignore when binding $data
+	 * @param   array      $relations      Which relations to save with the model's record. Leave null for all relations
+	 *
+	 * @return $this Self, for chaining
+	 */
+	public function push($data = null, $orderingFilter = '', $ignore = null, $relations = null)
+	{
+		// Store the model's $touches definition
+		$touches = $this->touches;
+
+		// If $relations is non-null, remove $relations from $this->touches. Since $relations will be saved, they are
+		// implicitly touched. We don't want to double-touch those records, do we?
+		if (is_array($relations))
+		{
+			$this->touches = array_diff($this->touches, $relations);
+		}
+		// Otherwise empty $this->touches completely as we'll be pushing all relations
+		else
+		{
+			$this->touches = array();
+		}
+
+		// Save this record
+		$this->save($data, $orderingFilter, $ignore);
+
+		// Push all relations specified (or all relations if $relations is null)
+		$allRelations = $this->getRelations()->getRelationNames();
+
+		if (!empty($allRelations))
+		{
+			foreach ($allRelations as $relationName)
+			{
+				if (!is_null($relations) && !in_array($relationName, $allRelations))
+				{
+					continue;
+				}
+
+				$relationData = $this->getRelations()->getData($relationName);
+
+				if (!empty($relationData))
+				{
+					/** @var DataModel $record */
+					foreach ($relationData as $record)
+					{
+						$record->save();
+					}
+				}
+			}
+		}
+
+		// Restore the model's $touches definition
+		$this->touches = $touches;
+
+		// Return self for chaining
+		return $this;
+	}
+
+	/**
 	 * Method to bind an associative array or object to the DataModel instance. This
 	 * method optionally takes an array of properties to ignore when binding.
 	 *
