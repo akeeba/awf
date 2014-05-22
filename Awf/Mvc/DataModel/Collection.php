@@ -13,6 +13,31 @@ namespace Awf\Mvc\DataModel;
 
 use Awf\Utils\Collection as BaseCollection;
 
+/**
+ * A collection of data models. You can enumerate it like an array, use it everywhere a collection is expected (e.g. a
+ * foreach loop) and even implements a countable interface. You can also batch-apply DataModel methods on it thanks to
+ * its magic __call() method, hence the type-hinting below.
+ *
+ * @method void setFieldValue(string $name, mixed $value = '')
+ * @method void archive()
+ * @method void save(mixed $data, string $orderingFilter = '', bool $ignore = null)
+ * @method void push(mixed $data, string $orderingFilter = '', bool $ignore = null, array $relations = null)
+ * @method void bind(mixed $data, array $ignore = array())
+ * @method void check()
+ * @method void reorder(string $where = '')
+ * @method void delete(mixed $id = null)
+ * @method void trash(mixed $id)
+ * @method void forceDelete(mixed $id = null)
+ * @method void lock(int $userId = null)
+ * @method void move(int $delta, string $where = '')
+ * @method void publish()
+ * @method void restore(mixed $id)
+ * @method void touch(int $userId = null)
+ * @method void unlock()
+ * @method void unpublish()
+ *
+ * @package Awf\Mvc\DataModel
+ */
 class Collection extends BaseCollection
 {
 	/**
