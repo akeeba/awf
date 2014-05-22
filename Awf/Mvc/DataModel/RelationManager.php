@@ -302,6 +302,16 @@ class RelationManager
 		return $this->relations[$name]->getData($callback, $dataCollection);
 	}
 
+	public function getCountSubquery($name)
+	{
+		if (!isset($this->relations[$name]))
+		{
+			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
+		}
+
+		return $this->relations[$name]->getCountSubquery();
+	}
+
 	/**
 	 * A magic method which allows us to define relations using shorthand notation, e.g. $manager->hasOne('phone')
 	 * instead of $manager->addRelation('phone', 'hasOne')

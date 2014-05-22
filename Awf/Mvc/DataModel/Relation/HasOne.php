@@ -8,6 +8,7 @@
 namespace Awf\Mvc\DataModel\Relation;
 
 use Awf\Application\Application;
+use Awf\Database\Query;
 use Awf\Mvc\DataModel;
 use Awf\Utils\Collection;
 
@@ -152,14 +153,9 @@ class HasOne extends DataModel\Relation
 	/**
 	 * Returns the count subquery for DataModel's has() and whereHas() methods.
 	 *
-	 * You may use the callable $callable to customise it. Its interface is function(\Awf|Database\Query $query). You
-	 * are not supposed to return anything, just modify $query directly.
-	 *
-	 * @param callable $callback
-	 *
-	 * @return mixed
+	 * @return Query
 	 */
-	public function getCountSubquery(callable $callback = null)
+	public function getCountSubquery()
 	{
 		// Get a model instance
 		$container = Application::getInstance($this->foreignModelApp)->getContainer();
@@ -169,15 +165,10 @@ class HasOne extends DataModel\Relation
 		$db = $foreignModel->getDbo();
 		$query = $db->getQuery(true)
 			->select('COUNT(*)')
-			->from($db->qn($foreignModel->getTableName()), $db->qn('reltbl'))
+			->from($db->qn($foreignModel->getTableName()) . ' AS ' . $db->qn('reltbl'))
 			->where($db->qn('reltbl') . '.' . $db->qn($foreignModel->getFieldAlias($this->foreignKey)) . ' = '
+				. $db->qn($this->parentModel->getTableName()) . '.'
 				. $db->qn($this->parentModel->getFieldAlias($this->localKey)));
-
-		// Apply the callback, if applicable
-		if (!is_null($callback) && is_callable($callback))
-		{
-			call_user_func($callback, $query);
-		}
 
 		return $query;
 	}

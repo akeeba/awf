@@ -9,6 +9,7 @@ namespace Awf\Mvc\DataModel;
 
 
 use Awf\Application\Application;
+use Awf\Database\Query;
 use Awf\Mvc\DataModel;
 use Awf\Utils\Collection;
 
@@ -172,14 +173,9 @@ abstract class Relation
 	/**
 	 * Returns the count subquery for DataModel's has() and whereHas() methods.
 	 *
-	 * You may use the callable $callable to customise it. Its interface is function(\Awf|Database\Query $query). You
-	 * are not supposed to return anything, just modify $query directly.
-	 *
-	 * @param callable $callback
-	 *
-	 * @return mixed
+	 * @return Query
 	 */
-	abstract public function getCountSubquery(callable $callback = null);
+	abstract public function getCountSubquery();
 
 	/**
 	 * Returns a new item of the foreignModel type, pre-initialised to fulfil this relation

@@ -81,6 +81,9 @@ class DataModel extends Model
 	/** @var   array  A list of all eager loaded relations and their attached callbacks */
 	protected $eagerRelations = array();
 
+	/** @var   array  A list of the relation filter definitions for this model */
+	protected $relationFilters = array();
+
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
@@ -482,6 +485,10 @@ class DataModel extends Model
 				$this->recordData[$fieldName] = null;
 			}
 		}
+
+		$this->relationManager->resetRelations();
+		$this->eagerRelations = array();
+		$this->relationFilters = array();
 
 		return $this;
 	}
@@ -2366,12 +2373,230 @@ class DataModel extends Model
 	 * @param string $relation The relation to query
 	 * @param string $operator The comparison operator. Same operators as the where() method.
 	 * @param mixed  $value    The value(s) to compare against.
+	 * @param bool   $replace  When true (default) any existing relation filters for the same relation will be replaced
 	 *
 	 * @return $this
 	 */
-	public function has($relation, $operator = '=', $value = 1)
+	public function has($relation, $operator = '>=', $value = 1, $replace = true)
 	{
-		// @todo Implement filtering by relations
+		// Make sure the Filters behaviour is added to the model
+		if (!$this->behavioursDispatcher->hasObserverClass('Awf\Mvc\DataModel\Behaviour\RelationFilters'))
+		{
+			$this->addBehaviour('relationFilters');
+		}
+
+		$filter = array(
+			'relation'	=> $relation,
+			'method'	=> 'search',
+			'operator'	=> $operator,
+			'value'		=> $value
+		);
+
+		// Handle method aliases
+		switch ($operator)
+		{
+			case '<>':
+				$filter['method'] = 'search';
+				$filter['operator'] = '!=';
+				break;
+
+			case 'lt':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<';
+				break;
+
+			case 'le':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<=';
+				break;
+
+			case 'gt':
+				$filter['method'] = 'search';
+				$filter['operator'] = '>';
+				break;
+
+			case 'ge':
+				$filter['method'] = 'search';
+				$filter['operator'] = '<=';
+				break;
+
+			case 'eq':
+				$filter['method'] = 'search';
+				$filter['operator'] = '=';
+				break;
+
+			case 'neq':
+			case 'ne':
+				$filter['method'] = 'search';
+				$filter['operator'] = '!=';
+				break;
+
+			case '<':
+			case '!<':
+			case '<=':
+			case '!<=':
+			case '>':
+			case '!>':
+			case '>=':
+			case '!>=':
+			case '!=':
+			case '=':
+				$filter['method'] = 'search';
+				$filter['operator'] = $operator;
+				break;
+
+			case 'like':
+			case '~':
+			case '%':
+				$filter['method'] = 'partial';
+				break;
+
+			case '==':
+			case '=[]':
+			case '=()':
+			case 'in':
+				$filter['method'] = 'exact';
+				break;
+
+			case '()':
+			case '[]':
+			case '[)':
+			case '(]':
+				$filter['method'] = 'inside';
+				break;
+
+			case ')(':
+			case ')[':
+			case '](':
+			case '][':
+				$filter['method'] = 'outside';
+				break;
+
+			case '*=':
+			case 'every':
+				$filter['method'] = 'interval';
+				break;
+
+			case '?=':
+				$filter['method'] = 'search';
+				break;
+
+			case 'callback':
+				$filter['method'] = 'callback';
+				$filter['operator'] = 'callback';
+				break;
+		}
+
+		// Handle real methods
+		switch ($filter['method'])
+		{
+			case 'between':
+			case 'outside':
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the from and to values from the $value array
+					if (isset($value['from']) && isset($value['to']))
+					{
+						$filter['from'] = $value['from'];
+						$filter['to'] = $value['to'];
+					}
+					else
+					{
+						$filter['from'] = array_shift($value);
+						$filter['to'] = array_shift($value);
+					}
+
+					unset($filter['value']);
+				}
+				else
+				{
+					// $value is not a from/to array. Treat as = (between) or != (outside)
+					if (is_array($value))
+					{
+						$value = array_shift($value);
+					}
+
+					$filter['value'] = $value;
+					$filter['method'] = 'search';
+					$filter['operator'] = ($filter['method'] == 'between') ? '=' : '!=';
+				}
+
+				break;
+
+			case 'interval':
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the value and interval from the $value array
+					if (isset($value['value']) && isset($value['interval']))
+					{
+						$filter['value'] = $value['value'];
+						$filter['interval'] = $value['interval'];
+					}
+					else
+					{
+						$filter['value'] = array_shift($value);
+						$filter['interval'] = array_shift($value);
+					}
+				}
+				else
+				{
+					// $value is not a value/interval array. Treat as =
+					if (is_array($value))
+					{
+						$value = array_shift($value);
+					}
+
+					$filter['value'] = $value;
+					$filter['method'] = 'search';
+					$filter['operator'] = '=';
+				}
+				break;
+
+			case 'search':
+				// We don't have to do anything if the operator is already set
+				if (isset($filter['operator']))
+				{
+					break;
+				}
+
+				if (is_array($value) && (count($value) > 1))
+				{
+					// Get the operator and value from the $value array
+					if (isset($value['operator']) && isset($value['value']))
+					{
+						$filter['operator'] = $value['operator'];
+						$filter['value'] = $value['value'];
+					}
+					else
+					{
+						$filter['operator'] = array_shift($value);
+						$filter['value'] = array_shift($value);
+					}
+				}
+				break;
+
+			case 'callback':
+				if (!is_callable($filter['value']))
+				{
+					$filter['method'] = 'search';
+					$filter['operator'] = '=';
+					$filter['value'] = 1;
+				}
+				break;
+		}
+
+		if ($replace && !empty($this->relationFilters))
+		{
+			foreach ($this->relationFilters as $k => $v)
+			{
+				if ($v['relation'] == $relation)
+				{
+					unset ($this->relationFilters[$k]);
+				}
+			}
+		}
+
+		$this->relationFilters[] = $filter;
 
 		return $this;
 	}
@@ -2387,13 +2612,24 @@ class DataModel extends Model
 	 *
 	 * @param string   $relation The relation to query against
 	 * @param callable $callBack The callback to use for filtering
+	 * @param bool     $replace  When true (default) any existing relation filters for the same relation will be replaced
 	 *
 	 * @return $this
 	 */
-	public function whereHas($relation, callable $callBack)
+	public function whereHas($relation, callable $callBack, $replace = true)
 	{
-		// @todo Implement advanced filtering by relations
+		$this->has($relation, 'callback', $callBack);
 
 		return $this;
+	}
+
+	/**
+	 * Gets the relation filter definitions, for use by the RelationFilters behaviour
+	 *
+	 * @return array
+	 */
+	public function getRelationFilters()
+	{
+		return $this->relationFilters;
 	}
 } 
