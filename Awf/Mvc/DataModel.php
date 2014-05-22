@@ -2492,7 +2492,7 @@ class DataModel extends Model
 
 		$filter = array(
 			'relation'	=> $relation,
-			'method'	=> 'search',
+			'method'	=> $operator,
 			'operator'	=> $operator,
 			'value'		=> $value
 		);
