@@ -84,6 +84,9 @@ class DataModel extends Model
 	/** @var   array  A list of the relation filter definitions for this model */
 	protected $relationFilters = array();
 
+	/** @var   array  A list of the relations which will be auto-touched by save() and touch() methods */
+	protected $touches = array();
+
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
@@ -100,6 +103,7 @@ class DataModel extends Model
 	 * behaviours			Array. A list of behaviour names to instantiate and attach to the behavioursDispatcher.
 	 * fillable_fields		Array. Which fields should be auto-filled from the model state (by extent, the request)?
 	 * guarded_fields		Array. Which fields should never be auto-filled from the model state (by extent, the request)?
+	 * relations			Array (hashed). The relations to autoload on model creation.
 	 *
 	 * Setting either fillable_fields or guarded_fields turns on automatic filling of fields in the constructor. If both
 	 * are set only guarded_fields is taken into account. Fields are not filled automatically outside the constructor.
@@ -858,6 +862,24 @@ class DataModel extends Model
 		{
 			$filterValue = $this->$orderingFilter;
 			$this->reorder($orderingFilter ? $db->qn($orderingFilter) . ' = ' . $db->q($filterValue) : '');
+		}
+
+		// One more thing... Touch all relations in the $touches array
+		if (!empty($this->touches))
+		{
+			foreach ($this->touches as $relation)
+			{
+				$records = $this->getRelations()->getData($relation);
+
+				if (!empty($records))
+				{
+					/** @var DataModel $record */
+					foreach ($records as $record)
+					{
+						$record->touch();
+					}
+				}
+			}
 		}
 
 		// Finally, call the onAfterSave event
@@ -2631,5 +2653,15 @@ class DataModel extends Model
 	public function getRelationFilters()
 	{
 		return $this->relationFilters;
+	}
+
+	/**
+	 * Returns the list of relations which are touched by save() and touch()
+	 *
+	 * @return array
+	 */
+	public function &getTouches()
+	{
+		return $this->touches;
 	}
 } 
