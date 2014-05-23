@@ -307,6 +307,79 @@ class BelongsToMany extends DataModel\Relation
 		return $query;
 	}
 
+	/**
+	 * Saves all related items. For many-to-many relations there are two things we have to do:
+	 * 1. Save all related items; and
+	 * 2. Overwrite the pivot table data with the new associations
+	 */
+	public function saveAll()
+	{
+		// Save all related items
+		parent::saveAll();
+
+		// Get all the new keys
+		$newKeys = array();
+
+		if ($this->data instanceof Collection)
+		{
+			foreach ($this->data as $item)
+			{
+				if ($item instanceof DataModel)
+				{
+					$newKeys[] = $item->getId();
+				}
+				elseif (!is_object($item))
+				{
+					$newKeys[] = $item;
+				}
+			}
+		}
+
+		$newKeys = array_unique($newKeys);
+
+		$db = $this->parentModel->getDbo();
+		$localKeyValue = $this->parentModel->getFieldValue($this->localKey);
+
+		// Kill all existing relations in the pivot table
+		$query = $db->getQuery(true)
+			->delete($db->qn($this->pivotTable))
+			->where($db->qn($this->pivotLocalKey) . ' = ' . $db->q($localKeyValue));
+		$db->setQuery($query);
+		$db->execute();
+
+		// Write the new relations to the database
+		$protoQuery = $db->getQuery(true)
+			->insert($db->qn($this->pivotTable))
+			->columns(array($db->qn($this->pivotLocalKey), $db->qn($this->pivotForeignKey)));
+
+		$i = 0;
+		$query = null;
+
+		foreach ($newKeys as $key)
+		{
+			$i++;
+
+			if (is_null($query))
+			{
+				$query = $protoQuery;
+			}
+
+			$query->values($db->q($localKeyValue) . ', ' . $db->q($key));
+
+			if (($i % 50) == 0)
+			{
+				$db->setQuery($query);
+				$db->execute();
+				$query = null;
+			}
+		}
+
+		if (!is_null($query))
+		{
+			$db->setQuery($query);
+			$db->execute();
+		}
+	}
 
 	/**
 	 * This is not supported by the belongsTo relation
@@ -315,8 +388,6 @@ class BelongsToMany extends DataModel\Relation
 	 */
 	public function getNew()
 	{
-		// FIXME Implement getNew() for many to many relations
-		throw new DataModel\Relation\Exception\NewNotSupported("getNew() is not yet implemented for many-to-may relations");
+		throw new DataModel\Relation\Exception\NewNotSupported("getNew() is not supported for many-to-may relations. Please add/remove items from the relation data and use push() to effect changes.");
 	}
-
 }

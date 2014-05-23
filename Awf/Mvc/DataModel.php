@@ -951,21 +951,7 @@ class DataModel extends Model
 					continue;
 				}
 
-				$relationData = $this->getRelations()->getData($relationName);
-
-				if (!empty($relationData))
-				{
-					if ($relationData instanceof DataModel)
-					{
-						$relationData = array($relationData);
-					}
-
-					/** @var DataModel $record */
-					foreach ($relationData as $record)
-					{
-						$record->save();
-					}
-				}
+				$this->getRelations()->save($relationName);
 			}
 		}
 

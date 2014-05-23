@@ -63,6 +63,21 @@ class Collection extends BaseCollection
 		}, $default);
 	}
 
+	public function removeById($key)
+	{
+		if ($key instanceof DataModel)
+		{
+			$key = $key->getId();
+		}
+
+		$index = array_search($key, $this->modelKeys());
+
+		if ($index !== false)
+		{
+			unset($this->items[$index]);
+		}
+	}
+
 	/**
 	 * Add an item to the collection.
 	 *
