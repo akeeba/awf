@@ -15,7 +15,7 @@ abstract class Cli extends Application
 	/**
 	 * Public constructor
 	 *
-	 * @param   array  $config  Configuration parameters
+	 * @param   Container $container  The container attached to this application
 	 *
 	 * @return   Cli
 	 */
@@ -27,11 +27,13 @@ abstract class Cli extends Application
 			die('You are not supposed to access this script from the web. You have to run it from the command line.');
 		}
 
-		$this->name = 'cli';
+		if (empty($container['application_name']))
+		{
+			$container->application_name = 'cli';
+			$this->name = 'cli';
+		}
 
 		parent::__construct($container);
-
-		$this->container->application_name = 'cli';
 
 		if (!($container->input instanceof \Awf\Input\Cli))
 		{

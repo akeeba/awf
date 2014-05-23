@@ -56,6 +56,8 @@ abstract class Template
 	 */
 	public static function parsePath($path, $localFile = false, $app = null)
 	{
+		$rootPath = $app->getContainer()->filesystemBase;
+
 		if (!is_object($app))
 		{
 			$app = Application::getInstance();
@@ -63,7 +65,7 @@ abstract class Template
 
 		if ($localFile)
 		{
-			$url = rtrim(APATH_BASE, DIRECTORY_SEPARATOR) . '/';
+			$url = rtrim($rootPath, DIRECTORY_SEPARATOR) . '/';
 		}
 		else
 		{
@@ -78,7 +80,7 @@ abstract class Template
 
 			$minFile = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.' . $ext;
 
-			if (@file_exists(APATH_BASE . '/' . $minFile))
+			if (@file_exists($rootPath . '/' . $minFile))
 			{
 				$altPaths['normal'] = $minFile;
 			}
@@ -87,7 +89,7 @@ abstract class Template
 		{
 			$minFile = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.' . $ext;
 
-			if (@file_exists(APATH_BASE . '/' . $minFile) && !@file_exists(APATH_BASE . '/' . $altPaths['normal']))
+			if (@file_exists($rootPath . '/' . $minFile) && !@file_exists($rootPath . '/' . $altPaths['normal']))
 			{
 				$altPaths['normal'] = $minFile;
 			}
@@ -99,7 +101,7 @@ abstract class Template
 		// If AKEEBADEBUG is enabled, prefer that path, else prefer an alternate path if present
 		if (defined('AKEEBADEBUG') && AKEEBADEBUG && isset($altPaths['debug']))
 		{
-			if (file_exists(APATH_BASE . '/' . $altPaths['debug']))
+			if (file_exists($rootPath . '/' . $altPaths['debug']))
 			{
 				$filePath = $altPaths['debug'];
 			}
@@ -110,13 +112,13 @@ abstract class Template
 			{
 				$minFile = dirname($altPaths['alternate']) . '/' . basename($altPaths['alternate'], $ext) . 'min.' . $ext;
 
-				if (@file_exists(APATH_BASE . '/' . $minFile))
+				if (@file_exists($rootPath . '/' . $minFile))
 				{
 					$altPaths['alternate'] = $minFile;
 				}
 			}
 
-			if (file_exists(APATH_BASE . '/' . $altPaths['alternate']))
+			if (file_exists($rootPath . '/' . $altPaths['alternate']))
 			{
 				$filePath = $altPaths['alternate'];
 			}
@@ -152,6 +154,8 @@ abstract class Template
 			$app = Application::getInstance();
 		}
 
+		$rootPath = $app->getContainer()->filesystemBase;
+
 		$protoAndPath = explode('://', $path, 2);
 
 		if (count($protoAndPath) < 2)
@@ -174,7 +178,7 @@ abstract class Template
 
 				$ret = array(
 					'normal'	 => 'media/' . $pathAndParams[0],
-					'alternate'	 =>  APATH_THEMES . '/'. $app->getTemplate() . '/media/' . $pathAndParams[0],
+					'alternate'	 =>  $rootPath . '/'. $app->getTemplate() . '/media/' . $pathAndParams[0],
 				);
 				break;
 

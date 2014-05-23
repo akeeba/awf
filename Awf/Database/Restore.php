@@ -166,8 +166,6 @@ abstract class Restore
 		$this->dbkey = $dbkey;
 		$this->dbiniValues = $dbiniValues;
 
-		$this->populatePartsMap();
-
 		if (!array_key_exists('maxexectime', $this->dbiniValues))
 		{
 			$this->dbiniValues['maxexectime'] = 5;
@@ -186,6 +184,8 @@ abstract class Restore
 		}
 
 		$this->application = $config['application'];
+
+		$this->populatePartsMap();
 	}
 
 	/**
@@ -364,7 +364,7 @@ abstract class Restore
 			$parts = $this->getParam('parts', 1);
 
 			$this->partsMap = array();
-			$path = APATH_INSTALLATION . '/sql';
+			$path = $this->application->getContainer()->sqlPath;
 			$this->totalSize = 0;
 			$this->runSize = 0;
 			$this->curpart = 0;

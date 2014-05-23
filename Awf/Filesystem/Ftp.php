@@ -307,7 +307,7 @@ class Ftp implements FilesystemInterface
 		}
 
 		$directories = explode('/', $targetDir);
-		$siteRootDir = (isset($this->container['filesystemBase'])) ? $this->container['filesystemBase'] : APATH_BASE;
+		$siteRootDir = $this->container['filesystemBase'];
 		$localDir = rtrim($siteRootDir, '/');
 		$remoteDir = '/' . $initialDir;
 		$ret = true;
@@ -395,7 +395,7 @@ class Ftp implements FilesystemInterface
 	{
 		$fileName = str_replace('\\', '/', $fileName);
 
-		$siteRootDir = (isset($this->container['filesystemBase'])) ? $this->container['filesystemBase'] : APATH_BASE;
+		$siteRootDir = $this->container['filesystemBase'];
 		$appRoot = str_replace('\\', '/', $siteRootDir);
 		$appRoot = rtrim($appRoot, '/');
 

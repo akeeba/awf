@@ -86,6 +86,36 @@ abstract class Application
 			$container->basePath = APATH_BASE . '/' . ucfirst($this->name);
 		}
 
+		// Set up the template path
+		if (empty($container->templatePath))
+		{
+			$container->templatePath = APATH_THEMES;
+		}
+
+		// Set up the temporary path
+		if (empty($container->templatePath))
+		{
+			$container->templatePath = APATH_ROOT . '/tmp';
+		}
+
+		// Set up the filesystem path
+		if (empty($container->filesystemBase))
+		{
+			$container->filesystemBase = APATH_BASE;
+		}
+
+		// Set up the language path
+		if (empty($container->languagePath))
+		{
+			$container->languagePath = APATH_TRANSLATION;
+		}
+
+		// Set up the language path
+		if (empty($container->sqlPath))
+		{
+			$container->sqlPath = APATH_ROOT . '/installation/sql';
+		}
+
 		// Start the session
 		$this->container->session->start();
 
@@ -97,7 +127,8 @@ abstract class Application
 
 		// Load the translation strings
 		Text::addIniProcessCallback(array($this, 'processLanguageIniFile'));
-		Text::loadLanguage(null, $this->name);
+		$languagePath = $container->languagePath;
+		Text::loadLanguage(null, $this->name, '.ini', true, $languagePath);
 	}
 
 	/**

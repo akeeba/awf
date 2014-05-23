@@ -391,7 +391,8 @@ class Pagination
 		$itemOverride = false;
 		$listOverride = false;
 
-		$chromePath = APATH_THEMES . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$templatePath = $this->application->getContainer()->templatePath;
+		$chromePath = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{
@@ -504,7 +505,8 @@ class Pagination
 		$list['pagescounter'] = $this->getPagesCounter();
 		$list['pageslinks'] = $this->getPagesLinks();
 
-		$chromePath = APATH_THEMES . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$templatePath = $this->application->getContainer()->templatePath;
+		$chromePath = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{

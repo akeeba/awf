@@ -210,7 +210,8 @@ class View
 			$this->setLayout($this->config['layout']);
 		}
 
-		$fallback = APATH_THEMES . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
+		$templatePath = $this->container->templatePath;
+		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
 		$this->addTemplatePath('template', $fallback);
 
 		$this->baseurl = Uri::base(true, $this->container);
@@ -232,7 +233,8 @@ class View
 		$this->addTemplatePath($path);
 
 		// Set the alternative template search dir
-		$fallback = APATH_THEMES . '/' . $this->container->application->getTemplate() . '/html/' . strtoupper($this->container->application->getName()) . '/' . $this->getName();
+		$templatePath = $this->container->templatePath;
+		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . strtoupper($this->container->application->getName()) . '/' . $this->getName();
 		$this->addTemplatePath($fallback);
 
 		// Get extra directories through event dispatchers
@@ -616,8 +618,9 @@ class View
 		$templateParts = $this->parseTemplatePath($path);
 
 		// Get the default paths
+		$templatePath = $this->container->templatePath;
 		$paths = array();
-		$paths[] = APATH_THEMES . '/' . $template . '/html/' . $this->input->getCmd('option', '') . '/' . $templateParts['view'];
+		$paths[] = $templatePath . '/' . $template . '/html/' . $this->input->getCmd('option', '') . '/' . $templateParts['view'];
 		$paths[] = $this->container->basePath . '/views/' . $templateParts['view'] . '/tmpl';
 		$paths[] = $this->container->basePath . '/View/' . $templateParts['view'] . '/tmpl';
 

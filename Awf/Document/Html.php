@@ -36,8 +36,9 @@ class Html extends Document
 			$this->addHTTPHeader('Content-disposition', 'attachment; filename="' . $name . '.html"', true);
 		}
 
-		$template = \Awf\Application\Application::getInstance()->getTemplate();
-		$templatePath = APATH_THEMES . '/' . $template;
+		$application = \Awf\Application\Application::getInstance();
+		$template = $application->getTemplate();
+		$templatePath = $application->getContainer()->templatePath . '/' . $template;
 
 		include $templatePath . '/index.php';
 	}

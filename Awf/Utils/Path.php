@@ -7,6 +7,8 @@
 
 namespace Awf\Utils;
 
+use Awf\Application\Application;
+
 /**
  * Class Path
  *
@@ -30,7 +32,8 @@ abstract class Path
 
 		if (empty($path))
 		{
-			$path = APATH_ROOT;
+			$application = Application::getInstance();
+			$path = $application->getContainer()->filesystemBase;
 		}
 		else
 		{
@@ -59,8 +62,10 @@ abstract class Path
 			throw new \Exception(__CLASS__ . '::check Use of relative paths not permitted', 20);
 		}
 
+		$rootPath = Application::getInstance()->getContainer()->filesystemBase;
+
 		$path = self::clean($path);
-		if ((APATH_ROOT != '') && strpos($path, self::clean(APATH_ROOT)) !== 0)
+		if (($rootPath != '') && strpos($path, self::clean($rootPath)) !== 0)
 		{
 			// Don't translate
 			throw new \Exception(__CLASS__ . '::check Snooping out of bounds @ ' . $path, 20);

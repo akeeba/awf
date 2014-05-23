@@ -146,7 +146,10 @@ class Manager
 	 */
 	public function start()
 	{
-		return session_start();
+		if (!$this->isStarted())
+		{
+			return session_start();
+		}
 	}
 
 	/**

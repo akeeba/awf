@@ -7,6 +7,7 @@
 
 namespace Awf\Download;
 
+use Awf\Application\Application;
 use Awf\Text\Text;
 use Awf\Timer\Timer;
 
@@ -135,7 +136,7 @@ class Download
 		$minExecTime = $this->getParam('minExecTime', 1);
 
 		$localFilename = 'download.zip';
-		$tmpDir = APATH_BASE . '/tmp';
+		$tmpDir = Application::getInstance()->getContainer()->temporaryPath;
 		$tmpDir = rtrim($tmpDir, '/\\');
 
 		$localFilename = $this->getParam('localFilename', $localFilename);

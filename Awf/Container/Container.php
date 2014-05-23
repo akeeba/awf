@@ -17,6 +17,12 @@ use Awf\Session;
  *
  * @property  string                                         $application_name      The name of the application
  * @property  string                                         $session_segment_name  The name of the session segment
+ * @property  string                                         $basePath              The path to your application's PHP files
+ * @property  string                                         $templatePath          The base path of all your template folders
+ * @property  string                                         $languagePath          The base path of all your language folders
+ * @property  string                                         $temporaryPath         The temporary directory of your application
+ * @property  string                                         $filesystemBase        The base path of your web root (for use by Awf\Filesystem)
+ * @property  string                                         $sqlPath               The path to the SQL files restored by Awf\Database\Restore
  *
  * @property-read  \Awf\Application\Application              $application           The application instance
  * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
@@ -38,6 +44,11 @@ class Container extends Pimple
 		$this->application_name = '';
 		$this->session_segment_name = null;
 		$this->basePath = null;
+		$this->templatePath = null;
+		$this->languagePath = null;
+		$this->temporaryPath = null;
+		$this->filesystemBase = null;
+		$this->sqlPath = null;
 
 		parent::__construct($values);
 
