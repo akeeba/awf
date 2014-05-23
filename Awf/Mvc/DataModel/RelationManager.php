@@ -80,14 +80,26 @@ class RelationManager
 		}
 	}
 
-	public function setDataFromCollection($name, Collection &$data)
+	/**
+	 * Populates the internal $this->data collection of a relation from the contents of the provided collection. This is
+	 * used by DataModel to push the eager loaded data into each item's relation.
+	 *
+	 * @param string     $name      Relation name
+	 * @param Collection $data      The relation data to push into this relation
+	 * @param mixed      $keyMap    Used by many-to-many relations to pass around the local to foreign key map
+	 *
+	 * @return void
+	 *
+	 * @throws Relation\Exception\RelationNotFound
+	 */
+	public function setDataFromCollection($name, Collection &$data, $keyMap = null)
 	{
 		if (!isset($this->relations[$name]))
 		{
 			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
 		}
 
-		$this->relations[$name]->setDataFromCollection($data);
+		$this->relations[$name]->setDataFromCollection($data, $keyMap);
 	}
 
 	/**
@@ -222,6 +234,26 @@ class RelationManager
 	}
 
 	/**
+	 * Gets the related items of a relation
+	 *
+	 * @param string                $name           The name of the relation to return data for
+	 *
+	 * @return Relation
+	 *
+	 * @throws Relation\Exception\RelationNotFound
+	 */
+	public function &getRelation($name)
+	{
+		if (!isset($this->relations[$name]))
+		{
+			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
+		}
+
+		return $this->relations[$name];
+	}
+
+
+	/**
 	 * Get a new related item which satisfies relation $name and adds it to this relation's data list.
 	 *
 	 * @param string $name The relation based on which a new item is returned
@@ -300,6 +332,25 @@ class RelationManager
 		}
 
 		return $this->relations[$name]->getData($callback, $dataCollection);
+	}
+
+	/**
+	 * Gets the foreign key map of a many-to-many relation
+	 *
+	 * @param string                $name           The name of the relation to return data for
+	 *
+	 * @return array
+	 *
+	 * @throws Relation\Exception\RelationNotFound
+	 */
+	public function &getForeignKeyMap($name)
+	{
+		if (!isset($this->relations[$name]))
+		{
+			throw new DataModel\Relation\Exception\RelationNotFound("Relation '$name' not found");
+		}
+
+		return $this->relations[$name]->getForeignKeyMap();
 	}
 
 	public function getCountSubquery($name)

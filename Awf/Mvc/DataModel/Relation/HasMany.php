@@ -48,33 +48,6 @@ class HasMany extends DataModel\Relation
 	}
 
 	/**
-	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
-	 * DataModel to push the eager loaded data into each item's relation.
-	 *
-	 * @param Collection $data The relation data to push into this relation
-	 *
-	 * @return void
-	 */
-	public function setDataFromCollection(Collection &$data)
-	{
-		$this->data = new DataModel\Collection();
-
-		if (!empty($data))
-		{
-			$localKeyValue = $this->parentModel->getFieldValue($this->localKey);
-
-			/** @var DataModel $item */
-			foreach ($data as $key => $item)
-			{
-				if ($item->getFieldValue($this->foreignKey) == $localKeyValue)
-				{
-					$this->data->add($item);
-				}
-			}
-		}
-	}
-
-	/**
 	 * Applies the relation filters to the foreign model when getData is called
 	 *
 	 * @param DataModel             $foreignModel    The foreign model you're operating on

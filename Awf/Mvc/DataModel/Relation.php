@@ -45,6 +45,9 @@ abstract class Relation
 	/** @var   DataModel\Collection  The data loaded by this relation */
 	protected $data = null;
 
+	/** @var array Maps each local table key to an array of foreign table keys, used in many-to-many relations */
+	protected $foreignKeyMap = array();
+
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
@@ -87,6 +90,7 @@ abstract class Relation
 	public function reset()
 	{
 		$this->data = null;
+		$this->foreignKeyMap = array();
 
 		return $this;
 	}
@@ -154,11 +158,29 @@ abstract class Relation
 	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
 	 * DataModel to push the eager loaded data into each item's relation.
 	 *
-	 * @param Collection $data The relation data to push into this relation
+	 * @param Collection $data    The relation data to push into this relation
+	 * @param mixed      $keyMap  Used by many-to-many relations to pass around the local to foreign key map
 	 *
 	 * @return void
 	 */
-	abstract public function setDataFromCollection(Collection &$data);
+	public function setDataFromCollection(Collection &$data, $keyMap = null)
+	{
+		$this->data = new DataModel\Collection();
+
+		if (!empty($data))
+		{
+			$localKeyValue = $this->parentModel->getFieldValue($this->localKey);
+
+			/** @var DataModel $item */
+			foreach ($data as $key => $item)
+			{
+				if ($item->getFieldValue($this->foreignKey) == $localKeyValue)
+				{
+					$this->data->add($item);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Applies the relation filters to the foreign model when getData is called
@@ -202,5 +224,15 @@ abstract class Relation
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns the foreign key map of a many-to-many relation, used for eager loading many-to-many relations
+	 *
+	 * @return array
+	 */
+	public function &getForeignKeyMap()
+	{
+		return $this->foreignKeyMap;
 	}
 }

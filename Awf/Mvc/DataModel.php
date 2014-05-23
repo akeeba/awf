@@ -1289,7 +1289,8 @@ class DataModel extends Model
 				/** @var DataModel $item */
 				foreach($dataCollection as $item)
 				{
-					$item->getRelations()->setDataFromCollection($relation, $relationData);
+					$foreignKeyMap = $this->getRelations()->getForeignKeyMap($relation);
+					$item->getRelations()->setDataFromCollection($relation, $relationData, $foreignKeyMap);
 				}
 			}
 		}
