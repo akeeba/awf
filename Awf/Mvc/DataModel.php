@@ -17,6 +17,7 @@ use Awf\Date\Date;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
+use Awf\Mvc\DataModel\Collection;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
@@ -1265,21 +1266,7 @@ class DataModel extends Model
 
 		$dataCollection = DataCollection::make($this->getItemsArray($limitstart, $limit));
 
-		// Apply eager loaded relations
-		if (!empty($dataCollection) && !empty($this->eagerRelations))
-		{
-			foreach ($this->eagerRelations as $relation => $callback)
-			{
-				$relationData = $this->relationManager->getData($relation, $callback, $dataCollection);
-
-				/** @var DataModel $item */
-				foreach($dataCollection as $item)
-				{
-					$foreignKeyMap = $this->getRelations()->getForeignKeyMap($relation);
-					$item->getRelations()->setDataFromCollection($relation, $relationData, $foreignKeyMap);
-				}
-			}
-		}
+		$this->eagerLoad($dataCollection, null);
 
 		return $dataCollection;
 	}
@@ -2733,5 +2720,46 @@ class DataModel extends Model
 	public function &getTouches()
 	{
 		return $this->touches;
+	}
+
+	/**
+	 * Eager loads the provided relations and assigns their data to a data collection
+	 *
+	 * @param Collection $dataCollection The data collection on which the eager loaded relations will be applied
+	 * @param array|null $relations      The relations to eager load. Leave empty to use the already defined relations
+	 *
+	 * @return $this for chaining
+	 */
+	public function eagerLoad(Collection &$dataCollection, $relations = null)
+	{
+		if (empty($relations))
+		{
+			$relations = $this->eagerRelations;
+		}
+
+		// Apply eager loaded relations
+		if (!empty($dataCollection) && !empty($relations))
+		{
+			foreach ($relations as $relation => $callback)
+			{
+				// Did they give us a relation name without a callback?
+				if (!is_callable($callback) && is_string($callback) && !empty($callback))
+				{
+					$relation = $callback;
+					$callback = null;
+				}
+
+				$relationData = $this->relationManager->getData($relation, $callback, $dataCollection);
+
+				/** @var DataModel $item */
+				foreach ($dataCollection as $item)
+				{
+					$foreignKeyMap = $this->getRelations()->getForeignKeyMap($relation);
+					$item->getRelations()->setDataFromCollection($relation, $relationData, $foreignKeyMap);
+				}
+			}
+		}
+
+		return $this;
 	}
 } 

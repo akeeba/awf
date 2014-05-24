@@ -93,9 +93,9 @@ abstract class Application
 		}
 
 		// Set up the temporary path
-		if (empty($container->templatePath))
+		if (empty($container->temporaryPath))
 		{
-			$container->templatePath = APATH_ROOT . '/tmp';
+			$container->temporaryPath = APATH_ROOT . '/tmp';
 		}
 
 		// Set up the filesystem path
