@@ -31,6 +31,9 @@ class TreeModel extends DataModel
 	/** @var TreeModel The root node in the tree */
 	protected $treeRoot = null;
 
+	/** @var TreeModel The parent node of ourselves */
+	protected $treeParent = null;
+
 	/**
 	 * Public constructor. Overrides the parent constructor, making sure there are lft/rgt columns which make it
 	 * compatible with nested sets.
@@ -74,8 +77,7 @@ class TreeModel extends DataModel
 		}
 
 		// Reset cached values
-		$this->treeDepth = null;
-		$this->treeRoot = null;
+		$this->resetTreeCache();
 
 		return $this;
 	}
@@ -171,7 +173,16 @@ class TreeModel extends DataModel
 	 */
 	public function create($data)
 	{
-		return $this->reset()->bind($data)->insertAsChildOf($this->getParent());
+		$newNode = $this->reset()->bind($data);
+
+		if ($this->isRoot())
+		{
+			return $newNode->insertAsChildOf($this);
+		}
+		else
+		{
+			return $newNode->insertAsChildOf($this->getParent());
+		}
 	}
 
 	/**
@@ -182,6 +193,20 @@ class TreeModel extends DataModel
 	public function copy()
 	{
 		return $this->create($this->toArray());
+	}
+
+	/**
+	 * Reset the record data and the tree cache
+	 *
+	 * @param   boolean $useDefaults Should I use the default values? Default: yes
+	 *
+	 * @return  static  Self, for chaining
+	 */
+	public function reset($useDefaults = true)
+	{
+		$this->resetTreeCache();
+
+		return parent::reset($useDefaults);
 	}
 
 	/**
@@ -475,24 +500,284 @@ class TreeModel extends DataModel
 		return $this->insertRightOf($siblingNode);
 	}
 
+	/**
+	 * Move the current node (and its subtree) one position to the left in the tree, i.e. before its left-hand sibling
+	 *
+	 * @return $this
+	 */
 	public function moveLeft()
 	{
-		// @todo
+		// If it is a root node we will not move the node (roots don't participate in tree ordering)
+		if ($this->isRoot())
+		{
+			return $this;
+		}
+
+		// Are we already the leftmost node?
+		$parentNode = $this->getParent();
+		if ($parentNode->lft == ($this->lft - 1))
+		{
+			return $this;
+		}
+
+		// Get the sibling to the left
+		$db = $this->getDbo();
+		$leftSibling = $this->getClone()->reset()
+			->whereRaw($db->qn($this->getFieldAlias('rgt') . ' = ' . $db->q($this->rgt - 1)))
+			->firstOrFail();
+
+		// Move the node
+		return $this->moveToLeftOf($leftSibling);
 	}
 
+	/**
+	 * Move the current node (and its subtree) one position to the right in the tree, i.e. after its right-hand sibling
+	 *
+	 * @return $this
+	 */
 	public function moveRight()
 	{
-		// @todo
+		// If it is a root node we will not move the node (roots don't participate in tree ordering)
+		if ($this->isRoot())
+		{
+			return $this;
+		}
+
+		// Are we already the rightmost node?
+		$parentNode = $this->getParent();
+		if ($parentNode->rgt == ($this->rgt + 1))
+		{
+			return $this;
+		}
+
+		// Get the sibling to the right
+		$db = $this->getDbo();
+		$rightSibling = $this->getClone()->reset()
+			->whereRaw($db->qn($this->getFieldAlias('lft') . ' = ' . $db->q($this->rgt + 1)))
+			->firstOrFail();
+
+		// Move the node
+		return $this->moveToRightOf($rightSibling);
 	}
 
+	/**
+	 * Moves the current node (and its subtree) to the left of another node. The other node can be in a different
+	 * position in the tree or even under a different root.
+	 *
+	 * @param TreeModel $siblingNode
+	 *
+	 * @return $this for chaining
+	 *
+	 * @throws \Exception
+	 */
 	public function moveToLeftOf(TreeModel $siblingNode)
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		// Get left/right names
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		// Get node metrics
+		$myLeft = $this->lft;
+		$myRight = $this->rgt;
+		$myWidth = $myRight - $myLeft + 1;
+
+		// Get parent metrics
+		$parent = $this->getParent();
+		$pRight = $parent->rgt;
+		$pLeft = $parent->lft;
+
+		// Get far right value
+		$query = $db->setQuery(true)
+			->select('MAX(' . $fldRgt . ')')
+			->from($db->qn($this->tableName));
+		$rRight = $db->setQuery($query)->loadResult();
+		$moveRight = $rRight + $myWidth - $myLeft + 1;
+		$moveLeft = $myLeft + $moveRight - $pLeft;
+
+		// If the parent's left was less than the moved node's left then the hole has moved to the right.
+		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
+
+		try
+		{
+			// Start the transaction
+			$db->transactionStart();
+
+			// Move subtree as new root
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($moveRight))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($moveRight))
+				->where($fldLft . ' >= ' . $db->q($myLeft))
+				->where($fldLft . ' <= ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Make hole to the left of the sibling
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' >= ' . $db->q($pLeft))
+				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' >= ' . $db->q($pLeft))
+				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			// Move subtree in the hole
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($moveLeft))
+				->where($fldLft . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($moveLeft))
+				->where($fldRgt . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			// Remove hole left behind by moved subtree.
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+			// UPDATE nestedset SET rgt = rgt - @myWidth WHERE rgt > (@myRight + @holeRight);
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
+
+		return $this;
 	}
 
+	/**
+	 * Moves the current node (and its subtree) to the right of another node. The other node can be in a different
+	 * position in the tree or even under a different root.
+	 *
+	 * @param TreeModel $siblingNode
+	 *
+	 * @return $this for chaining
+	 *
+	 * @throws \Exception
+	 */
 	public function moveToRightOf(TreeModel $siblingNode)
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		// Get left/right names
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		// Get node metrics
+		$myLeft = $this->lft;
+		$myRight = $this->rgt;
+		$myWidth = $myRight - $myLeft + 1;
+
+		// Get parent metrics
+		$parent = $this->getParent();
+		$pRight = $parent->rgt;
+		$pLeft = $parent->lft;
+
+		// Get far right value
+		$query = $db->setQuery(true)
+			->select('MAX(' . $fldRgt . ')')
+			->from($db->qn($this->tableName));
+		$rRight = $db->setQuery($query)->loadResult();
+		$moveRight = $rRight + $myWidth - $myLeft + 1;
+		$moveLeft = $myLeft + $moveRight - $pRight - 1;
+
+		// If the parent's left was less than the moved node's left then the hole has moved to the right.
+		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
+
+		try
+		{
+			// Start the transaction
+			$db->transactionStart();
+
+			// Move subtree as new root
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($moveRight))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($moveRight))
+				->where($fldLft . ' >= ' . $db->q($myLeft))
+				->where($fldLft . ' <= ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Make hole after sibling
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($pRight))
+				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($pRight))
+				->where($fldRgt . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			// Move subtree in the hole
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($moveLeft))
+				->where($fldLft . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($moveLeft))
+				->where($fldRgt . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			// Remove hole left behind by moved subtree.
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
+
+		return $this;
 	}
 
 	/**
@@ -610,9 +895,41 @@ class TreeModel extends DataModel
 		return $this->treeDepth;
 	}
 
+	/**
+	 * Returns the immediate parent of the current node
+	 *
+	 * @return static
+	 */
 	public function getParent()
 	{
-		// @todo
+		if ($this->isRoot())
+		{
+			return $this;
+		}
+
+		if (empty($this->treeParent) || !is_object($this->treeParent) || !($this->treeParent instanceof TreeModel))
+		{
+			$db = $this->getDbo();
+
+			$fldLft = $db->qn($this->getFieldAlias('lft'));
+			$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+			$query = $db->getQuery(true)
+				->select($db->qn('parent') . '.' . $fldLft)
+				->from($db->qn($this->tableName), $db->qn('node'))
+				->from($db->qn($this->tableName), $db->qn('parent'))
+				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
+				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
+				->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
+				->order($db->qn('parent') . '.' . $fldLft . ' DESC');
+			$targetLft = $db->setQuery($query, 1, 1)->loadResult();
+
+			$this->treeParent = $this->getClone()->reset()
+				->whereRaw($fldLft . ' = ' . $db->qn($targetLft))
+				->firstOrFail();
+		}
+
+		return $this->treeParent;
 	}
 
 	/**
@@ -750,6 +1067,13 @@ class TreeModel extends DataModel
 		// @todo
 	}
 
+	/**
+	 * Returns the root node of the tree this node belongs to
+	 *
+	 * @return static
+	 *
+	 * @throws \RuntimeException
+	 */
 	public function getRoot()
 	{
 		// If this is a root node return itself (there is no such thing as the root of a root node)
@@ -896,5 +1220,19 @@ class TreeModel extends DataModel
 	public function rebuild()
 	{
 		// @todo
+	}
+
+	/**
+	 * Resets cached values used to speed up querying the tree
+	 *
+	 * @return  static  for chaining
+	 */
+	protected function resetTreeCache()
+	{
+		$this->treeDepth = null;
+		$this->treeRoot = null;
+		$this->treeParent = null;
+
+		return $this;
 	}
 } 
