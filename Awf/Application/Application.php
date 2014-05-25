@@ -73,7 +73,7 @@ abstract class Application
 		$this->container = $container;
 
 		// Set the application name
-		if (empty($container->application_name))
+		if (empty($container['application_name']))
 		{
 			$container->application_name = $this->getName();
 		}
@@ -81,39 +81,39 @@ abstract class Application
 		$this->name = $container->application_name;
 
 		// Set up the base path
-		if (empty($container->basePath))
+		if (empty($container['basePath']))
 		{
 			$container->basePath = APATH_BASE . '/' . ucfirst($this->name);
 		}
 
 		// Set up the template path
-		if (empty($container->templatePath))
+		if (empty($container['templatePath']))
 		{
-			$container->templatePath = APATH_THEMES;
+			$container->templatePath = defined('APATH_THEMES') ? APATH_THEMES : $container->basePath . '/templates';
 		}
 
 		// Set up the temporary path
-		if (empty($container->temporaryPath))
+		if (empty($container['temporaryPath']))
 		{
-			$container->temporaryPath = APATH_ROOT . '/tmp';
+			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP . '/tmp' : $container->basePath . '/tmp';
 		}
 
 		// Set up the filesystem path
-		if (empty($container->filesystemBase))
+		if (empty($container['filesystemBase']))
 		{
-			$container->filesystemBase = APATH_BASE;
+			$container->filesystemBase = defined('APATH_BASE') ? APATH_BASE : $container->basePath;
 		}
 
 		// Set up the language path
-		if (empty($container->languagePath))
+		if (empty($container['languagePath']))
 		{
-			$container->languagePath = APATH_TRANSLATION;
+			$container->languagePath = defined('APATH_TRANSLATION') ? APATH_TRANSLATION : $container->basePath . '/languages';
 		}
 
 		// Set up the language path
-		if (empty($container->sqlPath))
+		if (empty($container['sqlPath']))
 		{
-			$container->sqlPath = APATH_ROOT . '/installation/sql';
+			$container->sqlPath = defined('APATH_ROOT') ? (APATH_ROOT . '/installation/sql') : $container->basePath . '/installation/sql';
 		}
 
 		// Start the session
@@ -482,7 +482,7 @@ abstract class Application
 	{
 		if (!empty($template))
 		{
-			$templatePath = APATH_THEMES . '/' . $template;
+			$templatePath = (defined('APATH_THEMES') ? APATH_THEMES : $this->container->templatePath) . '/' . $template;
 			if (!is_dir($templatePath))
 			{
 				$template = null;
