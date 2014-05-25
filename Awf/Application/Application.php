@@ -80,40 +80,40 @@ abstract class Application
 
 		$this->name = $container->application_name;
 
+		// Set up the filesystem path
+		if (empty($container['filesystemBase']))
+		{
+			$container->filesystemBase = APATH_BASE;
+		}
+
 		// Set up the base path
 		if (empty($container['basePath']))
 		{
-			$container->basePath = APATH_BASE . '/' . ucfirst($this->name);
+			$container->basePath = (defined('APATH_BASE') ? APATH_BASE : $container->filesystemBase) . '/' . ucfirst($this->name);
 		}
 
 		// Set up the template path
 		if (empty($container['templatePath']))
 		{
-			$container->templatePath = defined('APATH_THEMES') ? APATH_THEMES : $container->basePath . '/templates';
+			$container->templatePath = defined('APATH_THEMES') ? APATH_THEMES : $container->filesystemBase . '/templates';
 		}
 
 		// Set up the temporary path
 		if (empty($container['temporaryPath']))
 		{
-			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP . '/tmp' : $container->basePath . '/tmp';
-		}
-
-		// Set up the filesystem path
-		if (empty($container['filesystemBase']))
-		{
-			$container->filesystemBase = defined('APATH_BASE') ? APATH_BASE : $container->basePath;
+			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP . '/tmp' : $container->filesystemBase . '/tmp';
 		}
 
 		// Set up the language path
 		if (empty($container['languagePath']))
 		{
-			$container->languagePath = defined('APATH_TRANSLATION') ? APATH_TRANSLATION : $container->basePath . '/languages';
+			$container->languagePath = defined('APATH_TRANSLATION') ? APATH_TRANSLATION : $container->filesystemBase . '/languages';
 		}
 
 		// Set up the language path
 		if (empty($container['sqlPath']))
 		{
-			$container->sqlPath = defined('APATH_ROOT') ? (APATH_ROOT . '/installation/sql') : $container->basePath . '/installation/sql';
+			$container->sqlPath = defined('APATH_ROOT') ? (APATH_ROOT . '/installation/sql') : $container->filesystemBase . '/installation/sql';
 		}
 
 		// Start the session
