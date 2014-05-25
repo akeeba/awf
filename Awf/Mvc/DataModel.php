@@ -482,7 +482,7 @@ class DataModel extends Model
 	 *
 	 * @param   boolean $useDefaults Should I use the default values? Default: yes
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
 	public function reset($useDefaults = true)
 	{
@@ -514,7 +514,7 @@ class DataModel extends Model
 	 * @param   string $name
 	 * @param   mixed  $arguments
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function __call($name, $arguments)
 	{
@@ -551,7 +551,7 @@ class DataModel extends Model
 	 *
 	 * @param   string $name The name of the field / state variable to retrieve
 	 *
-	 * @return  DataModel|mixed
+	 * @return  static|mixed
 	 */
 	public function __get($name)
 	{
@@ -970,7 +970,7 @@ class DataModel extends Model
 	 * @param   mixed $data   An associative array or object to bind to the DataModel instance.
 	 * @param   mixed $ignore An optional array or space separated list of properties to ignore while binding.
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \InvalidArgumentException
 	 * @throws    \Exception
@@ -1022,7 +1022,7 @@ class DataModel extends Model
 	/**
 	 * Check the data for validity. By default it only checks for fields declared as NOT NULL
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws \RuntimeException  When the data bound to this record is invalid
 	 */
@@ -1060,7 +1060,7 @@ class DataModel extends Model
 	 *
 	 * @param   string $where The WHERE clause of the SQL used to fetch the order
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \UnexpectedValueException
 	 */
@@ -1408,7 +1408,7 @@ class DataModel extends Model
 	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \RuntimeException  When the row is not found
 	 */
@@ -1430,7 +1430,7 @@ class DataModel extends Model
 	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
 	public function find($keys = null)
 	{
@@ -1592,7 +1592,7 @@ class DataModel extends Model
 	 *
 	 * @param   array $data Data for the newly created item
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function firstOrCreate($data)
 	{
@@ -1612,7 +1612,7 @@ class DataModel extends Model
 	 *
 	 * @param   array $data The data to use in the new record
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 */
 	public function create($data)
 	{
@@ -1622,7 +1622,7 @@ class DataModel extends Model
 	/**
 	 * Return the first item found or throw a \RuntimeException
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 *
 	 * @throws  \RuntimeException
 	 */
@@ -1641,7 +1641,7 @@ class DataModel extends Model
 	/**
 	 * Return the first item found or create a new, blank one
 	 *
-	 * @return  DataModel
+	 * @return  static
 	 */
 	public function firstOrNew()
 	{
@@ -1735,7 +1735,7 @@ class DataModel extends Model
 	 * @param   string  $where   WHERE clause to use for limiting the selection of rows to compact the
 	 *                           ordering values.
 	 *
-	 * @return  DataModel  Self, for chaining
+	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \UnexpectedValueException  If the table does not support reordering
 	 * @throws  \RuntimeException  If the record is not loaded

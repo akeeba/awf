@@ -443,7 +443,7 @@ class Model
 	 * record tables or record id variables. To clear these values, please use
 	 * reset().
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function clearState()
 	{
@@ -455,7 +455,7 @@ class Model
 	/**
 	 * Clears the input array.
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function clearInput()
 	{
@@ -467,7 +467,7 @@ class Model
 	/**
 	 * Clones the model object and returns the clone
 	 *
-	 * @return  Model
+	 * @return  $this for chaining
 	 */
 	public function &getClone()
 	{
@@ -481,7 +481,7 @@ class Model
 	 *
 	 * @param   string $name The state variable key
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function __get($name)
 	{
@@ -494,7 +494,7 @@ class Model
 	 * @param   string $name  The state variable key
 	 * @param   mixed  $value The state variable value
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function __set($name, $value)
 	{
@@ -508,7 +508,7 @@ class Model
 	 * @param   string $name      The state variable key
 	 * @param   mixed  $arguments The state variable contents
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function __call($name, $arguments)
 	{
@@ -524,7 +524,7 @@ class Model
 	 *
 	 * @param  boolean $newState True to save the state, false to not save it.
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function &savestate($newState)
 	{
@@ -537,7 +537,7 @@ class Model
 	 * Public setter for the _savestate variable. Set it to true to save the state
 	 * of the Model in the session.
 	 *
-	 * @return  Model
+	 * @return  static
 	 */
 	public function populateSavesate()
 	{
