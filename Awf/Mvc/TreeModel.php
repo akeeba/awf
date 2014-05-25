@@ -34,6 +34,9 @@ class TreeModel extends DataModel
 	/** @var TreeModel The parent node of ourselves */
 	protected $treeParent = null;
 
+	/** @var bool Should I perform a nested get (used to query ascendants/descendants) */
+	protected $treeNestedGet = false;
+
 	/**
 	 * Public constructor. Overrides the parent constructor, making sure there are lft/rgt columns which make it
 	 * compatible with nested sets.
@@ -816,14 +819,221 @@ class TreeModel extends DataModel
 		return $this->moveToLeftOf($siblingNode);
 	}
 
+	/**
+	 * Moves a node and its subtree as a the first (leftmost) child of $parentNode
+	 *
+	 * @param TreeModel $parentNode
+	 *
+	 * @return $this for chaining
+	 *
+	 * @throws \Exception
+	 */
 	public function makeFirstChildOf(TreeModel $parentNode)
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		// Get left/right names
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		// Get node metrics
+		$myLeft = $this->lft;
+		$myRight = $this->rgt;
+		$myWidth = $myRight - $myLeft + 1;
+
+		// Get parent metrics
+		$parent = $this->getParent();
+		$pRight = $parent->rgt;
+		$pLeft = $parent->lft;
+
+		// Get far right value
+		$query = $db->setQuery(true)
+			->select('MAX(' . $fldRgt . ')')
+			->from($db->qn($this->tableName));
+		$rRight = $db->setQuery($query)->loadResult();
+		$moveRight = $rRight + $myWidth - $myLeft + 1;
+		$moveLeft = $myLeft + $moveRight - $pLeft - 1;
+
+		// If the parent's left was less than the moved node's left then the hole has moved to the right.
+		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
+
+		try
+		{
+			// Start the transaction
+			$db->transactionStart();
+
+			// Move subtree as new root
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($moveRight))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($moveRight))
+				->where($fldLft . ' >= ' . $db->q($myLeft))
+				->where($fldLft . ' <= ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Make hole to the left of the sibling
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($pLeft))
+				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($pLeft))
+				->where($fldRgt . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			// Move subtree in the hole
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($moveLeft))
+				->where($fldLft . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($moveLeft))
+				->where($fldRgt . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			// Remove hole left behind by moved subtree.
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
+
+		return $this;
 	}
 
+	/**
+	 * Moves a node and its subtree as a the last (rightmost) child of $parentNode
+	 *
+	 * @param TreeModel $parentNode
+	 *
+	 * @return $this for chaining
+	 *
+	 * @throws \Exception
+	 */
 	public function makeLastChildOf(TreeModel $parentNode)
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		// Get left/right names
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		// Get node metrics
+		$myLeft = $this->lft;
+		$myRight = $this->rgt;
+		$myWidth = $myRight - $myLeft + 1;
+
+		// Get parent metrics
+		$parent = $this->getParent();
+		$pRight = $parent->rgt;
+		$pLeft = $parent->lft;
+
+		// Get far right value
+		$query = $db->setQuery(true)
+			->select('MAX(' . $fldRgt . ')')
+			->from($db->qn($this->tableName));
+		$rRight = $db->setQuery($query)->loadResult();
+		$moveRight = $rRight + $myWidth - $myLeft + 1;
+		$moveLeft = $myLeft + $moveRight - $pRight;
+
+		// If the parent's left was less than the moved node's left then the hole has moved to the right.
+		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
+
+		try
+		{
+			// Start the transaction
+			$db->transactionStart();
+
+			// Move subtree as new root
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($moveRight))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($moveRight))
+				->where($fldLft . ' >= ' . $db->q($myLeft))
+				->where($fldLft . ' <= ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Make hole after sibling
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($pRight))
+				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($pRight))
+				->where($fldRgt . ' < ' . $db->q($rRight + $myWidth + 1));
+			$db->setQuery($query)->execute();
+
+			// Move subtree in the hole
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($moveLeft))
+				->where($fldLft . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($moveLeft))
+				->where($fldRgt . ' >= ' . $db->q($myLeft + $moveRight));
+			$db->setQuery($query)->execute();
+
+			// Remove hole left behind by moved subtree.
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
+				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($myWidth))
+				->where($fldLft . ' > ' . $db->q($myRight + $holeRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
+
+		return $this;
 	}
 
 	/**
@@ -969,22 +1179,22 @@ class TreeModel extends DataModel
 		return !$this->isRoot();
 	}
 
-	public function isDescendantOf($otherNode)
+	public function isDescendantOf(TreeModel $otherNode)
 	{
 		// @todo returns true if node is a descendant of the other
 	}
 
-	public function isSelfOrDescendantOf($otherNode)
+	public function isSelfOrDescendantOf(TreeModel $otherNode)
 	{
 		// @todo returns true if node is self or a descendant
 	}
 
-	public function isAncestorOf($otherNode)
+	public function isAncestorOf(TreeModel $otherNode)
 	{
 		// @todo returns true if node is an ancestor of the other
 	}
 
-	public function isSelfOrAncestorOf($otherNode)
+	public function isSelfOrAncestorOf(TreeModel $otherNode)
 	{
 		// @todo returns true if node is self or an ancestor of the other
 	}
@@ -996,55 +1206,162 @@ class TreeModel extends DataModel
 	 *
 	 * @return bool
 	 */
-	public function equals($node)
+	public function equals(TreeModel $node)
 	{
 		return ($this == $node);
 		// @todo current node instance equals the other
 	}
 
-	public function insideSubtree($otherNode)
+	public function insideSubtree(TreeModel $otherNode)
 	{
 		// @todo checks whether the given node is inside the subtree defined by the left and right indices of the current node
 	}
 
-	public function inSameScope($otherNode)
+	/**
+	 * Returns true if both this node and $otherNode are root, leaf or child (same tree scope)
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
+	public function inSameScope(TreeModel $otherNode)
 	{
-		// @todo returns true if both this node and $otherNode are root, leaf or child (same tree scope)
+		if ($this->isLeaf())
+		{
+			return $otherNode->isLeaf();
+		}
+		elseif ($this->isRoot())
+		{
+			return $otherNode->isRoot();
+		}
+		elseif ($this->isChild())
+		{
+			return $otherNode->isChild();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
+	/**
+	 * get() will return all ancestor nodes and ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeAncestorsAndSelf()
 	{
-		// @todo
+		$this->treeNestedGet = true;
+
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' >= ' . $db->qn('node') . '.' . $fldLft);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' <= ' . $db->qn('node') . '.' . $fldRgt);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' = ' . $db->q($this->lft));
 	}
 
+	/**
+	 * get() will return all ancestor nodes but not ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeAncestors()
 	{
-		// @todo
+		$this->treeNestedGet = true;
+
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' > ' . $db->qn('node') . '.' . $fldLft);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' < ' . $db->qn('node') . '.' . $fldRgt);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' = ' . $db->q($this->lft));
 	}
 
+	/**
+	 * get() will return all sibling nodes and ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeSiblingsAndSelf()
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$parent = $this->getParent();
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' > ' . $db->q($parent->lft));
+		$this->whereRaw($db->qn('node') . '.' . $fldRgt . ' < ' . $db->q($parent->rgt));
 	}
 
+	/**
+	 * get() will return all sibling nodes but not ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeSiblings()
 	{
-		// @todo
+		$this->scopeSiblingsAndSelf();
+		$this->scopeWithoutSelf();
 	}
 
+	/**
+	 * get() will return only leaf nodes
+	 *
+	 * @return void
+	 */
 	protected function scopeLeaves()
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' = ' . $db->qn('node') . '.' .$fldRgt . ' - ' . $db->q(1));
 	}
 
+	/**
+	 * get() will return all descendants (even subtrees of subtrees!) and ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeDescendantsAndSelf()
 	{
-		// @todo
+		$this->treeNestedGet = true;
+
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft);
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' = ' . $db->q($this->lft));
 	}
 
+	/**
+	 * get() will return all descendants (even subtrees of subtrees!) but not ourselves
+	 *
+	 * @return void
+	 */
 	protected function scopeDescendants()
 	{
-		// @todo
+		$this->treeNestedGet = true;
+
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' > ' . $db->qn('parent') . '.' . $fldLft);
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' < ' . $db->qn('parent') . '.' . $fldRgt);
+		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' = ' . $db->q($this->lft));
+
 	}
 
 	protected function scopeImmediateDescendants()
@@ -1052,19 +1369,41 @@ class TreeModel extends DataModel
 		// @todo
 	}
 
+	/**
+	 * get() will not return the selected node if it's part of the query results
+	 *
+	 * @param TreeModel $node The node to exclude from the results
+	 *
+	 * @return void
+	 */
 	public function withoutNode(TreeModel $node)
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+		$this->whereRaw('NOT(' . $db->qn('node') . '.' . $fldLft . ' = ' . $db->q($node->lft) . ')');
 	}
 
+	/**
+	 * get() will not return ourselves if it's part of the query results
+	 *
+	 * @return void
+	 */
 	protected function scopeWithoutSelf()
 	{
-		// @todo
+		$this->withoutNode($this);
 	}
 
+	/**
+	 * get() will not return our root if it's part of the query results
+	 *
+	 * @return void
+	 */
 	protected function scopeWithoutRoot()
 	{
-		// @todo
+		$rootNode = $this->getRoot();
+		$this->withoutNode($rootNode);
 	}
 
 	/**
@@ -1232,7 +1571,29 @@ class TreeModel extends DataModel
 		$this->treeDepth = null;
 		$this->treeRoot = null;
 		$this->treeParent = null;
+		$this->treeNestedGet = false;
 
 		return $this;
+	}
+
+	public function buildQuery($overrideLimits = false)
+	{
+		$db = $this->getDbo();
+
+		$query = parent::buildQuery($overrideLimits);
+
+		$query
+			->select(null)
+			->select($db->qn('node') . '.*')
+			->from(null)
+			->from($db->qn($this->tableName), $db->qn('node'));
+
+		if ($this->treeNestedGet)
+		{
+			$query
+				->from($db->qn($this->tableName), $db->qn('parent'));
+		}
+
+		return $query;
 	}
 } 

@@ -704,6 +704,10 @@ abstract class Query
 
 			$this->from = new QueryElement('FROM', $tables);
 		}
+		elseif (empty($tables))
+		{
+			$this->from = null;
+		}
 		else
 		{
 			$this->from->append($tables);
@@ -1122,6 +1126,10 @@ abstract class Query
 		if (is_null($this->select))
 		{
 			$this->select = new QueryElement('SELECT', $columns);
+		}
+		elseif (empty($columns))
+		{
+			$this->select = null;
 		}
 		else
 		{
