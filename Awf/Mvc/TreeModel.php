@@ -327,11 +327,11 @@ class TreeModel extends DataModel
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
 
 		// Get the value of the parent node's lft
-		$myLeft = $parentNode->lft;
+		$myRight = $parentNode->rgt;
 
 		// Update my lft/rgt values
-		$this->lft = $myLeft + 1;
-		$this->rgt = $myLeft + 2;
+		$this->lft = $myRight;
+		$this->rgt = $myRight + 1;
 
 		// Update parent node's right (we added two elements in there, remember?)
 		$parentNode->rgt += 2;
@@ -344,14 +344,14 @@ class TreeModel extends DataModel
 			// Make a hole (2 queries)
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($fldLft . ' = ' . $fldLft . '+2')
-				->where($fldLft . '>' . $db->q($myLeft));
+				->set($fldRgt . ' = ' . $fldRgt . '+2')
+				->where($fldRgt . '>=' . $db->q($fldRgt));
 			$db->setQuery($query)->execute();
 
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($fldRgt . ' = ' . $fldRgt . '+2')
-				->where($fldLft . '>' . $db->q($fldLft));
+				->set($fldLft . ' = ' . $fldLft . '+2')
+				->where($fldLft . '>' . $db->q($myRight));
 			$db->setQuery($query)->execute();
 
 			// Insert the new node
@@ -376,7 +376,7 @@ class TreeModel extends DataModel
 	 *
 	 * @param $parentNode
 	 */
-	public function insertAsChildOf(TreeModel $parentNode)
+	public function insertAsChildOf(TreeModel &$parentNode)
 	{
 		return $this->insertAsLastChildOf($parentNode);
 	}
@@ -391,7 +391,7 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 * @throws \Exception
 	 */
-	public function insertLeftOf(TreeModel $siblingNode)
+	public function insertLeftOf(TreeModel &$siblingNode)
 	{
 		// Get a reference to the database
 		$db = $this->getDbo();
@@ -401,6 +401,66 @@ class TreeModel extends DataModel
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
 
 		// Get the value of the parent node's rgt
+		$myLeft = $siblingNode->lft;
+
+		// Update my lft/rgt values
+		$this->lft = $myLeft;
+		$this->rgt = $myLeft + 1;
+
+		// Update sibling's lft/rgt values
+		$siblingNode->lft++;
+		$siblingNode->rgt++;
+
+		$db->transactionStart();
+
+		try
+		{
+			$db->setQuery(
+				$db->getQuery(true)
+					->update($db->qn($this->tableName))
+					->set($fldLft . ' = ' . $fldLft . '+2')
+					->where($fldLft . ' >= ' . $db->q($myLeft))
+			)->execute();
+
+			$db->setQuery(
+				$db->getQuery(true)
+					->update($db->qn($this->tableName))
+					->set($fldRgt . ' = ' . $fldRgt . '+2')
+					->where($fldRgt . ' > ' . $db->q($myLeft))
+			)->execute();
+
+			$this->save();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Insert the current node to the right of (after) a sibling node
+	 *
+	 * WARNING: If it's an existing node it will be COPIED, not moved.
+	 *
+	 * @param TreeModel $siblingNode We will be inserted after this node
+	 *
+	 * @return $this for chaining
+	 * @throws \Exception
+	 */
+	public function insertRightOf(TreeModel &$siblingNode)
+	{
+		// Get a reference to the database
+		$db = $this->getDbo();
+
+		// Get the field names
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+		// Get the value of the parent node's lft
 		$myRight = $siblingNode->rgt;
 
 		// Update my lft/rgt values
@@ -435,67 +495,6 @@ class TreeModel extends DataModel
 		}
 
 		return $this;
-	}
-
-	/**
-	 * Insert the current node to the right of (after) a sibling node
-	 *
-	 * WARNING: If it's an existing node it will be COPIED, not moved.
-	 *
-	 * @param TreeModel $siblingNode We will be inserted after this node
-	 *
-	 * @return $this for chaining
-	 * @throws \Exception
-	 */
-	public function insertRightOf(TreeModel $siblingNode)
-	{
-		// Get a reference to the database
-		$db = $this->getDbo();
-
-		// Get the field names
-		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
-		$fldLft = $db->qn($this->getFieldAlias('lft'));
-
-		// Get the value of the parent node's lft
-		$myLeft = $siblingNode->lft;
-
-		// Update my lft/rgt values
-		$this->lft = $myLeft;
-		$this->rgt = $myLeft + 1;
-
-		$db->transactionStart();
-
-		try
-		{
-			$db->setQuery(
-				$db->getQuery(true)
-					->update($db->qn($this->tableName))
-					->set($fldLft . ' = ' . $fldLft . '+2')
-					->where($fldLft . ' >= ' . $db->q($myLeft))
-			)->execute();
-
-			$db->setQuery(
-				$db->getQuery(true)
-					->update($db->qn($this->tableName))
-					->set($fldRgt . ' = ' . $fldRgt . '+2')
-					->where($fldRgt . ' > ' . $db->q($myLeft))
-			)->execute();
-
-			$this->save();
-		}
-		catch (\Exception $e)
-		{
-			$db->transactionRollback();
-
-			throw $e;
-		}
-
-		return $this;
-
-		/**
-
-		 */
-		/**/
 	}
 
 	/**
