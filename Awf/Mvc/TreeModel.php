@@ -584,7 +584,81 @@ class TreeModel extends DataModel
 	 */
 	public function moveToLeftOf(TreeModel $siblingNode)
 	{
-		// @todo Write the bloody code to move nodes
+		$db = $this->getDbo();
+		$left = $db->qn($this->getFieldAlias('lft'));
+		$right = $db->qn($this->getFieldAlias('rgt'));
+
+		// Get node metrics
+		$myLeft = $this->lft;
+		$myRight = $this->rgt;
+		$myWidth = $myRight - $myLeft + 1;
+
+		// Get parent metrics
+		$sibRight = $siblingNode->rgt;
+		$sibLeft = $siblingNode->lft;
+
+		// Start the transaction
+		$db->transactionStart();
+
+		try
+		{
+			// Temporary remove subtree being moved
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set("$left = " . $db->q(0) . " - $left")
+				->set("$right = " . $db->q(0) . " - $right")
+				->where($left . ' >= ' . $db->q($myLeft))
+				->where($right . ' <= ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Close hole left behind
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($left . ' = ' . $left . ' - ' . $db->q($myWidth))
+				->where($left . ' > ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($right . ' = ' . $right . ' - ' . $db->q($myWidth))
+				->where($right . ' > ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Make a hole for the new items
+			$newSibLeft = ($sibLeft > $myRight) ? $sibLeft - $myWidth : $sibLeft;
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($right . ' = ' . $right . ' + ' . $db->q($myWidth))
+				->where($right . ' >= ' . $db->q($newSibLeft));
+			$db->setQuery($query)->execute();
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($left . ' = ' . $left . ' + ' . $db->q($myWidth))
+				->where($left . ' >= ' . $db->q($newSibLeft));
+			$db->setQuery($query)->execute();
+
+			// Move node and subnodes
+			$moveRight = $newSibLeft - $myLeft;
+
+			$query = $db->getQuery(true)
+				->update($db->qn($this->tableName))
+				->set($left . ' = ' . $db->q(0) . ' - ' . $left . ' + ' . $db->q($moveRight))
+				->set($right . ' = ' . $db->q(0) . ' - ' . $right . ' + ' . $db->q($moveRight))
+				->where($left . ' <= 0 - ' . $db->q($myLeft))
+				->where($right . ' >= 0 - ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			$db->transactionRollback();
+
+			throw $e;
+		}
 
 		return $this;
 	}
