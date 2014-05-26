@@ -1092,8 +1092,8 @@ class TreeModel extends DataModel
 
 			$query = $db->getQuery(true)
 				->select('(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth'))
-				->from($db->qn($this->tableName), $db->qn('node'))
-				->from($db->qn($this->tableName), $db->qn('parent'))
+				->from($db->qn($this->tableName), 'node')
+				->from($db->qn($this->tableName), 'parent')
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 				->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
@@ -1127,8 +1127,8 @@ class TreeModel extends DataModel
 
 			$query = $db->getQuery(true)
 				->select($db->qn('parent') . '.' . $fldLft)
-				->from($db->qn($this->tableName), $db->qn('node'))
-				->from($db->qn($this->tableName), $db->qn('parent'))
+				->from($db->qn($this->tableName), 'node')
+				->from($db->qn($this->tableName), 'parent')
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 				->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
@@ -1585,8 +1585,8 @@ class TreeModel extends DataModel
 						$fldLft,
 						'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth')
 					))
-					->from($db->qn($this->tableName), $db->qn('node'))
-					->from($db->qn($this->tableName), $db->qn('parent'))
+					->from($db->qn($this->tableName), 'node')
+					->from($db->qn($this->tableName), 'parent')
 					->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 					->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 					->where($db->qn('node') . '.' . $fldLft . ' < ' . $db->q($this->lft))
@@ -1790,8 +1790,8 @@ class TreeModel extends DataModel
 				$db->qn('node') . '.' . $fldColumn,
 				'(COUNT(' . $db->qn('parent') . '.' . $fldKey . ') - 1) AS ' . $db->qn('depth')
 			))
-			->from($db->qn($this->tableName), $db->qn('node'))
-			->from($db->qn($this->tableName), $db->qn('parent'))
+			->from($db->qn($this->tableName), 'node')
+			->from($db->qn($this->tableName), 'parent')
 			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 			->group($db->qn('node') . '.' . $fldLft)
@@ -1853,12 +1853,12 @@ class TreeModel extends DataModel
 			->select(null)
 			->select($db->qn('node') . '.*')
 			->from(null)
-			->from($db->qn($this->tableName), $db->qn('node'));
+			->from($db->qn($this->tableName), 'node');
 
 		if ($this->treeNestedGet)
 		{
 			$query
-				->from($db->qn($this->tableName), $db->qn('parent'));
+				->from($db->qn($this->tableName), 'parent');
 		}
 
 		return $query;
