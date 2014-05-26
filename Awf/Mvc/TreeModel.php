@@ -1008,7 +1008,10 @@ class TreeModel extends DataModel
 		}
 
 		// Move myself to the right of my root
-		return $this->moveToRightOf($myRoot);
+		$this->moveToRightOf($myRoot);
+		$this->treeDepth = 0;
+
+		return $this;
 	}
 
 	/**
@@ -1124,7 +1127,7 @@ class TreeModel extends DataModel
 	 */
 	public function isDescendantOf(TreeModel $otherNode)
 	{
-		$children = $otherNode->getClone()->reset()->getDescendants();
+		$children = $otherNode->getClone()->resetTreeCache()->getDescendants();
 
 		if (empty($children))
 		{
@@ -1202,9 +1205,13 @@ class TreeModel extends DataModel
 	 *
 	 * @return bool
 	 */
-	public function equals(TreeModel $node)
+	public function equals(TreeModel &$node)
 	{
-		return ($this == $node);
+		return (
+			($this->getId() == $node->getId())
+			&& ($this->lft == $node->lft)
+			&& ($this->rgt == $node->rgt)
+		);
 	}
 
 	/**
@@ -1364,7 +1371,6 @@ class TreeModel extends DataModel
 		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' > ' . $db->qn('parent') . '.' . $fldLft);
 		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' < ' . $db->qn('parent') . '.' . $fldRgt);
 		$this->whereRaw($db->qn('parent') . '.' . $fldLft . ' = ' . $db->q($this->lft));
-
 	}
 
 	/**
@@ -1812,7 +1818,7 @@ class TreeModel extends DataModel
 		if ($this->treeNestedGet)
 		{
 			$query
-				->from($db->qn($this->tableName), 'parent');
+				->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'));
 		}
 
 		return $query;
