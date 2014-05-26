@@ -1043,7 +1043,7 @@ class DataModel extends Model
 
 			$value = $this->$fieldName;
 
-			if (($field->Null == 'NO') && empty($value) && !in_array($fieldName, $this->fieldsSkipChecks))
+			if (($field->Null == 'NO') && empty($value) && !is_numeric($value) && !in_array($fieldName, $this->fieldsSkipChecks))
 			{
 				$text = $this->container->application->getName() . '_' . Inflector::singularize($this->getName()) . '_ERR_'
 					. $fieldName . '_EMPTY';
