@@ -701,6 +701,10 @@ abstract class Query
 
 				$tables = '( ' . (string) $tables . ' ) AS ' . $this->quoteName($subQueryAlias);
 			}
+			elseif (!empty($subQueryAlias) && is_string($tables))
+			{
+				$tables = $tables . ' AS ' . $this->quoteName($subQueryAlias);
+			}
 
 			$this->from = new QueryElement('FROM', $tables);
 		}

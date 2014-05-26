@@ -1209,7 +1209,6 @@ class TreeModel extends DataModel
 	public function equals(TreeModel $node)
 	{
 		return ($this == $node);
-		// @todo current node instance equals the other
 	}
 
 	public function insideSubtree(TreeModel $otherNode)
@@ -1364,9 +1363,65 @@ class TreeModel extends DataModel
 
 	}
 
+	/**
+	 * get() will only return immediate descendants (first level children) of the current node
+	 *
+	 * @return void
+	 */
 	protected function scopeImmediateDescendants()
 	{
-		// @todo
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		$subQuery = $db->getQuery(true)
+			->select(array(
+				$db->qn('node') . '.' . $fldLft,
+				'(COUNT(*) - 1) AS ' . $db->qn('depth')
+			))
+			->from($db->qn($this->tableName), 'node')
+			->from($db->qn($this->tableName), 'parent')
+			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
+			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
+			->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
+			->group($db->qn('node') . '.' . $fldLft)
+			->order($db->qn('node') . '.' . $fldLft . ' ASC');
+
+		$query = $db->getQuery(true)
+			->select(array(
+				$db->qn('node') . '.' . $fldLft,
+				'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - (' .
+					$db->qn('sub_tree') . '.' . $db->qn('depth') . ' + 1)) AS ' . $db->qn('depth')
+			))
+			->from($this->tableName, 'node')
+			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
+			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('sub_parent'))
+			->join('CROSS', '(' . $subQuery . ') AS ' . $db->qn('sub_tree'))
+			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
+			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
+			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('sub_parent') . '.' . $fldLft)
+			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('sub_parent') . '.' . $fldRgt)
+			->where($db->qn('sub_parent') . '.' . $fldLft . ' = ' . $db->qn('sub_tree') . '.' . $fldLft)
+			->group($db->qn('node') . '.' . $fldLft)
+			->having(array(
+				$db->qn('depth') . ' > ' . $db->q(0),
+				$db->qn('depth') . ' <= ' . $db->q(1),
+			))
+			->order($db->qn('node') . '.' . $fldLft . ' ASC');
+
+		$leftValues = $db->setQuery($query)->loadColumn();
+
+		if (empty($leftValues))
+		{
+			$leftValues = array(0);
+		}
+
+		array_walk($leftValues, function(&$item, $key) use (&$db) {
+			$item = $db->q($item);
+		});
+
+		$this->whereRaw($db->qn('node') . '.' . $fldLft . ' IN (' . implode(',', $leftValues) . ')');
 	}
 
 	/**
@@ -1496,59 +1551,195 @@ class TreeModel extends DataModel
 		return $this->treeRoot;
 	}
 
+	/**
+	 * Get all ancestors to this node and the node itself. In other words it gets the full path to the node and the node
+	 * itself.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getAncestorsAndSelf()
 	{
-		// @todo
+		$this->scopeAncestorsAndSelf();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all ancestors to this node and the node itself, but not the root node. If you want to
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getAncestorsAndSelfWithoutRoot()
 	{
-		// @todo
+		$this->scopeAncestorsAndSelf();
+		$this->scopeWithoutRoot();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all ancestors to this node but not the node itself. In other words it gets the path to the node, without the
+	 * node itself.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getAncestors()
 	{
-		// @todo
+		$this->scopeAncestorsAndSelf();
+		$this->scopeWithoutSelf();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all ancestors to this node but not the node itself and its root.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getAncestorsWithoutRoot()
 	{
-		// @todo
+		$this->scopeAncestors();
+		$this->scopeWithoutRoot();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all sibling nodes, including ourselves
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getSiblingsAndSelf()
 	{
-		// @todo
+		$this->scopeSiblingsAndSelf();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all sibling nodes, except ourselves
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getSiblings()
 	{
-		// @todo
+		$this->scopeSiblings();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all leaf nodes in the tree. You may want to use the scopes to narrow down the search in a specific subtree or
+	 * path.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getLeaves()
 	{
-		// @todo
+		$this->scopeLeaves();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get all descendant (children) nodes and ourselves.
+	 *
+	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getDescendantsAndSelf()
 	{
-		// @todo
+		$this->scopeDescendantsAndSelf();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get only our descendant (children) nodes, not ourselves.
+	 *
+	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getDescendants()
 	{
-		// @todo
+		$this->scopeDescendants();
+
+		return $this->get(true);
 	}
 
+	/**
+	 * Get the immediate descendants (children). Unlike getDescendants it only goes one level deep into the tree
+	 * structure. Descendants of descendant nodes will not be returned.
+	 *
+	 * @return DataModel\Collection
+	 */
 	public function getImmediateDescendants()
 	{
-		// @todo
+		$this->scopeImmediateDescendants();
+
+		return $this->get(true);
 	}
 
-	public function getNestedList($column, $key = null, $seperator = ' ')
+	/**
+	 * Returns a hashed array where each element's key is the value of the $key column (default: the ID column of the
+	 * table) and its value is the value of the $column column (default: title). Each nesting level will have the value
+	 * of the $column column prefixed by a number of $separator strings, as many as its nesting level (depth).
+	 *
+	 * This is useful for creating HTML select elements showing the hierarchy in a human readable format.
+	 *
+	 * @param string $column
+	 * @param null   $key
+	 * @param string $seperator
+	 *
+	 * @return array
+	 */
+	public function getNestedList($column = 'title', $key = null, $seperator = '  ')
 	{
-		// @todo returns a key-value pair array indicating a node's depth. Useful for filling <select> elements, etc.
+		$db = $this->getDbo();
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		if (empty($key) || !$this->hasField($key))
+		{
+			$key = $this->getIdFieldName();
+		}
+
+		if (empty($column))
+		{
+			$column = 'title';
+		}
+
+		$fldKey = $db->qn($this->getFieldAlias($key));
+		$fldColumn = $db->qn($this->getFieldAlias($column));
+
+		$query = $db->getQuery(true)
+			->select(array(
+				$db->qn('node') . '.' . $fldKey,
+				$db->qn('node') . '.' . $fldColumn,
+				'(COUNT(' . $db->qn('parent') . '.' . $fldKey . ') - 1) AS ' . $db->qn('depth')
+			))
+			->from($db->qn($this->tableName), $db->qn('node'))
+			->from($db->qn($this->tableName), $db->qn('parent'))
+			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
+			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
+			->group($db->qn('node') . '.' . $fldLft)
+			->order($db->qn('node') . '.' . $fldLft . ' ASC');
+
+		$tempResults = $db->setQuery($query)->loadAssocList();
+		$ret = array();
+
+		if (!empty($tempResults))
+		{
+			foreach ($tempResults as $row)
+			{
+				$ret[$row[$key]] = str_repeat($seperator, $row['depth']) . $row[$column];
+			}
+		}
+
+		return $ret;
 	}
 
 	public function isValid()
