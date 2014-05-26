@@ -253,7 +253,7 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 * @throws \Exception
 	 */
-	public function insertAsFirstChildOf(TreeModel $parentNode)
+	public function insertAsFirstChildOf(TreeModel &$parentNode)
 	{
 		// Get a reference to the database
 		$db = $this->getDbo();
@@ -263,11 +263,14 @@ class TreeModel extends DataModel
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
 
 		// Get the value of the parent node's rgt
-		$myRight = $parentNode->rgt;
+		$myLeft = $parentNode->lft;
 
 		// Update my lft/rgt values
-		$this->lft = $myRight;
-		$this->rgt = $myRight;
+		$this->lft = $myLeft + 1;
+		$this->rgt = $myLeft + 2;
+
+		// Update parent node's right (we added two elements in there, remember?)
+		$parentNode->rgt += 2;
 
 		// Wrap everything in a transaction
 		$db->transactionStart();
@@ -277,14 +280,14 @@ class TreeModel extends DataModel
 			// Make a hole (2 queries)
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($fldRgt . ' = ' . $fldRgt . '+2')
-				->where($fldRgt . '>=' . $db->q($myRight));
+				->set($fldLft . ' = ' . $fldLft . '+2')
+				->where($fldLft . ' > ' . $db->q($myLeft));
 			$db->setQuery($query)->execute();
 
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($fldLft . ' = ' . $fldLft . '+2')
-				->where($fldLft . '>' . $db->q($myRight));
+				->set($fldRgt . ' = ' . $fldRgt . '+ 2')
+				->where($fldRgt . '>' . $db->q($myLeft));
 			$db->setQuery($query)->execute();
 
 			// Insert the new node
