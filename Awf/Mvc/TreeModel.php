@@ -1179,24 +1179,84 @@ class TreeModel extends DataModel
 		return !$this->isRoot();
 	}
 
+	/**
+	 * Returns true if we are a descendant of $otherNode
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
 	public function isDescendantOf(TreeModel $otherNode)
 	{
-		// @todo returns true if node is a descendant of the other
+		$children = $otherNode->getClone()->reset()->getDescendants();
+
+		if (empty($children))
+		{
+			return false;
+		}
+
+		/** @var TreeModel $child */
+		foreach ($children as $child)
+		{
+			if ($child->equals($this))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
+	/**
+	 * Returns true if $otherNode is ourselves or if we are a descendant of $otherNode
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
 	public function isSelfOrDescendantOf(TreeModel $otherNode)
 	{
-		// @todo returns true if node is self or a descendant
+		return $otherNode->equals($this) || $this->isDescendantOf($otherNode);
 	}
 
+	/**
+	 * Returns true if we are an ancestor of $otherNode
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
 	public function isAncestorOf(TreeModel $otherNode)
 	{
-		// @todo returns true if node is an ancestor of the other
+		$parents = $otherNode->getClone()->reset()->getAncestors();
+
+		if (empty($parents))
+		{
+			return false;
+		}
+
+		/** @var TreeModel $parent */
+		foreach ($parents as $parent)
+		{
+			if ($parent->equals($this))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
+	/**
+	 * Returns true if $otherNode is ourselves or we are an ancestor of $otherNode
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
 	public function isSelfOrAncestorOf(TreeModel $otherNode)
 	{
-		// @todo returns true if node is self or an ancestor of the other
+		return $otherNode->equals($this) || $this->isAncestorOf($otherNode);
 	}
 
 	/**
@@ -1211,9 +1271,17 @@ class TreeModel extends DataModel
 		return ($this == $node);
 	}
 
+	/**
+	 * Checks if our node is inside the subtree of $otherNode. This is a fast check as only lft and rgt values have to
+	 * be compared.
+	 *
+	 * @param TreeModel $otherNode
+	 *
+	 * @return bool
+	 */
 	public function insideSubtree(TreeModel $otherNode)
 	{
-		// @todo checks whether the given node is inside the subtree defined by the left and right indices of the current node
+		return ($this->lft > $otherNode->lft) && ($this->rgt < $otherNode->rgt);
 	}
 
 	/**
