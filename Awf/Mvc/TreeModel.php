@@ -64,8 +64,6 @@ class TreeModel extends DataModel
 	 */
 	public function check()
 	{
-		parent::check();
-
 		// Create a slug if there is a title and an empty slug
 		if ($this->hasField('title') && $this->hasField('slug') && empty($this->slug))
 		{
@@ -81,6 +79,9 @@ class TreeModel extends DataModel
 
 		// Reset cached values
 		$this->resetTreeCache();
+
+		// Run the parent checks
+		parent::check();
 
 		return $this;
 	}
