@@ -1030,7 +1030,7 @@ class TreeModel extends DataModel
 
 			$query = $db->getQuery(true)
 				->select('(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth'))
-				->from($db->qn($this->tableName), 'node')
+				->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
 				->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
@@ -1065,7 +1065,7 @@ class TreeModel extends DataModel
 
 			$query = $db->getQuery(true)
 				->select($db->qn('parent') . '.' . $fldLft)
-				->from($db->qn($this->tableName), 'node')
+				->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
 				->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
@@ -1167,7 +1167,7 @@ class TreeModel extends DataModel
 	 */
 	public function isAncestorOf(TreeModel $otherNode)
 	{
-		$parents = $otherNode->getClone()->reset()->getAncestors();
+		$parents = $otherNode->getClone()->resetTreeCache()->getAncestors();
 
 		if (empty($parents))
 		{
@@ -1390,8 +1390,8 @@ class TreeModel extends DataModel
 				$db->qn('node') . '.' . $fldLft,
 				'(COUNT(*) - 1) AS ' . $db->qn('depth')
 			))
-			->from($db->qn($this->tableName), 'node')
-			->from($db->qn($this->tableName), 'parent')
+			->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
+			->from($db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 			->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
@@ -1404,7 +1404,7 @@ class TreeModel extends DataModel
 				'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - (' .
 					$db->qn('sub_tree') . '.' . $db->qn('depth') . ' + 1)) AS ' . $db->qn('depth')
 			))
-			->from($this->tableName, 'node')
+			->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
 			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('sub_parent'))
 			->join('CROSS', '(' . $subQuery . ') AS ' . $db->qn('sub_tree'))
@@ -1526,8 +1526,8 @@ class TreeModel extends DataModel
 						$fldLft,
 						'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth')
 					))
-					->from($db->qn($this->tableName), 'node')
-					->from($db->qn($this->tableName), 'parent')
+					->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
+					->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 					->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 					->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 					->where($db->qn('node') . '.' . $fldLft . ' < ' . $db->q($this->lft))
@@ -1731,8 +1731,8 @@ class TreeModel extends DataModel
 				$db->qn('node') . '.' . $fldColumn,
 				'(COUNT(' . $db->qn('parent') . '.' . $fldKey . ') - 1) AS ' . $db->qn('depth')
 			))
-			->from($db->qn($this->tableName), 'node')
-			->from($db->qn($this->tableName), 'parent')
+			->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
+			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 			->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 			->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 			->group($db->qn('node') . '.' . $fldLft)
@@ -1813,7 +1813,7 @@ class TreeModel extends DataModel
 			->select(null)
 			->select($db->qn('node') . '.*')
 			->from(null)
-			->from($db->qn($this->tableName), 'node');
+			->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'));
 
 		if ($this->treeNestedGet)
 		{
