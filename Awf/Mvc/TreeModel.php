@@ -1576,6 +1576,13 @@ class TreeModel extends DataModel
 		return $this;
 	}
 
+	/**
+	 * Overrides the DataModel's buildQuery to allow nested set searches using the provided scopes
+	 *
+	 * @param bool $overrideLimits
+	 *
+	 * @return \Awf\Database\Query
+	 */
 	public function buildQuery($overrideLimits = false)
 	{
 		$db = $this->getDbo();
