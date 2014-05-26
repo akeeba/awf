@@ -345,7 +345,7 @@ class TreeModel extends DataModel
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
 				->set($fldRgt . ' = ' . $fldRgt . '+2')
-				->where($fldRgt . '>=' . $db->q($fldRgt));
+				->where($fldRgt . '>=' . $db->q($myRight));
 			$db->setQuery($query)->execute();
 
 			$query = $db->getQuery(true)
@@ -504,7 +504,7 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 */
-	public function insertAsSiblingOf(TreeModel $siblingNode)
+	public function insertAsSiblingOf(TreeModel &$siblingNode)
 	{
 		return $this->insertRightOf($siblingNode);
 	}
@@ -524,6 +524,7 @@ class TreeModel extends DataModel
 
 		// Are we already the leftmost node?
 		$parentNode = $this->getParent();
+
 		if ($parentNode->lft == ($this->lft - 1))
 		{
 			return $this;
@@ -532,7 +533,7 @@ class TreeModel extends DataModel
 		// Get the sibling to the left
 		$db = $this->getDbo();
 		$leftSibling = $this->getClone()->reset()
-			->whereRaw($db->qn($this->getFieldAlias('rgt') . ' = ' . $db->q($this->rgt - 1)))
+			->whereRaw($db->qn($this->getFieldAlias('rgt')) . ' = ' . $db->q($this->lft - 1))
 			->firstOrFail();
 
 		// Move the node
@@ -554,6 +555,7 @@ class TreeModel extends DataModel
 
 		// Are we already the rightmost node?
 		$parentNode = $this->getParent();
+
 		if ($parentNode->rgt == ($this->rgt + 1))
 		{
 			return $this;
@@ -561,8 +563,9 @@ class TreeModel extends DataModel
 
 		// Get the sibling to the right
 		$db = $this->getDbo();
+
 		$rightSibling = $this->getClone()->reset()
-			->whereRaw($db->qn($this->getFieldAlias('lft') . ' = ' . $db->q($this->rgt + 1)))
+			->whereRaw($db->qn($this->getFieldAlias('lft')) . ' = ' . $db->q($this->rgt + 1))
 			->firstOrFail();
 
 		// Move the node
@@ -593,17 +596,16 @@ class TreeModel extends DataModel
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$parent = $this->getParent();
-		$pRight = $parent->rgt;
-		$pLeft = $parent->lft;
+		$pRight = $siblingNode->rgt;
+		$pLeft = $siblingNode->lft;
 
 		// Get far right value
-		$query = $db->setQuery(true)
+		$query = $db->getQuery(true)
 			->select('MAX(' . $fldRgt . ')')
 			->from($db->qn($this->tableName));
 		$rRight = $db->setQuery($query)->loadResult();
 		$moveRight = $rRight + $myWidth - $myLeft + 1;
-		$moveLeft = $myLeft + $moveRight - $pLeft;
+		$moveLeft = $myLeft + $moveRight - $pRight + 1;
 
 		// If the parent's left was less than the moved node's left then the hole has moved to the right.
 		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
@@ -634,7 +636,7 @@ class TreeModel extends DataModel
 				->update($db->qn($this->tableName))
 				->set($fldLft . ' = ' . $fldLft . ' + ' . $db->q($myWidth))
 				->where($fldLft . ' >= ' . $db->q($pLeft))
-				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
+				->where($fldRgt . ' < ' . $db->q($rRight + $myWidth + 1));
 			$db->setQuery($query)->execute();
 
 			// Move subtree in the hole
@@ -658,7 +660,6 @@ class TreeModel extends DataModel
 				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
 				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
 			$db->setQuery($query)->execute();
-			// UPDATE nestedset SET rgt = rgt - @myWidth WHERE rgt > (@myRight + @holeRight);
 
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
@@ -703,12 +704,11 @@ class TreeModel extends DataModel
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$parent = $this->getParent();
-		$pRight = $parent->rgt;
-		$pLeft = $parent->lft;
+		$pRight = $siblingNode->rgt;
+		$pLeft = $siblingNode->lft;
 
 		// Get far right value
-		$query = $db->setQuery(true)
+		$query = $db->getQuery(true)
 			->select('MAX(' . $fldRgt . ')')
 			->from($db->qn($this->tableName));
 		$rRight = $db->setQuery($query)->loadResult();
@@ -1098,7 +1098,7 @@ class TreeModel extends DataModel
 			$query = $db->getQuery(true)
 				->select('(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth'))
 				->from($db->qn($this->tableName), 'node')
-				->from($db->qn($this->tableName), 'parent')
+				->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 				->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
@@ -1133,7 +1133,7 @@ class TreeModel extends DataModel
 			$query = $db->getQuery(true)
 				->select($db->qn('parent') . '.' . $fldLft)
 				->from($db->qn($this->tableName), 'node')
-				->from($db->qn($this->tableName), 'parent')
+				->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
 				->where($db->qn('node') . '.' . $fldLft . ' >= ' . $db->qn('parent') . '.' . $fldLft)
 				->where($db->qn('node') . '.' . $fldLft . ' <= ' . $db->qn('parent') . '.' . $fldRgt)
 				->where($db->qn('node') . '.' . $fldLft . ' = ' . $db->q($this->lft))
@@ -1141,7 +1141,7 @@ class TreeModel extends DataModel
 			$targetLft = $db->setQuery($query, 1, 1)->loadResult();
 
 			$this->treeParent = $this->getClone()->reset()
-				->whereRaw($fldLft . ' = ' . $db->qn($targetLft))
+				->whereRaw($fldLft . ' = ' . $db->q($targetLft))
 				->firstOrFail();
 		}
 
@@ -1814,6 +1814,25 @@ class TreeModel extends DataModel
 		}
 
 		return $ret;
+	}
+
+	/**
+	 * Locate a node from a given path, e.g. "/some/other/leaf"
+	 *
+	 * Notes:
+	 * - This will only work when you have a "slug" and a "hash" field in your table.
+	 * - If the path starts with "/" we will use the root with lft=1. Otherwise the first component of the path is
+	 *   supposed to be the slug of the root node.
+	 * - If the root node is not found you'll get null as the return value
+	 * - You will also get null if any component of the path is not found
+	 *
+	 * @param string $path The path to locate
+	 *
+	 * @return TreeModel|null The found node or null if nothing is found
+	 */
+	public function findByPath($path)
+	{
+		// @todo
 	}
 
 	public function isValid()
