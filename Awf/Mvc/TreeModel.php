@@ -317,7 +317,7 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 * @throws \Exception
 	 */
-	public function insertAsLastChildOf(TreeModel $parentNode)
+	public function insertAsLastChildOf(TreeModel &$parentNode)
 	{
 		// Get a reference to the database
 		$db = $this->getDbo();
@@ -332,6 +332,9 @@ class TreeModel extends DataModel
 		// Update my lft/rgt values
 		$this->lft = $myLeft + 1;
 		$this->rgt = $myLeft + 2;
+
+		// Update parent node's right (we added two elements in there, remember?)
+		$parentNode->rgt += 2;
 
 		// Wrap everything in a transaction
 		$db->transactionStart();
