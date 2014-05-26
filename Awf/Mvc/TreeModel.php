@@ -605,7 +605,7 @@ class TreeModel extends DataModel
 			->from($db->qn($this->tableName));
 		$rRight = $db->setQuery($query)->loadResult();
 		$moveRight = $rRight + $myWidth - $myLeft + 1;
-		$moveLeft = $myLeft + $moveRight - $pRight + 1;
+		$moveLeft = ($myLeft + $moveRight) - $pLeft;
 
 		// If the parent's left was less than the moved node's left then the hole has moved to the right.
 		$holeRight = ($pLeft < $myLeft) ? $myWidth : 0;
@@ -658,11 +658,6 @@ class TreeModel extends DataModel
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
 				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
-				->where($fldRgt . ' > ' . $db->q($myRight + $holeRight));
-			$db->setQuery($query)->execute();
-
-			$query = $db->getQuery(true)
-				->update($db->qn($this->tableName))
 				->set($fldLft . ' = ' . $fldLft . ' - ' . $db->q($myWidth))
 				->where($fldLft . ' > ' . $db->q($myRight + $holeRight));
 			$db->setQuery($query)->execute();
@@ -843,17 +838,16 @@ class TreeModel extends DataModel
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
-		$myRight = $this->rgt;
+		$myLeft = $this->lft + 0;
+		$myRight = $this->rgt + 0;
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$parent = $this->getParent();
-		$pRight = $parent->rgt;
-		$pLeft = $parent->lft;
+		$pRight = $parentNode->rgt + 0;
+		$pLeft = $parentNode->lft + 0;
 
 		// Get far right value
-		$query = $db->setQuery(true)
+		$query = $db->getQuery(true)
 			->select('MAX(' . $fldRgt . ')')
 			->from($db->qn($this->tableName));
 		$rRight = $db->setQuery($query)->loadResult();
@@ -866,7 +860,7 @@ class TreeModel extends DataModel
 		try
 		{
 			// Start the transaction
-			$db->transactionStart();
+			#$db->transactionStart();
 
 			// Move subtree as new root
 			$query = $db->getQuery(true)
@@ -877,11 +871,11 @@ class TreeModel extends DataModel
 				->where($fldLft . ' <= ' . $db->q($myRight));
 			$db->setQuery($query)->execute();
 
-			// Make hole to the left of the sibling
+			// Make hole to the left of the root
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
 				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
-				->where($fldLft . ' > ' . $db->q($pLeft))
+				->where($fldLft . ' >= ' . $db->q($pLeft))
 				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
 			$db->setQuery($query)->execute();
 
@@ -907,7 +901,6 @@ class TreeModel extends DataModel
 			$db->setQuery($query)->execute();
 
 			// Remove hole left behind by moved subtree.
-
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
 				->set($fldRgt . ' = ' . $fldRgt . ' - ' . $db->q($myWidth))
@@ -951,17 +944,16 @@ class TreeModel extends DataModel
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
-		$myRight = $this->rgt;
+		$myLeft = $this->lft + 0;
+		$myRight = $this->rgt + 0;
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$parent = $this->getParent();
-		$pRight = $parent->rgt;
-		$pLeft = $parent->lft;
+		$pRight = $parentNode->rgt + 0;
+		$pLeft = $parentNode->lft + 0;
 
 		// Get far right value
-		$query = $db->setQuery(true)
+		$query = $db->getQuery(true)
 			->select('MAX(' . $fldRgt . ')')
 			->from($db->qn($this->tableName));
 		$rRight = $db->setQuery($query)->loadResult();
@@ -990,7 +982,7 @@ class TreeModel extends DataModel
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
 				->set($fldRgt . ' = ' . $fldRgt . ' + ' . $db->q($myWidth))
-				->where($fldRgt . ' > ' . $db->q($pRight))
+				->where($fldRgt . ' >= ' . $db->q($pRight))
 				->where($fldLft . ' < ' . $db->q($rRight + $myWidth + 1));
 			$db->setQuery($query)->execute();
 
