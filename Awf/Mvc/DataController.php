@@ -9,6 +9,7 @@ namespace Awf\Mvc;
 
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Inflector\Inflector;
 use Awf\Input\Input;
 use Awf\Mvc\Controller;
@@ -21,7 +22,7 @@ use Awf\Text\Text;
  */
 class DataController extends Controller
 {
-	public function __construct($container = array())
+	public function __construct(Container $container)
 	{
 		parent::__construct($container);
 

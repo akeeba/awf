@@ -228,7 +228,7 @@ class Controller
 	 *
 	 * @return  Controller
 	 */
-	public function __construct($container = null)
+	public function __construct(Container $container = null)
 	{
 		// Initialise
 		$this->methods = array();
