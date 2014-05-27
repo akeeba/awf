@@ -48,13 +48,14 @@ class Dispatcher
 		$this->input = $container->input;
 
 		// Get the default values for the view and layout names
-		$this->view = $this->input->getCmd('view', $this->defaultView);
+		$this->view = $this->input->getCmd('view', null);
 		$this->layout = $this->input->getCmd('layout', null);
 
 		// Not redundant; you may pass an empty but non-null view which is invalid, so we need the fallback
 		if (empty($this->view))
 		{
 			$this->view = $this->defaultView;
+			$this->container->input->set('view', $this->view);
 		}
 	}
 
