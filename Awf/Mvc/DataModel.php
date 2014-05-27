@@ -1504,7 +1504,12 @@ class DataModel extends Model
 		// Apply key filters
 		foreach ($keys as $filterKey => $filterValue)
 		{
-			if (array_key_exists('id', $this->recordData))
+			if ($filterKey == 'id')
+			{
+				$filterKey = $this->getIdFieldName();
+			}
+
+			if (array_key_exists($filterKey, $this->recordData))
 			{
 				$query->where($db->qn($filterKey) . ' = ' . $db->q($filterValue));
 			}
