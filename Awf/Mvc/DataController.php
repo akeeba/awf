@@ -76,6 +76,12 @@ class DataController extends Controller
 		$view = $this->input->getCmd('view', null);
 		$task = Inflector::isPlural($view) ? 'browse' : 'edit';
 
+		// If the task is 'edit' but there's no logged in user switch to a 'read' task
+		if (($task == 'edit') && !$this->container->userManager->getUser()->getId())
+		{
+			$task = 'read';
+		}
+
 		// Check if there is an id passed in the request
 		$id = $this->input->get('id', null, 'int');
 
