@@ -11,6 +11,15 @@ use Awf\Mvc\DataModel;
 use Awf\Mvc\View;
 use Awf\Pagination\Pagination;
 
+/**
+ * View for a raw data-driven view
+ *
+ * @property-read \Awf\Mvc\DataModel\Collection $items      The records loaded
+ * @property-read int                           $itemsCount The total number of items in the model (more than those loaded)
+ * @property-read \Awf\Pagination\Pagination    Pagination  object
+ *
+ * @package Awf\Mvc\DataView
+ */
 class Raw extends View
 {
 	/** @var   array  Data lists */
