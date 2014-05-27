@@ -44,6 +44,6 @@ class Html extends Raw
 	 */
 	protected function onBeforeRead()
 	{
-		return $this->onBeforeAdd();
+		return true;
 	}
 } 
