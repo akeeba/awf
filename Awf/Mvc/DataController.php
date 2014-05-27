@@ -158,6 +158,8 @@ class DataController extends Controller
 	 * then the item layout is used to render the result.
 	 *
 	 * @return  void
+	 *
+	 * @throws \RuntimeException When the item is not found
 	 */
 	public function read()
 	{
@@ -165,9 +167,16 @@ class DataController extends Controller
 		/** @var DataModel $model */
 		$model = $this->getModel();
 
+		// If there is no record loaded, try loading a record based on the id passed in the input object
 		if (!$model->getId())
 		{
 			$ids = $this->getIDsFromRequest($model, true);
+
+			if ($model->getId() != reset($ids))
+			{
+				$key = $this->container->application_name . '_ERR_' . $model->getName() . '_NOTFOUND';
+				throw new \RuntimeException(Text::_($key), 404);
+			}
 		}
 
 		// Set the layout to item, if it's not set in the URL
@@ -852,7 +861,7 @@ class DataController extends Controller
 		if ($loadRecord && !empty($ids))
 		{
 			$id = reset($ids);
-			$model->find($id);
+			$model->find(array('id' => $id));
 		}
 
 		return $ids;
