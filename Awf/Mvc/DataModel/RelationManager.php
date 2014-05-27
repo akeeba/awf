@@ -60,7 +60,6 @@ class RelationManager
 		$this->relations = $relations;
 	}
 
-
 	/**
 	 * Rebase a relation manager
 	 *

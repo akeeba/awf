@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package        awf
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel\Relation;
@@ -11,7 +11,7 @@ use Awf\Application\Application;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
 use Awf\Mvc\DataModel\Relation;
-use Awf\Utils\Collection;
+use Awf\Mvc\DataModel\Collection;
 
 /**
  * BelongsToMany (many-to-many) relation: one or more records of this model are related to one or more records in the
@@ -27,13 +27,13 @@ class BelongsToMany extends DataModel\Relation
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
-	 * @param   DataModel  $parentModel        The data model we are attached to
-	 * @param   string     $foreignModelClass  The class name of the foreign key's model
-	 * @param   string     $localKey           The local table key for this relation, default: parentModel's ID field name
-	 * @param   string     $foreignKey         The foreign key for this relation, default: parentModel's ID field name
-	 * @param   string     $pivotTable         For many-to-many relations, the pivot (glue) table
-	 * @param   string     $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local key
-	 * @param   string     $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   DataModel $parentModel       The data model we are attached to
+	 * @param   string    $foreignModelClass The class name of the foreign key's model
+	 * @param   string    $localKey          The local table key for this relation, default: parentModel's ID field name
+	 * @param   string    $foreignKey        The foreign key for this relation, default: parentModel's ID field name
+	 * @param   string    $pivotTable        For many-to-many relations, the pivot (glue) table
+	 * @param   string    $pivotLocalKey     For many-to-many relations, the pivot table's column storing the local key
+	 * @param   string    $pivotForeignKey   For many-to-many relations, the pivot table's column storing the foreign key
 	 *
 	 * @throws  DataModel\Relation\Exception\PivotTableNotFound
 	 */
@@ -88,7 +88,7 @@ class BelongsToMany extends DataModel\Relation
 
 			// Get the local model's app name
 			$class = get_class($parentModel);
-			$localParts = explode('\\', $class );
+			$localParts = explode('\\', $class);
 			$parentModelApp = $localParts[0];
 
 			// There are two possibilities for the table name: #__app_local_foreign or #__app_foreign_local.
@@ -128,14 +128,14 @@ class BelongsToMany extends DataModel\Relation
 	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
 	 * DataModel to push the eager loaded data into each item's relation.
 	 *
-	 * @param Collection $data      The relation data to push into this relation
-	 * @param mixed      $keyMap  Passes around the local to foreign key map
+	 * @param Collection $data   The relation data to push into this relation
+	 * @param mixed      $keyMap Passes around the local to foreign key map
 	 *
 	 * @return void
 	 */
 	public function setDataFromCollection(Collection &$data, $keyMap = null)
 	{
-		$this->data = new DataModel\Collection();
+		$this->data = new Collection();
 
 		if (!is_array($keyMap))
 		{
@@ -168,12 +168,12 @@ class BelongsToMany extends DataModel\Relation
 	/**
 	 * Applies the relation filters to the foreign model when getData is called
 	 *
-	 * @param DataModel             $foreignModel    The foreign model you're operating on
-	 * @param \Awf\Utils\Collection $dataCollection  If it's an eager loaded relation, the collection of loaded parent records
+	 * @param DataModel  $foreignModel   The foreign model you're operating on
+	 * @param Collection $dataCollection If it's an eager loaded relation, the collection of loaded parent records
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	protected function filterForeignModel(DataModel $foreignModel, \Awf\Utils\Collection $dataCollection = null)
+	protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null)
 	{
 		$db = $this->parentModel->getDbo();
 
@@ -199,7 +199,8 @@ class BelongsToMany extends DataModel\Relation
 
 				// Keep only unique values
 				$values = array_unique($values);
-				$values = array_map(function($x) use (&$db) {
+				$values = array_map(function ($x) use (&$db)
+				{
 					return $db->q($x);
 				}, $values);
 
@@ -294,8 +295,8 @@ class BelongsToMany extends DataModel\Relation
 			->from($db->qn($foreignModel->getTableName()) . ' AS ' . $db->qn('reltbl'))
 			->innerJoin(
 				$db->qn($this->pivotTable) . ' AS ' . $db->qn('pivotTable') . ' ON('
-					. $db->qn('pivotTable') . '.' . $db->qn($this->pivotForeignKey) . ' = '
-					. $db->qn('reltbl') . '.' . $db->qn($foreignModel->getFieldAlias($this->foreignKey))
+				. $db->qn('pivotTable') . '.' . $db->qn($this->pivotForeignKey) . ' = '
+				. $db->qn('reltbl') . '.' . $db->qn($foreignModel->getFieldAlias($this->foreignKey))
 				. ')'
 			)
 			->where(

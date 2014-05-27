@@ -203,14 +203,15 @@ class TreeModel extends DataModel
 	 * Reset the record data and the tree cache
 	 *
 	 * @param   boolean $useDefaults Should I use the default values? Default: yes
+	 * @param   boolean $resetRelations Should I reset the relations too? Default: no
 	 *
 	 * @return  static  Self, for chaining
 	 */
-	public function reset($useDefaults = true)
+	public function reset($useDefaults = true, $resetRelations = false)
 	{
 		$this->resetTreeCache();
 
-		return parent::reset($useDefaults);
+		return parent::reset($useDefaults, $resetRelations);
 	}
 
 	/**

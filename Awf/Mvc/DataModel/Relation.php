@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
- * @license		GNU GPL version 3 or later
+ * @package        awf
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel;
@@ -11,7 +11,7 @@ namespace Awf\Mvc\DataModel;
 use Awf\Application\Application;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Utils\Collection;
+use Awf\Mvc\DataModel\Collection;
 
 abstract class Relation
 {
@@ -42,7 +42,7 @@ abstract class Relation
 	/** @var   null  For many-to-many relations, the pivot table's column storing the foreign key */
 	protected $pivotForeignKey = null;
 
-	/** @var   DataModel\Collection  The data loaded by this relation */
+	/** @var   Collection  The data loaded by this relation */
 	protected $data = null;
 
 	/** @var array Maps each local table key to an array of foreign table keys, used in many-to-many relations */
@@ -51,13 +51,13 @@ abstract class Relation
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
-	 * @param   DataModel  $parentModel        The data model we are attached to
-	 * @param   string     $foreignModelClass  The class name of the foreign key's model
-	 * @param   string     $localKey           The local table key for this relation
-	 * @param   string     $foreignKey         The foreign key for this relation
-	 * @param   string     $pivotTable         For many-to-many relations, the pivot (glue) table
-	 * @param   string     $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local key
-	 * @param   string     $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   DataModel $parentModel       The data model we are attached to
+	 * @param   string    $foreignModelClass The class name of the foreign key's model
+	 * @param   string    $localKey          The local table key for this relation
+	 * @param   string    $foreignKey        The foreign key for this relation
+	 * @param   string    $pivotTable        For many-to-many relations, the pivot (glue) table
+	 * @param   string    $pivotLocalKey     For many-to-many relations, the pivot table's column storing the local key
+	 * @param   string    $pivotForeignKey   For many-to-many relations, the pivot table's column storing the foreign key
 	 */
 	public function __construct(DataModel $parentModel, $foreignModelClass, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
 	{
@@ -77,7 +77,7 @@ abstract class Relation
 			$class = substr($class, 1);
 		}
 
-		$foreignParts = explode('\\', $class );
+		$foreignParts = explode('\\', $class);
 		$this->foreignModelApp = $foreignParts[0];
 		$this->foreignModelName = $foreignParts[2];
 	}
@@ -117,12 +117,12 @@ abstract class Relation
 	 * supposed to return anything, just modify $foreignModel's state directly. For example, you may want to do:
 	 * $foreignModel->setState('foo', 'bar')
 	 *
-	 * @param callable              $callback        The callback to run on the remote model.
-	 * @param \Awf\Utils\Collection $dataCollection
+	 * @param callable   $callback The callback to run on the remote model.
+	 * @param Collection $dataCollection
 	 *
-	 * @return DataModel\Collection|DataModel
+	 * @return Collection|DataModel
 	 */
-	public function getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData(callable $callback = null, Collection $dataCollection = null)
 	{
 		if (is_null($this->data))
 		{
@@ -158,14 +158,14 @@ abstract class Relation
 	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
 	 * DataModel to push the eager loaded data into each item's relation.
 	 *
-	 * @param Collection $data    The relation data to push into this relation
-	 * @param mixed      $keyMap  Used by many-to-many relations to pass around the local to foreign key map
+	 * @param Collection $data   The relation data to push into this relation
+	 * @param mixed      $keyMap Used by many-to-many relations to pass around the local to foreign key map
 	 *
 	 * @return void
 	 */
 	public function setDataFromCollection(Collection &$data, $keyMap = null)
 	{
-		$this->data = new DataModel\Collection();
+		$this->data = new Collection();
 
 		if (!empty($data))
 		{
@@ -185,12 +185,12 @@ abstract class Relation
 	/**
 	 * Applies the relation filters to the foreign model when getData is called
 	 *
-	 * @param DataModel             $foreignModel    The foreign model you're operating on
-	 * @param \Awf\Utils\Collection $dataCollection  If it's an eager loaded relation, the collection of loaded parent records
+	 * @param DataModel  $foreignModel   The foreign model you're operating on
+	 * @param Collection $dataCollection If it's an eager loaded relation, the collection of loaded parent records
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	abstract protected function filterForeignModel(DataModel $foreignModel, \Awf\Utils\Collection $dataCollection = null);
+	abstract protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null);
 
 	/**
 	 * Returns the count subquery for DataModel's has() and whereHas() methods.

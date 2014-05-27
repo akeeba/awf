@@ -10,7 +10,7 @@ namespace Awf\Mvc\DataModel\Relation;
 use Awf\Application\Application;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Utils\Collection;
+use Awf\Mvc\DataModel\Collection;
 
 /**
  * BelongsTo (reverse 1-to-1 or 1-to-many) relation: this model is a child which belongs to the foreign table

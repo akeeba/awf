@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
- * @license		GNU GPL version 3 or later
+ * @package        awf
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel\Relation;
@@ -10,7 +10,7 @@ namespace Awf\Mvc\DataModel\Relation;
 use Awf\Application\Application;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Utils\Collection;
+use Awf\Mvc\DataModel\Collection;
 
 /**
  * HasOne (straight 1-to-1) relation: this model is a parent which has exactly one child in the foreign table
@@ -29,12 +29,12 @@ class HasOne extends HasMany
 	 * supposed to return anything, just modify $foreignModel's state directly. For example, you may want to do:
 	 * $foreignModel->setState('foo', 'bar')
 	 *
-	 * @param callable              $callback        The callback to run on the remote model.
-	 * @param \Awf\Utils\Collection $dataCollection
+	 * @param callable   $callback The callback to run on the remote model.
+	 * @param Collection $dataCollection
 	 *
-	 * @return DataModel\Collection|DataModel
+	 * @return Collection|DataModel
 	 */
-	public function getData(callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData(callable $callback = null, Collection $dataCollection = null)
 	{
 		if (is_null($dataCollection))
 		{

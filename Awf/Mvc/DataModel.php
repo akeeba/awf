@@ -481,10 +481,11 @@ class DataModel extends Model
 	 * Reset the record data
 	 *
 	 * @param   boolean $useDefaults Should I use the default values? Default: yes
+	 * @param   boolean $resetRelations Should I reset the relations too? Default: no
 	 *
 	 * @return  static  Self, for chaining
 	 */
-	public function reset($useDefaults = true)
+	public function reset($useDefaults = true, $resetRelations = false)
 	{
 		$this->recordData = array();
 
@@ -500,8 +501,12 @@ class DataModel extends Model
 			}
 		}
 
-		$this->relationManager->resetRelations();
-		$this->eagerRelations = array();
+		if ($resetRelations)
+		{
+			$this->relationManager->resetRelations();
+			$this->eagerRelations = array();
+		}
+
 		$this->relationFilters = array();
 
 		return $this;

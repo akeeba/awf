@@ -45,7 +45,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @param  mixed $items
 	 *
-	 * @return Collection
+	 * @return static
 	 */
 	public static function make($items)
 	{

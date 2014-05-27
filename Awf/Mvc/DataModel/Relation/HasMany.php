@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package        awf
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel\Relation;
@@ -10,7 +10,7 @@ namespace Awf\Mvc\DataModel\Relation;
 use Awf\Application\Application;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Utils\Collection;
+use Awf\Mvc\DataModel\Collection;
 
 /**
  * HasMany (1-to-many) relation: this model is a parent which has zero or more children in the foreign table
@@ -24,13 +24,13 @@ class HasMany extends DataModel\Relation
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
-	 * @param   DataModel  $parentModel        The data model we are attached to
-	 * @param   string     $foreignModelClass  The class name of the foreign key's model
-	 * @param   string     $localKey           The local table key for this relation, default: parentModel's ID field name
-	 * @param   string     $foreignKey         The foreign key for this relation, default: parentModel's ID field name
-	 * @param   string     $pivotTable         IGNORED
-	 * @param   string     $pivotLocalKey      IGNORED
-	 * @param   string     $pivotForeignKey    IGNORED
+	 * @param   DataModel $parentModel       The data model we are attached to
+	 * @param   string    $foreignModelClass The class name of the foreign key's model
+	 * @param   string    $localKey          The local table key for this relation, default: parentModel's ID field name
+	 * @param   string    $foreignKey        The foreign key for this relation, default: parentModel's ID field name
+	 * @param   string    $pivotTable        IGNORED
+	 * @param   string    $pivotLocalKey     IGNORED
+	 * @param   string    $pivotForeignKey   IGNORED
 	 */
 	public function __construct(DataModel $parentModel, $foreignModelClass, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
 	{
@@ -50,12 +50,12 @@ class HasMany extends DataModel\Relation
 	/**
 	 * Applies the relation filters to the foreign model when getData is called
 	 *
-	 * @param DataModel             $foreignModel    The foreign model you're operating on
-	 * @param \Awf\Utils\Collection $dataCollection  If it's an eager loaded relation, the collection of loaded parent records
+	 * @param DataModel  $foreignModel   The foreign model you're operating on
+	 * @param Collection $dataCollection If it's an eager loaded relation, the collection of loaded parent records
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	protected function filterForeignModel(DataModel $foreignModel, \Awf\Utils\Collection $dataCollection = null)
+	protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null)
 	{
 		// Decide how to proceed, based on eager or lazy loading
 		if (is_object($dataCollection))
@@ -152,7 +152,7 @@ class HasMany extends DataModel\Relation
 		$foreignModel->setFieldValue($this->foreignKey, $this->parentModel->getFieldValue($this->localKey));
 
 		// Make sure we do have a data list
-		if (!($this->data instanceof DataModel\Collection))
+		if (!($this->data instanceof Collection))
 		{
 			$this->getData();
 		}
