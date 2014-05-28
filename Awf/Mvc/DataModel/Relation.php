@@ -132,7 +132,8 @@ abstract class Relation
 			// Get a model instance
 			$container = Application::getInstance($this->foreignModelApp)->getContainer();
 			/** @var DataModel $foreignModel */
-			$foreignModel = DataModel::getTmpInstance($this->foreignModelApp, $this->foreignModelName, $container);
+			$foreignModel = DataModel::getTmpInstance($this->foreignModelApp, $this->foreignModelName, $container)
+				->setIgnoreRequest(true);
 
 			$filtered = $this->filterForeignModel($foreignModel, $dataCollection);
 
