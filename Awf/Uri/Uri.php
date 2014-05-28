@@ -410,6 +410,16 @@ class Uri
 	{
 		$tmp = isset($this->vars[$name]) ? $this->vars[$name] : null;
 
+		if (is_null($value))
+		{
+			if (isset($this->vars[$name]))
+			{
+				unset($this->vars[$name]);
+			}
+
+			return $tmp;
+		}
+
 		$this->vars[$name] = $value;
 
 		// Empty the query

@@ -148,7 +148,7 @@ abstract class Relation
 			}
 
 			// Get the list of items from the foreign model and cache in $this->data
-			$this->data = $foreignModel->get();
+			$this->data = $foreignModel->get(true);
 		}
 
 		return $this->data;

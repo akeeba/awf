@@ -1178,7 +1178,7 @@ class DataModel extends Model
 		// Get a "count all" query
 		$db = $this->getDbo();
 		$query = $this->buildQuery(true);
-		$query->select('COUNT(*)');
+		$query->select(null)->select('COUNT(*)');
 
 		// Run the "before build query" hook and behaviours
 		if (method_exists($this, 'buildCountQuery'))
@@ -2748,7 +2748,7 @@ class DataModel extends Model
 		}
 
 		// Apply eager loaded relations
-		if (!empty($dataCollection) && !empty($relations))
+		if ($dataCollection->count() && !empty($relations))
 		{
 			foreach ($relations as $relation => $callback)
 			{
