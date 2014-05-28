@@ -119,8 +119,8 @@ class TreeModel extends DataModel
 
 			// Get all sub-nodes
 			$subNodes = $this->getClone()->reset()
-				->whereRaw($fldLft . ' > ' . $fldLft)
-				->whereRaw($fldRgt . ' < ' . $fldRgt)
+				->whereRaw($fldLft . ' > ' . $myLeft)
+				->whereRaw($fldRgt . ' < ' . $myRight)
 				->get(true);
 
 			// Delete all subnodes (goes through the model to trigger the observers)
@@ -218,7 +218,7 @@ class TreeModel extends DataModel
 	 * Insert the current node as a tree root. It is a good idea to never use this method, instead providing a root node
 	 * in your schema installation and then sticking to only one root.
 	 *
-	 * @return DataModel
+	 * @return static
 	 */
 	public function insertAsRoot()
 	{
@@ -375,7 +375,9 @@ class TreeModel extends DataModel
 	/**
 	 * Alias for insertAsLastchildOf
 	 *
-	 * @param $parentNode
+	 * @param TreeModel $parentNode
+	 *
+	 * @return $this for chaining
 	 */
 	public function insertAsChildOf(TreeModel &$parentNode)
 	{
@@ -750,9 +752,6 @@ class TreeModel extends DataModel
 
 			throw $e;
 		}
-
-		return $this;
-
 
 		return $this;
 	}
@@ -1202,7 +1201,7 @@ class TreeModel extends DataModel
 	/**
 	 * Is $node this very node?
 	 *
-	 * @param $node
+	 * @param TreeModel $node
 	 *
 	 * @return bool
 	 */

@@ -1255,7 +1255,7 @@ class DataModel extends Model
 	/**
 	 * Returns a DataCollection iterator based on your currently set Model state
 	 *
-	 * @param   boolean $overrideLimits Should I ingore limits set in the Model?
+	 * @param   boolean $overrideLimits Should I ignore limits set in the Model?
 	 * @param   integer $limitstart     How many items to skip from the start, only when $overrideLimits = true
 	 * @param   integer $limit          How many items to return, only when $overrideLimits = true
 	 *
