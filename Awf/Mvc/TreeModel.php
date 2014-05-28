@@ -1768,7 +1768,131 @@ class TreeModel extends DataModel
 	 */
 	public function findByPath($path)
 	{
-		// @todo
+		// No path? No node.
+		if (empty($path))
+		{
+			return null;
+		}
+
+		// Extract the path parts
+		$pathParts = explode('/', $path);
+
+		$firstElement = array_shift($pathParts);
+
+		if (!empty($firstElement))
+		{
+			array_unshift($pathParts, $firstElement);
+		}
+
+		// Just a slash? Return the root
+		if (empty($pathParts))
+		{
+			return $this->getRoot();
+		}
+
+		// Get the quoted field names
+		$db = $this->getDbo();
+
+		$fldLeft = $db->qn($this->getFieldAlias('lft'));
+		$fldRight = $db->qn($this->getFieldAlias('rgt'));
+		$fldHash = $db->qn($this->getFieldAlias('hash'));
+
+		// Get the quoted hashes of the slugs
+		$pathHashesQuoted = array();
+
+		foreach ($pathParts as $part)
+		{
+			$pathHashesQuoted[] = $db->q(sha1($part));
+		}
+
+		// Get all nodes with slugs matching our path
+		$query = $db->getQuery(true)
+			->select(array(
+				$db->qn('node') . '.*',
+				'(COUNT(' . $db->qn('parent') . '.' . $db->qn($this->getFieldAlias('lft')) . ') - 1) AS ' . $db->qn('depth')
+			))->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
+			->join('CROSS', $db->qn($this->tableName) . ' AS ' . $db->qn('parent'))
+			->where($db->qn('node') . '.' . $fldLeft . ' >= ' . $db->qn('parent') . '.' . $fldLeft)
+			->where($db->qn('node') . '.' . $fldLeft . ' <= ' . $db->qn('parent') . '.' . $fldRight)
+			->where($db->qn('node') . '.' . $fldHash . ' IN (' . implode(',', $pathHashesQuoted) . ')')
+			->group($db->qn('node') . '.' . $fldLeft)
+			->order(array(
+				$db->qn('depth') . ' ASC',
+				$db->qn('node') . '.' . $fldLeft . ' ASC',
+			));
+		$queryResults = $db->setQuery($query)->loadAssocList();
+
+		$pathComponents = array();
+
+		// Handle paths with (no root slug provided) and without (root slug provided) a leading slash
+		$currentLevel = (substr($path, 0, 1) == '/') ? 0 : -1;
+		$maxLevel = count($pathParts) + $currentLevel;
+
+		// Initialise the path results array
+		$i = $currentLevel;
+
+		foreach ($pathParts as $part)
+		{
+			$i++;
+			$pathComponents[$i] = array(
+				'slug'	=> $part,
+				'id'	=> null,
+				'lft'	=> null,
+				'rgt'	=> null,
+			);
+		}
+
+		// Search for the best matching nodes
+		$colSlug = $this->getFieldAlias('slug');
+		$colLft = $this->getFieldAlias('lft');
+		$colRgt = $this->getFieldAlias('rgt');
+		$colId = $this->getIdFieldName();
+
+		foreach ($queryResults as $row)
+		{
+			if ($row['depth'] == $currentLevel + 1)
+			{
+				if ($row[$colSlug] != $pathComponents[$currentLevel + 1]['slug'])
+				{
+					continue;
+				}
+
+				if ($currentLevel > 0)
+				{
+					if ($row[$colLft] < $pathComponents[$currentLevel]['lft'])
+					{
+						continue;
+					}
+
+					if ($row[$colRgt] > $pathComponents[$currentLevel]['rgt'])
+					{
+						continue;
+					}
+				}
+
+				$currentLevel++;
+				$pathComponents[$currentLevel]['id'] = $row[$colId];
+				$pathComponents[$currentLevel]['lft'] = $row[$colLft];
+				$pathComponents[$currentLevel]['rgt'] = $row[$colRgt];
+			}
+
+			if ($currentLevel == $maxLevel)
+			{
+				break;
+			}
+		}
+
+		// Get the last found node
+		$lastNode = array_pop($pathComponents);
+
+		// If the node exists, return it...
+		if (!empty($lastNode['lft']))
+		{
+			return $this->getClone()->reset()->where($colLft, '=', $lastNode['lft'])->firstOrFail();
+		}
+
+		// ...otherwise return null
+		return null;
 	}
 
 	public function isValid()
