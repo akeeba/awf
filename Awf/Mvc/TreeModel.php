@@ -1895,16 +1895,6 @@ class TreeModel extends DataModel
 		return null;
 	}
 
-	public function isValid()
-	{
-		// @todo
-	}
-
-	public function rebuild()
-	{
-		// @todo
-	}
-
 	/**
 	 * Resets cached values used to speed up querying the tree
 	 *
