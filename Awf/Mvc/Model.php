@@ -38,6 +38,13 @@ class Model
 	protected $_savestate = true;
 
 	/**
+	 * Should we ignore request data when trying to get state data not already set in the Model?
+	 *
+	 * @var bool
+	 */
+	protected $_ignoreRequest = false;
+
+	/**
 	 * The model (base) name
 	 *
 	 * @var    string
@@ -201,7 +208,8 @@ class Model
 	 *
 	 * You can use the $container['mvc_config'] array to pass some configuration values to the object:
 	 * state			stdClass|array. The state variables of the Model.
-	 * ignore_request	Boolean. When true the model will not set its state from the request. Otherwise populateState() will be used.
+	 * use_populate		Boolean. When true the model will set its state from populateState() instead of the request.
+	 * ignore_request	Boolean. When true getState will now automatically load state data from the request.
 	 *
 	 * @param   Container $container The configuration variables to this model
 	 */
@@ -238,10 +246,16 @@ class Model
 			$this->state = new \stdClass();
 		}
 
-		// Set the internal state marker - used to ignore setting state from the request
-		if (!empty($this->config['ignore_request']))
+		// Set the internal state marker
+		if (!empty($this->config['use_populate']))
 		{
 			$this->_state_set = true;
+		}
+
+		// Set the internal state marker
+		if (!empty($this->config['ignore_request']))
+		{
+			$this->_ignoreRequest = true;
 		}
 	}
 
@@ -290,7 +304,8 @@ class Model
 
 		// Get the savestate status
 		$value = $this->internal_getState($key);
-		if (is_null($value))
+
+		if (is_null($value) && !$this->_ignoreRequest)
 		{
 			$value = $this->getUserStateFromRequest($key, $key, $value, 'none', $this->_savestate);
 			if (is_null($value))
@@ -551,4 +566,32 @@ class Model
 			$this->savestate($savestate);
 		}
 	}
+
+	/**
+	 * Sets the ignore request flag. When false, getState() will try to populate state variables not already set from
+	 * same-named state variables in the request.
+	 *
+	 * @param boolean $ignoreRequest
+	 *
+	 * @return  $this  for chaining
+	 */
+	public function setIgnoreRequest($ignoreRequest)
+	{
+		$this->_ignoreRequest = $ignoreRequest;
+
+		return $this;
+	}
+
+	/**
+	 * Gets the ignore request flag. When false, getState() will try to populate state variables not already set from
+	 * same-named state variables in the request.
+	 *
+	 * @return boolean
+	 */
+	public function getIgnoreRequest()
+	{
+		return $this->_ignoreRequest;
+	}
+
+
 }
