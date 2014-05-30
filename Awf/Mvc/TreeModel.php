@@ -1127,23 +1127,7 @@ class TreeModel extends DataModel
 	 */
 	public function isDescendantOf(TreeModel $otherNode)
 	{
-		$children = $otherNode->getClone()->resetTreeCache()->getDescendants();
-
-		if (empty($children))
-		{
-			return false;
-		}
-
-		/** @var TreeModel $child */
-		foreach ($children as $child)
-		{
-			if ($child->equals($this))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return ($otherNode->lft > $this->lft) && ($otherNode->rgt < $this->rgt);
 	}
 
 	/**
@@ -1155,7 +1139,7 @@ class TreeModel extends DataModel
 	 */
 	public function isSelfOrDescendantOf(TreeModel $otherNode)
 	{
-		return $otherNode->equals($this) || $this->isDescendantOf($otherNode);
+		return ($otherNode->lft >= $this->lft) && ($otherNode->rgt <= $this->rgt);
 	}
 
 	/**
@@ -1167,23 +1151,7 @@ class TreeModel extends DataModel
 	 */
 	public function isAncestorOf(TreeModel $otherNode)
 	{
-		$parents = $otherNode->getClone()->resetTreeCache()->getAncestors();
-
-		if (empty($parents))
-		{
-			return false;
-		}
-
-		/** @var TreeModel $parent */
-		foreach ($parents as $parent)
-		{
-			if ($parent->equals($this))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		return $otherNode->isDescendantOf($this);
 	}
 
 	/**
@@ -1195,7 +1163,7 @@ class TreeModel extends DataModel
 	 */
 	public function isSelfOrAncestorOf(TreeModel $otherNode)
 	{
-		return $otherNode->equals($this) || $this->isAncestorOf($otherNode);
+		return $otherNode->isSelfOrDescendantOf($this);
 	}
 
 	/**
