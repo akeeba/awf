@@ -51,9 +51,16 @@ class Input implements \Serializable, \Countable
 	 *
 	 * @return  \Awf\Input\Input
 	 */
-	public function __construct($source = null)
+	public function __construct($source = null, $options = array())
 	{
-		$this->filter = \Awf\Input\Filter::getInstance();
+		if (isset($options['filter']))
+		{
+			$this->filter = $options['filter'];
+		}
+		else
+		{
+			$this->filter = \Awf\Input\Filter::getInstance();
+		}
 
 		if (is_null($source))
 		{
