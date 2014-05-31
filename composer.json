@@ -17,7 +17,8 @@
 	],
 	"autoload": {
 		"psr-4": {
-			 "Awf\\": "Awf/"
+			 "Awf\\": "Awf/",
+			 "Tests\\": "Tests/"
 		}
 	},
 	"version": "0.0.1"
