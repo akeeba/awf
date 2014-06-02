@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @subpackage     tests.date.date
+ * @subpackage     tests.stubs
  * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */

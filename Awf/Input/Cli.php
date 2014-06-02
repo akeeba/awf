@@ -34,6 +34,8 @@ class Cli extends Input
 	 */
 	public function __construct(array $source = null, array $options = array())
 	{
+		$this->options = $options;
+
 		if (isset($options['filter']))
 		{
 			$this->filter = $options['filter'];
