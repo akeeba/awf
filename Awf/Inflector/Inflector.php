@@ -22,6 +22,7 @@ class Inflector
 	 */
 	protected static $_rules = array
 	(
+		// Pluralization rules. The regex on the left transforms to the regex on the right.
 		'pluralization'   => array(
 			'/move$/i'                      => 'moves',
 			'/sex$/i'                       => 'sexes',
@@ -60,6 +61,7 @@ class Inflector
 			'/s$/i'                         => 's',
 			'/$/'                           => 's',
 		),
+		// Singularization rules. The regex on the left transforms to the regex on the right.
 		'singularization' => array(
 			'/cookies$/i'                                                      => 'cookie',
 			'/moves$/i'                                                        => 'move',
@@ -70,7 +72,7 @@ class Inflector
 			'/people$/i'                                                       => 'person',
 			'/taxa$/i'                                                         => 'taxon',
 			'/databases$/i'                                                    => 'database',
-      '/menus$/i'                                                        => 'menu',
+			'/menus$/i'                                                        => 'menu',
 			'/(quiz)zes$/i'                                                    => '\1',
 			'/(matr|suff)ices$/i'                                              => '\1ix',
 			'/(vert|ind|cod)ices$/i'                                           => '\1ex',
@@ -104,7 +106,8 @@ class Inflector
 			'/(.*)ss$/i'                                                       => '\1ss',
 			'/(.*)s$/i'                                                        => '\1',
 		),
-		'countable'       => array(
+		// Uncountable objects are always singular
+		'uncountable'       => array(
 			'aircraft',
 			'cannon',
 			'deer',
@@ -113,6 +116,7 @@ class Inflector
 			'information',
 			'money',
 			'moose',
+			'news',
 			'rice',
 			'series',
 			'sheep',
@@ -149,8 +153,8 @@ class Inflector
 	/**
 	 * Add a word to the cache, useful to make exceptions or to add words in other languages.
 	 *
-	 * @param   string  $singular  word.
-	 * @param   string  $plural    word.
+	 * @param   string $singular word.
+	 * @param   string $plural   word.
 	 *
 	 * @return  void
 	 */
@@ -163,7 +167,7 @@ class Inflector
 	/**
 	 * Singular English word to plural.
 	 *
-	 * @param   string  $word  word to pluralize.
+	 * @param   string $word word to pluralize.
 	 *
 	 * @return  string Plural noun.
 	 */
@@ -176,7 +180,7 @@ class Inflector
 		}
 
 		// Create the plural noun
-		if (in_array($word, self::$_rules['countable']))
+		if (in_array($word, self::$_rules['uncountable']))
 		{
 			$_cache['pluralized'][$word] = $word;
 
@@ -186,7 +190,7 @@ class Inflector
 		foreach (self::$_rules['pluralization'] as $regexp => $replacement)
 		{
 			$matches = null;
-			$plural  = preg_replace($regexp, $replacement, $word, -1, $matches);
+			$plural = preg_replace($regexp, $replacement, $word, -1, $matches);
 
 			if ($matches > 0)
 			{
@@ -202,7 +206,7 @@ class Inflector
 	/**
 	 * Plural English word to singular.
 	 *
-	 * @param   string  $word  Word to singularize.
+	 * @param   string $word Word to singularize.
 	 *
 	 * @return  string Singular noun.
 	 */
@@ -215,7 +219,7 @@ class Inflector
 		}
 
 		// Create the singular noun
-		if (in_array($word, self::$_rules['countable']))
+		if (in_array($word, self::$_rules['uncountable']))
 		{
 			$_cache['singularized'][$word] = $word;
 
@@ -224,7 +228,7 @@ class Inflector
 
 		foreach (self::$_rules['singularization'] as $regexp => $replacement)
 		{
-			$matches  = null;
+			$matches = null;
 			$singular = preg_replace($regexp, $replacement, $word, -1, $matches);
 
 			if ($matches > 0)
@@ -245,7 +249,7 @@ class Inflector
 	 * will remove non alphanumeric characters from the word, so
 	 * "who's online" will be converted to "WhoSOnline"
 	 *
-	 * @param   string  $word  Word to convert to camel case.
+	 * @param   string $word Word to convert to camel case.
 	 *
 	 * @return  string  UpperCamelCasedWord
 	 */
@@ -262,7 +266,7 @@ class Inflector
 	 *
 	 * Convert any "CamelCased" or "ordinary Word" into an "underscored_word".
 	 *
-	 * @param   string  $word  Word to underscore
+	 * @param   string $word Word to underscore
 	 *
 	 * @return string Underscored word
 	 */
@@ -280,7 +284,7 @@ class Inflector
 	 * Returns an array of strings each of which is a substring of string formed
 	 * by splitting it at the camelcased letters.
 	 *
-	 * @param   string  $word  Word to explode
+	 * @param   string $word Word to explode
 	 *
 	 * @return  array   Array of strings
 	 */
@@ -294,7 +298,7 @@ class Inflector
 	/**
 	 * Convert  an array of strings into a "CamelCased" word.
 	 *
-	 * @param   array  $words  Array to implode
+	 * @param   array $words Array to implode
 	 *
 	 * @return  string UpperCamelCasedWord
 	 */
@@ -312,7 +316,7 @@ class Inflector
 	 * underscores with a space, and by upper-casing the initial
 	 * character by default.
 	 *
-	 * @param   string  $word  String to "humanize"
+	 * @param   string $word String to "humanize"
 	 *
 	 * @return string Human-readable word
 	 */
@@ -329,7 +333,7 @@ class Inflector
 	 *
 	 * Converts "Person" to "people"
 	 *
-	 * @param   string  $className  Class name for getting related table_name.
+	 * @param   string $className Class name for getting related table_name.
 	 *
 	 * @return  string  plural_table_name
 	 *
@@ -350,12 +354,12 @@ class Inflector
 	/**
 	 * Converts a table name to its class name according to Koowa naming conventions.
 	 *
-	 * @param   string  $tableName  Table name for getting related ClassName.
+	 * @param   string $tableName Table name for getting related ClassName.
 	 *
 	 * @return string SingularClassName
 	 *
 	 * @example  Converts "people" to "Person"
-	 * @see tableize
+	 * @see      tableize
 	 */
 	public static function classify($tableName)
 	{
@@ -367,7 +371,7 @@ class Inflector
 	/**
 	 * Returns camelBacked version of a string. Same as camelize but first char is lowercased.
 	 *
-	 * @param   string  $string  String to be camelBacked.
+	 * @param   string $string String to be camelBacked.
 	 *
 	 * @return string
 	 *
@@ -375,8 +379,8 @@ class Inflector
 	 */
 	public static function variablize($string)
 	{
-		$string   = self::camelize(self::underscore($string));
-		$result   = strtolower(substr($string, 0, 1));
+		$string = self::camelize(self::underscore($string));
+		$result = strtolower(substr($string, 0, 1));
 		$variable = preg_replace('/\\w/', $result, $string, 1);
 
 		return $variable;
@@ -385,7 +389,7 @@ class Inflector
 	/**
 	 * Check to see if an English word is singular
 	 *
-	 * @param   string  $string  The word to check
+	 * @param   string $string The word to check
 	 *
 	 * @return boolean
 	 */
@@ -393,7 +397,7 @@ class Inflector
 	{
 		// Check cache assuming the string is plural.
 		$singular = isset(self::$_cache['singularized'][$string]) ? self::$_cache['singularized'][$string] : null;
-		$plural   = $singular && isset(self::$_cache['pluralized'][$singular]) ? self::$_cache['pluralized'][$singular] : null;
+		$plural = $singular && isset(self::$_cache['pluralized'][$singular]) ? self::$_cache['pluralized'][$singular] : null;
 
 		if ($singular && $plural)
 		{
@@ -407,14 +411,20 @@ class Inflector
 	/**
 	 * Check to see if an Enlish word is plural.
 	 *
-	 * @param   string  $string  String to be checked.
+	 * @param   string $string String to be checked.
 	 *
 	 * @return boolean
 	 */
 	public static function isPlural($string)
 	{
+		// Uncountable objects are always singular (e.g. information)
+		if (in_array($string, self::$_rules['uncountable']))
+		{
+			return false;
+		}
+
 		// Check cache assuming the string is singular.
-		$plural   = isset(self::$_cache['pluralized'][$string]) ? self::$_cache['pluralized'][$string] : null;
+		$plural = isset(self::$_cache['pluralized'][$string]) ? self::$_cache['pluralized'][$string] : null;
 		$singular = $plural && isset(self::$_cache['singularized'][$plural]) ? self::$_cache['singularized'][$plural] : null;
 
 		if ($plural && $singular)
@@ -432,9 +442,9 @@ class Inflector
 	 * Use a negative index to start at the last part of the word (-1 is the
 	 * last part)
 	 *
-	 * @param   string   $string   Word
-	 * @param   integer  $index    Index of the part
-	 * @param   string   $default  Default value
+	 * @param   string  $string  Word
+	 * @param   integer $index   Index of the part
+	 * @param   string  $default Default value
 	 *
 	 * @return string
 	 */
