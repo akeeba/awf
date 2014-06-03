@@ -17,21 +17,21 @@ namespace Awf\Input;
  *
  * @package Awf\Input
  *
- * @method 	integer	getInt($name, $default)
- * @method 	integer	getInteger($name, $default)
- * @method 	integer	getUint($name, $default)
- * @method 	float 	getFloat($name, $default)
- * @method 	float 	getDouble($name, $default)
- * @method 	boolean getBool($name, $default)
- * @method 	boolean	getBoolean($name, $default)
- * @method 	string 	getWord($name, $default)
- * @method 	string 	getAlnum($name, $default)
- * @method 	string 	getCmd($name, $default)
- * @method 	string 	getBase64($name, $default)
- * @method 	string 	getString($name, $default)
- * @method 	string 	getHtml($name, $default)
- * @method 	string 	getPath($name, $default)
- * @method 	string 	getUsername($name, $default)
+ * @method    integer    getInt($name, $default)
+ * @method    integer    getInteger($name, $default)
+ * @method    integer    getUint($name, $default)
+ * @method    float    getFloat($name, $default)
+ * @method    float    getDouble($name, $default)
+ * @method    boolean getBool($name, $default)
+ * @method    boolean    getBoolean($name, $default)
+ * @method    string    getWord($name, $default)
+ * @method    string    getAlnum($name, $default)
+ * @method    string    getCmd($name, $default)
+ * @method    string    getBase64($name, $default)
+ * @method    string    getString($name, $default)
+ * @method    string    getHtml($name, $default)
+ * @method    string    getPath($name, $default)
+ * @method    string    getUsername($name, $default)
  */
 class Input implements \Serializable, \Countable
 {
@@ -44,16 +44,29 @@ class Input implements \Serializable, \Countable
 	/** @var   array  Input objects */
 	protected $inputs = array();
 
+	/** @var   array  Input options */
+	protected $options = array();
+
 	/**
 	 * Constructor
 	 *
-	 * @param   array $source Source data (Optional, default is $_REQUEST)
+	 * @param   array $source  Source data (Optional, default is $_REQUEST)
+	 * @param   array $options Options for the Input object
 	 *
 	 * @return  \Awf\Input\Input
 	 */
-	public function __construct($source = null)
+	public function __construct($source = null, $options = array())
 	{
-		$this->filter = \Awf\Input\Filter::getInstance();
+		$this->options = $options;
+
+		if (isset($options['filter']))
+		{
+			$this->filter = $options['filter'];
+		}
+		else
+		{
+			$this->filter = \Awf\Input\Filter::getInstance();
+		}
 
 		if (is_null($source))
 		{
@@ -256,7 +269,7 @@ class Input implements \Serializable, \Countable
 		unset($inputs['server']);
 
 		// Serialize the data and inputs.
-		return serialize(array($this->data, $inputs));
+		return serialize(array($this->options, $this->data, $inputs));
 	}
 
 	/**
@@ -269,7 +282,7 @@ class Input implements \Serializable, \Countable
 	public function unserialize($input)
 	{
 		// Unserialize the data, and inputs.
-		list($this->data, $this->inputs) = unserialize($input);
+		list($this->options, $this->data, $this->inputs) = unserialize($input);
 
 		// Load the filter.
 		$this->filter = \Awf\Input\Filter::getInstance();
