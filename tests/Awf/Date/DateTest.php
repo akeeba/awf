@@ -20,7 +20,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * An instance of the class to test.
 	 *
-	 * @var    \Awf\Date\Date
+	 * @var    Awf\Date\Date
 	 * @since  1.0
 	 */
 	private $instance;
@@ -431,7 +431,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider  getTestMagicConstruct
 	 * @since         1.0
-	 * @covers        \Awf\Date\Date::__construct
+	 * @covers        Awf\Date\Date::__construct
 	 */
 	public function testMagicConstruct($date, $tz, $expectedTime)
 	{
@@ -459,7 +459,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider  getTestMagicGet
 	 * @since         1.0
-	 * @covers        \Awf\Date\Date::__get
+	 * @covers        Awf\Date\Date::__get
 	 */
 	public function testMagicGet($date, $property, $expected)
 	{
@@ -477,7 +477,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 * @return  void
 	 *
 	 * @since   1.0
-	 * @covers  \Awf\Date\Date::__toString
+	 * @covers  Awf\Date\Date::__toString
 	 */
 	public function testMagicToString()
 	{
@@ -501,7 +501,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestToString
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::__toString
+	 * @covers       Awf\Date\Date::__toString
 	 */
 	public function testToString($format, $expectedTime)
 	{
@@ -528,7 +528,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestGetOffsetFromGMT
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::getOffsetFromGMT
+	 * @covers       Awf\Date\Date::getOffsetFromGMT
 	 */
 	public function testGetOffsetFromGMT($tz, $setTime, $hours, $expected)
 	{
@@ -564,7 +564,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestFormat
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::format
+	 * @covers       Awf\Date\Date::format
 	 */
 	public function testFormat($format, $local, $expected)
 	{
@@ -586,7 +586,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestToRFC822
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::toRFC822
+	 * @covers       Awf\Date\Date::toRFC822
 	 */
 	public function testToRFC822($tz, $setTime, $local, $expected)
 	{
@@ -617,7 +617,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestToISO8601
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::toISO8601
+	 * @covers       Awf\Date\Date::toISO8601
 	 */
 	public function testToISO8601($tz, $setTime, $local, $expected)
 	{
@@ -647,7 +647,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestToUnix
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::toUnix
+	 * @covers       Awf\Date\Date::toUnix
 	 */
 	public function testToUnix($tz, $setTime, $expected)
 	{
@@ -676,7 +676,7 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestSetTimezone
 	 * @since        1.0
-	 * @covers       \Awf\Date\Date::setTimezone
+	 * @covers       Awf\Date\Date::setTimezone
 	 */
 	public function testSetTimezone($tz, $expected)
 	{

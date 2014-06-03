@@ -17,11 +17,11 @@ use Awf\Input\Cli;
 class CliTest extends \PHPUnit_Framework_TestCase
 {
 	/**
-	 * Test the \Awf\Input\Cli::get method.
+	 * Test the Awf\Input\Cli::get method.
 	 *
 	 * @return  void
 	 *
-	 * @covers  \Awf\Input\Cli::get
+	 * @covers  Awf\Input\Cli::get
 	 * @since   1.0
 	 */
 	public function testGet()
@@ -62,11 +62,11 @@ class CliTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * Test the \Awf\Input\Cli::get method.
+	 * Test the Awf\Input\Cli::get method.
 	 *
 	 * @return  void
 	 *
-	 * @covers  \Awf\Input\Cli::get
+	 * @covers  Awf\Input\Cli::get
 	 * @since   1.0
 	 */
 	public function testParseLongArguments()
@@ -100,11 +100,11 @@ class CliTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * Test the \Awf\Input\Cli::get method.
+	 * Test the Awf\Input\Cli::get method.
 	 *
 	 * @return  void
 	 *
-	 * @covers  \Awf\Input\Cli::get
+	 * @covers  Awf\Input\Cli::get
 	 * @since   1.0
 	 */
 	public function testParseShortArguments()
@@ -144,11 +144,11 @@ class CliTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * Test the \Awf\Input\Cli::get method.
+	 * Test the Awf\Input\Cli::get method.
 	 *
 	 * @return  void
 	 *
-	 * @covers  \Awf\Input\Cli::get
+	 * @covers  Awf\Input\Cli::get
 	 * @since   1.0
 	 */
 	public function testGetFromServer()

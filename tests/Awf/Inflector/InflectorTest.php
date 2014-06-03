@@ -8,9 +8,20 @@
 namespace Tests\Awf\Inflector;
 
 use Awf\Inflector\Inflector;
+use Tests\Helpers\ReflectionHelper;
 
+/**
+ * Test class for Awf\Inflector\Inflector.
+ *
+ * @since  1.0
+ */
 class InflectorTest extends \PHPUnit_Framework_TestCase
 {
+	/**
+	 * Returns test data for pluralize()
+	 *
+	 * @return array
+	 */
 	public function getTestPluralizeData()
 	{
 		return array(
@@ -151,6 +162,176 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for testIsSingular()
+	 *
+	 * @return array
+	 */
+	public function getTestIsSingular()
+	{
+		return array(
+			array("move", true, "isSingular: Move"),
+			array("moves", false, "isSingular: Moves"),
+			array("sex", true, "isSingular: Sex"),
+			array("sexes", false, "isSingular: Sexes"),
+			array("child", true, "isSingular: Child"),
+			array("children", false, "isSingular: Children"),
+			array("woman", true, "Pluralisation of words in -an not honoured"),
+			array("women", false, "Should return the same as it's already a plural (words in -an)"),
+			array("foot", true, "isSingular: Foot"),
+			array("feet", false, "isSingular: Feet"),
+			array("person", true, "isSingular: Person"),
+			array("people", false, "isSingular: People"),
+			array("taxon", true, "isSingular: Taxon"),
+			array("taxa", false, "isSingular: Taxa"),
+			array("quiz", true, "isSingular: Quiz"),
+			array("quizzes", false, "isSingular: Quizzes"),
+			array("ox", true, "isSingular: Ox"),
+			array("oxen", false, "isSingular: Oxen"),
+			array("mouse", true, "isSingular: Mouse"),
+			array("mice", false, "isSingular: Mice"),
+			array("matrix", true, "isSingular: Matrix"),
+			array("matrices", false, "isSingular: Matrices"),
+			array("vertex", true, "isSingular: Vertex"),
+			array("vertices", false, "isSingular: Vertices"),
+			array("index", true, "isSingular: Index"),
+			array("indices", false, "isSingular: Indices"),
+			array("suffix", true, "isSingular: Suffix"),
+			array("suffices", false, "isSingular: Suffices"),
+			array("codex", true, "isSingular: Codex"),
+			array("codices", false, "isSingular: Codices"),
+			array("onyx", true, "isSingular: onyx"),
+			array("onyxes", false, "isSingular: onyxes"),
+			array("leech", true, "isSingular: Leech"),
+			array("leeches", false, "isSingular: Leeches"),
+			array("glass", true, "isSingular: Glass"),
+			array("glasses", false, "isSingular: Glasses"),
+			array("mesh", true, "isSingular: Mesh"),
+			array("meshes", false, "isSingular: Meshes"),
+			array("soliloquy", true, "isSingular: Soliloquy"),
+			array("soliloquies", false, "isSingular: Soliloquies"),
+			array("baby", true, "isSingular: Baby"),
+			array("babies", false, "isSingular: Babies"),
+			array("elf", true, "isSingular: Elf"),
+			array("elves", false, "isSingular: Elves"),
+			array("life", true, "isSingular: Life"),
+			array("lives", false, "isSingular: Lives"),
+			array("antithesis", true, "isSingular: Antitheses"),
+			array("antitheses", false, "isSingular: Antitheses"),
+			array("consortium", true, "isSingular: consortium"),
+			array("consortia", false, "isSingular: consortia"),
+			array("addendum", true, "isSingular: addendum"),
+			array("addenda", false, "isSingular: addenda"),
+			array("alumna", true, "isSingular: alumna"),
+			array("alumnae", false, "isSingular: alumnae"),
+			array("formula", true, "isSingular: formula"),
+			array("formulae", false, "isSingular: formulae"),
+			array("buffalo", true, "isSingular: buffalo"),
+			array("buffaloes", false, "isSingular: buffaloes"),
+			array("tomato", true, "isSingular: tomato"),
+			array("tomatoes", false, "isSingular: tomatoes"),
+			array("hero", true, "isSingular: hero"),
+			array("heroes", false, "isSingular: heroes"),
+			array("bus", true, "isSingular: bus"),
+			array("buses", false, "isSingular: buses"),
+			array("alias", true, "isSingular: alias"),
+			array("aliases", false, "isSingular: aliases"),
+			array("octopus", true, "isSingular: octopus"),
+			array("octopi", false, "isSingular: octopi"),
+			array("virus", true, "isSingular: virus"),
+			array("viri", false, "isSingular: viri"),
+			array("genus", true, "isSingular: genus"),
+			array("genera", false, "isSingular: genera"),
+			array("axis", true, "isSingular: axis"),
+			array("axes", false, "isSingular: axes"),
+			array("testis", true, "isSingular: testis"),
+			array("testes", false, "isSingular: testes"),
+
+			array("dwarf", true, "isSingular: Dwarf"),
+			array("dwarves", false, "isSingular: Dwarves"),
+			array("guy", true, "isSingular: Guy"),
+			array("guys", false, "isSingular: Guys"),
+			array("relief", true, "isSingular: Relief"),
+			array("reliefs", false, "isSingular: Reliefs"),
+
+			array("aircraft", true, "isSingular: aircraft (special)"),
+			array("cannon", true, "isSingular: cannon (special)"),
+			array("deer", true, "isSingular: deer (special)"),
+			array("equipment", true, "isSingular: equipment (special)"),
+			array("fish", true, "isSingular: Fish (special)"),
+			array("information", true, "isSingular: information (special)"),
+			array("money", true, "isSingular: money (special)"),
+			array("moose", true, "isSingular: moose (special)"),
+			array("rice", true, "isSingular: rice (special)"),
+			array("series", true, "isSingular: series (special)"),
+			array("sheep", true, "isSingular: sheep (special)"),
+			array("species", true, "isSingular: species (special)"),
+			array("swine", true, "isSingular: swine (special)"),
+
+			array("word", true, 'isSingular: word'),
+			array("words", false, "isSingular: words"),
+
+			array("cookie", true, "isSingular: cookie"),
+			array("cookies", false, "isSingular: cookies"),
+			array("database", true, "isSingular: database"),
+			array("databases", false, "isSingular: databases"),
+			array("crisis", true, "isSingular: crisis"),
+			array("crises", false, "isSingular: crises"),
+			array("shoe", true, "isSingular: shoe"),
+			array("shoes", false, "isSingular: shoes"),
+			array("backhoe", true, "isSingular: backhoe"),
+			array("backhoes", false, "isSingular: backhoes"),
+			array("movie", true, "isSingular: movie"),
+			array("movies", false, "isSingular: movies"),
+			array("vie", true, "isSingular: vie"),
+			array("vies", false, "isSingular: vies"),
+			array("narrative", true, "isSingular: narrative"),
+			array("narratives", false, "isSingular: narratives"),
+			array("hive", true, "isSingular: hive"),
+			array("hives", false, "isSingular: hives"),
+			array("analysis", true, "isSingular: analysis"),
+			array("analyses", false, "isSingular: analyses"),
+			array("basis", true, "isSingular: basis"),
+			array("bases", false, "isSingular: bases"),
+			array("diagnosis", true, "isSingular: diagnosis"),
+			array("diagnoses", false, "isSingular: diagnoses"),
+			array("parenthesis", true, "isSingular: parenthesis"),
+			array("parentheses", false, "isSingular: parentheses"),
+			array("prognosis", true, "isSingular: prognosis"),
+			array("prognoses", false, "isSingular: prognoses"),
+			array("synopsis", true, "isSingular: synopsis"),
+			array("synopses", false, "isSingular: synopses"),
+			array("thesis", true, "isSingular: thesis"),
+			array("theses", false, "isSingular: theses"),
+			array("news", true, "isSingular: news"),
+		);
+	}
+
+	/**
+	 * Returns test data for testIsPlural()
+	 *
+	 * @return array
+	 */
+	public function getTestIsPlural()
+	{
+		$temp = $this->getTestIsSingular();
+		$ret = array();
+
+		foreach ($temp as $items)
+		{
+			$items[1] = !$items[1];
+			$items[2] = str_replace('isSingular:', 'isPlural:', $items[2]);
+			$ret[] = $items;
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Returns test data for singularize()
+	 *
+	 * @return array
+	 */
 	public function getTestSingularizeData()
 	{
 		return array(
@@ -294,6 +475,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for camelize()
+	 *
+	 * @return array
+	 */
 	public function getTestCamelizeData()
 	{
 		return array(
@@ -304,6 +490,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for underscore()
+	 *
+	 * @return array
+	 */
 	public function getTestUnderscoreData()
 	{
 		return array(
@@ -312,6 +503,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for explode()
+	 *
+	 * @return array
+	 */
 	public function getTestExplodeData()
 	{
 		return array(
@@ -320,6 +516,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for implode()
+	 *
+	 * @return array
+	 */
 	public function getTestImplodeData()
 	{
 		return array(
@@ -327,6 +528,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for humanize()
+	 *
+	 * @return array
+	 */
 	public function getTestHumanizeData()
 	{
 		return array(
@@ -335,6 +541,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for tableize()
+	 *
+	 * @return array
+	 */
 	public function getTestTableizeData()
 	{
 		return array(
@@ -344,6 +555,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for classify()
+	 *
+	 * @return array
+	 */
 	public function getTestClassifyData()
 	{
 		return array(
@@ -353,6 +569,11 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	/**
+	 * Returns test data for variableize()
+	 *
+	 * @return array
+	 */
 	public function getTestVariableizeData()
 	{
 		return array(
@@ -364,7 +585,45 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
+	 * Test deleteCache method
+	 *
+	 * @covers Awf\Inflector\Inflector::deleteCache
+	 * @uses Tests\Helpers\ReflectionHelper::setValue
+	 * @uses Tests\Helpers\ReflectionHelper::getValue
+	 *
+	 * @return  void
+	 */
+	public function testDeleteCache()
+	{
+		$myCache = array(
+			'singularized' => array('foobar' => 'foobars'),
+			'pluralized'   => array('foobars' => 'foobar'),
+		);
+		ReflectionHelper::setValue('\\Awf\\Inflector\\Inflector', '_cache', $myCache);
+
+		Inflector::deleteCache();
+
+		$newCache = ReflectionHelper::getValue('\\Awf\\Inflector\\Inflector', '_cache');
+
+		$this->assertEmpty(
+			$newCache['singularized'],
+			'Line: ' . __LINE__ . '.'
+		);
+
+		$this->assertEmpty(
+			$newCache['pluralized'],
+			'Line: ' . __LINE__ . '.'
+		);
+	}
+
+	/**
 	 * Test addWord method
+	 *
+	 * @covers Awf\Inflector\Inflector::addWord
+	 * @uses Awf\Inflector\Inflector::singularize
+	 * @uses Awf\Inflector\Inflector::pluralize
+	 *
+	 * @return  void
 	 */
 	public function testAddWord()
 	{
@@ -379,6 +638,9 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Test pluralize method
+	 *
+	 * @covers Awf\Inflector\Inflector::pluralize
+	 * @uses Awf\Inflector\Inflector::deleteCache
 	 *
 	 * @dataProvider getTestPluralizeData
 	 */
@@ -396,6 +658,9 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test singularize method
 	 *
+	 * @covers Awf\Inflector\Inflector::singularize
+	 * @uses Awf\Inflector\Inflector::deleteCache
+	 *
 	 * @dataProvider getTestSingularizeData
 	 */
 	public function testSingularize($word, $expect, $message)
@@ -412,6 +677,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test camelize method
 	 *
+	 * @covers Awf\Inflector\Inflector::camelize
+	 *
 	 * @dataProvider getTestCamelizeData
 	 */
 	public function testCamelize($word, $expect, $message)
@@ -426,6 +693,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Test underscore method
+	 *
+	 * @covers Awf\Inflector\Inflector::underscore
 	 *
 	 * @dataProvider getTestUnderscoreData
 	 */
@@ -442,6 +711,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test explode method
 	 *
+	 * @covers Awf\Inflector\Inflector::explode
+	 *
 	 * @dataProvider getTestExplodeData
 	 */
 	public function testExplode($word, $expect, $message)
@@ -456,6 +727,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Test implode method
+	 *
+	 * @covers Awf\Inflector\Inflector::implode
 	 *
 	 * @dataProvider getTestImplodeData
 	 */
@@ -472,6 +745,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test humanize method
 	 *
+	 * @covers Awf\Inflector\Inflector::humanize
+	 *
 	 * @dataProvider getTestHumanizeData
 	 */
 	public function testHumanize($word, $expect, $message)
@@ -486,6 +761,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * Test tableize method
+	 *
+	 * @covers Awf\Inflector\Inflector::tableize
 	 *
 	 * @dataProvider getTestTableizeData
 	 */
@@ -502,6 +779,8 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test classify method
 	 *
+	 * @covers Awf\Inflector\Inflector::classify
+	 *
 	 * @dataProvider getTestClassifyData
 	 */
 	public function testClassify($word, $expect, $message)
@@ -517,11 +796,53 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test variableize method
 	 *
+	 * @covers Awf\Inflector\Inflector::variablize
+	 *
 	 * @dataProvider getTestVariableizeData
 	 */
 	public function testVariableize($word, $expect, $message)
 	{
 		$res = Inflector::variablize($word);
+		$this->assertEquals(
+			$res,
+			$expect,
+			$message
+		);
+	}
+
+	/**
+	 * Test isSingular method
+	 *
+	 * @covers Awf\Inflector\Inflector::isSingular
+	 * @uses Awf\Inflector\Inflector::deleteCache
+	 *
+	 * @dataProvider getTestIsSingular
+	 */
+	public function testIsSingular($word, $expect, $message)
+	{
+		Inflector::deleteCache();
+
+		$res = Inflector::isSingular($word);
+		$this->assertEquals(
+			$res,
+			$expect,
+			$message
+		);
+	}
+
+	/**
+	 * Test isPlural method
+	 *
+	 * @covers Awf\Inflector\Inflector::isPlural
+	 * @uses Awf\Inflector\Inflector::deleteCache
+	 *
+	 * @dataProvider getTestIsPlural
+	 */
+	public function testIsPlural($word, $expect, $message)
+	{
+		Inflector::deleteCache();
+
+		$res = Inflector::isPlural($word);
 		$this->assertEquals(
 			$res,
 			$expect,
