@@ -78,7 +78,7 @@ class ReflectionHelper
 	}
 
 	/**
-	 * Helper method that sets a protected or private property in a class by relfection.
+	 * Helper method that sets a protected or private property in a class by reflection.
 	 *
 	 * @param   object  $object        The object for which to set the property.
 	 * @param   string  $propertyName  The name of the property to set.

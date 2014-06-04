@@ -12,6 +12,8 @@ use Awf\Mvc\DataModel;
 
 /**
  * Implements the HAL over JSON renderer
+ *
+ * @see http://stateless.co/hal_specification.html
  */
 class Json implements RenderInterface
 {
@@ -91,10 +93,12 @@ class Json implements RenderInterface
 
 		if (!empty($collection))
 		{
-			$serialiseThis->_embedded->$rel = new \stdClass;
+			$serialiseThis->_embedded = new \stdClass;
 
 			foreach ($collection as $rel => $embeddeddocs)
 			{
+				$serialiseThis->_embedded->$rel = array();
+
 				if (!is_array($embeddeddocs))
 				{
 					$embeddeddocs = array($embeddeddocs);
@@ -157,17 +161,17 @@ class Json implements RenderInterface
 			$ret['templated'] = 'true';
 		}
 
-		if (!empty($link->name))
+		if ($link->name)
 		{
 			$ret['name'] = $link->name;
 		}
 
-		if (!empty($link->hreflang))
+		if ($link->hreflang)
 		{
 			$ret['hreflang'] = $link->hreflang;
 		}
 
-		if (!empty($link->title))
+		if ($link->title)
 		{
 			$ret['title'] = $link->title;
 		}

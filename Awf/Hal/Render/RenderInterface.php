@@ -9,6 +9,8 @@ namespace Awf\Hal\Render;
 
 /**
  * Interface for HAL document renderers
+ *
+ * @see http://stateless.co/hal_specification.html
  */
 interface RenderInterface
 {

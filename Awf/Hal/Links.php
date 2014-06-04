@@ -10,6 +10,8 @@ namespace Awf\Hal;
 /**
  * Implementation of the Hypertext Application Language links in PHP. This is
  * actually a collection of links.
+ *
+ * @see http://stateless.co/hal_specification.html
  */
 class Links
 {
