@@ -133,7 +133,7 @@ class Document
 	 */
 	public function addEmbedded($rel, Document $document, $overwrite = true)
 	{
-		if (!array_key_exists($rel, $this->_embedded) || !$overwrite)
+		if (!array_key_exists($rel, $this->_embedded) || $overwrite)
 		{
 			$this->_embedded[$rel] = $document;
 
