@@ -13,7 +13,7 @@ namespace Awf\Inflector;
 /**
  * An Inflector to pluralize and singularize English nouns.
  */
-class Inflector
+abstract class Inflector
 {
 	/**
 	 * Rules for pluralizing and singularizing of nouns.
@@ -134,15 +134,6 @@ class Inflector
 		'singularized' => array(),
 		'pluralized'   => array()
 	);
-
-	/**
-	 * Constructor
-	 *
-	 * Prevent creating instances of this class by making the constructor private
-	 */
-	private function __construct()
-	{
-	}
 
 	public static function deleteCache()
 	{
