@@ -38,7 +38,7 @@ class Timer
 	public function __construct($max_exec_time = 5, $runtime_bias = 75)
 	{
 		// Initialize start time
-		$this->start_time = $this->microtime_float();
+		$this->start_time = microtime(true);
 		
 		$this->max_exec_time = $max_exec_time * $runtime_bias / 100;
 	}
@@ -51,7 +51,7 @@ class Timer
 	public function __wakeup()
 	{
 		// Re-initialize start time on wake-up
-		$this->start_time = $this->microtime_float();
+		$this->start_time = microtime(true);
 	}
 
 	/**
@@ -72,18 +72,7 @@ class Timer
 	 */
 	public function getRunningTime()
 	{
-		return $this->microtime_float() - $this->start_time;
-	}
-
-	/**
-	 * Returns the current timestamp in decimal seconds
-	 * 
-	 * @return  float
-	 */
-	private function microtime_float()
-	{
-		list($usec, $sec) = explode(" ", microtime());
-		return ((float)$usec + (float)$sec);
+		return microtime(true) - $this->start_time;
 	}
 
 	/**
@@ -93,7 +82,7 @@ class Timer
 	 */
 	public function resetTime()
 	{
-		$this->start_time = $this->microtime_float();
+		$this->start_time = microtime(true);
 	}
 
 }
