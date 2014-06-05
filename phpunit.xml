@@ -19,6 +19,7 @@
             <exclude>
                 <directory suffix=".php">Awf/Autoloader</directory>
                 <directory suffix=".php">Awf/Compat</directory>
+                <directory suffix=".php">Awf/Mailer/phpmailer</directory>
             </exclude>
         </whitelist>
     </filter>
