@@ -16,4 +16,11 @@ if (false == include __DIR__ . '/../Awf/Autoloader/Autoloader.php')
 	exit(1);
 }
 
+// Tell the AWF autoloader where to load test classes from (very useful for stubs!)
 \Awf\Autoloader\Autoloader::getInstance()->addMap('Tests\\', __DIR__);
+
+// This is necessary for the session testing
+ini_set('session.use_only_cookies', false);
+ini_set('session.use_cookies', false);
+ini_set('session.use_trans_sid', false);
+ini_set('session.cache_limiter', null);

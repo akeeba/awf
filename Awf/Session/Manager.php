@@ -161,7 +161,7 @@ class Manager
 	 */
 	public function clear()
 	{
-		return session_unset();
+		@session_unset();
 	}
 
 	/**
@@ -173,7 +173,13 @@ class Manager
 	 */
 	public function commit()
 	{
-		return session_write_close();
+		@session_write_close();
+
+		// Normally, session_write_close() should close the session. However, the unit tests say it doesn't. Not only
+		// that, it also prevents session_destroy from working unless you try a session_start before. WTF?!
+
+		@session_start();
+		@session_destroy();
 	}
 
 	/**
@@ -189,9 +195,12 @@ class Manager
 		{
 			$this->start();
 		}
+
 		$this->clear();
 
-		return session_destroy();
+		$ret = @session_destroy();
+
+		return $ret;
 	}
 
 	/**
@@ -349,6 +358,7 @@ class Manager
 	public function regenerateId()
 	{
 		$result = session_regenerate_id(true);
+
 		if ($result && $this->csrf_token)
 		{
 			$this->csrf_token->regenerateValue();
