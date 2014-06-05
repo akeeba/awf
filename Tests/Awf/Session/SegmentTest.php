@@ -58,6 +58,9 @@ class SegmentTest extends \PHPUnit_Framework_TestCase
 
 	public function testMagicMethods()
 	{
+		@$this->session->destroy();
+		@$this->session->start();
+
 		// var not set
 		$this->assertFalse(isset($this->segment->foo));
 

@@ -148,7 +148,7 @@ class Manager
 	{
 		if (!$this->isStarted())
 		{
-			return session_start();
+			return @session_start();
 		}
 	}
 
