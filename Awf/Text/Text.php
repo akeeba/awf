@@ -27,7 +27,7 @@ abstract class Text
 	/**
 	 * Adds an INI process callback to the stack
 	 *
-	 * @param   callable   $callable  The processing callback to add
+	 * @param   callable $callable The processing callback to add
 	 *
 	 * @return  void
 	 */
@@ -39,11 +39,11 @@ abstract class Text
 	/**
 	 * Loads the language file for a specific language
 	 *
-	 * @param   string   $langCode      The ISO language code, e.g. en-GB, use null for automatic detection
-	 * @param   string   $appName       The name of the application to load translation strings for
-	 * @param   string   $suffix        The suffix of the language file, by default it's .ini
-	 * @param   boolean  $overwrite     Should I overwrite old language strings?
-	 * @param   string   $languagePath  The base path to the language files (optional)
+	 * @param   string  $langCode     The ISO language code, e.g. en-GB, use null for automatic detection
+	 * @param   string  $appName      The name of the application to load translation strings for
+	 * @param   string  $suffix       The suffix of the language file, by default it's .ini
+	 * @param   boolean $overwrite    Should I overwrite old language strings?
+	 * @param   string  $languagePath The base path to the language files (optional)
 	 *
 	 * @return  void
 	 */
@@ -110,9 +110,9 @@ abstract class Text
 	 * the best fit language that exists on our system or falling back to en-GB
 	 * when no preferred language exists.
 	 *
-	 * @param   string  $appName      The application's name to load language strings for
-	 * @param   string  $suffix       The suffix of the language file, by default it's .ini
-	 * @param   string  $languagePath The base path to the language files (optional)
+	 * @param   string $appName      The application's name to load language strings for
+	 * @param   string $suffix       The suffix of the language file, by default it's .ini
+	 * @param   string $languagePath The base path to the language files (optional)
 	 *
 	 * @return  string  The language code
 	 */
@@ -126,19 +126,41 @@ abstract class Text
 			$languages = str_replace(' ', '', $languages);
 			$languages = explode(",", $languages);
 
-			foreach ($languages as $language_list)
+			// First we need to sort languages by their weight
+			$temp = array();
+
+			foreach ($languages as $lang)
+			{
+				$parts = explode(';', $lang);
+
+				$q = 1;
+				if ((count($parts) > 1) && (substr($parts[1], 0, 2) == 'q='))
+				{
+					$q = floatval(substr($parts[1], 2));
+				}
+
+				$temp[$parts[0]] = $q;
+			}
+
+			arsort($temp);
+			$languages = $temp;
+
+			foreach ($languages as $language => $weight)
 			{
 				// pull out the language, place languages into array of full and primary
 				// string structure:
 				$temp_array = array();
-				// slice out the part before ; on first step, the part before - on second, place into array
-				$temp_array[0] = substr($language_list, 0, strcspn($language_list, ';')); //full language
-				$temp_array[1] = substr($language_list, 0, 2); // cut out primary language
+				// slice out the part before the dash, place into array
+				$temp_array[0] = $language; //full language
+				$parts = explode('-', $language);
+				$temp_array[1] = $parts[0]; // cut out primary language
+
 				if ((strlen($temp_array[0]) == 5) && ((substr($temp_array[0], 2, 1) == '-') || (substr($temp_array[0], 2, 1) == '_')))
 				{
 					$langLocation = strtoupper(substr($temp_array[0], 3, 2));
 					$temp_array[0] = $temp_array[1] . '-' . $langLocation;
 				}
+
 				//place this array into main $user_languages language array
 				$user_languages[] = $temp_array;
 			}
@@ -222,7 +244,7 @@ abstract class Text
 	/**
 	 * Translate a string
 	 *
-	 * @param   string  $key  Language key
+	 * @param   string $key Language key
 	 *
 	 * @return  string  Translation
 	 */
@@ -251,7 +273,7 @@ abstract class Text
 	 *
 	 * Note that this method can take a mixed number of arguments as for the sprintf function.
 	 *
-	 * @param   string  $string  The format string.
+	 * @param   string $string The format string.
 	 *
 	 * @return  string  The translated strings
 	 */
@@ -272,7 +294,7 @@ abstract class Text
 	/**
 	 * Does a translation key exist?
 	 *
-	 * @param   string  $key  The key to check
+	 * @param   string $key The key to check
 	 *
 	 * @return  boolean
 	 */

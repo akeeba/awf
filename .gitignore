@@ -14,3 +14,5 @@
 /build/templates/release-app.json
 /build/templates/release-wp.json
 /build/build.properties
+
+/Tests/coverage
