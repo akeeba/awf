@@ -7,6 +7,7 @@
 
 namespace Tests\Awf\Encrypt;
 
+use Awf\Encrypt\Base32;
 use Awf\Encrypt\Totp;
 
 /**
@@ -58,6 +59,39 @@ class TotpTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals(
 			'https://chart.googleapis.com/chart?chs=200x200&chld=Q|2&cht=qr&chl=otpauth%3A%2F%2Ftotp%2FJohnnieWalker%40example.com%3Fsecret%3DKREECVCJKNKE6VCBJRGFSU2FINJEKVA',
 			$this->totp->getUrl('JohnnieWalker', 'example.com', 'KREECVCJKNKE6VCBJRGFSU2FINJEKVA')
+		);
+	}
+
+	public function testGenerateSecret()
+	{
+		$secret1 = $this->totp->generateSecret();
+		$secret2 = $this->totp->generateSecret();
+
+		$this->assertNotEquals(
+			$secret1,
+			$secret2
+		);
+	}
+
+	public function testCheckCode()
+	{
+		$secret = '4FDAGLLSP6BIVU5H';
+		$time = 1375000339;
+
+		$code = $this->totp->getCode($secret, $time);
+		$codePrev = $this->totp->getCode($secret, $time - 30);
+		$codeNext = $this->totp->getCode($secret, $time + 30);
+
+		$this->assertTrue(
+			$this->totp->checkCode($secret, $code, $time)
+		);
+
+		$this->assertTrue(
+			$this->totp->checkCode($secret, $codePrev, $time)
+		);
+
+		$this->assertTrue(
+			$this->totp->checkCode($secret, $codeNext, $time)
 		);
 	}
 }

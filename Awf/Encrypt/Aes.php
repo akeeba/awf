@@ -7,6 +7,8 @@
 
 namespace Awf\Encrypt;
 
+use Awf\Session\Phpfunc;
+
 
 /**
  * A simple implementation of AES-128, AES-192 and AES-256 encryption using the
@@ -155,59 +157,64 @@ class Aes
 	 *
 	 * @return boolean
 	 */
-	public static function isSupported()
+	public static function isSupported(Phpfunc $phpfunc = null)
 	{
-		if (!function_exists('mcrypt_get_key_size'))
+		if (!is_object($phpfunc) || !($phpfunc instanceof $phpfunc))
+		{
+			$phpfunc = new Phpfunc();
+		}
+
+		if (!$phpfunc->function_exists('mcrypt_get_key_size'))
 		{
 			return false;
 		}
 
-		if (!function_exists('mcrypt_get_iv_size'))
+		if (!$phpfunc->function_exists('mcrypt_get_iv_size'))
 		{
 			return false;
 		}
 
-		if (!function_exists('mcrypt_create_iv'))
+		if (!$phpfunc->function_exists('mcrypt_create_iv'))
 		{
 			return false;
 		}
 
-		if (!function_exists('mcrypt_encrypt'))
+		if (!$phpfunc->function_exists('mcrypt_encrypt'))
 		{
 			return false;
 		}
 
-		if (!function_exists('mcrypt_decrypt'))
+		if (!$phpfunc->function_exists('mcrypt_decrypt'))
 		{
 			return false;
 		}
 
-		if (!function_exists('mcrypt_list_algorithms'))
+		if (!$phpfunc->function_exists('mcrypt_list_algorithms'))
 		{
 			return false;
 		}
 
-		if (!function_exists('hash'))
+		if (!$phpfunc->function_exists('hash'))
 		{
 			return false;
 		}
 
-		if (!function_exists('hash_algos'))
+		if (!$phpfunc->function_exists('hash_algos'))
 		{
 			return false;
 		}
 
-		if (!function_exists('base64_encode'))
+		if (!$phpfunc->function_exists('base64_encode'))
 		{
 			return false;
 		}
 
-		if (!function_exists('base64_decode'))
+		if (!$phpfunc->function_exists('base64_decode'))
 		{
 			return false;
 		}
 
-		$algorightms = mcrypt_list_algorithms();
+		$algorightms = $phpfunc->mcrypt_list_algorithms();
 
 		if (!in_array('rijndael-128', $algorightms))
 		{
@@ -224,7 +231,7 @@ class Aes
 			return false;
 		}
 
-		$algorightms = hash_algos();
+		$algorightms = $phpfunc->hash_algos();
 
 		if (!in_array('sha256', $algorightms))
 		{

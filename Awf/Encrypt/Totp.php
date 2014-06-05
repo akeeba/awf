@@ -96,16 +96,17 @@ class Totp
 	 *
 	 * @param   string $secret The Base32-encoded secret key
 	 * @param   string $code   The passcode to check
+	 * @param   int    $time   The time to check it against. Leave null to check for the current server time.
 	 *
 	 * @return boolean True if the code is valid
 	 */
-	public function checkCode($secret, $code)
+	public function checkCode($secret, $code, $time = null)
 	{
-		$time = $this->getPeriod();
+		$time = $this->getPeriod($time);
 
 		for ($i = -1; $i <= 1; $i++)
 		{
-			if ($this->getCode($secret, $time + $i) == $code)
+			if ($this->getCode($secret, ($time + $i) * $this->timeStep) == $code)
 			{
 				return true;
 			}
@@ -193,5 +194,4 @@ class Totp
 
 		return $this->base32->encode($secret);
 	}
-
-} 
+}

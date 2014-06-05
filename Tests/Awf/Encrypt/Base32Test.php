@@ -9,6 +9,7 @@ namespace Tests\Awf\Encrypt;
 
 
 use Awf\Encrypt\Base32;
+use Tests\Helpers\ReflectionHelper;
 
 /**
  * @coversDefaultClass Awf\Encrypt\Base32
@@ -52,5 +53,36 @@ class Base32Test extends \PHPUnit_Framework_TestCase
 		);
 	}
 
+	public function testDecodeWithCrapData()
+	{
+		$this->setExpectedException('\Exception');
+		$this->base32->decode('Crap data');
+	}
+
+	/**
+	 * @dataProvider getTestBin2StrExceptions
+	 */
+	public function testBin2StrExceptions($crapData, $message)
+	{
+		$this->setExpectedException('\Exception');
+		ReflectionHelper::invoke($this->base32, 'bin2str', $crapData);
+	}
+
+	/**
+	 * @dataProvider getTestBin2StrExceptions
+	 */
+	public function testFromBinExceptions($crapData, $message)
+	{
+		$this->setExpectedException('\Exception');
+		ReflectionHelper::invoke($this->base32, 'fromBin', $crapData);
+	}
+
+	public function getTestBin2StrExceptions()
+	{
+		return array(
+			array('101010101', 'Not divisable by 8'),
+			array('0A0A0A0A', 'Not binary data'),
+		);
+	}
 }
  
