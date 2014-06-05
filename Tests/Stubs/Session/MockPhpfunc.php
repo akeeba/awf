@@ -27,7 +27,7 @@ class MockPhpfunc extends Phpfunc
 	public function extension_loaded($name)
 	{
 		// for parent coverage
-		$this->__call('extension_loaded', [$name]);
+		$this->__call('extension_loaded', array($name));
 
 		// for testing
 		return in_array($name, $this->extensions);
