@@ -165,5 +165,18 @@ class LinkTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertEquals($expect, $link->$property, $message);
 	}
+
+	/**
+	 * @dataProvider	getTestMagicGetterData
+	 * @covers			Awf\Hal\Link::__set
+	 */
+	public function testMagicSetterEmptyHref()
+	{
+		$link = new Link('http://www.example.com/nada.json', false, 'My name', 'en-GB', 'My title');
+
+		$link->href = '';
+
+		$this->assertEquals('http://www.example.com/nada.json', $link->href);
+	}
 }
  

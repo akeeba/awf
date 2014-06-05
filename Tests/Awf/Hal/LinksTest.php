@@ -68,6 +68,11 @@ class LinksTest extends \PHPUnit_Framework_TestCase
 		$link = new Link('http://www.example.com/nada.json');
 		$linkset = new Links();
 
+		// ==== Try to add an empty array ====
+		$result = $linkset->addLinks('boz', array());
+
+		$this->assertFalse($result);
+
 		// ==== Add a link to a link set ====
 		$result = $linkset->addLink('custom', $link);
 
@@ -139,6 +144,10 @@ class LinksTest extends \PHPUnit_Framework_TestCase
 		$links = $linkset->getLinks('foo');
 		$this->assertEquals($newlinks['foo'][0], $links[0]);
 		$this->assertEquals($newlinks['foo'][1], $links[1]);
+
+		$links = $linkset->getLinks('baz');
+		$this->assertInternalType('array', $links);
+		$this->assertEmpty($links);
 	}
 }
  

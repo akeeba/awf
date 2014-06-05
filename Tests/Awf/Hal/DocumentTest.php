@@ -10,6 +10,7 @@ namespace Tests\Awf\Hal;
 use Awf\Hal\Document;
 use Awf\Hal\Link;
 use Awf\Hal\Links;
+use Tests\Helpers\ReflectionHelper;
 
 class DocumentTest extends \PHPUnit_Framework_TestCase
 {
@@ -216,6 +217,34 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testAddData_replace(Document $document)
 	{
+		$extraData = array('newData' => 'something');
+
+		$document->addData($extraData, true);
+		$data = $this->getObjectAttribute($document, '_data');
+
+		$this->assertInternalType(
+			'object',
+			$data,
+			'Line: ' . __LINE__ . '.'
+		);
+
+		$this->assertEquals(
+			(object)$extraData,
+			$data,
+			'Line: ' . __LINE__ . '.'
+		);
+	}
+
+	/**
+	 * @depends testAddLinks
+	 *
+	 * @covers Awf\Hal\Document::addData
+	 */
+	public function testAddData_fromScratch(Document $myDocument)
+	{
+		$document = clone $myDocument;
+		ReflectionHelper::setValue($document, '_data', null);
+
 		$extraData = array('newData' => 'something');
 
 		$document->addData($extraData, true);

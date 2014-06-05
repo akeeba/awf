@@ -46,7 +46,7 @@ class Links
 		{
 			$this->_links[$rel] = $link;
 		}
-		elseif (array_key_exists($rel, $this->_links) && !$overwrite)
+		else
 		{
 			if (!is_array($this->_links[$rel]))
 			{
@@ -54,10 +54,6 @@ class Links
 			}
 
 			$this->_links[$rel][] = $link;
-		}
-		else
-		{
-			return false;
 		}
 	}
 

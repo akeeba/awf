@@ -104,6 +104,7 @@ class JsonTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testRender(Json $renderer)
 	{
+		// Full render
 		$expected = '{"_links":{"prev":{"href":"http:\/\/www.example.com\/test.json?page=1"},"next":{"href":"http:\/\/www.example.com\/test.json?page=3"}},"_embedded":{"detail":["{\"_links\":{},\"_list\":{\"detail1_1\":\"val1_1\",\"detail1_2\":\"val1_2\"}}","{\"_links\":{},\"_list\":{\"detail2_1\":\"val2_1\",\"detail2_2\":\"val2_2\"}}"]},"_list":{"key1":"val1","key2":"val2"}}';
 		$rendered = $renderer->render();
 
@@ -112,6 +113,37 @@ class JsonTest extends \PHPUnit_Framework_TestCase
 			$rendered,
 			'Line: ' . __LINE__ . '.'
 		);
+
+		// Without embedded documents
+		$document = $this->getObjectAttribute($renderer, '_document');
+		ReflectionHelper::setValue($document, '_embedded', null);
+		ReflectionHelper::setValue($renderer, '_document', $document);
+
+		$expected = '{"_links":{"prev":{"href":"http:\/\/www.example.com\/test.json?page=1"},"next":{"href":"http:\/\/www.example.com\/test.json?page=3"}},"_list":{"key1":"val1","key2":"val2"}}';
+		$rendered = $renderer->render();
+
+		$this->assertEquals(
+			$expected,
+			$rendered,
+			'Line: ' . __LINE__ . '.'
+		);
+
+		// With list of links
+		$foo = new Link('http://www.example.com/foo.json?arg=1', false);
+		$document->addLink('foo', $foo);
+		$foo = new Link('http://www.example.com/foo.json?arg=1', false);
+		$document->addLink('foo', $foo);
+		ReflectionHelper::setValue($renderer, '_document', $document);
+
+		$expected = '{"_links":{"prev":{"href":"http:\/\/www.example.com\/test.json?page=1"},"next":{"href":"http:\/\/www.example.com\/test.json?page=3"},"foo":{"href":"http:\/\/www.example.com\/foo.json?arg=1"}},"_list":{"key1":"val1","key2":"val2"}}';
+		$rendered = $renderer->render();
+
+		$this->assertEquals(
+			$expected,
+			$rendered,
+			'Line: ' . __LINE__ . '.'
+		);
+
 	}
 
 	/**
