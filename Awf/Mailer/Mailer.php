@@ -146,7 +146,7 @@ class Mailer extends \PHPMailer
 		}
 		else
 		{
-			throw new \UnexpectedValueException(sprintf('Invalid email Sender: %s, JMail::setSender(%s)', $from));
+			throw new \UnexpectedValueException(sprintf('Invalid email Sender: %s, Mailer::setSender(%s)', $from));
 		}
 
 		return $this;

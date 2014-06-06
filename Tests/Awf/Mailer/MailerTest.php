@@ -45,22 +45,7 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test...
 	 *
-	 * @todo Implement testGetInstance().
-	 *
-	 * @return void
-	 */
-	public function testGetInstance()
-	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
-	}
-
-	/**
-	 * Test...
-	 *
-	 * @todo Implement testSend().
+	 * @todo Implement testSend(). How can you do that without sending a mail?
 	 *
 	 * @return void
 	 */
@@ -75,15 +60,37 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 	/**
 	 * Test...
 	 *
-	 * @todo Implement testSetSender().
+	 * @dataProvider getTestSetSender
 	 *
 	 * @return void
 	 */
-	public function testSetSender()
+	public function testSetSender($sender, $expectedFrom, $expectedFromName, $expectedSender)
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
+		$this->object->setSender($sender);
+
+		$this->assertEquals(
+			$expectedFrom,
+			$this->object->From
+		);
+
+		$this->assertEquals(
+			$expectedFromName,
+			$this->object->FromName
+		);
+
+		$this->assertEquals(
+			$expectedSender,
+			$this->object->Sender
+		);
+	}
+
+	public function getTestSetSender()
+	{
+		return array(
+			array('joe@example.com', 'joe@example.com', '', 'joe@example.com'),
+			array(array('joe@example.com', 'Joe'), 'joe@example.com', 'Joe', 'joe@example.com'),
+			array(array('mike@example.com', '', false), 'mike@example.com', '', ''),
+			array(array('john@example.com', '', true), 'john@example.com', '', 'john@example.com'),
 		);
 	}
 
@@ -96,24 +103,58 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testSetSubject()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
+		$subject = 'Foo bar baz';
+		$result = $this->object->setSubject($subject);
+
+		$this->assertEquals(
+			$subject,
+			$this->object->Subject
+		);
+
+		$this->assertInstanceOf(
+			'\\Awf\\Mailer\\Mailer',
+			$result
 		);
 	}
 
 	/**
 	 * Test...
 	 *
-	 * @todo Implement testSetBody().
-	 *
 	 * @return void
 	 */
 	public function testSetBody()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
+		// Plain text
+		$body = 'Foo bar baz';
+		$result = $this->object->setBody($body);
+
+		$this->assertEquals(
+			$body,
+			$this->object->Body
+		);
+
+		$this->assertInstanceOf(
+			'\\Awf\\Mailer\\Mailer',
+			$result
+		);
+
+		// HTML
+		$this->object->isHtml(true);
+		$body = '<p>Foo bar baz</p>';
+		$result = $this->object->setBody($body);
+
+		$this->assertEquals(
+			$body,
+			$this->object->Body
+		);
+
+		$this->assertEmpty(
+			$this->object->AltBody
+		);
+
+		$this->assertInstanceOf(
+			'\\Awf\\Mailer\\Mailer',
+			$result
 		);
 	}
 
@@ -318,9 +359,17 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testUseSendmail()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
+		$container = new Container();
+		$mail = $this->getMock('Awf\\Mailer\\Mailer', array('SetLanguage', 'IsSendmail', 'IsMail'), array($container));
+
+		$mail->expects(
+			$this->once()
+		)
+			->method('IsSendmail');
+
+		$this->assertThat(
+			$mail->useSendmail('/usr/sbin/sendmail'),
+			$this->equalTo(true)
 		);
 	}
 
@@ -396,21 +445,5 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 			'This test has not been implemented yet.'
 		);
 	}
-
-	/**
-	 * Test...
-	 *
-	 * @todo Implement testSendAdminMail().
-	 *
-	 * @return void
-	 */
-	public function testSendAdminMail()
-	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete(
-			'This test has not been implemented yet.'
-		);
-	}
-
 }
  
