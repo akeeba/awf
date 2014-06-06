@@ -13,6 +13,8 @@ namespace Awf\Exception;
  * Application-level exception
  *
  * @package Awf\Exception
+ *
+ * @codeCoverageIgnore
  */
 class App extends \Exception implements Generic
 {

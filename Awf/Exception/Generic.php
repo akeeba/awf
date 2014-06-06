@@ -12,6 +12,8 @@ namespace Awf\Exception;
  *
  * The generic root Awf exception
  *
+ * @codeCoverageIgnore
+ *
  * @package Awf\Exception
  */
 interface Generic
