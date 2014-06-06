@@ -68,13 +68,14 @@ abstract class String
 	public static function toBool($string)
 	{
 		$string = trim((string)$string);
+		$string = strtolower($string);
 
-		if ($string == 'true')
+		if (in_array($string, array(1, 'true', 'yes', 'on', 'enabled')))
 		{
 			return true;
 		}
 
-		if ($string == 'false')
+		if (in_array($string, array(1, 'false', 'no', 'off', 'disabled')))
 		{
 			return false;
 		}
