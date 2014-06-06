@@ -20,6 +20,7 @@ if (!function_exists('PHPMailerAutoload'))
 
 class Mailer extends \PHPMailer
 {
+
 	/**
 	 * @var    array[Mailer]  Mailer instances
 	 */
@@ -48,15 +49,15 @@ class Mailer extends \PHPMailer
 
 		$config = $container->appConfig;
 
-		$smtpauth = ($config->get('mail.smtpauth') == 0) ? null : 1;
-		$smtpuser = $config->get('mail.smtpuser');
-		$smtppass = $config->get('mail.smtppass');
-		$smtphost = $config->get('mail.smtphost');
+		$smtpauth   = ($config->get('mail.smtpauth') == 0) ? null : 1;
+		$smtpuser   = $config->get('mail.smtpuser');
+		$smtppass   = $config->get('mail.smtppass');
+		$smtphost   = $config->get('mail.smtphost');
 		$smtpsecure = $config->get('mail.smtpsecure');
-		$smtpport = $config->get('mail.smtpport');
-		$mailfrom = $config->get('mail.mailfrom');
-		$fromname = $config->get('mail.fromname');
-		$mailer = $config->get('mail.mailer');
+		$smtpport   = $config->get('mail.smtpport');
+		$mailfrom   = $config->get('mail.mailfrom');
+		$fromname   = $config->get('mail.fromname');
+		$mailer     = $config->get('mail.mailer');
 
 		$this->SetFrom($mailfrom, $fromname);
 		$this->container = $container;
@@ -281,16 +282,17 @@ class Mailer extends \PHPMailer
 	/**
 	 * Add file attachments to the email
 	 *
-	 * @param   mixed $attachment Either a string or array of strings [filenames]
-	 * @param   mixed $name       Either a string or array of strings [names]
-	 * @param   mixed $encoding   The encoding of the attachment
-	 * @param   mixed $type       The mime type
+	 * @param   mixed  $attachment  Either a string or array of strings [filenames]
+	 * @param   mixed  $name        Either a string or array of strings [names]
+	 * @param   mixed  $encoding    The encoding of the attachment
+	 * @param   mixed  $type        The mime type
+	 * @param   string $disposition The disposition of the attachment (attachment, inline, etc)
 	 *
 	 * @return  Mailer  Returns this object for chaining.
 	 *
 	 * @throws  \InvalidArgumentException
 	 */
-	public function addAttachment($attachment, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
+	public function addAttachment($attachment, $name = '', $encoding = 'base64', $type = 'application/octet-stream', $disposition = 'attachment')
 	{
 		// If the file attachments is an array, add each file... otherwise just add the one
 		if (isset($attachment))
@@ -306,17 +308,17 @@ class Mailer extends \PHPMailer
 				{
 					if (!empty($name))
 					{
-						parent::AddAttachment($file, $name[$key], $encoding, $type);
+						parent::AddAttachment($file, $name[$key], $encoding, $type, $disposition);
 					}
 					else
 					{
-						parent::AddAttachment($file, $name, $encoding, $type);
+						parent::AddAttachment($file, $name, $encoding, $type, $disposition);
 					}
 				}
 			}
 			else
 			{
-				parent::AddAttachment($attachment, $name, $encoding, $type);
+				parent::AddAttachment($attachment, $name, $encoding, $type, $disposition);
 			}
 		}
 
@@ -392,10 +394,10 @@ class Mailer extends \PHPMailer
 	public function useSMTP($auth = null, $host = null, $user = null, $pass = null, $secure = null, $port = 25)
 	{
 		$this->SMTPAuth = $auth;
-		$this->Host = $host;
+		$this->Host     = $host;
 		$this->Username = $user;
 		$this->Password = $pass;
-		$this->Port = $port;
+		$this->Port     = $port;
 
 		if ($secure == 'ssl' || $secure == 'tls')
 		{
