@@ -479,11 +479,11 @@ final class ArrayHelper
 					}
 					elseif ($caseSensitive)
 					{
-						$cmp = strcmp($va, $vb, $locale);
+						$cmp = strcmp($va, $vb);
 					}
 					else
 					{
-						$cmp = strcasecmp($va, $vb, $locale);
+						$cmp = strcasecmp($va, $vb);
 					}
 
 					if ($cmp > 0)
