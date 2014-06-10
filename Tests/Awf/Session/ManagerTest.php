@@ -101,7 +101,6 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 	public function testCommit()
 	{
 		$this->assertFalse($this->session->isStarted());
-		$this->session->start();
 
 		$this->session->commit();
 		$this->assertFalse($this->session->isStarted());
@@ -110,6 +109,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 	public function testCommitAndDestroy()
 	{
 		// get a test segment and set some data
+		$this->session->destroy();
 		$this->session->start();
 
 		$segment = $this->session->newSegment('test');
@@ -119,10 +119,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$expect = array('test' => array('foo' => 'bar', 'baz' => 'dib'));
 		$this->assertSame($expect, $_SESSION);
 
+		// This test will fail on PHP 5.3 due to the lack of session_status() and our approximation of its
+		// results in getStatus()
 		$this->session->commit();
 		$this->assertFalse($this->session->isStarted());
 
 		$this->session->destroy();
+		$this->assertFalse($this->session->isStarted());
 
 		$segment = $this->session->newSegment('test');
 		$this->assertSame(array(), $_SESSION);

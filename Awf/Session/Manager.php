@@ -174,12 +174,6 @@ class Manager
 	public function commit()
 	{
 		@session_write_close();
-
-		// Normally, session_write_close() should close the session. However, the unit tests say it doesn't. Not only
-		// that, it also prevents session_destroy from working unless you try a session_start before. WTF?!
-
-		@session_start();
-		@session_destroy();
 	}
 
 	/**
@@ -479,7 +473,13 @@ class Manager
 	 */
 	public function getStatus()
 	{
+		if (function_exists('session_status'))
+		{
+			return session_status();
+		}
+
 		$sid = session_id();
+
 		if (empty($sid))
 		{
 			return PHP_SESSION_NONE;
