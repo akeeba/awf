@@ -98,6 +98,9 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($this->session->isStarted());
 	}
 
+	/**
+	 * @requires PHP 5.4
+	 */
 	public function testCommit()
 	{
 		$this->assertFalse($this->session->isStarted());
@@ -106,6 +109,9 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($this->session->isStarted());
 	}
 
+	/**
+	 * @requires PHP 5.4
+	 */
 	public function testCommitAndDestroy()
 	{
 		// get a test segment and set some data
