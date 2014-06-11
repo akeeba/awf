@@ -15,4 +15,8 @@
 /build/templates/release-wp.json
 /build/build.properties
 
+/composer.lock
+
 /Tests/coverage
+
+/vendor
