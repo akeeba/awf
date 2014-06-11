@@ -37,8 +37,17 @@ abstract class Path
 		}
 		else
 		{
+			// Detect UNC paths
+			$prefix = (($ds == '\\') && substr($path, 0, 2) == '\\\\') ? '\\' : '';
+
 			// Remove double slashes and backslashes and convert all slashes and backslashes to DIRECTORY_SEPARATOR
 			$path = preg_replace('#[/\\\\]+#', $ds, $path);
+
+			// Reapply the UNC prefix if necessary
+			if ($prefix)
+			{
+				$path = $prefix . $path;
+			}
 		}
 
 		return $path;

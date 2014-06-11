@@ -6,7 +6,7 @@
  * Time: 4:23 μμ
  */
 
-namespace Tests\Stubs\Fakeapp;
+namespace Fakeapp;
 
 
 class Application extends \Awf\Application\Application

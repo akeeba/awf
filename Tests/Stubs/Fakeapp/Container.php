@@ -17,7 +17,8 @@ class Container extends \Awf\Container\Container
 			'application_name'     => 'Fakeapp',
 			'session_segment_name' => 'fakeapp',
 			'basePath'             => __DIR__,
-			'languagePath'         => __DIR__ . '/../../data/lang'
+			'languagePath'         => __DIR__ . '/../../data/lang',
+			'filesystemBase'       => __DIR__ ,
 		);
 
 		$values = array_merge($defaults, $values);

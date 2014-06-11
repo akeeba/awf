@@ -186,7 +186,7 @@ abstract class Application
 			if (!class_exists($className))
 			{
 				$filePath = __DIR__ . '/../../' . $name . '/application.php';
-				$result = include_once($filePath);
+				$result = @include_once($filePath);
 
 				if (!class_exists($className, false))
 				{
