@@ -19,6 +19,7 @@ class Container extends \Awf\Container\Container
 			'basePath'             => __DIR__,
 			'languagePath'         => __DIR__ . '/../../data/lang',
 			'filesystemBase'       => __DIR__ ,
+			'templatePath'			=> __DIR__
 		);
 
 		$values = array_merge($defaults, $values);

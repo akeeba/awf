@@ -45,7 +45,6 @@ abstract class Template
 	 *
 	 * The valid protocols are:
 	 * media://		The media directory or a media override
-	 * admin://		Path relative to administrator directory (no overrides)
 	 * site://		Path relative to site's root (no overrides)
 	 *
 	 * @param   string       $path       Fancy path
@@ -75,30 +74,28 @@ abstract class Template
 		$altPaths = self::getAltPaths($path, $app);
 		$ext = pathinfo($altPaths['normal'], PATHINFO_EXTENSION);
 
-		if ((!defined('AKEEBADEBUG') || !AKEEBADEBUG) && in_array($ext, array('css', 'js')) && (strstr($altPaths['normal'], '.min.') === false))
+		// We have an uncompressed CSS / JS file. We must look for a minimised file.
+		if (in_array($ext, array('css', 'js')) && (strstr($altPaths['normal'], '.min.') === false))
 		{
-
 			$minFile = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.' . $ext;
+			$normalFileExists = @file_exists($altPaths['normal']);
+			$minFileExists = @file_exists($rootPath . '/' . $minFile);
 
-			if (@file_exists($rootPath . '/' . $minFile))
+			// If debug is not enabled prefer the minimised file if it exists
+			if ((!defined('AKEEBADEBUG') || !AKEEBADEBUG) && $minFileExists)
+			{
+				$altPaths['normal'] = $minFile;
+			}
+			// If debug is enabled only use the minimised file if the uncompressed one does not exist
+			elseif ($minFileExists && !$normalFileExists)
 			{
 				$altPaths['normal'] = $minFile;
 			}
 		}
-		elseif (defined('AKEEBADEBUG') && in_array($ext, array('css', 'js')) && (strstr($altPaths['normal'], '.min.') === false))
-		{
-			$minFile = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.' . $ext;
-
-			if (@file_exists($rootPath . '/' . $minFile) && !@file_exists($rootPath . '/' . $altPaths['normal']))
-			{
-				$altPaths['normal'] = $minFile;
-			}
-		}
-
 
 		$filePath = $altPaths['normal'];
 
-		// If AKEEBADEBUG is enabled, prefer that path, else prefer an alternate path if present
+		// If AKEEBADEBUG is enabled prefer the debug path, if one exists
 		if (defined('AKEEBADEBUG') && AKEEBADEBUG && isset($altPaths['debug']))
 		{
 			if (file_exists($rootPath . '/' . $altPaths['debug']))
@@ -106,8 +103,10 @@ abstract class Template
 				$filePath = $altPaths['debug'];
 			}
 		}
+		// If AKEEBADEBUG is not enabled but there is an alternate path, try using the alternate path instead
 		elseif (isset($altPaths['alternate']))
 		{
+			// Look for a minimised file, if available
 			if (in_array($ext, array('css', 'js')) && strstr($altPaths['alternate'], '.min.') === false)
 			{
 				$minFile = dirname($altPaths['alternate']) . '/' . basename($altPaths['alternate'], $ext) . 'min.' . $ext;
@@ -200,7 +199,7 @@ abstract class Template
 			if (strlen($file) > 4 && strrpos($file, '.min', '-4'))
 			{
 				$position = strrpos($file, '.min', '-4');
-				$filename = str_replace('.min', '.', $file, $position);
+				$filename = str_replace('.min', '.', $file, $position) . $ext;
 			}
 			else
 			{
