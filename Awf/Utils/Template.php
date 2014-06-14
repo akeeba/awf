@@ -153,8 +153,6 @@ abstract class Template
 			$app = Application::getInstance();
 		}
 
-		$rootPath = $app->getContainer()->filesystemBase;
-
 		$protoAndPath = explode('://', $path, 2);
 
 		if (count($protoAndPath) < 2)
@@ -175,9 +173,26 @@ abstract class Template
 				// Do we have a media override in the template?
 				$pathAndParams = explode('?', $path, 2);
 
+				// Get the path of the templates directory relative to the file system base
+				$rootPath = realpath($app->getContainer()->filesystemBase);
+				$templateRelativePath = realpath($app->getContainer()->templatePath);
+
+				if ($templateRelativePath == $rootPath)
+				{
+					$templateRelativePath = '';
+				}
+				elseif (strpos($templateRelativePath, $rootPath) === 0)
+				{
+					$templateRelativePath = substr($templateRelativePath, strlen($rootPath));
+					$templateRelativePath = trim($templateRelativePath, DIRECTORY_SEPARATOR . '/\\') . '/';
+				}
+
+				$templateRelativePath = str_replace('\\', '/', $templateRelativePath);
+
+				// Return the alternative paths
 				$ret = array(
 					'normal'	 => 'media/' . $pathAndParams[0],
-					'alternate'	 =>  $rootPath . '/'. $app->getTemplate() . '/media/' . $pathAndParams[0],
+					'alternate'	 =>  $templateRelativePath . $app->getTemplate() . '/media/' . $pathAndParams[0],
 				);
 				break;
 

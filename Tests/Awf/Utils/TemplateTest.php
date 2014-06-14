@@ -30,15 +30,8 @@ class TemplateTest extends \PHPUnit_Framework_TestCase
 		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
 
 		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer(array(
-			'live_site'	=> 'http://www.example.com'
-		));
+		static::$container = new FakeContainer();
 		\Awf\Application\Application::getInstance('Fakeapp', static::$container);
-
-		// Fake the URI
-		$_SERVER['HTTPS'] = false;
-		$_SERVER['HTTP_HOST'] = 'www.example.com';
-		$_SERVER['REQUEST_URI'] = '/';
 	}
 
 	protected function setUp()
@@ -101,16 +94,16 @@ class TemplateTest extends \PHPUnit_Framework_TestCase
 			array('media://css/foo.min.css', array(
 				'normal' => 'media/css/foo.min.css',
 				'debug' => 'media/css/foo.css',
-				'alternate' => static::$container->filesystemBase . '/foobar/media/css/foo.min.css',
+				'alternate' => 'template/foobar/media/css/foo.min.css',
 			)),
 			array('media://css/foo.css', array(
 				'normal' => 'media/css/foo.css',
 				'debug' => 'media/css/foo-uncompressed.css',
-				'alternate' => static::$container->filesystemBase . '/foobar/media/css/foo.css',
+				'alternate' => 'template/foobar/media/css/foo.css',
 			)),
 			array('media://images/foo.jpg', array(
 				'normal' => 'media/images/foo.jpg',
-				'alternate' => static::$container->filesystemBase . '/foobar/media/images/foo.jpg'
+				'alternate' => 'template/foobar/media/images/foo.jpg'
 			)),
 			array('site://assets/foo.jpg', array(
 				'normal' => 'assets/foo.jpg',
@@ -156,8 +149,6 @@ class TemplateTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testAddCss($path, $expected)
 	{
-		$this->markTestSkipped(); return;
-
 		Template::addCss($path, $this->mockApp);
 
 		$mockDocument = $this->mockDocument;
@@ -174,6 +165,35 @@ class TemplateTest extends \PHPUnit_Framework_TestCase
 			array('media://css/minimised.css', 'http://www.example.com/media/css/minimised.min.css'),
 			array('media://css/overridden.css', 'http://www.example.com/template/foobar/media/css/overridden.css'),
 			array('media://css/overriddenminimised.css', 'http://www.example.com/template/foobar/media/css/overriddenminimised.min.css'),
+		);
+	}
+
+	/**
+	 * @dataProvider getTestAddJs
+	 *
+	 * @covers Awf\Utils\Template::addJs
+	 *
+	 * @param $path
+	 * @param $expected
+	 */
+	public function testAddJs($path, $expected)
+	{
+		Template::addJs($path, $this->mockApp);
+
+		$mockDocument = $this->mockDocument;
+		$this->assertArrayHasKey('addScript', $mockDocument->calls);
+		$this->assertCount(1, $mockDocument->calls['addScript']);
+		$this->assertEquals($expected, $mockDocument->calls['addScript'][0][0]);
+	}
+
+	public function getTestAddJs()
+	{
+		// Fancy path, URL
+		return array(
+			array('media://js/regular.js', 'http://www.example.com/media/js/regular.js'),
+			array('media://js/minimised.js', 'http://www.example.com/media/js/minimised.min.js'),
+			array('media://js/overridden.js', 'http://www.example.com/template/foobar/media/js/overridden.js'),
+			array('media://js/overriddenminimised.js', 'http://www.example.com/template/foobar/media/js/overriddenminimised.min.js'),
 		);
 	}
 }

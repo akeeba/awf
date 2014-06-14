@@ -19,11 +19,13 @@ class Container extends \Awf\Container\Container
 			'basePath'             => __DIR__,
 			'languagePath'         => __DIR__ . '/../../data/lang',
 			'filesystemBase'       => __DIR__ ,
-			'templatePath'			=> __DIR__
+			'templatePath'			=> __DIR__ . '/template'
 		);
 
 		$values = array_merge($defaults, $values);
 
-		return parent::__construct($values);
+		parent::__construct($values);
+
+		$this->appConfig->set('live_site', 'http://www.example.com');
 	}
 } 
