@@ -50,6 +50,11 @@ class CsrfTokenTest extends \PHPUnit_Framework_TestCase
 
 	public function testLaziness()
 	{
+		if ($this->session->isStarted())
+		{
+			$this->session->destroy();
+		}
+
 		$this->assertFalse($this->session->isStarted());
 		$token = $this->session->getCsrfToken();
 		$this->assertTrue($this->session->isStarted());
