@@ -10,6 +10,13 @@ namespace Tests\Awf\Utils;
 
 use Awf\Utils\Ip;
 
+/**
+ * Class IpTest
+ *
+ * @package Tests\Awf\Utils
+ *
+ * @coversDefaultClass \Awf\Utils\Ip
+ */
 class IpTest extends \PHPUnit_Framework_TestCase
 {
 	/**
