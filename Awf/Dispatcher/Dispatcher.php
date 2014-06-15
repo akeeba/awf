@@ -31,6 +31,12 @@ class Dispatcher
 	/** @var   Container  A copy of the application object we belong to */
 	protected $container;
 
+	/** @var string The view which will be rendered by the dispatcher */
+	protected $view;
+
+	/** @var string The layout for rendering the view */
+	protected $layout;
+
 	/**
 	 * Public constructor
 	 *
