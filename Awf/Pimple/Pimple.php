@@ -41,7 +41,7 @@ namespace Awf\Pimple;
  *
  * @author Fabien Potencier
  */
-class Container implements \ArrayAccess
+class Pimple implements \ArrayAccess
 {
 	private $values = array();
 	private $factories;

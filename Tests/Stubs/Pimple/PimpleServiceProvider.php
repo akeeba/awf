@@ -1,15 +1,6 @@
 <?php
-/**
- * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
- * This file contains a namespaced but otherwise unmodified copy of Pimple, the DI
- * container by Fabien Potencier. The following notice accompanies the original
- * file:
- *
- ********************************************************************************
- *
+
+/*
  * This file is part of Pimple.
  *
  * Copyright (c) 2009 Fabien Potencier
@@ -31,26 +22,33 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- ********************************************************************************
  */
 
-namespace Awf\Pimple;
+namespace Tests\Stubs\Pimple;
 
-/**
- * Pimple service provider interface.
- *
- * @author Fabien Potencier
- * @author Dominik Zogg
- */
-interface ServiceProviderInterface
+use \Awf\Pimple\Pimple;
+use \Awf\Pimple\ServiceProviderInterface;
+
+class PimpleServiceProvider implements ServiceProviderInterface
 {
-	/**
-	 * Registers services on the given container.
-	 *
-	 * This method should only be used to configure services and parameters.
-	 * It should not get services.
-	 *
-	 * @param Pimple $pimple An Container instance
-	 */
-	public function register(Pimple $pimple);
+    /**
+     * Registers services on the given container.
+     *
+     * This method should only be used to configure services and parameters.
+     * It should not get services.
+     *
+     * @param Pimple $pimple An Container instance
+     */
+    public function register(Pimple $pimple)
+    {
+        $pimple['param'] = 'value';
+
+        $pimple['service'] = function () {
+            return new Service();
+        };
+
+        $pimple['factory'] = $pimple->factory(function () {
+            return new Service();
+        });
+    }
 }
