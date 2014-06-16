@@ -49,7 +49,7 @@ class Json extends Document
 
 		if (!empty($name))
 		{
-			$this->addHTTPHeader('Content-disposition', 'attachment; filename="' . $name . '.json"', true);
+			$this->addHTTPHeader('Content-Disposition', 'attachment; filename="' . $name . '.json"', true);
 		}
 
 		$this->outputHTTPHeaders();
