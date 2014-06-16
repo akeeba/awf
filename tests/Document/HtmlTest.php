@@ -42,6 +42,7 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 	public function testRenderHtml()
 	{
 		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
+		$document->getApplication()->setTemplate('nada');
 		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
 		$document->render();
 
@@ -57,6 +58,7 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 	public function testRenderAttachment()
 	{
 		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
+		$document->getApplication()->setTemplate('nada');
 		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
 		$document->setMimeType('application/pdf');
 		$document->setName('foobar.pdf');
