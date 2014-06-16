@@ -40,7 +40,7 @@ class Raw extends Document
 
 		if (!empty($name))
 		{
-			$this->addHTTPHeader('Content-disposition', 'attachment; filename="' . $name . '"', true);
+			$this->addHTTPHeader('Content-Disposition', 'attachment; filename="' . $name . '"', true);
 		}
 
 		$this->outputHTTPHeaders();

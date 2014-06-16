@@ -9,16 +9,15 @@ namespace Awf\Tests\Document;
 
 use Awf\Application\Application;
 use Awf\Document\Document;
-use Awf\Document\Html;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * @package Awf\Tests\Document
  *
- * @coversDefaultClass \Awf\Document\Html
+ * @coversDefaultClass \Awf\Document\Raw
  */
-class HtmlTest extends \PHPUnit_Framework_TestCase
+class RawTest extends \PHPUnit_Framework_TestCase
 {
 	/** @var FakeContainer A container suitable for unit testing */
 	public static $container = null;
@@ -39,34 +38,39 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 		$app->setTemplate('nada');
 	}
 
-	public function testRenderHtml()
+	public function testRenderRaw()
 	{
-		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
-		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
+		$document = Document::getInstance('raw', Application::getInstance('Fakeapp'));
+		$this->assertInstanceOf('\\Awf\\Document\\Raw', $document);
+		$document->setBuffer('test');
+
+		$this->expectOutputString('test');
 		$document->render();
 
 		$contentType = $document->getHTTPHeader('Content-Type');
-		$this->assertEquals('text/html', $contentType);
+		$this->assertEquals('text/plain', $contentType);
 
 		$contentDisposition = $document->getHTTPHeader('Content-Disposition');
 		$this->assertNull($contentDisposition);
-
-		return $document;
 	}
 
-	public function testRenderAttachment()
+	public function testRenderRawAttachment()
 	{
-		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
-		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
+		$document = Document::getInstance('raw', Application::getInstance('Fakeapp'));
+		$this->assertInstanceOf('\\Awf\\Document\\Raw', $document);
+		$document->setBuffer('test');
 		$document->setMimeType('application/pdf');
 		$document->setName('foobar.pdf');
+
+		$this->expectOutputString('test');
 		$document->render();
 
 		$contentType = $document->getHTTPHeader('Content-Type');
 		$this->assertEquals('application/pdf', $contentType);
 
 		$contentDisposition = $document->getHTTPHeader('Content-Disposition');
-		$this->assertEquals('attachment; filename="foobar.pdf.html"', $contentDisposition);
+		$this->assertEquals('attachment; filename="foobar.pdf"', $contentDisposition);
 	}
+
 }
  
