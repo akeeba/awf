@@ -27,18 +27,15 @@ class Html extends Document
 	{
 		$this->addHTTPHeader('Content-Type', $this->getMimeType());
 
-		$this->addHTTPHeader('Content-Type', $this->getMimeType());
-
 		$name = $this->getName();
 
 		if (!empty($name))
 		{
-			$this->addHTTPHeader('Content-disposition', 'attachment; filename="' . $name . '.html"', true);
+			$this->addHTTPHeader('Content-Disposition', 'attachment; filename="' . $name . '.html"', true);
 		}
 
-		$application = \Awf\Application\Application::getInstance();
-		$template = $application->getTemplate();
-		$templatePath = $application->getContainer()->templatePath . '/' . $template;
+		$template = $this->application->getTemplate();
+		$templatePath = $this->application->getContainer()->templatePath . '/' . $template;
 
 		include $templatePath . '/index.php';
 	}

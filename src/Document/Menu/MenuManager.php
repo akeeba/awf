@@ -217,7 +217,7 @@ class MenuManager
 	 */
 	public function initialiseFromDirectory($path, $reset = true)
 	{
-		$appName = Application::getInstance()->getName();
+		$appName = $this->application->getName();
 
 		if ($reset)
 		{
