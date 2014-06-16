@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-namespace Tests\Stubs\Pimple;
+namespace Awf\Tests\Stubs\Pimple;
 
 use \Awf\Pimple\Pimple;
 use \Awf\Pimple\ServiceProviderInterface;

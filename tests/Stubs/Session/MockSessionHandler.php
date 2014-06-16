@@ -5,7 +5,7 @@
  * @license		GNU GPL version 3 or later
  */
 
-namespace Tests\Stubs\Session;
+namespace Awf\Tests\Stubs\Session;
 
 
 class MockSessionHandler implements \SessionHandlerInterface

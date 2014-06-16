@@ -5,7 +5,7 @@
  * @license		GNU GPL version 3 or later
  */
 
-namespace Tests\Stubs\Utils;
+namespace Awf\Tests\Stubs\Utils;
 
 
 class MockDocument

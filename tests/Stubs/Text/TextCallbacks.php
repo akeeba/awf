@@ -5,7 +5,7 @@
  * @license		GNU GPL version 3 or later
  */
 
-namespace Tests\Stubs\Text;
+namespace Awf\Tests\Stubs\Text;
 
 
 class TextCallbacks

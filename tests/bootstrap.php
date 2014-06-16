@@ -9,7 +9,7 @@
  */
 
 // Include the AWF autoloader.
-if (false == include __DIR__ . '/../Awf/Autoloader/Autoloader.php')
+if (false == include __DIR__ . '/../src/Autoloader/Autoloader.php')
 {
 	echo 'ERROR: AWF Autoloader not found' . PHP_EOL;
 
@@ -17,7 +17,7 @@ if (false == include __DIR__ . '/../Awf/Autoloader/Autoloader.php')
 }
 
 // Tell the AWF autoloader where to load test classes from (very useful for stubs!)
-\Awf\Autoloader\Autoloader::getInstance()->addMap('Tests\\', __DIR__);
+\Awf\Autoloader\Autoloader::getInstance()->addMap('Awf\\Tests\\', __DIR__);
 \Awf\Autoloader\Autoloader::getInstance()->addMap('Fakeapp\\', __DIR__ . '/Stubs/Fakeapp');
 
 // Include the Composer autoloader.

@@ -6,7 +6,7 @@
  * Time: 4:11 μμ
  */
 
-namespace Tests\Stubs\Fakeapp;
+namespace Awf\Tests\Stubs\Fakeapp;
 
 
 class Container extends \Awf\Container\Container
@@ -16,10 +16,10 @@ class Container extends \Awf\Container\Container
 		$defaults = array(
 			'application_name'     => 'Fakeapp',
 			'session_segment_name' => 'fakeapp',
-			'basePath'             => __DIR__,
-			'languagePath'         => __DIR__ . '/../../data/lang',
-			'filesystemBase'       => __DIR__ ,
-			'templatePath'			=> __DIR__ . '/template'
+			'basePath'             => realpath(__DIR__),
+			'languagePath'         => realpath(__DIR__ . '/../../data/lang'),
+			'filesystemBase'       => realpath(__DIR__),
+			'templatePath'			=> realpath(__DIR__ . '/template')
 		);
 
 		$values = array_merge($defaults, $values);

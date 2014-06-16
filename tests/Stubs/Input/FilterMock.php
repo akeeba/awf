@@ -6,7 +6,7 @@
  * @license        GNU GPL version 3 or later
  */
 
-namespace Tests\Stubs\Input;
+namespace Awf\Tests\Stubs\Input;
 
 /**
  * FilterMock test class.
