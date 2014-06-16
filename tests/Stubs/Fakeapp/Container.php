@@ -13,13 +13,15 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+		$basePath = realpath(__DIR__ . '/../../..') . '/tests';
+
 		$defaults = array(
 			'application_name'     => 'Fakeapp',
 			'session_segment_name' => 'fakeapp',
-			'basePath'             => realpath(__DIR__),
-			'languagePath'         => realpath(__DIR__ . '/../../data/lang'),
-			'filesystemBase'       => realpath(__DIR__),
-			'templatePath'			=> realpath(__DIR__ . '/template')
+			'basePath'             => $basePath . '/Stubs/Fakeapp',
+			'languagePath'         => $basePath . '/data/lang',
+			'filesystemBase'       => $basePath . '/Stubs/Fakeapp',
+			'templatePath'			=> $basePath . '/Stubs/Fakeapp/template'
 		);
 
 		$values = array_merge($defaults, $values);

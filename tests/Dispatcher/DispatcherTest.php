@@ -8,6 +8,7 @@
 namespace Awf\Tests\Dispatcher;
 
 
+use Awf\Application\Application;
 use Awf\Dispatcher\Dispatcher;
 use Fakeapp\Controller\Jasager;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -36,9 +37,10 @@ class DispatcherTest extends \PHPUnit_Framework_TestCase
 	{
 		$dispatcher = new Dispatcher();
 
+		$expected = Application::getInstance()->getContainer();
 		$container = ReflectionHelper::getValue($dispatcher, 'container');
 
-		$this->assertEquals(static::$container, $container);
+		$this->assertEquals($expected, $container);
 	}
 
 	public function testGetDispatcherWithContainer()
