@@ -75,18 +75,21 @@ abstract class Document
 	 *
 	 * @param   string       $type         The document type (html or json)
 	 * @param   Application  $application  The application to which the document is attached
+	 * @param   string       $classPrefix  The prefix of the document class to use
 	 *
 	 * @return  \Awf\Document\Document
 	 */
-	public static function getInstance($type = 'html', Application $application)
+	public static function getInstance($type = 'html', Application $application, $classPrefix = '\\Awf')
 	{
 		if (!array_key_exists($type, self::$instances))
 		{
-			$className = '\\Awf\\Document\\' . ucfirst($type);
+			$className = $classPrefix . '\\Document\\' . ucfirst($type);
+
 			if (!class_exists($className))
 			{
 				$className = '\\Awf\\Document\\Html';
 			}
+
 			self::$instances[$type] = new $className($application);
 		}
 
