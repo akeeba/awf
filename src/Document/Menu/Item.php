@@ -105,13 +105,6 @@ class Item
 	private $children = array();
 
 	/**
-	 * Map between children elements and their key in the table
-	 *
-	 * @var   array
-	 */
-	private $childrenMap = array();
-
-	/**
 	 * The application this menu item belongs to
 	 *
 	 * @var \Awf\Application\Application|null
@@ -432,16 +425,7 @@ class Item
 	{
 		$key = $item->getName();
 
-		if (array_key_exists($key, $this->childrenMap))
-		{
-			$idx = $this->childrenMap[$key];
-			$this->children[$idx] = $item;
-		}
-		else
-		{
-			$this->children[] = $item;
-			$this->childrenMap[$key] = count($this->childrenMap) - 1;
-		}
+		$this->children[$key] = $item;
 	}
 
 	/**
@@ -455,26 +439,12 @@ class Item
 	{
 		$key = $item->getName();
 
-		if (!array_key_exists($key, $this->childrenMap))
+		if (!array_key_exists($key, $this->children))
 		{
 			return;
 		}
 
-		$idx = $this->childrenMap[$key];
-
-		unset($this->childrenMap[$key]);
-		unset($this->children[$idx]);
-
-		$maxIdx = count($this->children);
-
-		if ($idx <= $maxIdx)
-		{
-			for ($i = $idx + 1; $i <= $maxIdx; $i++)
-			{
-				$key = $this->childrenMap[$i]->getName();
-				$this->childrenMap[$key]--;
-			}
-		}
+		unset($this->children[$key]);
 	}
 
 	/**
@@ -484,7 +454,6 @@ class Item
 	 */
 	public function resetChildren()
 	{
-		$this->childrenMap = array();
 		$this->children = array();
 	}
 
@@ -548,6 +517,12 @@ class Item
 		if ($uri->toString() == $this->url)
 		{
 			return true;
+		}
+
+		// If there are no parameters to check and the URLs don't match, it's not an active menu item
+		if (empty($this->params))
+		{
+			return false;
 		}
 
 		// Otherwise check if the parameters match
