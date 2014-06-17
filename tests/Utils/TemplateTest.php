@@ -11,28 +11,11 @@ use Awf\Utils\Template;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
-class TemplateTest extends \PHPUnit_Framework_TestCase
+class TemplateTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
-	/** @var FakeContainer A container suitable for unit testing */
-	public static $container = null;
-
 	public $mockDocument = null;
 
 	public $mockApp = null;
-
-	public function __construct($name = null, array $data = array(), $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-
-		// We can't use setUpBeforeClass or setUp because PHPUnit will not run these methods before
-		// getting the data from the data provider of each test :(
-
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-
-		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer();
-		\Awf\Application\Application::getInstance('Fakeapp', static::$container);
-	}
 
 	protected function setUp()
 	{

@@ -17,27 +17,8 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  *
  * @coversDefaultClass \Awf\Document\Json
  */
-class JsonTest extends \PHPUnit_Framework_TestCase
+class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
-	/** @var FakeContainer A container suitable for unit testing */
-	public static $container = null;
-
-	public function __construct($name = null, array $data = array(), $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-
-		// We can't use setUpBeforeClass or setUp because PHPUnit will not run these methods before
-		// getting the data from the data provider of each test :(
-
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-
-		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer();
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-
-		$app->setTemplate('nada');
-	}
-
 	public function testSetAndGetUseHashes()
 	{
 		$document = Document::getInstance('json', Application::getInstance('Fakeapp'));

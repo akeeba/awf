@@ -14,25 +14,8 @@ use Fakeapp\Controller\Jasager;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
-class DispatcherTest extends \PHPUnit_Framework_TestCase
+class DispatcherTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
-	/** @var FakeContainer */
-	protected static $container = null;
-
-	public function __construct($name = null, array $data = array(), $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-
-		// We can't use setUpBeforeClass or setUp because PHPUnit will not run these methods before
-		// getting the data from the data provider of each test :(
-
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-
-		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer();
-		\Awf\Application\Application::getInstance('Fakeapp', static::$container);
-	}
-
 	public function testGetDispatcherWithoutContainer()
 	{
 		$dispatcher = new Dispatcher();
