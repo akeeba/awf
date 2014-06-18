@@ -140,7 +140,12 @@ class Driver
 	 */
 	public static function mockEscape($text)
 	{
-		return "_{$text}_";
+		if (substr($text, 0, 1) == '_')
+		{
+			return $text;
+		}
+
+		return "_" . $text ."_";
 	}
 
 	/**

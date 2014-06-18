@@ -18,6 +18,7 @@ namespace Awf\Database;
  */
 abstract class Query
 {
+
 	/**
 	 * @var    Driver  The database driver.
 	 */
@@ -126,8 +127,8 @@ abstract class Query
 	/**
 	 * Magic method to provide method alias support for quote() and quoteName().
 	 *
-	 * @param   string  $method  The called method.
-	 * @param   array   $args    The array of arguments passed to the method.
+	 * @param   string $method The called method.
+	 * @param   array  $args   The array of arguments passed to the method.
 	 *
 	 * @return  string  The aliased method's return value or null.
 	 */
@@ -157,7 +158,7 @@ abstract class Query
 	/**
 	 * Class constructor.
 	 *
-	 * @param   Driver  $db  The database driver.
+	 * @param   Driver $db The database driver.
 	 */
 	public function __construct(Driver $db = null)
 	{
@@ -167,7 +168,7 @@ abstract class Query
 	/**
 	 * Magic function to convert the query to a string.
 	 *
-	 * @return  string	The completed query.
+	 * @return  string    The completed query.
 	 */
 	public function __toString()
 	{
@@ -181,102 +182,107 @@ abstract class Query
 		switch ($this->type)
 		{
 			case 'element':
-				$query .= (string) $this->element;
+				$query .= (string)$this->element;
 				break;
 
 			case 'select':
-				$query .= (string) $this->select;
-				$query .= (string) $this->from;
+				$query .= (string)$this->select;
+				$query .= (string)$this->from;
 				if ($this->join)
 				{
 					// Special case for joins
 					foreach ($this->join as $join)
 					{
-						$query .= (string) $join;
+						$query .= (string)$join;
 					}
 				}
 
 				if ($this->where)
 				{
-					$query .= (string) $this->where;
+					$query .= (string)$this->where;
 				}
 
 				if ($this->group)
 				{
-					$query .= (string) $this->group;
+					$query .= (string)$this->group;
 				}
 
 				if ($this->having)
 				{
-					$query .= (string) $this->having;
+					$query .= (string)$this->having;
 				}
 
 				if ($this->order)
 				{
-					$query .= (string) $this->order;
+					$query .= (string)$this->order;
+				}
+
+				if ($this->union)
+				{
+					$query .= (string)$this->union;
 				}
 
 				break;
 
 			case 'union':
-				$query .= (string) $this->union;
+				$query .= (string)$this->union;
 				break;
 
 			case 'delete':
-				$query .= (string) $this->delete;
-				$query .= (string) $this->from;
+				$query .= (string)$this->delete;
+				$query .= (string)$this->from;
 
 				if ($this->join)
 				{
 					// Special case for joins
 					foreach ($this->join as $join)
 					{
-						$query .= (string) $join;
+						$query .= (string)$join;
 					}
 				}
 
 				if ($this->where)
 				{
-					$query .= (string) $this->where;
+					$query .= (string)$this->where;
 				}
 
 				break;
 
 			case 'update':
-				$query .= (string) $this->update;
+				$query .= (string)$this->update;
 
 				if ($this->join)
 				{
 					// Special case for joins
 					foreach ($this->join as $join)
 					{
-						$query .= (string) $join;
+						$query .= (string)$join;
 					}
 				}
 
-				$query .= (string) $this->set;
+				$query .= (string)$this->set;
 
 				if ($this->where)
 				{
-					$query .= (string) $this->where;
+					$query .= (string)$this->where;
 				}
 
 				break;
 
 			case 'insert':
-				$query .= (string) $this->insert;
+				$query .= (string)$this->insert;
 
 				// Set method
 				if ($this->set)
 				{
-					$query .= (string) $this->set;
+					$query .= (string)$this->set;
 				}
 				// Columns-Values method
 				elseif ($this->values)
 				{
 					if ($this->columns)
 					{
-						$query .= (string) $this->columns;
+						$query .= (string)$this->columns;
 					}
 
 					$elements = $this->values->getElements();
@@ -285,17 +291,17 @@ abstract class Query
 						$query .= ' VALUES ';
 					}
 
-					$query .= (string) $this->values;
+					$query .= (string)$this->values;
 				}
 
 				break;
 
 			case 'call':
-				$query .= (string) $this->call;
+				$query .= (string)$this->call;
 				break;
 
 			case 'exec':
-				$query .= (string) $this->exec;
+				$query .= (string)$this->exec;
 				break;
 		}
 
@@ -310,7 +316,7 @@ abstract class Query
 	/**
 	 * Magic function to get protected variable value
 	 *
-	 * @param   string  $name  The name of the variable.
+	 * @param   string $name The name of the variable.
 	 *
 	 * @return  mixed
 	 */
@@ -329,7 +335,7 @@ abstract class Query
 	 * $query->call('a.*')->call('b.id');
 	 * $query->call(array('a.*', 'b.id'));
 	 *
-	 * @param   mixed  $columns  A string or an array of field names.
+	 * @param   mixed $columns A string or an array of field names.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -357,7 +363,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->castAsChar('a'));
 	 *
-	 * @param   string  $value  The value to cast as a char.
+	 * @param   string $value The value to cast as a char.
 	 *
 	 * @return  string  Returns the cast value.
 	 */
@@ -374,9 +380,9 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->charLength('a'));
 	 *
-	 * @param   string  $field      A value.
-	 * @param   string  $operator   Comparison operator between charLength integer value and $condition
-	 * @param   string  $condition  Integer value to compare charLength with.
+	 * @param   string $field     A value.
+	 * @param   string $operator  Comparison operator between charLength integer value and $condition
+	 * @param   string $condition Integer value to compare charLength with.
 	 *
 	 * @return  string  The required char length call.
 	 */
@@ -388,7 +394,7 @@ abstract class Query
 	/**
 	 * Clear data from the query or a specific clause of the query.
 	 *
-	 * @param   string  $clause  Optionally, the name of the clause to clear, or nothing to clear the whole query.
+	 * @param   string $clause Optionally, the name of the clause to clear, or nothing to clear the whole query.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -504,7 +510,7 @@ abstract class Query
 	/**
 	 * Adds a column, or array of column names that would be used for an INSERT INTO statement.
 	 *
-	 * @param   mixed  $columns  A column name, or array of column names.
+	 * @param   mixed $columns A column name, or array of column names.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -528,8 +534,8 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->concatenate(array('a', 'b')));
 	 *
-	 * @param   array   $values     An array of values to concatenate.
-	 * @param   string  $separator  As separator to place between each value.
+	 * @param   array  $values    An array of values to concatenate.
+	 * @param   string $separator As separator to place between each value.
 	 *
 	 * @return  string  The concatenated values.
 	 */
@@ -599,7 +605,7 @@ abstract class Query
 	 * Usage:
 	 * $query->delete('#__a')->where('id = 1');
 	 *
-	 * @param   string  $table  The name of the table to delete from.
+	 * @param   string $table The name of the table to delete from.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -624,8 +630,8 @@ abstract class Query
 	 *
 	 * Note that 'e' is an alias for this method as it is in \Awf\Database\Driver.
 	 *
-	 * @param   string   $text   The string to be escaped.
-	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
+	 * @param   string  $text  The string to be escaped.
+	 * @param   boolean $extra Optional parameter to provide extra escaping.
 	 *
 	 * @return  string  The escaped string.
 	 *
@@ -651,7 +657,7 @@ abstract class Query
 	 * $query->exec('a.*')->exec('b.id');
 	 * $query->exec(array('a.*', 'b.id'));
 	 *
-	 * @param   mixed  $columns  A string or an array of field names.
+	 * @param   mixed $columns A string or an array of field names.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -679,10 +685,10 @@ abstract class Query
 	 * Usage:
 	 * $query->select('*')->from('#__a');
 	 *
-	 * @param   mixed   $tables         A string or array of table names.
+	 * @param   mixed  $tables          A string or array of table names.
 	 *                                  This can be a Query object (or a child of it) when used
 	 *                                  as a subquery in FROM clause along with a value for $subQueryAlias.
-	 * @param   string  $subQueryAlias  Alias used when $tables is a Query.
+	 * @param   string $subQueryAlias   Alias used when $tables is a Query.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 *
@@ -699,7 +705,7 @@ abstract class Query
 					throw new \RuntimeException('Invalid database object');
 				}
 
-				$tables = '( ' . (string) $tables . ' ) AS ' . $this->quoteName($subQueryAlias);
+				$tables = '( ' . (string)$tables . ' ) AS ' . $this->quoteName($subQueryAlias);
 			}
 			elseif (!empty($subQueryAlias) && is_string($tables))
 			{
@@ -726,7 +732,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->year($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing year to be extracted.
+	 * @param   string $date Date column containing year to be extracted.
 	 *
 	 * @return  string  Returns string to extract year from a date.
 	 */
@@ -741,7 +747,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->month($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing month to be extracted.
+	 * @param   string $date Date column containing month to be extracted.
 	 *
 	 * @return  string  Returns string to extract month from a date.
 	 */
@@ -756,7 +762,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->day($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing day to be extracted.
+	 * @param   string $date Date column containing day to be extracted.
 	 *
 	 * @return  string  Returns string to extract day from a date.
 	 */
@@ -771,7 +777,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->hour($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing hour to be extracted.
+	 * @param   string $date Date column containing hour to be extracted.
 	 *
 	 * @return  string  Returns string to extract hour from a date.
 	 */
@@ -786,7 +792,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->minute($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing minute to be extracted.
+	 * @param   string $date Date column containing minute to be extracted.
 	 *
 	 * @return  string  Returns string to extract minute from a date.
 	 */
@@ -801,7 +807,7 @@ abstract class Query
 	 * Usage:
 	 * $query->select($query->second($query->quoteName('dateColumn')));
 	 *
-	 * @param   string  $date  Date column containing second to be extracted.
+	 * @param   string $date Date column containing second to be extracted.
 	 *
 	 * @return  string  Returns string to extract second from a date.
 	 */
@@ -816,7 +822,7 @@ abstract class Query
 	 * Usage:
 	 * $query->group('id');
 	 *
-	 * @param   mixed  $columns  A string or array of ordering columns.
+	 * @param   mixed $columns A string or array of ordering columns.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -840,8 +846,8 @@ abstract class Query
 	 * Usage:
 	 * $query->group('id')->having('COUNT(id) > 5');
 	 *
-	 * @param   mixed   $conditions  A string or array of columns.
-	 * @param   string  $glue        The glue by which to join the conditions. Defaults to AND.
+	 * @param   mixed  $conditions A string or array of columns.
+	 * @param   string $glue       The glue by which to join the conditions. Defaults to AND.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -866,7 +872,7 @@ abstract class Query
 	 * Usage:
 	 * $query->innerJoin('b ON b.id = a.id')->innerJoin('c ON c.id = b.id');
 	 *
-	 * @param   string  $condition  The join condition.
+	 * @param   string $condition The join condition.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -887,12 +893,12 @@ abstract class Query
 	 * $query->insert('#__a)->columns('id, title')->values('1,2')->values->('3,4');
 	 * $query->insert('#__a)->columns('id, title')->values(array('1,2', '3,4'));
 	 *
-	 * @param   mixed    $table           The name of the table to insert data into.
-	 * @param   boolean  $incrementField  The name of the field to auto increment.
+	 * @param   mixed   $table          The name of the table to insert data into.
+	 * @param   boolean $incrementField The name of the field to auto increment.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
-	public function insert($table, $incrementField=false)
+	public function insert($table, $incrementField = false)
 	{
 		$this->type = 'insert';
 		$this->insert = new QueryElement('INSERT INTO', $table);
@@ -907,8 +913,8 @@ abstract class Query
 	 * Usage:
 	 * $query->join('INNER', 'b ON b.id = a.id);
 	 *
-	 * @param   string  $type        The type of join. This string is prepended to the JOIN keyword.
-	 * @param   string  $conditions  A string or array of conditions.
+	 * @param   string $type       The type of join. This string is prepended to the JOIN keyword.
+	 * @param   string $conditions A string or array of conditions.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -929,7 +935,7 @@ abstract class Query
 	 * Usage:
 	 * $query->leftJoin('b ON b.id = a.id')->leftJoin('c ON c.id = b.id');
 	 *
-	 * @param   string  $condition  The join condition.
+	 * @param   string $condition The join condition.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -948,7 +954,7 @@ abstract class Query
 	 * Usage:
 	 * query->where($query->length('a').' > 3');
 	 *
-	 * @param   string  $value  The string to measure.
+	 * @param   string $value The string to measure.
 	 *
 	 * @return  int
 	 */
@@ -966,7 +972,7 @@ abstract class Query
 	 * Usage:
 	 * $query->where('modified_date <> '.$query->nullDate());
 	 *
-	 * @param   boolean  $quoted  Optionally wraps the null date in database quotes (true by default).
+	 * @param   boolean $quoted Optionally wraps the null date in database quotes (true by default).
 	 *
 	 * @return  string  Null or zero representation of a timestamp.
 	 *
@@ -996,7 +1002,7 @@ abstract class Query
 	 * $query->order('foo')->order('bar');
 	 * $query->order(array('foo','bar'));
 	 *
-	 * @param   mixed  $columns  A string or array of ordering columns.
+	 * @param   mixed $columns A string or array of ordering columns.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1020,7 +1026,7 @@ abstract class Query
 	 * Usage:
 	 * $query->outerJoin('b ON b.id = a.id')->outerJoin('c ON c.id = b.id');
 	 *
-	 * @param   string  $condition  The join condition.
+	 * @param   string $condition The join condition.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1043,8 +1049,8 @@ abstract class Query
 	 * $query->quote('fulltext');
 	 * $query->q('fulltext');
 	 *
-	 * @param   string   $text    The string to quote.
-	 * @param   boolean  $escape  True to escape the string, false to leave it unchanged.
+	 * @param   string  $text   The string to quote.
+	 * @param   boolean $escape True to escape the string, false to leave it unchanged.
 	 *
 	 * @return  string  The quoted input string.
 	 *
@@ -1057,7 +1063,19 @@ abstract class Query
 			throw new \RuntimeException('Invalid database object');
 		}
 
-		return $this->db->quote(($escape ? $this->db->escape($text) : $text));
+		if (is_array($text))
+		{
+			$ret = array();
+
+			foreach ($text as $k => $v)
+			{
+				$ret[$k] = $this->quote($v, $escape);
+			}
+
+			return $ret;
+		}
+
+		return $this->db->quote($text, $escape);
 	}
 
 	/**
@@ -1073,9 +1091,9 @@ abstract class Query
 	 * $query->quoteName('#__a');
 	 * $query->qn('#__a');
 	 *
-	 * @param   mixed  $name  The identifier name to wrap in quotes, or an array of identifier names to wrap in quotes.
+	 * @param   mixed $name   The identifier name to wrap in quotes, or an array of identifier names to wrap in quotes.
 	 *                        Each type supports dot-notation name.
-	 * @param   mixed  $as    The AS query part associated to $name. It can be string or array, in latter case it has to be
+	 * @param   mixed $as     The AS query part associated to $name. It can be string or array, in latter case it has to be
 	 *                        same length of $name; if is null there will not be any AS part for string or array element.
 	 *
 	 * @return  mixed  The quote wrapped name, same type of $name.
@@ -1098,7 +1116,7 @@ abstract class Query
 	 * Usage:
 	 * $query->rightJoin('b ON b.id = a.id')->rightJoin('c ON c.id = b.id');
 	 *
-	 * @param   string  $condition  The join condition.
+	 * @param   string $condition The join condition.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1119,7 +1137,7 @@ abstract class Query
 	 * $query->select('a.*')->select('b.id');
 	 * $query->select(array('a.*', 'b.id'));
 	 *
-	 * @param   mixed  $columns  A string or an array of field names.
+	 * @param   mixed $columns A string or an array of field names.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1150,8 +1168,8 @@ abstract class Query
 	 * $query->set('a = 1')->set('b = 2');
 	 * $query->set(array('a = 1', 'b = 2');
 	 *
-	 * @param   mixed   $conditions  A string or array of string conditions.
-	 * @param   string  $glue        The glue by which to join the condition strings. Defaults to ,.
+	 * @param   mixed  $conditions   A string or array of string conditions.
+	 * @param   string $glue         The glue by which to join the condition strings. Defaults to ,.
 	 *                               Note that the glue is set on first use and cannot be changed.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
@@ -1179,7 +1197,7 @@ abstract class Query
 	 * Usage:
 	 * $query->setQuery('select * from #__users');
 	 *
-	 * @param   mixed  $sql  An SQL Query
+	 * @param   mixed $sql An SQL Query
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1198,7 +1216,7 @@ abstract class Query
 	 * Usage:
 	 * $query->update('#__foo')->set(...);
 	 *
-	 * @param   string  $table  A table to update.
+	 * @param   string $table A table to update.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1217,7 +1235,7 @@ abstract class Query
 	 * $query->values('1,2,3')->values('4,5,6');
 	 * $query->values(array('1,2,3', '4,5,6'));
 	 *
-	 * @param   string  $values  A single tuple, or array of tuples.
+	 * @param   string $values A single tuple, or array of tuples.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
@@ -1242,8 +1260,8 @@ abstract class Query
 	 * $query->where('a = 1')->where('b = 2');
 	 * $query->where(array('a = 1', 'b = 2'));
 	 *
-	 * @param   mixed   $conditions  A string or array of where conditions.
-	 * @param   string  $glue        The glue by which to join the conditions. Defaults to AND.
+	 * @param   mixed  $conditions   A string or array of where conditions.
+	 * @param   string $glue         The glue by which to join the conditions. Defaults to AND.
 	 *                               Note that the glue is set on first use and cannot be changed.
 	 *
 	 * @return  Query  Returns this object to allow chaining.
@@ -1289,13 +1307,12 @@ abstract class Query
 	 * $query->union('SELECT name FROM  #__foo','distinct')
 	 * $query->union(array('SELECT name FROM  #__foo','SELECT name FROM  #__bar'))
 	 *
-	 * @param   mixed    $query     The Query object or string to union.
-	 * @param   boolean  $distinct  True to only return distinct rows from the union.
-	 * @param   string   $glue      The glue by which to join the conditions.
+	 * @param   mixed   $query    The Query object or string to union.
+	 * @param   boolean $distinct True to only return distinct rows from the union.
 	 *
 	 * @return  mixed    The Query object on success or boolean false on failure.
 	 */
-	public function union($query, $distinct = false, $glue = '')
+	public function union($query, $distinct = false)
 	{
 
 		// Clear any ORDER BY clause in UNION query
@@ -1315,12 +1332,11 @@ abstract class Query
 		{
 			$glue = ')' . PHP_EOL . 'UNION (';
 			$name = 'UNION ()';
-
 		}
 		// Get the QueryElement if it does not exist
 		if (is_null($this->union))
 		{
-				$this->union = new QueryElement($name, $query, "$glue");
+			$this->union = new QueryElement($name, $query, $glue);
 		}
 		// Otherwise append the second UNION.
 		else
@@ -1338,16 +1354,200 @@ abstract class Query
 	 * Usage:
 	 * $query->unionDistinct('SELECT name FROM  #__foo')
 	 *
-	 * @param   mixed   $query  The Query object or string to union.
-	 * @param   string  $glue   The glue by which to join the conditions.
+	 * @param   mixed  $query The Query object or string to union.
 	 *
 	 * @return  mixed   The Query object on success or boolean false on failure.
 	 */
-	public function unionDistinct($query, $glue = '')
+	public function unionDistinct($query)
 	{
-		$distinct = true;
-
 		// Apply the distinct flag to the union.
-		return $this->union($query, $distinct, $glue);
+		return $this->union($query, true);
+	}
+
+	/**
+	 * Find and replace sprintf-like tokens in a format string.
+	 * Each token takes one of the following forms:
+	 *     %%       - A literal percent character.
+	 *     %[t]     - Where [t] is a type specifier.
+	 *     %[n]$[x] - Where [n] is an argument specifier and [t] is a type specifier.
+	 *
+	 * Types:
+	 * a - Numeric: Replacement text is coerced to a numeric type but not quoted or escaped.
+	 * e - Escape: Replacement text is passed to $this->escape().
+	 * E - Escape (extra): Replacement text is passed to $this->escape() with true as the second argument.
+	 * n - Name Quote: Replacement text is passed to $this->quoteName().
+	 * q - Quote: Replacement text is passed to $this->quote().
+	 * Q - Quote (no escape): Replacement text is passed to $this->quote() with false as the second argument.
+	 * r - Raw: Replacement text is used as-is. (Be careful)
+	 *
+	 * Date Types:
+	 * - Replacement text automatically quoted (use uppercase for Name Quote).
+	 * - Replacement text should be a string in date format or name of a date column.
+	 * y/Y - Year
+	 * m/M - Month
+	 * d/D - Day
+	 * h/H - Hour
+	 * i/I - Minute
+	 * s/S - Second
+	 *
+	 * Invariable Types:
+	 * - Takes no argument.
+	 * - Argument index not incremented.
+	 * t - Replacement text is the result of $this->currentTimestamp().
+	 * z - Replacement text is the result of $this->nullDate(false).
+	 * Z - Replacement text is the result of $this->nullDate(true).
+	 *
+	 * Usage:
+	 * $query->format('SELECT %1$n FROM %2$n WHERE %3$n = %4$a', 'foo', '#__foo', 'bar', 1);
+	 * Returns: SELECT `foo` FROM `#__foo` WHERE `bar` = 1
+	 *
+	 * Notes:
+	 * The argument specifier is optional but recommended for clarity.
+	 * The argument index used for unspecified tokens is incremented only when used.
+	 *
+	 * @param   string  $format  The formatting string.
+	 *
+	 * @return  string  Returns a string produced according to the formatting string.
+	 *
+	 * @since   1.0
+	 */
+	public function format($format)
+	{
+		$query = $this;
+		$args = array_slice(func_get_args(), 1);
+		array_unshift($args, null);
+
+		$i = 1;
+		$func = function ($match) use ($query, $args, &$i)
+		{
+			if (isset($match[6]) && $match[6] == '%')
+			{
+				return '%';
+			}
+
+			// No argument required, do not increment the argument index.
+			switch ($match[5])
+			{
+				case 't':
+					return $query->currentTimestamp();
+					break;
+
+				case 'z':
+					return $query->nullDate(false);
+					break;
+
+				case 'Z':
+					return $query->nullDate(true);
+					break;
+			}
+
+			// Increment the argument index only if argument specifier not provided.
+			$index = is_numeric($match[4]) ? (int) $match[4] : $i++;
+
+			if (!$index || !isset($args[$index]))
+			{
+				// TODO - What to do? sprintf() throws a Warning in these cases.
+				$replacement = '';
+			}
+			else
+			{
+				$replacement = $args[$index];
+			}
+
+			switch ($match[5])
+			{
+				case 'a':
+					return 0 + $replacement;
+					break;
+
+				case 'e':
+					return $query->escape($replacement);
+					break;
+
+				case 'E':
+					return $query->escape($replacement, true);
+					break;
+
+				case 'n':
+					return $query->quoteName($replacement);
+					break;
+
+				case 'q':
+					return $query->quote($replacement);
+					break;
+
+				case 'Q':
+					return $query->quote($replacement, false);
+					break;
+
+				case 'r':
+					return $replacement;
+					break;
+
+				// Dates
+				case 'y':
+					return $query->year($query->quote($replacement));
+					break;
+
+				case 'Y':
+					return $query->year($query->quoteName($replacement));
+					break;
+
+				case 'm':
+					return $query->month($query->quote($replacement));
+					break;
+
+				case 'M':
+					return $query->month($query->quoteName($replacement));
+					break;
+
+				case 'd':
+					return $query->day($query->quote($replacement));
+					break;
+
+				case 'D':
+					return $query->day($query->quoteName($replacement));
+					break;
+
+				case 'h':
+					return $query->hour($query->quote($replacement));
+					break;
+
+				case 'H':
+					return $query->hour($query->quoteName($replacement));
+					break;
+
+				case 'i':
+					return $query->minute($query->quote($replacement));
+					break;
+
+				case 'I':
+					return $query->minute($query->quoteName($replacement));
+					break;
+
+				case 's':
+					return $query->second($query->quote($replacement));
+					break;
+
+				case 'S':
+					return $query->second($query->quoteName($replacement));
+					break;
+			}
+
+			return '';
+		};
+
+		/**
+		 * Regexp to find an replace all tokens.
+		 * Matched fields:
+		 * 0: Full token
+		 * 1: Everything following '%'
+		 * 2: Everything following '%' unless '%'
+		 * 3: Argument specifier and '$'
+		 * 4: Argument specifier
+		 * 5: Type specifier
+		 * 6: '%' if full token is '%%'
+		 */
+		return preg_replace_callback('#%(((([\d]+)\$)?([aeEnqQryYmMdDhHiIsStzZ]))|(%))#', $func, $format);
 	}
 }
