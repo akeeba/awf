@@ -1138,13 +1138,25 @@ abstract class Driver implements DatabaseInterface
 	/**
 	 * Method to quote and optionally escape a string to database requirements for insertion into the database.
 	 *
-	 * @param   string   $text    The string to quote.
+	 * @param   string|array   $text    The string to quote.
 	 * @param   boolean  $escape  True (default) to escape the string, false to leave it unchanged.
 	 *
 	 * @return  string  The quoted input string.
 	 */
 	public function quote($text, $escape = true)
 	{
+		if (is_array($text))
+		{
+			$ret = array();
+
+			foreach ($text as $k => $v)
+			{
+				$ret[$k] = $this->quote($v, $escape);
+			}
+
+			return $ret;
+		}
+
 		return '\'' . ($escape ? $this->escape($text) : $text) . '\'';
 	}
 

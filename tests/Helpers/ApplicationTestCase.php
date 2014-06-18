@@ -14,7 +14,7 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  *
  * @package Awf\Tests\Helpers
  */
-class ApplicationTestCase extends \PHPUnit_Framework_TestCase
+abstract class ApplicationTestCase extends \PHPUnit_Framework_TestCase
 {
 	/** @var FakeContainer A container suitable for unit testing */
 	public static $container = null;
