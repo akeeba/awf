@@ -8,7 +8,7 @@
  * This class is adapted from Joomla! Framework
  */
 
-namespace Awf\Tests\Tests;
+namespace Awf\Tests\Database;
 
 use Awf\Database\Driver;
 use Awf\Database\QueryElement;

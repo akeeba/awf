@@ -8,7 +8,7 @@
  * This class is adapted from Joomla! Framework
  */
 
-namespace Awf\Tests\Tests;
+namespace Awf\Tests\Database;
 
 /**
  * Class to expose protected properties and methods in QueryElement for testing purposes.
