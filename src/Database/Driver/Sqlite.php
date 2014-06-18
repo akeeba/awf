@@ -32,6 +32,8 @@ class Sqlite extends Pdo
 	 */
 	public $name = 'sqlite';
 
+	public static $dbtech = 'sqlite';
+
 	/**
 	 * The character(s) used to quote SQL statement names such as table names or field names,
 	 * etc. The child classes should define this as necessary.  If a single character string the

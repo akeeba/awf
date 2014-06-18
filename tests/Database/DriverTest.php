@@ -11,8 +11,10 @@
 namespace Awf\Tests\Tests;
 
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Helpers\TestHelper;
 use Awf\Tests\Helpers\DatabaseTest;
+use Awf\Tests\Stubs\Pimple\NonInvokable;
 
 require_once __DIR__ . '/../Stubs/database/NosqlDriver.php';
 
@@ -68,20 +70,49 @@ class DriverTest extends DatabaseTest
 
 	public function test__construct()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$options = array(
+			'database' => 'mightymouse',
+			'prefix' => 'kot_',
+		);
+
+		$dummy = new Driver\Nosql($options);
+
+		$actualOptions = ReflectionHelper::getValue($dummy, 'options');
+
+		$this->assertArrayHasKey('database', $actualOptions);
+		$this->assertEquals('mightymouse', $actualOptions['database']);
+
+		$this->assertArrayHasKey('prefix', $actualOptions);
+		$this->assertEquals('kot_', $actualOptions['prefix']);
 	}
 
 	public function testGetInstance()
 	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete('This test has not been implemented yet.');
-	}
+		$optionsOne = array(
+			'driver' => 'nosql',
+			'database' => 'mightymouse',
+			'prefix' => 'kot_',
+		);
 
-	public function test__destruct()
-	{
-		// Remove the following lines when you implement this test.
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$optionsTwo = array(
+			'driver' => 'nosql',
+			'database' => 'dangermouse',
+			'prefix' => 'dng_',
+		);
+
+		$driverOne = Driver::getInstance($optionsOne);
+		$driverTwo = Driver::getInstance($optionsTwo);
+
+		$this->assertInstanceOf('\\Awf\\Database\\Driver\\Nosql', $driverOne);
+		$this->assertInstanceOf('\\Awf\\Database\\Driver\\Nosql', $driverTwo);
+
+		$this->assertNotEquals($driverOne, $driverTwo);
+
+		$actualOptions = ReflectionHelper::getValue($driverOne, 'options');
+		$this->assertEquals('mightymouse', $actualOptions['database']);
+
+		$actualOptions = ReflectionHelper::getValue($driverTwo, 'options');
+		$this->assertEquals('dangermouse', $actualOptions['database']);
 	}
 
 	public function testGetConnection()

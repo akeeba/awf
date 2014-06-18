@@ -66,6 +66,8 @@ abstract class Pdo extends Driver
 	 */
 	protected $executed = false;
 
+	public static $dbtech = 'pdo';
+
 	/**
 	 * Constructor.
 	 *
