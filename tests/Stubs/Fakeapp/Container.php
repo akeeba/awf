@@ -19,7 +19,7 @@ class Container extends \Awf\Container\Container
 			'application_name'     => 'Fakeapp',
 			'session_segment_name' => 'fakeapp',
 			'basePath'             => $basePath . '/Stubs/Fakeapp',
-			'languagePath'         => $basePath . '/data/lang',
+			'languagePath'         => $basePath . '/Stubs/Fakeapp/language',
 			'filesystemBase'       => $basePath . '/Stubs/Fakeapp',
 			'templatePath'			=> $basePath . '/Stubs/Fakeapp/template'
 		);

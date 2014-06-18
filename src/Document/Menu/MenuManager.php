@@ -329,7 +329,7 @@ class MenuManager
 			}
 		}
 
-		return $this->menuEnabledStatus[$menu];
+		return (bool)$this->menuEnabledStatus[$menu];
 	}
 
 	/**
