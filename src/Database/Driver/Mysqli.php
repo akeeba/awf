@@ -482,6 +482,9 @@ class Mysqli extends Driver
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
+			$this->errorNum = (int) mysqli_errno($this->connection);
+			$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
+
 			// Check if the server was disconnected.
 			if (!$this->connected())
 			{
@@ -494,11 +497,11 @@ class Mysqli extends Driver
 				// If connect fails, ignore that exception and throw the normal exception.
 				catch (\RuntimeException $e)
 				{
-					$this->errorNum = (int) mysqli_errno($this->connection);
-					$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
-
 					throw new \RuntimeException($this->errorMsg, $this->errorNum);
 				}
+
+				$this->errorNum = null;
+				$this->errorMsg = null;
 
 				// Since we were able to reconnect, run the query again.
 				return $this->execute();
@@ -506,9 +509,6 @@ class Mysqli extends Driver
 			// The server was not disconnected.
 			else
 			{
-				$this->errorNum = (int) mysqli_errno($this->connection);
-				$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
-
 				throw new \RuntimeException($this->errorMsg, $this->errorNum);
 			}
 		}
