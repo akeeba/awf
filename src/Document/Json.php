@@ -6,6 +6,7 @@
  */
 
 namespace Awf\Document;
+use Awf\Container\Container;
 use Awf\Document\Toolbar\Toolbar;
 use Awf\Document\Menu\MenuManager;
 use Awf\Application\Application;
@@ -22,9 +23,9 @@ class Json extends Document
 	/** @var   boolean  Should I wrap the JSON output in triple hashes? Used to work around broken servers. */
 	protected $useHashes = true;
 
-	public function __construct(Application $application)
+	public function __construct(Container $container)
 	{
-		parent::__construct($application);
+		parent::__construct($container);
 
 		$this->mimeType = 'application/json';
 	}

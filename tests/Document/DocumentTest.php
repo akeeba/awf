@@ -28,19 +28,16 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	 */
 	public function testGetInstance()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$this->assertInstanceOf('\\Awf\\Tests\\Stubs\\Document\\Fake', $doc);
-		$docApp = ReflectionHelper::getValue($doc, 'application');
-		$this->assertEquals($app, $docApp);
+		$docApp = ReflectionHelper::getValue($doc, 'container');
+		$this->assertEquals(static::$container, $docApp);
 	}
 
 	public function testSetBuffer()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$myBuffer = 'The quick brown fox jumped over the lazy dog';
 		$doc->setBuffer($myBuffer);
@@ -51,8 +48,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetBuffer()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$myBuffer = 'The quick brown fox jumped over the lazy dog';
 		ReflectionHelper::setValue($doc, 'buffer', $myBuffer);
@@ -63,8 +59,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testAddScriptPlain()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$scripts = ReflectionHelper::getValue($doc, 'scripts');
 		$this->assertInternalType('array', $scripts);
@@ -133,8 +128,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	 */
 	public function testAddScriptDeclaration()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$line1 = 'foo';
 		$line2 = 'bar';
@@ -156,8 +150,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testAddStyleSheetPlain()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$styles = ReflectionHelper::getValue($doc, 'styles');
 		$this->assertInternalType('array', $styles);
@@ -223,8 +216,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testAddStyleDeclaration()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$line1 = 'foo';
 		$line2 = 'bar';
@@ -294,8 +286,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetMenu()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$expected = ReflectionHelper::getValue($doc, 'menu');
 		$actual = $doc->getMenu();
@@ -306,8 +297,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetToolbar()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$expected = ReflectionHelper::getValue($doc, 'toolbar');
 		$actual = $doc->getToolbar();
@@ -319,17 +309,25 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	public function testGetApplication()
 	{
 		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$actual = $doc->getApplication();
 
 		$this->assertEquals($app, $actual);
 	}
 
+	public function testGetContainer()
+	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$actual = $doc->getContainer();
+
+		$this->assertEquals(static::$container, $actual);
+	}
+
 	public function testSetMimeType()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 		$mime = 'text/foobar';
 
 		$doc->setMimeType($mime);
@@ -339,8 +337,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetMimeType()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 		$mime = 'text/foobar';
 
 		ReflectionHelper::setValue($doc, 'mimeType', $mime);
@@ -351,8 +348,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testAddHTTPHeader()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		ReflectionHelper::setValue($doc, 'HTTPHeaders', array());
 
@@ -434,8 +430,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testSetName()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		$doc->setName('foobar');
 		$actual = ReflectionHelper::getValue($doc, 'name');
@@ -444,8 +439,7 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetName()
 	{
-		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
-		$doc = Document::getInstance('fake', $app, '\\Awf\\Tests\\Stubs');
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 
 		ReflectionHelper::setValue($doc, 'name', 'foobar');
 

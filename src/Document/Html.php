@@ -34,8 +34,8 @@ class Html extends Document
 			$this->addHTTPHeader('Content-Disposition', 'attachment; filename="' . $name . '.html"', true);
 		}
 
-		$template = $this->application->getTemplate();
-		$templatePath = $this->application->getContainer()->templatePath . '/' . $template;
+		$template = $this->container->application->getTemplate();
+		$templatePath = $this->container->application->getContainer()->templatePath . '/' . $template;
 
 		include $templatePath . '/index.php';
 	}

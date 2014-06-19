@@ -6,6 +6,7 @@
  */
 
 namespace Awf\Document;
+use Awf\Container\Container;
 use Awf\Document\Toolbar\Toolbar;
 use Awf\Document\Menu\MenuManager;
 use Awf\Application\Application;
@@ -19,9 +20,9 @@ use Awf\Application\Application;
  */
 class Raw extends Document
 {
-	public function __construct(Application $application)
+	public function __construct(Container $container)
 	{
-		parent::__construct($application);
+		parent::__construct($container);
 
 		$this->mimeType = 'text/plain';
 	}

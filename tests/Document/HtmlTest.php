@@ -22,7 +22,7 @@ class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
 	public function testRenderHtml()
 	{
-		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('html', static::$container);
 		$document->getApplication()->setTemplate('nada');
 		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
 		$document->render();
@@ -38,7 +38,7 @@ class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderAttachment()
 	{
-		$document = Document::getInstance('html', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('html', static::$container);
 		$document->getApplication()->setTemplate('nada');
 		$this->assertInstanceOf('\\Awf\\Document\\Html', $document);
 		$document->setMimeType('application/pdf');

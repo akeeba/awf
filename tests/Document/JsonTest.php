@@ -21,7 +21,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
 	public function testSetAndGetUseHashes()
 	{
-		$document = Document::getInstance('json', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 
 		$document->setUseHashes(true);
@@ -43,7 +43,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonPlain()
 	{
-		$document = Document::getInstance('json', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 		$document->setBuffer("{test: true}");
 
@@ -59,7 +59,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonHashes()
 	{
-		$document = Document::getInstance('json', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 		$document->setUseHashes(true);
 		$document->setBuffer("{test: true}");
@@ -76,7 +76,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonAttachment()
 	{
-		$document = Document::getInstance('json', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 		$document->setBuffer('{test: true}');
 		$document->setName('foobar');

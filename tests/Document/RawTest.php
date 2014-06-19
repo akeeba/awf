@@ -21,7 +21,7 @@ class RawTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
 	public function testRenderRaw()
 	{
-		$document = Document::getInstance('raw', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('raw', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Raw', $document);
 		$document->setBuffer('test');
 
@@ -37,7 +37,7 @@ class RawTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderRawAttachment()
 	{
-		$document = Document::getInstance('raw', Application::getInstance('Fakeapp'));
+		$document = Document::getInstance('raw', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Raw', $document);
 		$document->setBuffer('test');
 		$document->setMimeType('application/pdf');

@@ -8,6 +8,7 @@
 namespace Awf\Document;
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Document\Menu\MenuManager;
 use Awf\Document\Toolbar\Toolbar;
 
@@ -20,6 +21,7 @@ use Awf\Document\Toolbar\Toolbar;
  */
 abstract class Document
 {
+
 	/** @var   string  The output data buffer */
 	protected $buffer = '';
 
@@ -44,8 +46,8 @@ abstract class Document
 	/** @var   Toolbar  The toolbar for this document */
 	protected $toolbar;
 
-	/** @var   Application  The application this menu manager is attached to */
-	protected $application;
+	/** @var   Container  The container this menu manager is attached to */
+	protected $container;
 
 	/** @var   string  The MIME type of the request */
 	protected $mimeType = 'text/html';
@@ -56,30 +58,30 @@ abstract class Document
 	/** @var   null|string  The base name of the returned document. If set, the browser will initiate a download instead of displaying content inline. */
 	protected $name = null;
 
-	public function __construct(Application $application)
+	public function __construct(Container $container)
 	{
-		$viewPath = $application->getContainer()->basePath . '/View';
-		$viewPath_alt = $application->getContainer()->basePath . '/views';
+		$viewPath = $container->basePath . '/View';
+		$viewPath_alt = $container->basePath . '/views';
 
-		$this->menu = new MenuManager($application);
+		$this->menu = new MenuManager($container->application);
 		$this->menu->initialiseFromDirectory($viewPath);
 		$this->menu->initialiseFromDirectory($viewPath_alt, false);
 
-		$this->toolbar = new Toolbar($application);
+		$this->toolbar = new Toolbar($container->application);
 
-		$this->application = $application;
+		$this->container = $container;
 	}
 
 	/**
 	 * Return the static instance of the document
 	 *
-	 * @param   string       $type         The document type (html or json)
-	 * @param   Application  $application  The application to which the document is attached
-	 * @param   string       $classPrefix  The prefix of the document class to use
+	 * @param   string    $type        The document type (html or json)
+	 * @param   Container $container   The application to which the document is attached
+	 * @param   string    $classPrefix The prefix of the document class to use
 	 *
 	 * @return  \Awf\Document\Document
 	 */
-	public static function getInstance($type = 'html', Application $application, $classPrefix = '\\Awf')
+	public static function getInstance($type = 'html', Container $container, $classPrefix = '\\Awf')
 	{
 		if (!array_key_exists($type, self::$instances))
 		{
@@ -90,7 +92,7 @@ abstract class Document
 				$className = '\\Awf\\Document\\Html';
 			}
 
-			self::$instances[$type] = new $className($application);
+			self::$instances[$type] = new $className($container);
 		}
 
 		return self::$instances[$type];
@@ -99,7 +101,7 @@ abstract class Document
 	/**
 	 * Sets the buffer (contains the main content of the HTML page or the entire JSON response)
 	 *
-	 * @param   string  $buffer
+	 * @param   string $buffer
 	 *
 	 * @return  \Awf\Document\Document
 	 */
@@ -123,9 +125,9 @@ abstract class Document
 	/**
 	 * Adds an external script to the page
 	 *
-	 * @param   string   $url     The URL of the script file
-	 * @param   boolean  $before  (optional) Should I add this before the template's scripts?
-	 * @param   string   $type    (optional) The MIME type of the script file
+	 * @param   string  $url    The URL of the script file
+	 * @param   boolean $before (optional) Should I add this before the template's scripts?
+	 * @param   string  $type   (optional) The MIME type of the script file
 	 *
 	 * @return  \Awf\Document\Document
 	 */
@@ -140,8 +142,8 @@ abstract class Document
 	/**
 	 * Adds an inline script to the page's header
 	 *
-	 * @param   string  $content  The contents of the script (without the script tag)
-	 * @param   string  $type     (optional) The MIME type of the script data
+	 * @param   string $content The contents of the script (without the script tag)
+	 * @param   string $type    (optional) The MIME type of the script data
 	 *
 	 * @return  \Awf\Document\Document
 	 */
@@ -162,10 +164,10 @@ abstract class Document
 	/**
 	 * Adds an external stylesheet to the page
 	 *
-	 * @param   string   $url     The URL of the stylesheet file
-	 * @param   boolean  $before  (optional) Should I add this before the template's scripts?
-	 * @param   string   $type    (optional) The MIME type of the stylesheet file
-	 * @param   string   $media   (optional) The media target of the stylesheet file
+	 * @param   string  $url    The URL of the stylesheet file
+	 * @param   boolean $before (optional) Should I add this before the template's scripts?
+	 * @param   string  $type   (optional) The MIME type of the stylesheet file
+	 * @param   string  $media  (optional) The media target of the stylesheet file
 	 *
 	 * @return  \Awf\Document\Document
 	 */
@@ -181,8 +183,8 @@ abstract class Document
 	/**
 	 * Adds an inline stylesheet to the page's header
 	 *
-	 * @param   string  $content  The contents of the stylesheet (without the style tag)
-	 * @param   string  $type     (optional) The MIME type of the stylesheet data
+	 * @param   string $content The contents of the stylesheet (without the style tag)
+	 * @param   string $type    (optional) The MIME type of the stylesheet data
 	 *
 	 * @return  \Awf\Document\Document
 	 */
@@ -275,13 +277,23 @@ abstract class Document
 	 */
 	public function getApplication()
 	{
-		return $this->application;
+		return $this->container->application;
+	}
+
+	/**
+	 * Returns a reference to our Container object
+	 *
+	 * @return \Awf\Container\Container
+	 */
+	public function getContainer()
+	{
+		return $this->container;
 	}
 
 	/**
 	 * Set the MIME type of the document
 	 *
-	 * @param   string  $mimeType
+	 * @param   string $mimeType
 	 */
 	public function setMimeType($mimeType)
 	{
@@ -301,9 +313,9 @@ abstract class Document
 	/**
 	 * Add an HTTP header
 	 *
-	 * @param   string   $header     The HTTP header to add, e.g. Content-Type
-	 * @param   string   $content    The content of the HTTP header, e.g. text/plain
-	 * @param   boolean  $overwrite  Should I overwrite an existing header?
+	 * @param   string  $header    The HTTP header to add, e.g. Content-Type
+	 * @param   string  $content   The content of the HTTP header, e.g. text/plain
+	 * @param   boolean $overwrite Should I overwrite an existing header?
 	 *
 	 * @return  void
 	 */
@@ -320,7 +332,7 @@ abstract class Document
 	/**
 	 * Remove an HTTP header if set
 	 *
-	 * @param   string  $header  The header to remove, e.g. Content-Type
+	 * @param   string $header The header to remove, e.g. Content-Type
 	 *
 	 * @return  void
 	 */
@@ -335,8 +347,8 @@ abstract class Document
 	/**
 	 * Get the contents of an HTTP header defined in the document
 	 *
-	 * @param   string  $header   The HTTP header to return
-	 * @param   string  $default  The default value if it's not already set
+	 * @param   string $header  The HTTP header to return
+	 * @param   string $default The default value if it's not already set
 	 *
 	 * @return  string  The HTTP header's value
 	 */
@@ -378,7 +390,7 @@ abstract class Document
 	/**
 	 * Set the document's name
 	 *
-	 * @param   null|string  $name
+	 * @param   null|string $name
 	 *
 	 * @return  void
 	 */
@@ -396,6 +408,4 @@ abstract class Document
 	{
 		return $this->name;
 	}
-
-
 }

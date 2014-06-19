@@ -264,7 +264,7 @@ abstract class Application
 		{
 			$type = $this->getContainer()->input->getCmd('format', 'html');
 
-			$instance = Document::getInstance($type, $this);
+			$instance = Document::getInstance($type, $this->container);
 		}
 
 		return $instance;
