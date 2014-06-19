@@ -7,6 +7,17 @@
     beStrictAboutTestSize="true"
     colors="true"
 >
+    <php>
+        <const name="AWFTEST_DATABASE_MYSQL_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+        <const name="AWFTEST_DATABASE_MYSQL_ALTDB" value="awf_alt" />
+        <const name="AWFTEST_DATABASE_MYSQLI_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+        <const name="AWFTEST_DATABASE_MYSQLI_ALTDB" value="awf_alt" />
+        <const name="AWFTEST_DATABASE_POSTGRESQL_DSN" value="host=localhost;port=5432;dbname=awf;user=utuser;pass=ut1234" />
+        <const name="AWFTEST_DATABASE_POSTGRESQL_ALTDB" value="awf_alt" />
+        <const name="AWFTEST_DATABASE_SQLSRV_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+        <const name="AWFTEST_DATABASE_SQLSRV_ALTDB" value="awf_alt" />
+    </php>
+
 	<testsuites>
 		<testsuite name="AWF Unit Tests">
 			<directory>Tests</directory>
