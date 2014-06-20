@@ -30,13 +30,8 @@ class Dispatcher implements Observable
 	 *
 	 * @param   Container  $container  The application this event dispatcher is attached to
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(Container $container)
 	{
-		if (!is_object($container) || !($container instanceof Container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
 		$this->container = $container;
 	}
 
@@ -47,13 +42,8 @@ class Dispatcher implements Observable
 	 *
 	 * @return  Dispatcher
 	 */
-	public static function getInstance(Container $container = null)
+	public static function getInstance(Container $container)
 	{
-		if (!is_object($container) || !($container instanceof Container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
 		$appName = $container->application_name;
 
 		if (!isset(static::$instances[$appName]))
@@ -194,7 +184,7 @@ class Dispatcher implements Observable
 	 *
 	 * @return  array
 	 */
-	public function trigger($event, $args = array())
+	public function trigger($event, array $args = array())
 	{
 		$event = strtolower($event);
 
