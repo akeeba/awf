@@ -6,7 +6,8 @@
  */
 
 namespace Awf\Document\Menu;
-use Awf\Application\Application;
+
+use Awf\Container\Container;
 use Awf\Router\Router;
 use Awf\Uri\Uri;
 
@@ -19,6 +20,7 @@ use Awf\Uri\Uri;
  */
 class Item
 {
+
 	/**
 	 * The name of this menu item
 	 *
@@ -105,28 +107,23 @@ class Item
 	private $children = array();
 
 	/**
-	 * The application this menu item belongs to
+	 * The container this menu item belongs to
 	 *
-	 * @var \Awf\Application\Application|null
+	 * @var \Awf\Container\Container|null
 	 */
-	private $application = null;
+	private $container = null;
 
 	/**
 	 * Public constructor
 	 *
-	 * @param   array        $options  The configuration parameters of this menu item
-	 * @param   Application  $app      The application this menu item belongs to
+	 * @param   array     $options   The configuration parameters of this menu item
+	 * @param   Container $container The container this menu item belongs to
 	 *
 	 * @throws  \Exception  When basic parameters are missing
 	 */
-	public function __construct(array $options, Application $app = null)
+	public function __construct(array $options, Container $container)
 	{
-		if (!is_object($app))
-		{
-			$app = Application::getInstance();
-		}
-
-		$this->application = $app;
+		$this->container = $container;
 
 		foreach ($options as $k => $v)
 		{
@@ -152,7 +149,7 @@ class Item
 	/**
 	 * Sets the group for this menu item
 	 *
-	 * @param   string  $group
+	 * @param   string $group
 	 *
 	 * @return  void
 	 */
@@ -174,7 +171,7 @@ class Item
 	/**
 	 * Sets the icon classes
 	 *
-	 * @param   string  $icon
+	 * @param   string $icon
 	 *
 	 * @return  void
 	 */
@@ -196,7 +193,7 @@ class Item
 	/**
 	 * Sets the name of the menu item
 	 *
-	 * @param   string  $name
+	 * @param   string $name
 	 *
 	 * @return  void
 	 */
@@ -219,7 +216,7 @@ class Item
 	/**
 	 * Sets the handler for this menu item's title
 	 *
-	 * @param   string  $titleHandler
+	 * @param   string $titleHandler
 	 *
 	 * @return  void
 	 */
@@ -257,7 +254,7 @@ class Item
 	/**
 	 * Set the click handler
 	 *
-	 * @param   string  $onClick
+	 * @param   string $onClick
 	 *
 	 * @return  void
 	 */
@@ -279,7 +276,7 @@ class Item
 	/**
 	 * Set the parent menu item
 	 *
-	 * @param   string  $parent
+	 * @param   string $parent
 	 *
 	 * @return  void
 	 */
@@ -301,8 +298,8 @@ class Item
 	/**
 	 * Set the menus this menu item is visible in
 	 *
-	 * @param   array    $show  The menus this item is visible in
-	 * @param   boolean  $add   When true the $show items will be added, otherwise will replace existing items
+	 * @param   array   $show The menus this item is visible in
+	 * @param   boolean $add  When true the $show items will be added, otherwise will replace existing items
 	 *
 	 * @return  void
 	 */
@@ -329,7 +326,7 @@ class Item
 	/**
 	 * Set the title of this menu item
 	 *
-	 * @param   string  $title
+	 * @param   string $title
 	 *
 	 * @return  void
 	 */
@@ -365,7 +362,7 @@ class Item
 	/**
 	 * Set the custom URL
 	 *
-	 * @param   string  $url
+	 * @param   string $url
 	 *
 	 * @return  void
 	 */
@@ -388,8 +385,9 @@ class Item
 		}
 		else
 		{
-			$router = $this->application->getContainer()->router;
+			$router = $this->container->router;
 			$tempUrl = 'index.php?' . http_build_query($this->params);
+
 			return $router->route($tempUrl);
 		}
 	}
@@ -397,7 +395,7 @@ class Item
 	/**
 	 * Set the order of a mneu item
 	 *
-	 * @param   integer  $order  The new order
+	 * @param   integer $order The new order
 	 */
 	public function setOrder($order)
 	{
@@ -417,7 +415,7 @@ class Item
 	/**
 	 * Adds a child menu item
 	 *
-	 * @param   Item  $item
+	 * @param   Item $item
 	 *
 	 * @return  void
 	 */
@@ -431,7 +429,7 @@ class Item
 	/**
 	 * Remove a child menu item
 	 *
-	 * @param   Item  $item
+	 * @param   Item $item
 	 *
 	 * @return  void
 	 */
@@ -470,7 +468,7 @@ class Item
 	/**
 	 * Sets the menu item URL parameters
 	 *
-	 * @param   array  $params
+	 * @param   array $params
 	 */
 	public function setParams($params)
 	{
@@ -480,7 +478,7 @@ class Item
 	/**
 	 * Returns the menu item's URL parameters
 	 *
-	 * @param   boolean  $asQueryString  Return the parameters in query string format
+	 * @param   boolean $asQueryString Return the parameters in query string format
 	 *
 	 * @return  array|string
 	 */

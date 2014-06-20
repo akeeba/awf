@@ -29,19 +29,17 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	{
 		parent::setUp();
 
-		$app = Application::getInstance('Fakeapp');
-		$this->manager = new MenuManager($app);
+		$this->manager = new MenuManager(static::$container);
 	}
 
 	public function testConstruct()
 	{
-		$app = Application::getInstance('Fakeapp');
-		$manager = new MenuManager($app);
+		$manager = new MenuManager(static::$container);
 
 		// For the life of me, I don't understand why assertInstanceOf doesn't want to work here!!!!!
 		$this->assertTrue($manager instanceof \Awf\Document\Menu\MenuManager);
 
-		$this->assertEquals($app, ReflectionHelper::getValue($manager, 'application'));
+		$this->assertEquals(static::$container, ReflectionHelper::getValue($manager, 'container'));
 	}
 
 	public function testInitialiseFromDirectory()
@@ -120,11 +118,10 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testAddItem()
 	{
-		$app = Application::getInstance('Fakeapp');
-		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), $app);
-		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), $app);
-		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), $app);
-		$item1b = new Item(array('name' => 'item1', 'title' => 'Replacement'), $app);
+		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
+		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), static::$container);
+		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), static::$container);
+		$item1b = new Item(array('name' => 'item1', 'title' => 'Replacement'), static::$container);
 
 		$items = ReflectionHelper::getValue($this->manager, 'items');
 		$this->assertCount(0, $items);
@@ -189,9 +186,8 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	 */
 	public function testRemoveItem($manager)
 	{
-		$app = Application::getInstance('Fakeapp');
-		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), $app);
-		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), $app);
+		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), static::$container);
+		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), static::$container);
 
 		$items = ReflectionHelper::getValue($manager, 'items');
 		$this->assertCount(3, $items);
@@ -254,10 +250,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testClear()
 	{
-		$app = Application::getInstance('Fakeapp');
-		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), $app);
-		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), $app);
-		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), $app);
+		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
+		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), static::$container);
+		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), static::$container);
 		$this->manager->addItem($item1);
 		$this->manager->addItem($item2);
 		$this->manager->addItem($item3);
@@ -273,12 +268,11 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testGetMenuItems()
 	{
-		$app = Application::getInstance('Fakeapp');
-		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1', 'show' => array('main', 'other'), 'group' => 'foo'), $app);
-		$item1b = new Item(array('name' => 'item1b', 'title' => 'Item 1b', 'show' => array('main', 'other')), $app);
-		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2', 'show' => array('main')), $app);
-		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3', 'show' => array('other')), $app);
-		$item3b = new Item(array('name' => 'item3b', 'title' => 'Item 3', 'show' => array('other'), 'group' => 'foo'), $app);
+		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1', 'show' => array('main', 'other'), 'group' => 'foo'), static::$container);
+		$item1b = new Item(array('name' => 'item1b', 'title' => 'Item 1b', 'show' => array('main', 'other')), static::$container);
+		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2', 'show' => array('main')), static::$container);
+		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3', 'show' => array('other')), static::$container);
+		$item3b = new Item(array('name' => 'item3b', 'title' => 'Item 3', 'show' => array('other'), 'group' => 'foo'), static::$container);
 
 		$this->manager->clear();
 		$this->manager->addItem($item1);

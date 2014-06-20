@@ -7,7 +7,7 @@
 
 namespace Awf\Document\Menu;
 
-use \Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * Class MenuManager
@@ -16,6 +16,7 @@ use \Awf\Application\Application;
  */
 class MenuManager
 {
+
 	/**
 	 * The array holding the Item objects
 	 *
@@ -33,19 +34,19 @@ class MenuManager
 	/**
 	 * The Application this menu manager belongs to
 	 *
-	 * @var   Application
+	 * @var   Container
 	 */
-	private $application;
+	private $container;
 
-	public function __construct(Application &$application)
+	public function __construct(Container &$container)
 	{
-		$this->application = $application;
+		$this->container = $container;
 	}
 
 	/**
 	 * Adds a menu item to the stack
 	 *
-	 * @param   Item   $item  The item to add
+	 * @param   Item $item The item to add
 	 *
 	 * @return  void
 	 */
@@ -59,7 +60,7 @@ class MenuManager
 	/**
 	 * Adds a menu item based on a raw definition
 	 *
-	 * @param   array  $options The item definition variables
+	 * @param   array $options The item definition variables
 	 *
 	 * @return  void
 	 *
@@ -67,7 +68,7 @@ class MenuManager
 	 */
 	public function addItemFromDefinition(array $options)
 	{
-		$item = new Item($options, $this->application);
+		$item = new Item($options, $this->container);
 
 		$this->addItem($item);
 	}
@@ -75,7 +76,7 @@ class MenuManager
 	/**
 	 * Removes an item from the menus
 	 *
-	 * @param   Item  $item  The item to remove. Only its $name is read.
+	 * @param   Item $item The item to remove. Only its $name is read.
 	 */
 	public function removeItem(Item $item)
 	{
@@ -87,7 +88,7 @@ class MenuManager
 	/**
 	 * Removes an item from the menus given its name
 	 *
-	 * @param   string  $name  The name of the menu item to remove
+	 * @param   string $name The name of the menu item to remove
 	 */
 	public function removeItemByName($name)
 	{
@@ -100,7 +101,7 @@ class MenuManager
 	/**
 	 * Find and return an item by name
 	 *
-	 * @param   string  $name  The menu item's name
+	 * @param   string $name The menu item's name
 	 *
 	 * @return  Item  A copy of the item
 	 *
@@ -121,8 +122,8 @@ class MenuManager
 	/**
 	 * Gets a hierarchical list of menu items
 	 *
-	 * @param   string  $menu   Which menu to return the items for
-	 * @param   string  $group  (optional) which group to return the items for
+	 * @param   string $menu  Which menu to return the items for
+	 * @param   string $group (optional) which group to return the items for
 	 *
 	 * @return  Item
 	 */
@@ -131,7 +132,7 @@ class MenuManager
 		// Filter by menu and group
 		$deck = array();
 
-		/** @var   Item  $item */
+		/** @var   Item $item */
 		foreach ($this->items as $key => $item)
 		{
 			$menus = $item->getShow();
@@ -149,7 +150,7 @@ class MenuManager
 			$deck[] = $item;
 		}
 
-		$ret = new Item(array('name' => '', 'title' => 'ROOT'), $this->application);
+		$ret = new Item(array('name' => '', 'title' => 'ROOT'), $this->container);
 
 		$this->extractChildren($deck, $ret);
 
@@ -159,8 +160,8 @@ class MenuManager
 	/**
 	 * Extracts the children elements of $parent from a $deck of menu items
 	 *
-	 * @param   array  $deck    The deck of items to search for children
-	 * @param   Item   $parent  The parent element
+	 * @param   array $deck   The deck of items to search for children
+	 * @param   Item  $parent The parent element
 	 */
 	private function extractChildren(array &$deck, Item &$parent)
 	{
@@ -171,7 +172,7 @@ class MenuManager
 			return;
 		}
 
-		/** @var   Item  $item */
+		/** @var   Item $item */
 		foreach ($deck as $key => $item)
 		{
 			if ($item->getParent() == $parent->getName())
@@ -193,9 +194,9 @@ class MenuManager
 	 * Adds the children items to the parent item, making sure any further
 	 * generations will be added recursively.
 	 *
-	 * @param   Item   $parent    The parent item
-	 * @param   array  $children  Its children
-	 * @param   array  $deck      The deck of remaining menu items
+	 * @param   Item  $parent   The parent item
+	 * @param   array $children Its children
+	 * @param   array $deck     The deck of remaining menu items
 	 */
 	private function addChildrenToParent(Item &$parent, array $children, array &$deck)
 	{
@@ -212,12 +213,12 @@ class MenuManager
 	 * Initialise the menu structure from the views found inside the directory
 	 * $path. The view.json files are read to produce these menu items.
 	 *
-	 * @param   string   $path   The path to scan
-	 * @param   boolean  $reset  Should I reset the existing items? Default = true
+	 * @param   string  $path  The path to scan
+	 * @param   boolean $reset Should I reset the existing items? Default = true
 	 */
 	public function initialiseFromDirectory($path, $reset = true)
 	{
-		$appName = $this->application->getName();
+		$appName = $this->container->application->getName();
 
 		if ($reset)
 		{
@@ -279,7 +280,7 @@ class MenuManager
 			if (!array_key_exists('params', $options))
 			{
 				$options['params'] = array(
-					'view'		=> $viewName,
+					'view' => $viewName,
 				);
 			}
 
@@ -302,7 +303,7 @@ class MenuManager
 			}
 
 			// Create a menu item
-			$item = new Item($options, $this->application);
+			$item = new Item($options, $this->container);
 
 			// Add the menu item
 			$this->addItem($item);
@@ -312,7 +313,7 @@ class MenuManager
 	/**
 	 * Is a particular menu enabled?
 	 *
-	 * @param   string  $menu  The menu to check
+	 * @param   string $menu The menu to check
 	 *
 	 * @return  boolean
 	 */
@@ -320,7 +321,7 @@ class MenuManager
 	{
 		if (!array_key_exists($menu, $this->menuEnabledStatus))
 		{
-			$session = Application::getInstance()->getContainer()->segment;
+			$session = $this->container->segment;
 			$this->menuEnabledStatus[$menu] = $session->getFlash('menu.' . $menu . '.enabled');
 
 			if (is_null($this->menuEnabledStatus[$menu]))
@@ -335,7 +336,7 @@ class MenuManager
 	/**
 	 * Disables a menu
 	 *
-	 * @param   string   $menu  Which menu to disable
+	 * @param   string $menu Which menu to disable
 	 */
 	public function disableMenu($menu = 'main')
 	{
@@ -345,7 +346,7 @@ class MenuManager
 	/**
 	 * Enables a menu
 	 *
-	 * @param   string   $menu  Which menu to enable
+	 * @param   string $menu Which menu to enable
 	 */
 	public function enableMenu($menu = 'main')
 	{
@@ -363,8 +364,8 @@ class MenuManager
 	/**
 	 * Compares two menu items and returns their sorting relation to each other
 	 *
-	 * @param   Item  $a  First item
-	 * @param   Item  $b  Second item
+	 * @param   Item $a First item
+	 * @param   Item $b Second item
 	 *
 	 * @return  integer  0 if order A = order B, -1 if order A < order B, 1 if order A > order B
 	 */
@@ -377,6 +378,7 @@ class MenuManager
 		{
 			return 0;
 		}
+
 		return ($orderA < $orderB) ? -1 : 1;
 	}
 } 

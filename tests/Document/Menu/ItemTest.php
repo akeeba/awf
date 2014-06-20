@@ -38,13 +38,12 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params'       => array('view' => 'foobar')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		$this->assertInstanceOf('\\Awf\\Document\\Menu\\Item', $item);
 
-		$applicationExpected = Application::getInstance('Fakeapp');
-		$applicationCurrent = ReflectionHelper::getValue($item, 'application');
-		$this->assertEquals($applicationExpected, $applicationCurrent);
+		$containerCurrent = ReflectionHelper::getValue($item, 'container');
+		$this->assertEquals(static::$container, $containerCurrent);
 
 		foreach ($data as $key => $expected)
 		{
@@ -169,7 +168,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params'       => array('view' => 'foobar')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		if (is_null($expectValue))
 		{
@@ -226,7 +225,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params'       => array('view' => 'foobar')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		if (is_null($expectValue))
 		{
@@ -271,7 +270,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'title'        => '',
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		$title = $item->getTitle();
 
@@ -289,7 +288,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params' => array('foo' => 'bar', 'view' => 'test')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		$url = $item->getUrl();
 
@@ -310,7 +309,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params' => array('foo' => 'bar', 'view' => 'test')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		$params = array('a' => 1, 'b' => 2);
 		$item->setParams($params);
@@ -345,7 +344,7 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 			'params' => array('view' => 'test')
 		);
 
-		$item = new Item($data);
+		$item = new Item($data, static::$container);
 
 		// URL parameters match, it's active
 		$this->assertTrue($item->isActive());

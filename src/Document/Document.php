@@ -63,7 +63,7 @@ abstract class Document
 		$viewPath = $container->basePath . '/View';
 		$viewPath_alt = $container->basePath . '/views';
 
-		$this->menu = new MenuManager($container->application);
+		$this->menu = new MenuManager($container);
 		$this->menu->initialiseFromDirectory($viewPath);
 		$this->menu->initialiseFromDirectory($viewPath_alt, false);
 
