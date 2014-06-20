@@ -7,7 +7,6 @@
 
 namespace Awf\Document;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Document\Menu\MenuManager;
 use Awf\Document\Toolbar\Toolbar;
@@ -67,7 +66,7 @@ abstract class Document
 		$this->menu->initialiseFromDirectory($viewPath);
 		$this->menu->initialiseFromDirectory($viewPath_alt, false);
 
-		$this->toolbar = new Toolbar($container->application);
+		$this->toolbar = new Toolbar($container);
 
 		$this->container = $container;
 	}

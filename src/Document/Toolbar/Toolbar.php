@@ -6,7 +6,7 @@
  */
 
 namespace Awf\Document\Toolbar;
-use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Document\Menu\Item;
 
 /**
@@ -34,15 +34,15 @@ class Toolbar
 	private $buttons = array();
 
 	/**
-	 * The application we are attached to
+	 * The container we are attached to
 	 *
-	 * @var   Application
+	 * @var   Container
 	 */
-	private $application;
+	private $container;
 
-	public function __construct(Application $application)
+	public function __construct(Container $container)
 	{
-		$this->application = $application;
+		$this->container = $container;
 	}
 
 	/**
@@ -95,7 +95,7 @@ class Toolbar
 		// Set the item to only show in the submenu
 		$item->setShow(array('submenu'));
 
-		$this->application->getDocument()->getMenu()->addItem($item);
+		$this->container->application->getDocument()->getMenu()->addItem($item);
 	}
 
 	/**
@@ -139,7 +139,7 @@ class Toolbar
 			$name = 'submenu_' . $name;
 		}
 
-		$this->application->getDocument()->getMenu()->removeItemByName($name);
+		$this->container->application->getDocument()->getMenu()->removeItemByName($name);
 	}
 
 	/**
@@ -150,7 +150,7 @@ class Toolbar
 	 */
 	public function getSubmenu()
 	{
-		return $this->application->getDocument()->getMenu()->getMenuItems('submenu');
+		return $this->container->application->getDocument()->getMenu()->getMenuItems('submenu');
 	}
 
 	/**
