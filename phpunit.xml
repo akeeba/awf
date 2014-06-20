@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-    bootstrap="Tests/bootstrap.php"
+    bootstrap="tests/bootstrap.php"
     beStrictAboutTestsThatDoNotTestAnything="true"
     checkForUnintentionallyCoveredCode="false"
     beStrictAboutOutputDuringTests="true"
@@ -20,17 +20,33 @@
 
 	<testsuites>
 		<testsuite name="AWF Unit Tests">
-			<directory>Tests</directory>
+			<directory>tests</directory>
 		</testsuite>
 	</testsuites>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">Awf</directory>
+            <directory suffix=".php">src</directory>
             <exclude>
-                <directory suffix=".php">Awf/Autoloader</directory>
-                <directory suffix=".php">Awf/Compat</directory>
-                <directory suffix=".php">Awf/Mailer/phpmailer</directory>
+                <directory suffix=".php">src/Autoloader</directory>
+                <directory suffix=".php">src/Compat</directory>
+                <file>src/Database/DatabaseInterface.php</file>
+                <file>src/Database/QueryLimitable.php</file>
+                <file>src/Database/QueryPreparable.php</file>
+                <file>src/Download/DownloadInterface.php</file>
+                <file>src/Event/Observable.php</file>
+                <directory suffix=".php">src/Exception</directory>
+                <file>src/Filesystem/FilesystemInterface.php</file>
+                <file>src/Hal/Render/RenderInterface.php</file>
+                <directory suffix=".php">src/Mailer/phpmailer</directory>
+                <file>src/Pimple/ServiceProviderInterface.php</file>
+                <file>src/Session/RandvalInterface.php</file>
+                <file>src/Session/SegmentInterface.php</file>
+                <file>src/User/UserInterface.php</file>
+                <file>src/User/ManagerInterface.php</file>
+                <file>src/User/PrivilegeInterface.php</file>
+                <file>src/User/UserInterface.php</file>
+                <directory suffix=".php">tests</directory>
             </exclude>
         </whitelist>
     </filter>

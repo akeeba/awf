@@ -66,6 +66,8 @@ class TextTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testLoadLanguage()
 	{
+		ReflectionHelper::setValue('\Awf\Text\Text', 'strings', array());
+
 		// Make sure there are no auto-loaded strings
 		$this->assertEmpty(
 			ReflectionHelper::getValue('\Awf\Text\Text', 'strings'),
