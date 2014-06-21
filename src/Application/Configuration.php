@@ -10,9 +10,11 @@ namespace Awf\Application;
 
 use Awf\Container\Container;
 use Awf\Registry\Registry;
+use Awf\Utils\Phpfunc;
 
 class Configuration extends Registry
 {
+
 	/** @var \Awf\Container\Container|null The DI container we belong to */
 	protected $container = null;
 
@@ -35,12 +37,20 @@ class Configuration extends Registry
 	/**
 	 * Loads the configuration off a JSON file
 	 *
-	 * @param   string $filePath The path to the JSON file (optional)
+	 * @param string  $filePath The path to the JSON file (optional)
+	 * @param Phpfunc $phpfunc  The PHP function abstraction, used for testing
 	 *
 	 * @return  void
 	 */
-	public function loadConfiguration($filePath = null)
+	public function loadConfiguration($filePath = null, Phpfunc $phpfunc = null)
 	{
+		// @codeCoverageIgnoreStart
+		if (!is_object($phpfunc))
+		{
+			$phpfunc = new Phpfunc();
+		}
+		// @codeCoverageIgnoreEnd
+
 		if (empty($filePath))
 		{
 			$filePath = $this->getDefaultPath();
@@ -50,11 +60,17 @@ class Configuration extends Registry
 		$this->data = new \stdClass();
 
 		// Try to open the file
-		$fileData = @file_get_contents($filePath);
+		$fileData = @$phpfunc->file_get_contents($filePath);
 
 		if ($fileData !== false)
 		{
 			$fileData = explode("\n", $fileData, 2);
+
+			if (count($fileData) < 2)
+			{
+				return;
+			}
+
 			$fileData = $fileData[1];
 			$this->loadString($fileData);
 		}
