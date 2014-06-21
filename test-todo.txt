@@ -1,9 +1,5 @@
 Awf\Document\Toolbar\Button
 Awf\Document\Toolbar\Toolbar
-Awf\Event\Dispatcher
-Awf\Event\Observable
-Awf\Event\Observer
-Awf\Application\Configuration
 Awf\Application\TransparentAuthentication
 Awf\Application\Application
 Awf\Application\Cli

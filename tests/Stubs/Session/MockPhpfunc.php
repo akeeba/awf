@@ -8,7 +8,7 @@
 namespace Awf\Tests\Stubs\Session;
 
 
-use Awf\Session\Phpfunc;
+use Awf\Utils\Phpfunc;
 
 class MockPhpfunc extends Phpfunc
 {

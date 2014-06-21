@@ -8,7 +8,7 @@
  * Awf\Session package for copyright and license information.
  */
 
-namespace Awf\Session;
+namespace Awf\Utils;
 
 /**
  * Intercept calls to PHP functions.

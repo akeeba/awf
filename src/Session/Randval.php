@@ -10,6 +10,8 @@
 
 namespace Awf\Session;
 
+use Awf\Utils\Phpfunc;
+
 /**
  * Generates cryptographically-secure random values.
  */

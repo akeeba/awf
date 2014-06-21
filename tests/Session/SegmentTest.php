@@ -10,9 +10,9 @@ namespace Awf\Tests\Session;
 
 use Awf\Session\CsrfTokenFactory;
 use Awf\Session\Manager;
-use Awf\Session\Phpfunc;
 use Awf\Session\Randval;
 use Awf\Session\SegmentFactory;
+use Awf\Utils\Phpfunc;
 
 class SegmentTest extends \PHPUnit_Framework_TestCase
 {

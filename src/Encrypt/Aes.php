@@ -7,8 +7,7 @@
 
 namespace Awf\Encrypt;
 
-use Awf\Session\Phpfunc;
-
+use Awf\Utils\Phpfunc;
 
 /**
  * A simple implementation of AES-128, AES-192 and AES-256 encryption using the
