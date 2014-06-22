@@ -10,6 +10,7 @@ namespace Awf\Tests\Application;
 use Awf\Application\Configuration;
 use Awf\Tests\Helpers\ApplicationTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
+use Awf\Tests\Stubs\Application\MockFilesystem;
 use Awf\Tests\Stubs\Application\MockPhpfuncConfig;
 
 class ConfigurationTest extends ApplicationTestCase
@@ -115,7 +116,15 @@ class ConfigurationTest extends ApplicationTestCase
 
 	public function testSaveConfiguration()
 	{
-		$this->markTestIncomplete('This test has not yet been implemented');
+		static::$container->extend('fileSystem', function($fs, $c){
+			return new MockFilesystem(array('ignore' => 'me'));
+		});
+		$this->config->set('foo', 'bar');
+		$this->config->setDefaultPath('/dev/foobar');
+		$this->config->saveConfiguration();
+
+		$this->assertEquals('/dev/foobar', MockFilesystem::$outFilename);
+		$this->assertEquals("<?php die; ?>\n{\n    \"foo\": \"bar\"\n}", MockFilesystem::$writtenData);
 	}
 
 	protected function setUp()
