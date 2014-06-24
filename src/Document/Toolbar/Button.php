@@ -86,6 +86,8 @@ class Button
 	 * @param   string  $class
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setClass($class)
 	{
@@ -96,6 +98,8 @@ class Button
 	 * Gets the button's class
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getClass()
 	{
@@ -108,6 +112,8 @@ class Button
 	 * @param   string  $icon
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setIcon($icon)
 	{
@@ -118,6 +124,8 @@ class Button
 	 * Gets the button icon's class
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getIcon()
 	{
@@ -130,6 +138,8 @@ class Button
 	 * @param   string  $id
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setId($id)
 	{
@@ -158,6 +168,8 @@ class Button
 	 * @param   string  $onClick
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setOnClick($onClick)
 	{
@@ -168,6 +180,8 @@ class Button
 	 * Gets the button's onClick handler
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getOnClick()
 	{
@@ -180,6 +194,8 @@ class Button
 	 * @param   string  $title
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setTitle($title)
 	{
@@ -190,6 +206,8 @@ class Button
 	 * Gets the button's title (raw key)
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getTitle()
 	{
@@ -202,6 +220,8 @@ class Button
 	 * @param   string  $url
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setUrl($url)
 	{
@@ -212,6 +232,8 @@ class Button
 	 * Gets the button's direct URL
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getUrl()
 	{

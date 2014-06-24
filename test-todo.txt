@@ -1,5 +1,16 @@
 Awf\Document\Toolbar\Button
 Awf\Document\Toolbar\Toolbar
+Awf\Uri\Uri
+Awf\Router\Rule
+Awf\Router\Router
+Awf\User\AuthenticationInterface
+Awf\User\Authentication
+Awf\User\PrivilegeInterface
+Awf\User\Privilege
+Awf\User\UserInterface
+Awf\User\User
+Awf\User\ManagerInterface
+Awf\User\Manager
 Awf\Application\Application
 Awf\Application\Cli
 Awf\Database\Restore
@@ -49,17 +60,6 @@ Awf\Mvc\DataView\Json
 Awf\Mvc\DataView\Raw
 Awf\Pagination\Object
 Awf\Pagination\Pagination
-Awf\Router\Rule
-Awf\Router\Router
-Awf\Uri\Uri
-Awf\User\AuthenticationInterface
-Awf\User\Authentication
-Awf\User\PrivilegeInterface
-Awf\User\Privilege
-Awf\User\UserInterface
-Awf\User\User
-Awf\User\ManagerInterface
-Awf\User\Manager
 
 -------------------- VERY LOW PRIORITY --------------------
 Awf\Database\Driver\Postgresql
