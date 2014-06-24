@@ -1,6 +1,5 @@
 Awf\Document\Toolbar\Button
 Awf\Document\Toolbar\Toolbar
-Awf\Application\TransparentAuthentication
 Awf\Application\Application
 Awf\Application\Cli
 Awf\Database\Restore

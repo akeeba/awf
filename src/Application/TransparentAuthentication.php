@@ -13,7 +13,7 @@ use Awf\Encrypt\Totp;
 /**
  * Provides support for transparent authentication
  */
-class TrasparentAuthentication
+class TransparentAuthentication
 {
 	/** Use HTTP Basic Authentication with time-based one time passwords */
 	const Auth_HTTPBasicAuth_TOTP = 1;
@@ -57,14 +57,8 @@ class TrasparentAuthentication
 	/** @var Container The container we are attached to */
 	protected $container = null;
 
-	function __construct(Application $container = null)
+	function __construct(Container $container)
 	{
-		if (is_null($container) || !($container instanceof Container))
-		{
-			$app = Application::getInstance();
-			$container = $app->getContainer();
-		}
-
 		$this->container = $container;
 	}
 
@@ -72,6 +66,8 @@ class TrasparentAuthentication
 	 * Set the enabled authentication methods
 	 *
 	 * @param   array  $authenticationMethods
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setAuthenticationMethods($authenticationMethods)
 	{
@@ -82,6 +78,8 @@ class TrasparentAuthentication
 	 * Get the enabled authentication methods
 	 *
 	 * @return   array
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getAuthenticationMethods()
 	{
@@ -119,6 +117,8 @@ class TrasparentAuthentication
 	 * Set the required username for the HTTP Basic Authentication with TOTP method
 	 *
 	 * @param string $basicAuthUsername
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setBasicAuthUsername($basicAuthUsername)
 	{
@@ -129,6 +129,8 @@ class TrasparentAuthentication
 	 * Get the required username for the HTTP Basic Authentication with TOTP method
 	 *
 	 * @return string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getBasicAuthUsername()
 	{
@@ -139,6 +141,8 @@ class TrasparentAuthentication
 	 * Set the query parameter for the Auth_QueryString_TOTP method
 	 *
 	 * @param string $queryParam
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setQueryParam($queryParam)
 	{
@@ -149,6 +153,8 @@ class TrasparentAuthentication
 	 * Get the query parameter for the Auth_QueryString_TOTP method
 	 *
 	 * @return string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getQueryParam()
 	{
@@ -159,6 +165,8 @@ class TrasparentAuthentication
 	 * Set the query string for the password in the Auth_SplitQueryString_Plaintext method
 	 *
 	 * @param string $queryParamPassword
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setQueryParamPassword($queryParamPassword)
 	{
@@ -169,6 +177,8 @@ class TrasparentAuthentication
 	 * Get the query string for the password in the Auth_SplitQueryString_Plaintext method
 	 *
 	 * @return string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getQueryParamPassword()
 	{
@@ -179,6 +189,8 @@ class TrasparentAuthentication
 	 * Set the query string for the username in the Auth_SplitQueryString_Plaintext method
 	 *
 	 * @param string $queryParamUsername
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setQueryParamUsername($queryParamUsername)
 	{
@@ -189,6 +201,8 @@ class TrasparentAuthentication
 	 * Get the query string for the username in the Auth_SplitQueryString_Plaintext method
 	 *
 	 * @return string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getQueryParamUsername()
 	{
@@ -199,16 +213,20 @@ class TrasparentAuthentication
 	 * Set the time step in seconds for the TOTP in the Auth_HTTPBasicAuth_TOTP method
 	 *
 	 * @param int $timeStep
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setTimeStep($timeStep)
 	{
-		$this->timeStep = $timeStep;
+		$this->timeStep = (int)$timeStep;
 	}
 
 	/**
 	 * Get the time step in seconds for the TOTP in the Auth_HTTPBasicAuth_TOTP method
 	 *
 	 * @return int
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getTimeStep()
 	{
@@ -219,6 +237,8 @@ class TrasparentAuthentication
 	 * Set the secret key for the TOTP in the Auth_HTTPBasicAuth_TOTP method
 	 *
 	 * @param string $totpKey
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setTotpKey($totpKey)
 	{
@@ -229,6 +249,8 @@ class TrasparentAuthentication
 	 * Get the secret key for the TOTP in the Auth_HTTPBasicAuth_TOTP method
 	 *
 	 * @return string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getTotpKey()
 	{
@@ -301,7 +323,12 @@ class TrasparentAuthentication
 						continue;
 					}
 
-					return $this->decryptWithTOTP($encryptedData);
+					$return = $this->decryptWithTOTP($encryptedData);
+
+					if (!is_null($return))
+					{
+						return $return;
+					}
 
 					break;
 
@@ -415,7 +442,14 @@ class TrasparentAuthentication
 			$this->cryptoKey = hash('sha256', $this->totpKey . $otp);
 
 			$aes = new Aes($this->cryptoKey);
-			$ret = $aes->decryptString($encryptedData);
+			try
+			{
+				$ret = $aes->decryptString($encryptedData);
+			}
+			catch (\Exception $e)
+			{
+				continue;
+			}
 			$ret = rtrim($ret, "\000");
 
 			$ret = json_decode($ret, true);

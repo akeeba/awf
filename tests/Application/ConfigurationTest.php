@@ -13,6 +13,13 @@ use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Application\MockFilesystem;
 use Awf\Tests\Stubs\Application\MockPhpfuncConfig;
 
+/**
+ * Class ConfigurationTest
+ *
+ * @package Awf\Tests\Application
+ *
+ * @codeCoverageDefaultClass \Awf\Application\Configuration
+ */
 class ConfigurationTest extends ApplicationTestCase
 {
 	/** @var Configuration */
