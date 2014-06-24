@@ -1,4 +1,3 @@
-Awf\Document\Toolbar\Button
 Awf\Document\Toolbar\Toolbar
 Awf\Uri\Uri
 Awf\Router\Rule
@@ -28,12 +27,6 @@ Awf\Filesystem\FilesystemInterface
 Awf\Filesystem\Ftp
 Awf\Filesystem\Hybrid
 Awf\Filesystem\Sftp
-Awf\Html\Accordion
-Awf\Html\Behaviour
-Awf\Html\Grid
-Awf\Html\Html
-Awf\Html\Select
-Awf\Html\Tabs
 Awf\Mvc\Controller
 Awf\Mvc\Model
 Awf\Mvc\View
@@ -62,6 +55,12 @@ Awf\Pagination\Object
 Awf\Pagination\Pagination
 
 -------------------- VERY LOW PRIORITY --------------------
+Awf\Html\Accordion
+Awf\Html\Behaviour
+Awf\Html\Grid
+Awf\Html\Html
+Awf\Html\Select
+Awf\Html\Tabs
 Awf\Database\Driver\Postgresql
 Awf\Database\Driver\Sqlazure
 Awf\Database\Driver\Sqlsrv

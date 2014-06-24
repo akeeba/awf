@@ -28,7 +28,6 @@ if (false == include __DIR__ . '/../vendor/autoload.php')
 	exit(1);
 }
 
-
 // This is necessary for the session testing
 ini_set('session.use_only_cookies', false);
 ini_set('session.use_cookies', false);

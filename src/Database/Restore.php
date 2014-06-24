@@ -170,7 +170,7 @@ abstract class Restore
 	 */
 	public function __construct(Container $container)
 	{
-		if (!array_key_exists('dbrestore', $container))
+		if (!isset($container['dbrestore']))
 		{
 			throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDATAINCONTAINER'), 500);
 		}
@@ -234,7 +234,7 @@ abstract class Restore
 	{
 		static $instances = array();
 
-		if (!array_key_exists('dbrestore', $container))
+		if (!isset($container['dbrestore']))
 		{
 			throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDATAINCONTAINER'), 500);
 		}
@@ -552,6 +552,7 @@ abstract class Restore
 		$parts = $this->getParam('parts', 1);
 
 		$query = "";
+
 		while (!feof($this->file) && (strpos($query, "\n") === false))
 		{
 			$query .= fgets($this->file, DATA_CHUNK_LENGTH);
@@ -568,13 +569,17 @@ abstract class Restore
 			{
 				// Register the bytes read
 				$current_foffset = @ftell($this->file);
+
 				if (is_null($this->fileOffset))
 				{
 					$this->fileOffset = 0;
 				}
+
 				$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + ($current_foffset - $this->fileOffset);
+
 				// Get the next file
 				$this->getNextFile();
+
 				// Rerun the fetcher
 				throw new \Exception('Continue', 201);
 			}
@@ -583,19 +588,26 @@ abstract class Restore
 		if (substr($query, -1) != "\n")
 		{
 			// We read more data than we should. Roll back the file...
-			$rollback = strlen($query) - strpos($query, "\n");
-			fseek($this->file, -$rollback, SEEK_CUR);
-			// ...and chop the line
-			$query = substr($query, 0, $rollback);
+			$newLinePos = strpos($query, "\n");
+
+			if ($newLinePos !== false)
+			{
+				$queryLength = strlen($query);
+				$rollback = $queryLength - $newLinePos;
+				fseek($this->file, -$rollback, SEEK_CUR);
+				// ...and chop the line
+				$query = substr($query, 0, $rollback);
+			}
 		}
 
 		// Handle DOS linebreaks
 		$query = str_replace("\r\n", "\n", $query);
 		$query = str_replace("\r", "\n", $query);
 
-		// Skip comments and blank lines only if NOT in parents
+		// Skip comments and blank lines only if NOT in parentheses
 		$skipline = false;
 		reset($this->comment);
+
 		foreach ($this->comment as $comment_value)
 		{
 			if (trim($query) == "" || strpos($query, $comment_value) === 0)
@@ -604,6 +616,7 @@ abstract class Restore
 				break;
 			}
 		}
+
 		if ($skipline)
 		{
 			$this->lineNumber++;
@@ -657,14 +670,14 @@ abstract class Restore
 				continue;
 			}
 
-			// Process the query line, running drop/rename queries as necessary
-			$this->processQueryLine($query);
-
 			// Update variables
 			$this->totalSizeRead += strlen($query);
 			$this->totalQueries++;
 			$this->queries++;
 			$this->lineNumber++;
+
+			// Process the query line, running drop/rename queries as necessary
+			$this->processQueryLine($query);
 		}
 
 		// Get the current file position

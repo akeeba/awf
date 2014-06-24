@@ -8,7 +8,6 @@
 
 namespace Awf\Tests\Stubs\Fakeapp;
 
-
 class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
@@ -21,7 +20,8 @@ class Container extends \Awf\Container\Container
 			'basePath'             => $basePath . '/Stubs/Fakeapp',
 			'languagePath'         => $basePath . '/Stubs/Fakeapp/language',
 			'filesystemBase'       => $basePath . '/Stubs/Fakeapp',
-			'templatePath'			=> $basePath . '/Stubs/Fakeapp/template'
+			'templatePath'         => $basePath . '/Stubs/Fakeapp/template',
+			'sqlPath'              => $basePath . '/Stubs/schema'
 		);
 
 		$values = array_merge($defaults, $values);

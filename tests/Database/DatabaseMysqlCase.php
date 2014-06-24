@@ -93,6 +93,29 @@ abstract class DatabaseMysqlCase extends DatabaseTest
 		{
 			self::$driver = null;
 		}
+		else
+		{
+			static::$container['dbrestore'] = array(
+				'dbkey'			=> 'mysqltestcase',
+				'dbtype'		=> 'mysql',
+				'sqlfile'		=> 'mysql.sql',
+				'maxexectime'	=> 1000,
+				'runtimebias'	=> 100,
+				'dbhost'		=> self::$options['host'],
+				'dbuser'		=> self::$options['user'],
+				'dbpass'		=> self::$options['password'],
+				'dbname'		=> self::$options['database'],
+				'prefix'		=> 'awf_',
+				'existing'		=> 'drop',
+				'foreignkey'	=> 0,
+				'utf8db'		=> 0,
+				'utf8tables'	=> 0,
+				'replace'		=> 0,
+			);
+
+			$restore = new \Awf\Database\Restore\Mysql(static::$container);
+			$restore->stepRestoration();
+		}
 	}
 
 	/**

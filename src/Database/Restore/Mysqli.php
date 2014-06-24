@@ -87,7 +87,7 @@ class Mysqli extends Database\Restore
 			}
 
 			// Try to change the database collation, if requested
-			if ($this->$this->getParam('utf8db', 0))
+			if ($this->getParam('utf8db', 0))
 			{
 				try
 				{
