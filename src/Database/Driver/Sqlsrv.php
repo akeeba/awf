@@ -726,6 +726,8 @@ class Sqlsrv extends Driver
 			throw new \RuntimeException('Could not connect to database');
 		}
 
+		$this->_database = $database;
+
 		return true;
 	}
 

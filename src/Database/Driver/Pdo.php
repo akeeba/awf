@@ -650,6 +650,8 @@ abstract class Pdo extends Driver
 	{
 		$this->connect();
 
+		$this->_database = $database;
+
 		return true;
 	}
 

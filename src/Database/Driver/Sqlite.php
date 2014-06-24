@@ -306,6 +306,8 @@ class Sqlite extends Pdo
 	{
 		$this->connect();
 
+		$this->_database = $database;
+
 		return true;
 	}
 

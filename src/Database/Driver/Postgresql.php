@@ -748,6 +748,8 @@ class Postgresql extends Driver
 	 */
 	public function select($database)
 	{
+		$this->_database = $database;
+
 		return true;
 	}
 

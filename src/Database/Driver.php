@@ -25,7 +25,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @var    string
 	 */
-	private $_database;
+	protected $_database;
 
 	/**
 	 * The name of the database driver.
@@ -588,7 +588,7 @@ abstract class Driver implements DatabaseInterface
 	 * @return  string
 	 *
 	 */
-	protected function getDatabase()
+	public function getDatabase()
 	{
 		return $this->_database;
 	}

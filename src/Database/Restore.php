@@ -7,7 +7,7 @@
 
 namespace Awf\Database;
 
-use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Text\Text;
 use Awf\Timer\Timer;
 
@@ -24,6 +24,7 @@ if (!defined('DATA_CHUNK_LENGTH'))
  */
 abstract class Restore
 {
+
 	/**
 	 * A list of error codes (numbers) which should not block cause the
 	 * restoration to halt. Used for soft errors and warnings which do not cause
@@ -60,14 +61,14 @@ abstract class Restore
 	 *
 	 * @var  string
 	 */
-	protected $curpart = null;
+	protected $currentPart = null;
 
 	/**
 	 * The offset into the part file being processed
 	 *
 	 * @var  integer
 	 */
-	protected $foffset = 0;
+	protected $fileOffset = 0;
 
 	/**
 	 * The total size of all database dump files processed so far
@@ -109,15 +110,7 @@ abstract class Restore
 	 *
 	 * @var  string
 	 */
-	protected $dbkey = null;
-
-	/**
-	 * Cached copy of the up-to-date databases.ini values of the database dump
-	 * we are currently restoring.
-	 *
-	 * @var  array
-	 */
-	protected $dbiniValues = null;
+	protected $dbKey = null;
 
 	/**
 	 * The database driver used to connect to this database
@@ -131,14 +124,14 @@ abstract class Restore
 	 *
 	 * @var  integer
 	 */
-	protected $totalqueries = null;
+	protected $totalQueries = null;
 
 	/**
 	 * Line number in the current file being processed
 	 *
 	 * @var  integer
 	 */
-	protected $linenumber = null;
+	protected $lineNumber = null;
 
 	/**
 	 * Number of queries run in this restoration step
@@ -148,42 +141,51 @@ abstract class Restore
 	protected $queries = null;
 
 	/**
-	 * A pointer to the application object this database restoration class is attached to
+	 * The size of the file being processed
 	 *
-	 * @var  Application
+	 * @var int
 	 */
-	private $application = null;
+	protected $fileSize = 0;
+
+	/**
+	 * Total size of SQL already read from the dump files
+	 *
+	 * @var int
+	 */
+	protected $totalSizeRead = 0;
+
+	/**
+	 * The container this database restoration class is attached to
+	 *
+	 * @var  Container
+	 */
+	protected $container = null;
 
 	/**
 	 * Public constructor. Initialises the database restoration engine.
 	 *
-	 * @param   string $dbkey       The databases.ini key of the current database
-	 * @param   array  $dbiniValues The databases.ini configuration variables for the current database
-	 * @param   array  $config      Configuration array
+	 * @param   Container $container The container we are attached to. You need a dbrestore array in it.
+	 *
+	 * @throws \Exception
 	 */
-	public function __construct($dbkey, $dbiniValues, $config = array())
+	public function __construct(Container $container)
 	{
-		$this->dbkey = $dbkey;
-		$this->dbiniValues = $dbiniValues;
-
-		if (!array_key_exists('maxexectime', $this->dbiniValues))
+		if (!array_key_exists('dbrestore', $container))
 		{
-			$this->dbiniValues['maxexectime'] = 5;
-		}
-		if (!array_key_exists('runtimebias', $this->dbiniValues))
-		{
-			$this->dbiniValues['runtimebias'] = 75;
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDATAINCONTAINER'), 500);
 		}
 
-		$this->timer = new Timer((int)$this->dbiniValues['maxexectime'], (int)$this->dbiniValues['runtimebias']);
+		$this->container = $container;
 
-		// Get the application object
-		if (!array_key_exists('application', $config))
-		{
-			$config['application'] = Application::getInstance();
-		}
+		$this->dbKey = $container['dbrestore']['dbkey'];
 
-		$this->application = $config['application'];
+		$maxExecTime = isset($container['dbrestore']['maxexectime']) ? (int)$container['dbrestore']['maxexectime'] : 5;
+		$runTimeBias = $container['dbrestore']['runtimebias'] ? (int)$container['dbrestore']['runtimebias'] : 75;
+
+		$maxExecTime = ($maxExecTime < 1) ? 1 : $maxExecTime;
+		$runTimeBias = ($runTimeBias < 10) ? 10 : $runTimeBias;
+
+		$this->timer = new Timer($maxExecTime, $runTimeBias);
 
 		$this->populatePartsMap();
 	}
@@ -203,7 +205,7 @@ abstract class Restore
 				{
 					$this->db->disconnect();
 				}
-				catch (Exception $exc)
+				catch (\Exception $exc)
 				{
 					// Nothing. We just never want to fail when closing the
 					// database connection.
@@ -218,38 +220,31 @@ abstract class Restore
 	}
 
 	/**
-	 * Gets an instance of the database restoration class based on the $dbkey.
-	 * If it doesn't exist, a new instance is created based on $dbkey and
-	 * $dbiniValues provided.
+	 * Gets an instance of the database restoration class based on the container.
 	 *
 	 * @staticvar  array  $instances  The array of \Awf\Database\Restore instances
 	 *
-	 * @param   string $dbkey       The key of the database being restored
-	 * @param   array  $dbiniValues The database restoration configuration variables
-	 * @param   array  $config      Configuration values
+	 * @param   Container $container The container the class is attached to
 	 *
 	 * @return  Restore
 	 *
 	 * @throws \Exception
 	 */
-	public static function getInstance($dbkey, $dbiniValues = null, $config = array())
+	public static function getInstance(Container $container)
 	{
 		static $instances = array();
 
+		if (!array_key_exists('dbrestore', $container))
+		{
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDATAINCONTAINER'), 500);
+		}
+
+		$dbkey = $container['dbrestore']['dbkey'];
+
 		if (!array_key_exists($dbkey, $instances))
 		{
-			if (empty($dbiniValues))
-			{
-				throw new \Exception(Text::sprintf('SOLO_RESTORE_ERROR_UNKNOWNKEY', $dbkey));
-			}
-
-			if (is_object($dbiniValues))
-			{
-				$dbiniValues = (array)$dbiniValues;
-			}
-
-			$class = '\\Awf\\Database\\Restore\\' . ucfirst($dbiniValues['dbtype']);
-			$instances[$dbkey] = new $class($dbkey, $dbiniValues, $config);
+			$class = '\\Awf\\Database\\Restore\\' . ucfirst($container['dbrestore']['dbtype']);
+			$instances[$dbkey] = new $class($container);
 		}
 
 		return $instances[$dbkey];
@@ -265,11 +260,11 @@ abstract class Restore
 			'partsmap', 'totalsize', 'runsize'
 		);
 
-		$session = $this->application->getContainer()->segment;
+		$session = $this->container->segment;
 
 		foreach ($variables as $var)
 		{
-			$key = 'restore_' . $this->dbkey . '_' . $var;
+			$key = 'restore_' . $this->dbKey . '_' . $var;
 			$session->$key = null;
 		}
 	}
@@ -284,9 +279,9 @@ abstract class Restore
 	 */
 	protected function getFromStorage($var, $default = null)
 	{
-		$session = $this->application->getContainer()->segment;
+		$session = $this->container->segment;
 
-		$key = 'restore_' . $this->dbkey . '_' . $var;
+		$key = 'restore_' . $this->dbKey . '_' . $var;
 
 		if (!isset($session->$key))
 		{
@@ -304,16 +299,15 @@ abstract class Restore
 	 */
 	protected function setToStorage($var, $value)
 	{
-		$session = $this->application->getContainer()->segment;
+		$session = $this->container->segment;
 
-		$key = 'restore_' . $this->dbkey . '_' . $var;
+		$key = 'restore_' . $this->dbKey . '_' . $var;
 
 		$session->$key = $value;
 	}
 
 	/**
-	 * Gets a database configuration variable, as cached in the $dbiniValues
-	 * array
+	 * Gets a database configuration variable as cached in the container
 	 *
 	 * @param   string $key     The name of the variable to get
 	 * @param   mixed  $default Default value (null if skipped)
@@ -322,16 +316,9 @@ abstract class Restore
 	 */
 	protected function getParam($key, $default = null)
 	{
-		if (is_array($this->dbiniValues))
+		if (array_key_exists($key, $this->container['dbrestore']))
 		{
-			if (array_key_exists($key, $this->dbiniValues))
-			{
-				return $this->dbiniValues[$key];
-			}
-			else
-			{
-				return $default;
-			}
+			return $this->container['dbrestore'][$key];
 		}
 		else
 		{
@@ -351,24 +338,24 @@ abstract class Restore
 		$this->totalSize = $this->getFromStorage('totalsize', 0);
 		$this->runSize = $this->getFromStorage('runsize', 0);
 		$this->partsMap = $this->getFromStorage('partsmap', array());
-		$this->curpart = $this->getFromStorage('curpart', 0);
-		$this->foffset = $this->getFromStorage('foffset', 0);
+		$this->currentPart = $this->getFromStorage('curpart', 0);
+		$this->fileOffset = $this->getFromStorage('foffset', 0);
 		$this->start = $this->getFromStorage('start', 0);
-		$this->totalqueries = $this->getFromStorage('totalqueries', 0);
+		$this->totalQueries = $this->getFromStorage('totalqueries', 0);
 
 		// If that didn't work try a full initalisation
 		if (empty($this->partsMap))
 		{
-			$sqlfile = $this->dbiniValues['sqlfile'];
+			$sqlfile = $this->container['dbrestore']['sqlfile'];
 
 			$parts = $this->getParam('parts', 1);
 
 			$this->partsMap = array();
-			$path = $this->application->getContainer()->sqlPath;
+			$path = $this->container->sqlPath;
 			$this->totalSize = 0;
 			$this->runSize = 0;
-			$this->curpart = 0;
-			$this->foffset = 0;
+			$this->currentPart = 0;
+			$this->fileOffset = 0;
 
 			for ($index = 0; $index <= $parts; $index++)
 			{
@@ -396,31 +383,32 @@ abstract class Restore
 			$this->setToStorage('totalsize', $this->totalSize);
 			$this->setToStorage('runsize', $this->runSize);
 			$this->setToStorage('partsmap', $this->partsMap);
-			$this->setToStorage('curpart', $this->curpart);
-			$this->setToStorage('foffset', $this->foffset);
+			$this->setToStorage('curpart', $this->currentPart);
+			$this->setToStorage('foffset', $this->fileOffset);
 			$this->setToStorage('start', $this->start);
-			$this->setToStorage('totalqueries', $this->totalqueries);
+			$this->setToStorage('totalqueries', $this->totalQueries);
 		}
 	}
 
 	/**
 	 * Proceeds to opening the next SQL part file
+	 *
 	 * @return bool True on success
 	 */
 	protected function getNextFile()
 	{
 		$parts = $this->getParam('parts', 1);
 
-		if ($this->curpart >= ($parts - 1))
+		if ($this->currentPart >= ($parts - 1))
 		{
 			return false;
 		}
 
-		$this->curpart++;
-		$this->foffset = 0;
+		$this->currentPart++;
+		$this->fileOffset = 0;
 
-		$this->setToStorage('curpart', $this->curpart);
-		$this->setToStorage('foffset', $this->foffset);
+		$this->setToStorage('curpart', $this->currentPart);
+		$this->setToStorage('foffset', $this->fileOffset);
 
 		return $this->openFile();
 	}
@@ -435,48 +423,48 @@ abstract class Restore
 	 */
 	protected function openFile()
 	{
-		if (!is_numeric($this->curpart))
+		if (!is_numeric($this->currentPart))
 		{
-			$this->curpart = 0;
+			$this->currentPart = 0;
 		}
-		$this->filename = $this->partsMap[$this->curpart];
+		$this->filename = $this->partsMap[$this->currentPart];
 
 		if (!$this->file = @fopen($this->filename, "rt"))
 		{
-			throw new \Exception(Text::sprintf('SOLO_RESTORE_ERROR_CANTOPENDUMPFILE', $this->filename));
+			throw new \Exception(Text::sprintf('AWF_RESTORE_ERROR_CANTOPENDUMPFILE', $this->filename));
 		}
 		else
 		{
 			// Get the file size
 			if (fseek($this->file, 0, SEEK_END) == 0)
 			{
-				$this->filesize = ftell($this->file);
+				$this->fileSize = ftell($this->file);
 			}
 			else
 			{
-				throw new \Exception(Text::_('SOLO_RESTORE_ERROR_UNKNOWNFILESIZE'));
+				throw new \Exception(Text::_('AWF_RESTORE_ERROR_UNKNOWNFILESIZE'));
 			}
 		}
 
 		// Check start and foffset are numeric values
-		if (!is_numeric($this->start) || !is_numeric($this->foffset))
+		if (!is_numeric($this->start) || !is_numeric($this->fileOffset))
 		{
-			throw new \Exception(Text::_('SOLO_RESTORE_ERROR_INVALIDPARAMETERS'));
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_INVALIDPARAMETERS'));
 		}
 
 		$this->start = floor($this->start);
-		$this->foffset = floor($this->foffset);
+		$this->fileOffset = floor($this->fileOffset);
 
 		// Check $foffset upon $filesize
-		if ($this->foffset > $this->filesize)
+		if ($this->fileOffset > $this->fileSize)
 		{
-			throw new \Exception(Text::_('SOLO_RESTORE_ERROR_AFTEREOF'));
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_AFTEREOF'));
 		}
 
 		// Set file pointer to $foffset
-		if (fseek($this->file, $this->foffset) != 0)
+		if (fseek($this->file, $this->fileOffset) != 0)
 		{
-			throw new \Exception(Text::_('SOLO_RESTORE_ERROR_CANTSETOFFSET'));
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_CANTSETOFFSET'));
 		}
 
 		return true;
@@ -495,26 +483,19 @@ abstract class Restore
 		if (!is_object($this->db))
 		{
 			$options = array(
-				'driver'   => $this->dbiniValues['dbtype'],
-				'database' => $this->dbiniValues['dbname'],
+				'driver'   => $this->container['dbrestore']['dbtype'],
+				'database' => $this->container['dbrestore']['dbname'],
 				'select'   => 0,
-				'host'     => $this->dbiniValues['dbhost'],
-				'user'     => $this->dbiniValues['dbuser'],
-				'password' => $this->dbiniValues['dbpass'],
-				'prefix'   => $this->dbiniValues['prefix'],
+				'host'     => $this->container['dbrestore']['dbhost'],
+				'user'     => $this->container['dbrestore']['dbuser'],
+				'password' => $this->container['dbrestore']['dbpass'],
+				'prefix'   => $this->container['dbrestore']['prefix'],
 			);
 
 			$class = '\\Awf\\Database\\Driver\\' . ucfirst(strtolower($options['driver']));
 
-			try
-			{
-				$this->db = new $class($options);
-				$this->db->setUTF();
-			}
-			catch (\RuntimeException $e)
-			{
-				throw new \RuntimeException(sprintf('Unable to connect to the Database: %s', $e->getMessage()));
-			}
+			$this->db = new $class($options);
+			$this->db->setUTF();
 		}
 
 		return $this->db;
@@ -544,11 +525,11 @@ abstract class Restore
 			if (!in_array($exc->getCode(), $this->allowedErrorCodes))
 			{
 				// Format the error message and throw it again
-				$message = '<h2>' . Text::sprintf('SOLO_RESTORE_ERROR_ERRORATLINE', $this->linenumber) . '</h2>' . "\n";
-				$message .= '<p>' . Text::_('SOLO_RESTORE_ERROR_MYSQLERROR') . '</p>' . "\n";
-				$message .= '<tt>ErrNo #' . htmlspecialchars($exc->getCode()) . '</tt>' . "\n";
+				$message = '<h2>' . Text::sprintf('AWF_RESTORE_ERROR_ERRORATLINE', $this->lineNumber) . '</h2>' . "\n";
+				$message .= '<p>' . Text::_('AWF_RESTORE_ERROR_MYSQLERROR') . '</p>' . "\n";
+				$message .= '<code>ErrNo #' . htmlspecialchars($exc->getCode()) . '</code>' . "\n";
 				$message .= '<pre>' . htmlspecialchars($exc->getMessage()) . '</pre>' . "\n";
-				$message .= '<p>' . Text::_('SOLO_RESTORE_ERROR_RAWQUERY') . '</p>' . "\n";
+				$message .= '<p>' . Text::_('AWF_RESTORE_ERROR_RAWQUERY') . '</p>' . "\n";
 				$message .= '<pre>' . htmlspecialchars($sql) . '</pre>' . "\n";
 
 				// Rethrow the exception if we're not supposed to handle it
@@ -579,7 +560,7 @@ abstract class Restore
 		// An empty query is EOF. Are we done or should I skip to the next file?
 		if (empty($query) || ($query === false))
 		{
-			if ($this->curpart >= ($parts - 1))
+			if ($this->currentPart >= ($parts - 1))
 			{
 				throw new \Exception('All done', 200);
 			}
@@ -587,11 +568,11 @@ abstract class Restore
 			{
 				// Register the bytes read
 				$current_foffset = @ftell($this->file);
-				if (is_null($this->foffset))
+				if (is_null($this->fileOffset))
 				{
-					$this->foffset = 0;
+					$this->fileOffset = 0;
 				}
-				$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + ($current_foffset - $this->foffset);
+				$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + ($current_foffset - $this->fileOffset);
 				// Get the next file
 				$this->getNextFile();
 				// Rerun the fetcher
@@ -625,7 +606,7 @@ abstract class Restore
 		}
 		if ($skipline)
 		{
-			$this->linenumber++;
+			$this->lineNumber++;
 			throw new \Exception('Continue', 201);
 		}
 
@@ -646,12 +627,14 @@ abstract class Restore
 	{
 		$parts = $this->getParam('parts', 1);
 		$this->openFile();
-		$this->linenumber = $this->start;
-		$this->totalsizeread = 0;
+		$this->lineNumber = $this->start;
+		$this->totalSizeRead = 0;
 		$this->queries = 0;
 
 		while ($this->timer->getTimeLeft() > 0)
 		{
+			$query = '';
+
 			// Get the next query line
 			try
 			{
@@ -669,15 +652,19 @@ abstract class Restore
 				}
 			}
 
+			if (empty($query))
+			{
+				continue;
+			}
+
 			// Process the query line, running drop/rename queries as necessary
 			$this->processQueryLine($query);
 
 			// Update variables
-			$this->totalsizeread += strlen($query);
-			$this->totalqueries++;
+			$this->totalSizeRead += strlen($query);
+			$this->totalQueries++;
 			$this->queries++;
-			$query = "";
-			$this->linenumber++;
+			$this->lineNumber++;
 		}
 
 		// Get the current file position
@@ -690,41 +677,37 @@ abstract class Restore
 				@fclose($this->file);
 			}
 
-			throw new \Exception(Text::_('SOLO_RESTORE_ERROR_CANTREADPOINTER'));
+			throw new \Exception(Text::_('AWF_RESTORE_ERROR_CANTREADPOINTER'));
 		}
 		else
 		{
-			if (is_null($this->foffset))
+			if (is_null($this->fileOffset))
 			{
-				$this->foffset = 0;
+				$this->fileOffset = 0;
 			}
-			$bytes_in_step = $current_foffset - $this->foffset;
+			$bytes_in_step = $current_foffset - $this->fileOffset;
 			$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + $bytes_in_step;
-			$this->foffset = $current_foffset;
+			$this->fileOffset = $current_foffset;
 		}
 
 		// Return statistics
 		$bytes_togo = $this->totalSize - $this->runSize;
 
 		// Check for global EOF
-		if (($this->curpart >= ($parts - 1)) && feof($this->file))
+		if (($this->currentPart >= ($parts - 1)) && feof($this->file))
 		{
 			$bytes_togo = 0;
 		}
 
 		// Save variables in storage
 		$this->setToStorage('start', $this->start);
-		$this->setToStorage('foffset', $this->foffset);
-		$this->setToStorage('totalqueries', $this->totalqueries);
+		$this->setToStorage('foffset', $this->fileOffset);
+		$this->setToStorage('totalqueries', $this->totalQueries);
 		$this->setToStorage('runsize', $this->runSize);
 
 		if ($bytes_togo == 0)
 		{
 			// Clear stored variables if we're finished
-			$lines_togo = '0';
-			$lines_tota = $this->linenumber - 1;
-			$queries_togo = '0';
-			$queries_tota = $this->totalqueries;
 			$this->removeInformationFromStorage();
 		}
 
@@ -744,9 +727,9 @@ abstract class Restore
 			'percent'          => round(100 * ($this->runSize / $this->totalSize), 1),
 			'restored'         => $this->sizeformat($this->runSize),
 			'total'            => $this->sizeformat($this->totalSize),
-			'queries_restored' => $this->totalqueries,
-			'current_line'     => $this->linenumber,
-			'current_part'     => $this->curpart,
+			'queries_restored' => $this->totalQueries,
+			'current_line'     => $this->lineNumber,
+			'current_part'     => $this->currentPart,
 			'total_parts'      => $parts,
 			'eta'              => $this->etaformat($remainingSeconds),
 			'error'            => '',
@@ -761,7 +744,7 @@ abstract class Restore
 	 * REPLACE if requested. It is also supposed to execute $query against the
 	 * database, replacing the metaprefix #__ with the real prefix.
 	 *
-	 * @param   string  $query
+	 * @param   string $query
 	 *
 	 * @return  string  The processed query
 	 */
@@ -770,8 +753,8 @@ abstract class Restore
 	/**
 	 * Format a raw time in seconds as a human readable string
 	 *
-	 * @param   integer  $Raw        Time in seconds
-	 * @param   string   $measureby  Unit of measurement, leave blank to auto-detect
+	 * @param   integer $Raw       Time in seconds
+	 * @param   string  $measureby Unit of measurement, leave blank to auto-detect
 	 *
 	 * @return  string  Human readable time string
 	 */
@@ -828,7 +811,7 @@ abstract class Restore
 	/**
 	 * Returns the cached total size of the SQL dump.
 	 *
-	 * @param   boolean  $use_units  Should I automatically figure out the unit of measurement
+	 * @param   boolean $use_units Should I automatically figure out the unit of measurement
 	 *
 	 * @return  string
 	 */
@@ -847,7 +830,7 @@ abstract class Restore
 	/**
 	 * Format a size in bytes into a human readable format
 	 *
-	 * @param   string  $size  The size in bytes
+	 * @param   string $size The size in bytes
 	 *
 	 * @return  string  The human readable size string
 	 */

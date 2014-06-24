@@ -319,6 +319,8 @@ class Mysql extends Mysqli
 			throw new \RuntimeException('Could not connect to database');
 		}
 
+		$this->_database = $database;
+
 		return true;
 	}
 
