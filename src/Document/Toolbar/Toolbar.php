@@ -6,6 +6,7 @@
  */
 
 namespace Awf\Document\Toolbar;
+
 use Awf\Container\Container;
 use Awf\Document\Menu\Item;
 
@@ -40,6 +41,11 @@ class Toolbar
 	 */
 	private $container;
 
+	/**
+	 * Public constructor
+	 *
+	 * @param Container $container The container we are attached to
+	 */
 	public function __construct(Container $container)
 	{
 		$this->container = $container;
@@ -48,9 +54,11 @@ class Toolbar
 	/**
 	 * Sets the title of the application
 	 *
-	 * @param   string  $title
+	 * @param   string $title
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setTitle($title)
 	{
@@ -61,6 +69,8 @@ class Toolbar
 	 * Gets the title of the application
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getTitle()
 	{
@@ -70,7 +80,7 @@ class Toolbar
 	/**
 	 * Adds a menu item to the application submenu
 	 *
-	 * @param   Item  $item
+	 * @param   Item $item
 	 *
 	 * @return  void
 	 */
@@ -102,13 +112,13 @@ class Toolbar
 	 * Adds a menu item to the application submenu given a definition in
 	 * hashed array format.
 	 *
-	 * @param   array  $options
+	 * @param   array $options
 	 *
 	 * @return  void
 	 */
 	public function addSubmenuFromDefinition($options)
 	{
-		$item = new Item($options);
+		$item = new Item($options, $this->container);
 
 		$this->addSubmenu($item);
 	}
@@ -116,7 +126,7 @@ class Toolbar
 	/**
 	 * Remove a submenu item
 	 *
-	 * @param   Item  $item  The submenu item to remove
+	 * @param   Item $item The submenu item to remove
 	 *
 	 * @return  void
 	 */
@@ -156,9 +166,11 @@ class Toolbar
 	/**
 	 * Set a list of toolbar buttons, replacing the existing set
 	 *
-	 * @param   array  $buttons
+	 * @param   array $buttons
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setButtons($buttons)
 	{
@@ -169,6 +181,8 @@ class Toolbar
 	 * Clear the list of toolbar buttons
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function clearButtons()
 	{
@@ -179,6 +193,8 @@ class Toolbar
 	 * Get the toolbar buttons
 	 *
 	 * @return  array
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getButtons()
 	{
@@ -188,7 +204,7 @@ class Toolbar
 	/**
 	 * Adds a toolbar button
 	 *
-	 * @param   Button  $button
+	 * @param   Button $button
 	 *
 	 * @return  void
 	 */
@@ -202,7 +218,7 @@ class Toolbar
 	/**
 	 * Adds a toolbar button from an array definition of its parameters
 	 *
-	 * @param   array  $options
+	 * @param   array $options
 	 *
 	 * @return  void
 	 */
@@ -216,7 +232,7 @@ class Toolbar
 	/**
 	 * Removes a button from the toolbar
 	 *
-	 * @param   Button  $button
+	 * @param   Button $button
 	 *
 	 * @return  void
 	 */
@@ -230,7 +246,7 @@ class Toolbar
 	/**
 	 * Removes a toolbar button by its name
 	 *
-	 * @param   string  $name
+	 * @param   string $name
 	 *
 	 * @return  void
 	 */
@@ -238,14 +254,14 @@ class Toolbar
 	{
 		if (array_key_exists($name, $this->buttons))
 		{
-			unser ($this->buttons[$name]);
+			unset ($this->buttons[$name]);
 		}
 	}
 
 	/**
 	 * Returns a button by name
 	 *
-	 * @param   string  $name
+	 * @param   string $name
 	 *
 	 * @return  Button
 	 *
