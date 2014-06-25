@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -174,9 +174,17 @@ class TreeModel extends DataModel
 	 * @param   array $data The data to use in the new record
 	 *
 	 * @return  static  The new node
+     *
+     * @throws  \RuntimeException
 	 */
 	public function create($data)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		$newNode = $this->reset()->bind($data);
 
 		if ($this->isRoot())
@@ -219,9 +227,17 @@ class TreeModel extends DataModel
 	 * in your schema installation and then sticking to only one root.
 	 *
 	 * @return static
+     *
+     * @throws  \RuntimeException
 	 */
 	public function insertAsRoot()
 	{
+        // You can't insert a node that is already saved i.e. the table has an id
+        if($this->getId())
+        {
+            throw new \RuntimeException(__METHOD__.' can be only used with new nodes');
+        }
+
 		// First we need to find the right value of the last parent, a.k.a. the max(rgt) of the table
 		$db = $this->getDbo();
 
@@ -262,6 +278,9 @@ class TreeModel extends DataModel
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's rgt
 		$myLeft = $parentNode->lft;
@@ -326,6 +345,9 @@ class TreeModel extends DataModel
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's lft
 		$myRight = $parentNode->rgt;
@@ -403,6 +425,9 @@ class TreeModel extends DataModel
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
 
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
+
 		// Get the value of the parent node's rgt
 		$myLeft = $siblingNode->lft;
 
@@ -411,8 +436,8 @@ class TreeModel extends DataModel
 		$this->rgt = $myLeft + 1;
 
 		// Update sibling's lft/rgt values
-		$siblingNode->lft++;
-		$siblingNode->rgt++;
+		$siblingNode->lft += 2;
+		$siblingNode->rgt += 2;
 
 		$db->transactionStart();
 
@@ -433,6 +458,9 @@ class TreeModel extends DataModel
 			)->execute();
 
 			$this->save();
+
+            // Commit the transaction
+            $db->transactionCommit();
 		}
 		catch (\Exception $e)
 		{
@@ -463,6 +491,9 @@ class TreeModel extends DataModel
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
 
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
+
 		// Get the value of the parent node's lft
 		$myRight = $siblingNode->rgt;
 
@@ -489,6 +520,9 @@ class TreeModel extends DataModel
 			)->execute();
 
 			$this->save();
+
+            // Commit the transaction
+            $db->transactionCommit();
 		}
 		catch (\Exception $e)
 		{
@@ -515,10 +549,18 @@ class TreeModel extends DataModel
 	/**
 	 * Move the current node (and its subtree) one position to the left in the tree, i.e. before its left-hand sibling
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return $this
 	 */
 	public function moveLeft()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If it is a root node we will not move the node (roots don't participate in tree ordering)
 		if ($this->isRoot())
 		{
@@ -663,6 +705,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -752,6 +797,9 @@ class TreeModel extends DataModel
 
 			throw $e;
 		}
+
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
 
 		return $this;
 	}
@@ -880,6 +928,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -968,6 +1019,9 @@ class TreeModel extends DataModel
 
 			throw $e;
 		}
+
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
 
 		return $this;
 	}
@@ -1905,4 +1959,4 @@ class TreeModel extends DataModel
 
 		return $query;
 	}
-} 
+}
