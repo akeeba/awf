@@ -269,9 +269,15 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertAsFirstChildOf(TreeModel &$parentNode)
 	{
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
@@ -336,9 +342,15 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertAsLastChildOf(TreeModel &$parentNode)
 	{
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
@@ -397,6 +409,7 @@ class TreeModel extends DataModel
 	/**
 	 * Alias for insertAsLastchildOf
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $parentNode
 	 *
 	 * @return $this for chaining
@@ -415,9 +428,15 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertLeftOf(TreeModel &$siblingNode)
 	{
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
@@ -481,9 +500,15 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertRightOf(TreeModel &$siblingNode)
 	{
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
@@ -537,6 +562,7 @@ class TreeModel extends DataModel
 	/**
 	 * Alias for insertRightOf
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $siblingNode
 	 *
 	 * @return $this for chaining
@@ -585,13 +611,21 @@ class TreeModel extends DataModel
 		return $this->moveToLeftOf($leftSibling);
 	}
 
-	/**
-	 * Move the current node (and its subtree) one position to the right in the tree, i.e. after its right-hand sibling
-	 *
-	 * @return $this
-	 */
+    /**
+     * Move the current node (and its subtree) one position to the right in the tree, i.e. after its right-hand sibling
+     *
+     * @throws \RuntimeException
+     *
+     * @return $this
+     */
 	public function moveRight()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If it is a root node we will not move the node (roots don't participate in tree ordering)
 		if ($this->isRoot())
 		{
@@ -626,9 +660,21 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function moveToLeftOf(TreeModel $siblingNode)
 	{
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		$db = $this->getDbo();
 		$left = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
@@ -639,7 +685,6 @@ class TreeModel extends DataModel
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$sibRight = $siblingNode->rgt;
 		$sibLeft = $siblingNode->lft;
 
 		// Start the transaction
