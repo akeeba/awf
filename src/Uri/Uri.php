@@ -285,13 +285,8 @@ class Uri
 	 *
 	 * @return string
 	 */
-	public static function rebase($url, Container $container = null, $baseUrl = null)
+	public static function rebase($url, Container $container, $baseUrl = null)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
 		if (empty($baseUrl))
 		{
 			$baseUrl = $container->appConfig->get('base_url', 'index.php');
@@ -305,7 +300,7 @@ class Uri
 		}
 
 		$base = self::base(false, $container);
-		$base = rtrim($base, '/') . '/' . $baseUrl;
+		$base = rtrim($base, '/') . '/' . ltrim($baseUrl, '/');
 
 		$rebaseURI = new Uri($base);
 		$oldURI = new Uri($url);
@@ -727,8 +722,10 @@ class Uri
 	public static function isInternal($url)
 	{
 		$uri = self::getInstance($url);
+
 		$base = $uri->toString(array('scheme', 'host', 'port', 'path'));
 		$host = $uri->toString(array('scheme', 'host', 'port'));
+
 		if (stripos($base, self::base()) !== 0 && !empty($host))
 		{
 			return false;

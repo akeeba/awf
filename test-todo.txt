@@ -1,5 +1,4 @@
 Awf\Document\Toolbar\Toolbar
-Awf\Uri\Uri
 Awf\Router\Rule
 Awf\Router\Router
 Awf\User\AuthenticationInterface
