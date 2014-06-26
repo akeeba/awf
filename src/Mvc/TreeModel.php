@@ -765,9 +765,21 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function moveToRightOf(TreeModel $siblingNode)
 	{
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		$db = $this->getDbo();
 		$left = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
@@ -893,15 +905,27 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function makeFirstChildOf(TreeModel $parentNode)
 	{
-		$db = $this->getDbo();
-		$left = $db->qn($this->getFieldAlias('lft'));
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
+		$db    = $this->getDbo();
+		$left  = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
+		$myLeft  = $this->lft;
 		$myRight = $this->rgt;
 		$myWidth = $myRight - $myLeft + 1;
 
@@ -987,15 +1011,27 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function makeLastChildOf(TreeModel $parentNode)
 	{
-		$db = $this->getDbo();
-		$left = $db->qn($this->getFieldAlias('lft'));
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
+		$db    = $this->getDbo();
+		$left  = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
+		$myLeft  = $this->lft;
 		$myRight = $this->rgt;
 		$myWidth = $myRight - $myLeft + 1;
 
@@ -1116,10 +1152,18 @@ class TreeModel extends DataModel
 	/**
 	 * Gets the level (depth) of this node in the tree. The result is cached in $this->treeDepth for faster retrieval.
 	 *
+     * @throws \RuntimeException
+     *
 	 * @return int|mixed
 	 */
 	public function getLevel()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		if (is_null($this->treeDepth))
 		{
 			$db = $this->getDbo();
@@ -1146,10 +1190,18 @@ class TreeModel extends DataModel
 	/**
 	 * Returns the immediate parent of the current node
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return static
 	 */
 	public function getParent()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		if ($this->isRoot())
 		{
 			return $this;
