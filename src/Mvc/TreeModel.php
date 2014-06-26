@@ -1252,16 +1252,26 @@ class TreeModel extends DataModel
 	/**
 	 * Is this a leaf node (a node without children)?
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return bool
 	 */
 	public function isLeaf()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		return ($this->rgt - 1) == $this->lft;
 	}
 
 	/**
 	 * Is this a child node (not root)?
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return bool
 	 */
 	public function isChild()
@@ -1274,10 +1284,23 @@ class TreeModel extends DataModel
 	 *
 	 * @param TreeModel $otherNode
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return bool
 	 */
 	public function isDescendantOf(TreeModel $otherNode)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
 		return ($otherNode->lft > $this->lft) && ($otherNode->rgt < $this->rgt);
 	}
 
@@ -1296,6 +1319,7 @@ class TreeModel extends DataModel
 	/**
 	 * Returns true if we are an ancestor of $otherNode
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $otherNode
 	 *
 	 * @return bool
@@ -1308,6 +1332,7 @@ class TreeModel extends DataModel
 	/**
 	 * Returns true if $otherNode is ourselves or we are an ancestor of $otherNode
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $otherNode
 	 *
 	 * @return bool
@@ -1321,11 +1346,24 @@ class TreeModel extends DataModel
 	 * Is $node this very node?
 	 *
 	 * @param TreeModel $node
+     *
+     * @throws  \RuntimeException
 	 *
 	 * @return bool
 	 */
 	public function equals(TreeModel &$node)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($node->lft >= $node->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
 		return (
 			($this->getId() == $node->getId())
 			&& ($this->lft == $node->lft)
@@ -1338,11 +1376,24 @@ class TreeModel extends DataModel
 	 * be compared.
 	 *
 	 * @param TreeModel $otherNode
+     *
+     * @throws  \RuntimeException
 	 *
 	 * @return bool
 	 */
 	public function insideSubtree(TreeModel $otherNode)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
 		return ($this->lft > $otherNode->lft) && ($this->rgt < $otherNode->rgt);
 	}
 
@@ -1431,6 +1482,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will return all sibling nodes but not ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeSiblings()
@@ -1572,6 +1625,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will not return ourselves if it's part of the query results
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeWithoutSelf()
@@ -1582,6 +1637,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will not return our root if it's part of the query results
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeWithoutRoot()
@@ -1684,6 +1741,8 @@ class TreeModel extends DataModel
 	 * Get all ancestors to this node and the node itself. In other words it gets the full path to the node and the node
 	 * itself.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsAndSelf()
@@ -1696,6 +1755,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all ancestors to this node and the node itself, but not the root node. If you want to
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsAndSelfWithoutRoot()
@@ -1710,6 +1771,8 @@ class TreeModel extends DataModel
 	 * Get all ancestors to this node but not the node itself. In other words it gets the path to the node, without the
 	 * node itself.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestors()
@@ -1723,6 +1786,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all ancestors to this node but not the node itself and its root.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsWithoutRoot()
@@ -1736,6 +1801,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all sibling nodes, including ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getSiblingsAndSelf()
@@ -1748,6 +1815,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all sibling nodes, except ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getSiblings()
@@ -1761,6 +1830,8 @@ class TreeModel extends DataModel
 	 * Get all leaf nodes in the tree. You may want to use the scopes to narrow down the search in a specific subtree or
 	 * path.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getLeaves()
@@ -1775,6 +1846,8 @@ class TreeModel extends DataModel
 	 *
 	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getDescendantsAndSelf()
@@ -1789,6 +1862,8 @@ class TreeModel extends DataModel
 	 *
 	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getDescendants()
@@ -1802,6 +1877,8 @@ class TreeModel extends DataModel
 	 * Get the immediate descendants (children). Unlike getDescendants it only goes one level deep into the tree
 	 * structure. Descendants of descendant nodes will not be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getImmediateDescendants()
