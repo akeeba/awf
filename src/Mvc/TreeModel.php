@@ -1301,7 +1301,7 @@ class TreeModel extends DataModel
             throw new \RuntimeException('Invalid position values for the other node');
         }
 
-		return ($otherNode->lft > $this->lft) && ($otherNode->rgt < $this->rgt);
+		return ($otherNode->lft < $this->lft) && ($otherNode->rgt > $this->rgt);
 	}
 
 	/**
@@ -1313,7 +1313,18 @@ class TreeModel extends DataModel
 	 */
 	public function isSelfOrDescendantOf(TreeModel $otherNode)
 	{
-		return ($otherNode->lft >= $this->lft) && ($otherNode->rgt <= $this->rgt);
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
+		return ($otherNode->lft <= $this->lft) && ($otherNode->rgt >= $this->rgt);
 	}
 
 	/**
@@ -1548,10 +1559,18 @@ class TreeModel extends DataModel
 	/**
 	 * get() will only return immediate descendants (first level children) of the current node
 	 *
+     * @throws \RuntimeException
+     *
 	 * @return void
 	 */
 	protected function scopeImmediateDescendants()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		$db = $this->getDbo();
 
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
@@ -1656,6 +1675,12 @@ class TreeModel extends DataModel
 	 */
 	public function getRoot()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If this is a root node return itself (there is no such thing as the root of a root node)
 		if ($this->isRoot())
 		{
@@ -1699,7 +1724,7 @@ class TreeModel extends DataModel
 				// Find the node with depth = 0, lft < our lft and rgt > our right. That's our root node.
 				$query = $db->getQuery(true)
 					->select(array(
-						$fldLft,
+                        $db->qn('node') . '.' . $fldLft,
 						'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth')
 					))
 					->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
