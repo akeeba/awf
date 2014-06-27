@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -174,9 +174,17 @@ class TreeModel extends DataModel
 	 * @param   array $data The data to use in the new record
 	 *
 	 * @return  static  The new node
+     *
+     * @throws  \RuntimeException
 	 */
 	public function create($data)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		$newNode = $this->reset()->bind($data);
 
 		if ($this->isRoot())
@@ -219,9 +227,17 @@ class TreeModel extends DataModel
 	 * in your schema installation and then sticking to only one root.
 	 *
 	 * @return static
+     *
+     * @throws  \RuntimeException
 	 */
 	public function insertAsRoot()
 	{
+        // You can't insert a node that is already saved i.e. the table has an id
+        if($this->getId())
+        {
+            throw new \RuntimeException(__METHOD__.' can be only used with new nodes');
+        }
+
 		// First we need to find the right value of the last parent, a.k.a. the max(rgt) of the table
 		$db = $this->getDbo();
 
@@ -253,15 +269,24 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertAsFirstChildOf(TreeModel &$parentNode)
 	{
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's rgt
 		$myLeft = $parentNode->lft;
@@ -317,15 +342,24 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertAsLastChildOf(TreeModel &$parentNode)
 	{
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's lft
 		$myRight = $parentNode->rgt;
@@ -375,6 +409,7 @@ class TreeModel extends DataModel
 	/**
 	 * Alias for insertAsLastchildOf
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $parentNode
 	 *
 	 * @return $this for chaining
@@ -393,15 +428,24 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertLeftOf(TreeModel &$siblingNode)
 	{
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's rgt
 		$myLeft = $siblingNode->lft;
@@ -411,8 +455,8 @@ class TreeModel extends DataModel
 		$this->rgt = $myLeft + 1;
 
 		// Update sibling's lft/rgt values
-		$siblingNode->lft++;
-		$siblingNode->rgt++;
+		$siblingNode->lft += 2;
+		$siblingNode->rgt += 2;
 
 		$db->transactionStart();
 
@@ -433,6 +477,9 @@ class TreeModel extends DataModel
 			)->execute();
 
 			$this->save();
+
+            // Commit the transaction
+            $db->transactionCommit();
 		}
 		catch (\Exception $e)
 		{
@@ -453,15 +500,24 @@ class TreeModel extends DataModel
 	 *
 	 * @return $this for chaining
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function insertRightOf(TreeModel &$siblingNode)
 	{
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		// Get a reference to the database
 		$db = $this->getDbo();
 
 		// Get the field names
 		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
+
+        // Nullify the PK, so a new record will be created
+        $this->{$this->idFieldName} = null;
 
 		// Get the value of the parent node's lft
 		$myRight = $siblingNode->rgt;
@@ -489,6 +545,9 @@ class TreeModel extends DataModel
 			)->execute();
 
 			$this->save();
+
+            // Commit the transaction
+            $db->transactionCommit();
 		}
 		catch (\Exception $e)
 		{
@@ -503,6 +562,7 @@ class TreeModel extends DataModel
 	/**
 	 * Alias for insertRightOf
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $siblingNode
 	 *
 	 * @return $this for chaining
@@ -515,10 +575,18 @@ class TreeModel extends DataModel
 	/**
 	 * Move the current node (and its subtree) one position to the left in the tree, i.e. before its left-hand sibling
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return $this
 	 */
 	public function moveLeft()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If it is a root node we will not move the node (roots don't participate in tree ordering)
 		if ($this->isRoot())
 		{
@@ -543,13 +611,21 @@ class TreeModel extends DataModel
 		return $this->moveToLeftOf($leftSibling);
 	}
 
-	/**
-	 * Move the current node (and its subtree) one position to the right in the tree, i.e. after its right-hand sibling
-	 *
-	 * @return $this
-	 */
+    /**
+     * Move the current node (and its subtree) one position to the right in the tree, i.e. after its right-hand sibling
+     *
+     * @throws \RuntimeException
+     *
+     * @return $this
+     */
 	public function moveRight()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If it is a root node we will not move the node (roots don't participate in tree ordering)
 		if ($this->isRoot())
 		{
@@ -584,9 +660,21 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function moveToLeftOf(TreeModel $siblingNode)
 	{
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		$db = $this->getDbo();
 		$left = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
@@ -597,7 +685,6 @@ class TreeModel extends DataModel
 		$myWidth = $myRight - $myLeft + 1;
 
 		// Get parent metrics
-		$sibRight = $siblingNode->rgt;
 		$sibLeft = $siblingNode->lft;
 
 		// Start the transaction
@@ -663,6 +750,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -675,9 +765,21 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function moveToRightOf(TreeModel $siblingNode)
 	{
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($siblingNode->lft >= $siblingNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the sibling node');
+        }
+
 		$db = $this->getDbo();
 		$left = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
@@ -753,6 +855,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -800,15 +905,27 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function makeFirstChildOf(TreeModel $parentNode)
 	{
-		$db = $this->getDbo();
-		$left = $db->qn($this->getFieldAlias('lft'));
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
+		$db    = $this->getDbo();
+		$left  = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
+		$myLeft  = $this->lft;
 		$myRight = $this->rgt;
 		$myWidth = $myRight - $myLeft + 1;
 
@@ -880,6 +997,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -891,15 +1011,27 @@ class TreeModel extends DataModel
 	 * @return $this for chaining
 	 *
 	 * @throws \Exception
+	 * @throws \RuntimeException
 	 */
 	public function makeLastChildOf(TreeModel $parentNode)
 	{
-		$db = $this->getDbo();
-		$left = $db->qn($this->getFieldAlias('lft'));
+        // Sanity checks on current and sibling node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($parentNode->lft >= $parentNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the parent node');
+        }
+
+		$db    = $this->getDbo();
+		$left  = $db->qn($this->getFieldAlias('lft'));
 		$right = $db->qn($this->getFieldAlias('rgt'));
 
 		// Get node metrics
-		$myLeft = $this->lft;
+		$myLeft  = $this->lft;
 		$myRight = $this->rgt;
 		$myWidth = $myRight - $myLeft + 1;
 
@@ -969,6 +1101,9 @@ class TreeModel extends DataModel
 			throw $e;
 		}
 
+        // Let's load the record again to fetch the new values for lft and rgt
+        $this->findOrFail();
+
 		return $this;
 	}
 
@@ -1017,10 +1152,18 @@ class TreeModel extends DataModel
 	/**
 	 * Gets the level (depth) of this node in the tree. The result is cached in $this->treeDepth for faster retrieval.
 	 *
+     * @throws \RuntimeException
+     *
 	 * @return int|mixed
 	 */
 	public function getLevel()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		if (is_null($this->treeDepth))
 		{
 			$db = $this->getDbo();
@@ -1047,10 +1190,18 @@ class TreeModel extends DataModel
 	/**
 	 * Returns the immediate parent of the current node
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return static
 	 */
 	public function getParent()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		if ($this->isRoot())
 		{
 			return $this;
@@ -1101,16 +1252,26 @@ class TreeModel extends DataModel
 	/**
 	 * Is this a leaf node (a node without children)?
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return bool
 	 */
 	public function isLeaf()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		return ($this->rgt - 1) == $this->lft;
 	}
 
 	/**
 	 * Is this a child node (not root)?
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return bool
 	 */
 	public function isChild()
@@ -1123,11 +1284,24 @@ class TreeModel extends DataModel
 	 *
 	 * @param TreeModel $otherNode
 	 *
+     * @throws  \RuntimeException
+     *
 	 * @return bool
 	 */
 	public function isDescendantOf(TreeModel $otherNode)
 	{
-		return ($otherNode->lft > $this->lft) && ($otherNode->rgt < $this->rgt);
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
+		return ($otherNode->lft < $this->lft) && ($otherNode->rgt > $this->rgt);
 	}
 
 	/**
@@ -1139,12 +1313,24 @@ class TreeModel extends DataModel
 	 */
 	public function isSelfOrDescendantOf(TreeModel $otherNode)
 	{
-		return ($otherNode->lft >= $this->lft) && ($otherNode->rgt <= $this->rgt);
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
+		return ($otherNode->lft <= $this->lft) && ($otherNode->rgt >= $this->rgt);
 	}
 
 	/**
 	 * Returns true if we are an ancestor of $otherNode
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $otherNode
 	 *
 	 * @return bool
@@ -1157,6 +1343,7 @@ class TreeModel extends DataModel
 	/**
 	 * Returns true if $otherNode is ourselves or we are an ancestor of $otherNode
 	 *
+     * @codeCoverageIgnore
 	 * @param TreeModel $otherNode
 	 *
 	 * @return bool
@@ -1170,11 +1357,24 @@ class TreeModel extends DataModel
 	 * Is $node this very node?
 	 *
 	 * @param TreeModel $node
+     *
+     * @throws  \RuntimeException
 	 *
 	 * @return bool
 	 */
 	public function equals(TreeModel &$node)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($node->lft >= $node->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
 		return (
 			($this->getId() == $node->getId())
 			&& ($this->lft == $node->lft)
@@ -1187,11 +1387,24 @@ class TreeModel extends DataModel
 	 * be compared.
 	 *
 	 * @param TreeModel $otherNode
+     *
+     * @throws  \RuntimeException
 	 *
 	 * @return bool
 	 */
 	public function insideSubtree(TreeModel $otherNode)
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
+        if($otherNode->lft >= $otherNode->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the other node');
+        }
+
 		return ($this->lft > $otherNode->lft) && ($this->rgt < $otherNode->rgt);
 	}
 
@@ -1280,6 +1493,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will return all sibling nodes but not ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeSiblings()
@@ -1344,10 +1559,18 @@ class TreeModel extends DataModel
 	/**
 	 * get() will only return immediate descendants (first level children) of the current node
 	 *
+     * @throws \RuntimeException
+     *
 	 * @return void
 	 */
 	protected function scopeImmediateDescendants()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		$db = $this->getDbo();
 
 		$fldLft = $db->qn($this->getFieldAlias('lft'));
@@ -1421,6 +1644,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will not return ourselves if it's part of the query results
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeWithoutSelf()
@@ -1431,6 +1656,8 @@ class TreeModel extends DataModel
 	/**
 	 * get() will not return our root if it's part of the query results
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return void
 	 */
 	protected function scopeWithoutRoot()
@@ -1448,6 +1675,12 @@ class TreeModel extends DataModel
 	 */
 	public function getRoot()
 	{
+        // Sanity checks on current node position
+        if($this->lft >= $this->rgt)
+        {
+            throw new \RuntimeException('Invalid position values for the current node');
+        }
+
 		// If this is a root node return itself (there is no such thing as the root of a root node)
 		if ($this->isRoot())
 		{
@@ -1491,7 +1724,7 @@ class TreeModel extends DataModel
 				// Find the node with depth = 0, lft < our lft and rgt > our right. That's our root node.
 				$query = $db->getQuery(true)
 					->select(array(
-						$fldLft,
+                        $db->qn('node') . '.' . $fldLft,
 						'(COUNT(' . $db->qn('parent') . '.' . $fldLft . ') - 1) AS ' . $db->qn('depth')
 					))
 					->from($db->qn($this->tableName) . ' AS ' . $db->qn('node'))
@@ -1533,6 +1766,8 @@ class TreeModel extends DataModel
 	 * Get all ancestors to this node and the node itself. In other words it gets the full path to the node and the node
 	 * itself.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsAndSelf()
@@ -1545,6 +1780,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all ancestors to this node and the node itself, but not the root node. If you want to
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsAndSelfWithoutRoot()
@@ -1559,6 +1796,8 @@ class TreeModel extends DataModel
 	 * Get all ancestors to this node but not the node itself. In other words it gets the path to the node, without the
 	 * node itself.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestors()
@@ -1572,6 +1811,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all ancestors to this node but not the node itself and its root.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getAncestorsWithoutRoot()
@@ -1585,6 +1826,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all sibling nodes, including ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getSiblingsAndSelf()
@@ -1597,6 +1840,8 @@ class TreeModel extends DataModel
 	/**
 	 * Get all sibling nodes, except ourselves
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getSiblings()
@@ -1610,6 +1855,8 @@ class TreeModel extends DataModel
 	 * Get all leaf nodes in the tree. You may want to use the scopes to narrow down the search in a specific subtree or
 	 * path.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getLeaves()
@@ -1624,6 +1871,8 @@ class TreeModel extends DataModel
 	 *
 	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getDescendantsAndSelf()
@@ -1638,6 +1887,8 @@ class TreeModel extends DataModel
 	 *
 	 * Note: all descendant nodes, even descendants of our immediate descendants, will be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getDescendants()
@@ -1651,6 +1902,8 @@ class TreeModel extends DataModel
 	 * Get the immediate descendants (children). Unlike getDescendants it only goes one level deep into the tree
 	 * structure. Descendants of descendant nodes will not be returned.
 	 *
+     * @codeCoverageIgnore
+     *
 	 * @return DataModel\Collection
 	 */
 	public function getImmediateDescendants()
@@ -1905,4 +2158,4 @@ class TreeModel extends DataModel
 
 		return $query;
 	}
-} 
+}
