@@ -14,13 +14,6 @@ use Awf\Uri\Uri;
 class Router
 {
 	/**
-	 * ROuter instances known to this class
-	 *
-	 * @var  array[Router]
-	 */
-	static $instances = array();
-
-	/**
 	 * The container this router is attached to
 	 *
 	 * @var Container|null
@@ -35,63 +28,16 @@ class Router
 	protected $rules = array();
 
 	/**
-	 * Get a static instance of the router for an application
-	 *
-	 * @param   Container $container The container to get the instance for
-	 *
-	 * @return  Router
-	 */
-	public static function &getInstance(Container $container = null)
-	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
-		$name = $container->application_name;
-
-		if (!array_key_exists($name, static::$instances))
-		{
-			static::$instances[$name] = new Router($container);
-		}
-
-		return static::$instances[$name];
-	}
-
-	/**
-	 * Set the static router instance for an application
-	 *
-	 * @param   Container $container The container to set the instance for
-	 * @param   Router    $router    The router instance to set
-	 *
-	 * @return  void
-	 */
-	public static function setInstance(Container $container, Router $router)
-	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
-		$name = $container->application_name;
-
-		static::$instances[$name] = $router;
-	}
-
-	/**
 	 * Public constructor
 	 *
 	 * @param   Container $container The container this router is attached to
 	 *
 	 * @return  Router
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct(Container $container)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
 		$this->container = $container;
 	}
 
@@ -101,6 +47,8 @@ class Router
 	 * @param   Rule $rule The routing rule to add
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function addRule(Rule $rule)
 	{
@@ -113,6 +61,8 @@ class Router
 	 * @param   array $definition The definition of the routing rule to add, @see Route::__construct()
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function addRuleFromDefinition(array $definition)
 	{
@@ -127,6 +77,8 @@ class Router
 	 * @param   array $rules The rules to add
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function addRules(array $rules)
 	{
@@ -160,6 +112,8 @@ class Router
 	 * Clear all routing rules
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function clearRules()
 	{
