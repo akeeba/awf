@@ -1,6 +1,4 @@
 Awf\Document\Toolbar\Toolbar
-Awf\Router\Rule
-Awf\Router\Router
 Awf\User\AuthenticationInterface
 Awf\User\Authentication
 Awf\User\PrivilegeInterface
