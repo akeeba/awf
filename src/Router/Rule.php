@@ -658,6 +658,8 @@ class Rule
 						{
 							// It's an array variable and we're done parsing it
 							$rule = null;
+							$segments[] = $segment;
+							$segment = null;
 							continue;
 						}
 						else
