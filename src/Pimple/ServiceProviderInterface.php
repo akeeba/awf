@@ -41,6 +41,8 @@ namespace Awf\Pimple;
  *
  * @author Fabien Potencier
  * @author Dominik Zogg
+ *
+ * @codeCoverageIgnore
  */
 interface ServiceProviderInterface
 {

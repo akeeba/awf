@@ -11,6 +11,8 @@ namespace Awf\Database;
 
 /**
  * Database Interface
+ *
+ * @codeCoverageIgnore
  */
 interface DatabaseInterface
 {

@@ -10,6 +10,8 @@ use Awf\Registry\Registry;
 
 /**
  * The interface to the user class
+ *
+ * @codeCoverageIgnore
  */
 interface UserInterface
 {

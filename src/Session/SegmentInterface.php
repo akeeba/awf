@@ -12,6 +12,8 @@ namespace Awf\Session;
 
 /**
  * An interface for session segment objects.
+ *
+ * @codeCoverageIgnore
  */
 interface SegmentInterface
 {

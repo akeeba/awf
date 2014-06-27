@@ -9,6 +9,8 @@ namespace Awf\Autoloader;
 
 /**
  * A PSR-4 class autoloader. This is a modified version of Composer's ClassLoader class
+ *
+ * @codeCoverageIgnore
  */
 class Autoloader
 {

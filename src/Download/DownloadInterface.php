@@ -7,6 +7,13 @@
 
 namespace Awf\Download;
 
+/**
+ * Interface DownloadInterface
+ *
+ * @package Awf\Download
+ *
+ * @codeCoverageIgnore
+ */
 interface DownloadInterface
 {
 	/**

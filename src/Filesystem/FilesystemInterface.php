@@ -13,6 +13,8 @@ namespace Awf\Filesystem;
  * The filesystem abstraction lets us perform operations on local files either directly or through and (S)FTP access
  * layer, e.g. on hosts which run (S)FTP and the web server under different users. As you can see there are is read
  * operation. We assume that files are readable directly at all times.
+ *
+ * @codeCoverageIgnore
  */
 interface FilesystemInterface
 {

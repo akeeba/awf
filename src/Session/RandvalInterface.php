@@ -12,6 +12,8 @@ namespace Awf\Session;
 
 /**
  * Interface for generating cryptographically-secure random values.
+ *
+ * @codeCoverageIgnore
  */
 interface RandvalInterface
 {

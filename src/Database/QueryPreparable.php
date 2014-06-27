@@ -17,6 +17,8 @@ namespace Awf\Database;
  * query execution.
  *
  * @since  1.0
+ *
+ * @codeCoverageIgnore
  */
 interface QueryPreparable
 {

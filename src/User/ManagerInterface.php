@@ -9,6 +9,8 @@ namespace Awf\User;
 
 /**
  * The interface to the user management class
+ *
+ * @codeCoverageIgnore
  */
 interface ManagerInterface
 {

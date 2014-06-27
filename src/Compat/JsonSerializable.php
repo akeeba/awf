@@ -10,6 +10,8 @@
  * It allows us to implement it in classes without requiring PHP 5.4
  *
  * @link   http://www.php.net/manual/en/jsonserializable.jsonserialize.php
+ *
+ * @codeCoverageIgnore
  */
 interface JsonSerializable
 {

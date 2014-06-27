@@ -7,7 +7,13 @@
 
 namespace Awf\Event;
 
-
+/**
+ * Interface Observable
+ *
+ * @package Awf\Event
+ *
+ * @codeCoverageIgnore
+ */
 interface Observable
 {
 	/**
