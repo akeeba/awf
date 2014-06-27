@@ -11,6 +11,7 @@ use Awf\Uri\Uri;
 
 class Rule
 {
+
 	/**
 	 * The routing path to use
 	 *
@@ -69,16 +70,18 @@ class Rule
 
 	/**
 	 * Create a routing rule, optionally initialising it from the $definition array. The known keys are:
-	 * - path				@see \Awf\Route\Rule::setPath
-	 * - types				@see \Awf\Route\Rule::setTypes
-	 * - matchVars			@see \Awf\Route\Rule::setMatchVars
-	 * - pushVars			@see \Awf\Route\Rule::setPushVars
-	 * - routeCallable		@see \Awf\Route\Rule::setRouteCallable
-	 * - parseCallable		@see \Awf\Route\Rule::setParseCallable
+	 * - path                @see \Awf\Route\Rule::setPath
+	 * - types                @see \Awf\Route\Rule::setTypes
+	 * - matchVars            @see \Awf\Route\Rule::setMatchVars
+	 * - pushVars            @see \Awf\Route\Rule::setPushVars
+	 * - routeCallable        @see \Awf\Route\Rule::setRouteCallable
+	 * - parseCallable        @see \Awf\Route\Rule::setParseCallable
 	 *
-	 * @param   array   $definition  See above
+	 * @param   array $definition See above
 	 *
 	 * @return  Rule
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function __construct($definition = array())
 	{
@@ -103,7 +106,7 @@ class Rule
 	 * If this rule applies to this URL we return a hash array with the keys 'segments' and 'vars' containing the SEF
 	 * URL's paths and any remaining query string parameters respectively.
 	 *
-	 * @param   $url  The non-SEF URL
+	 * @param   string $url The non-SEF URL
 	 *
 	 * @return  null|array
 	 */
@@ -136,8 +139,8 @@ class Rule
 
 			// Otherwise return the path segments and the remaining vars
 			return array(
-				'segments'	=> $segments,
-				'vars'		=> $params,
+				'segments' => $segments,
+				'vars'     => $params,
 			);
 		}
 	}
@@ -145,15 +148,24 @@ class Rule
 	/**
 	 * Parse a SEF URL path into URL parameters
 	 *
-	 * @param   string  $path  The path to parse, e.g. /foo/bar/1/2/3
+	 * @param   string $path The path to parse, e.g. /foo/bar/1/2/3
 	 *
 	 * @return  array|null  The URL parameters or null if we can't parse the route with this rule
 	 */
 	public function parse($path)
 	{
+		$extraParams = array();
+
+		if (strpos($path, '?') !== false)
+		{
+			$uri = new Uri($path);
+			$path = $uri->getPath();
+			$extraParams = $uri->getQuery(true);
+		}
+
 		if ($this->useCallableForParse)
 		{
-			return call_user_func($this->parseCallable, $path);
+			$ret = call_user_func($this->parseCallable, $path);
 		}
 		else
 		{
@@ -173,8 +185,10 @@ class Rule
 			$params = array_merge($this->pushVars, $params);
 
 			// Return the URL parameters
-			return $params;
+			$ret = $params;
 		}
+
+		return array_merge($ret, $extraParams);
 	}
 
 	/**
@@ -188,9 +202,11 @@ class Rule
 	 * When a match variable has a null value, this rule will be triggered if the variable is present in the URL, no
 	 * matter what its value is. The variable will be available to the query parameters used for building the route.
 	 *
-	 * @param   array  $matchVars
+	 * @param   array $matchVars
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setMatchVars($matchVars)
 	{
@@ -201,6 +217,8 @@ class Rule
 	 * Get the "match variables" for this routing rule
 	 *
 	 * @return  array
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getMatchVars()
 	{
@@ -211,7 +229,7 @@ class Rule
 	 * Set the callable to use for parsing routes. The callable must return null if it can't parse the URL (it's not
 	 * applicable) or an array of the same format as the Rule::parse() method.
 	 *
-	 * @param   callable|null  $parseCallable
+	 * @param   callable|null $parseCallable
 	 *
 	 * @return  void
 	 */
@@ -226,6 +244,8 @@ class Rule
 	 * Get the callable to use for parsing routes
 	 *
 	 * @return  null|callable
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getParseCallable()
 	{
@@ -237,9 +257,11 @@ class Rule
 	 * parsed by this rule. You have to provide a hash array, e.g.
 	 * array( 'foo' => 1, 'bar' => 2 )
 	 *
-	 * @param   array  $pushVars  The push variables to set
+	 * @param   array $pushVars The push variables to set
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setPushVars($pushVars)
 	{
@@ -250,6 +272,8 @@ class Rule
 	 * Get the "push variables" for this routing rule
 	 *
 	 * @return  array
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getPushVars()
 	{
@@ -260,7 +284,7 @@ class Rule
 	 * Set the callable to use for routing a URL using this rule. The callable must return null if it can't route the
 	 * URL (it's not applicable) or an array of the same format as the Rule::route() method.
 	 *
-	 * @param   callable|null  $routeCallable  The callable to use for routing URLs
+	 * @param   callable|null $routeCallable The callable to use for routing URLs
 	 *
 	 * @return  void
 	 */
@@ -275,6 +299,8 @@ class Rule
 	 * Get the callable to use for routing a URL using this rule
 	 *
 	 * @return  null|callable
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getRouteCallable()
 	{
@@ -306,9 +332,11 @@ class Rule
 	 * essentially ignoring the fact that it's optional. This is because the forward type lookup is limited to a single
 	 * position to improve performance. Therefore NEVER put an optional parameter after a lone star.
 	 *
-	 * @param   string  $routePath  The routing path to set
+	 * @param   string $routePath The routing path to set
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setPath($routePath)
 	{
@@ -319,6 +347,8 @@ class Rule
 	 * Get the routing path.
 	 *
 	 * @return  string
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getPath()
 	{
@@ -328,9 +358,11 @@ class Rule
 	/**
 	 * Set the types (matching RegEx) for named parameters of the routing path (the :something strings)
 	 *
-	 * @param   array  $types  The types to set
+	 * @param   array $types The types to set
 	 *
 	 * @return  void
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function setTypes($types)
 	{
@@ -341,6 +373,8 @@ class Rule
 	 * Get the types for named parameters of the routing path
 	 *
 	 * @return  array
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function getTypes()
 	{
@@ -350,7 +384,7 @@ class Rule
 	/**
 	 * Check whether the query string parameters $params match the "match variables" of this rule
 	 *
-	 * @param   array  $params
+	 * @param   array $params
 	 *
 	 * @return  boolean  True on success
 	 */
@@ -395,7 +429,7 @@ class Rule
 	/**
 	 * Build a route segment based on the provided URL parameters and the routing path of this rule
 	 *
-	 * @param   array  $params
+	 * @param   array $params
 	 *
 	 * @return  array|null  An array of path segments, or null if this rule is not applicable
 	 */
@@ -504,7 +538,7 @@ class Rule
 	/**
 	 * Parse the segments of the SEF URL and convert them to query parameters
 	 *
-	 * @param   array  $segments
+	 * @param   array $segments
 	 *
 	 * @return  array|null  The query parameters, or null if we can't parse this route
 	 */
@@ -660,7 +694,6 @@ class Rule
 
 				// Unset the segment so that we can proceed
 				$segment = null;
-
 			}
 			// Do we have an exact match rule (warning: case sensitive!!)?
 			else
