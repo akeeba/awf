@@ -730,8 +730,33 @@ class Rule
 		}
 		else
 		{
-			// Unmatched rules left. We can't parse this routing rule!
-			return null;
+			// Unmatched rules left. Are all the rules left optional or greedy?
+			$canSkip = true;
+
+			foreach($pathRules as $rule)
+			{
+				$firstChar = substr($rule, 0, 1);
+				$lastChar = substr($rule, -1);
+
+				if ($firstChar == '*')
+				{
+					continue;
+				}
+
+				if ($firstChar != ':')
+				{
+					$canSkip = false;
+					break;
+				}
+
+				if (($lastChar != '*') && ($lastChar != '?'))
+				{
+					$canSkip = false;
+					break;
+				}
+			}
+
+			return $canSkip ? $vars : null;
 		}
 	}
 }
