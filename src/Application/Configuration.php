@@ -95,7 +95,12 @@ class Configuration extends Registry
 		$fileData = $this->toString('JSON', array('pretty_print' => true));
 		$fileData = "<?php die; ?>\n" . $fileData;
 
-		$this->container->fileSystem->write($filePath, $fileData);
+		$res = $this->container->fileSystem->write($filePath, $fileData);
+
+        if (!$res)
+        {
+            throw new \RuntimeException('Can not save ' . $filePath, 500);
+        }
 	}
 
 	/**
