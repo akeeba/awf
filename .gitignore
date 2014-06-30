@@ -17,6 +17,8 @@
 
 /composer.lock
 
+/phpunit.xml
+
 /Tests/coverage
 
 /vendor
