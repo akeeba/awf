@@ -1025,6 +1025,23 @@ class DataModel extends Model
 	}
 
 	/**
+	 * Returns the data currently bound to the model in an array format
+	 *
+	 * @return array
+	 */
+	public function getData()
+	{
+		$ret = array();
+
+		foreach ($this->knownFields as $field => $info)
+		{
+			$ret[$field] = $this->getFieldValue($field);
+		}
+
+		return $ret;
+	}
+
+	/**
 	 * Check the data for validity. By default it only checks for fields declared as NOT NULL
 	 *
 	 * @return  static  Self, for chaining

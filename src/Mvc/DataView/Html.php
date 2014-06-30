@@ -19,8 +19,6 @@ class Html extends Raw
 		// Hide main menu
 		$this->container->application->getDocument()->getMenu()->disableMenu('main');
 
-		$this->getModel()->reset();
-
 		return true;
 	}
 

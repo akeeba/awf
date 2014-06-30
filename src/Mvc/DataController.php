@@ -206,6 +206,16 @@ class DataController extends Controller
 			$this->layout = 'form';
 		}
 
+		// Get temporary data from the session, set if the save failed and we're redirected back here
+		$sessionKey = $this->container->application_name . '_' . $this->viewName;
+		$itemData = $this->container->segment->getFlash($sessionKey);
+
+		if (!empty($itemData))
+		{
+			$model->bind($itemData);
+		}
+
+		// Display the edit form
 		$this->display();
 	}
 
@@ -251,6 +261,16 @@ class DataController extends Controller
 			$this->layout = 'form';
 		}
 
+		// Get temporary data from the session, set if the save failed and we're redirected back here
+		$sessionKey = $this->container->application_name . '_' . $this->viewName;
+		$itemData = $this->container->segment->getFlash($sessionKey);
+
+		if (!empty($itemData))
+		{
+			$model->bind($itemData);
+		}
+
+		// Display the edit form
 		$this->display();
 	}
 
@@ -748,6 +768,7 @@ class DataController extends Controller
 				$this->onBeforeApplySave($data);
 			}
 
+			// Save the data
 			$model->save($data);
 
 			if ($id != 0)
@@ -771,6 +792,11 @@ class DataController extends Controller
 
 		if (!$status)
 		{
+			// Cache the item data in the session. We may need to reuse them if the save fails.
+			$itemData = $model->getData();
+			$sessionKey = $this->container->application_name . '_' . $this->viewName;
+			$this->container->segment->setFlash($sessionKey, $itemData);
+
 			// Redirect on error
 			$id = $model->getId();
 
