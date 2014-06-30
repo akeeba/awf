@@ -70,7 +70,7 @@ class DataModel extends Model
 	/** @var   string  The identity field's name */
 	protected $idFieldName = '';
 
-	/** @var   array  The table fields we know about */
+	/** @var   array  A hash array with the table fields we know about and their information. Each key is the field name, the value is the field information */
 	protected $knownFields = array();
 
 	/** @var   array  The data of the current record */
@@ -225,7 +225,7 @@ class DataModel extends Model
 
 			foreach ($this->config['fillable_fields'] as $field)
 			{
-				if (in_array($field, $this->knownFields))
+				if (array_key_exists($field, $this->knownFields))
 				{
 					$this->fillable[] = $field;
 				}
@@ -244,7 +244,7 @@ class DataModel extends Model
 
 			foreach ($this->config['guarded_fields'] as $field)
 			{
-				if (in_array($field, $this->knownFields))
+				if (array_key_exists($field, $this->knownFields))
 				{
 					$this->guarded[] = $field;
 				}
@@ -260,7 +260,7 @@ class DataModel extends Model
 		{
 			if (!empty($this->guarded))
 			{
-				$fields = $this->knownFields;
+				$fields = array_keys($this->knownFields);
 			}
 			else
 			{
@@ -1230,7 +1230,7 @@ class DataModel extends Model
 		{
 			$order = $this->getState('filter_order', null, 'cmd');
 
-			if (!in_array($order, array_keys($this->knownFields)))
+			if (!array_key_exists($order, $this->knownFields))
 			{
 				$order = $this->idFieldName;
 			}
