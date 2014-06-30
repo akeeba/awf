@@ -233,7 +233,7 @@ class DataController extends Controller
 		catch (\Exception $e)
 		{
 			// Redirect on error
-			if ($customURL = $this->input->get('returnurl', '', 'string'))
+			if ($customURL = $this->input->getBase64('returnurl', ''))
 			{
 				$customURL = base64_decode($customURL);
 			}
@@ -273,7 +273,7 @@ class DataController extends Controller
 		$id = $this->input->get('id', 0, 'int');
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -314,7 +314,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -350,7 +350,7 @@ class DataController extends Controller
 
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -377,7 +377,7 @@ class DataController extends Controller
 
 		$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_SAVED';
 
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -407,7 +407,7 @@ class DataController extends Controller
 		$this->container->segment->remove($model->getHash() . 'savedata');
 
 		// Redirect to the display task
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -508,7 +508,7 @@ class DataController extends Controller
 		$model->reorder();
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -547,7 +547,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -594,7 +594,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -643,7 +643,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -695,7 +695,7 @@ class DataController extends Controller
 		}
 
 		// Redirect
-		if ($customURL = $this->input->get('returnurl', '', 'string'))
+		if ($customURL = $this->input->getBase64('returnurl', ''))
 		{
 			$customURL = base64_decode($customURL);
 		}
@@ -774,7 +774,7 @@ class DataController extends Controller
 			// Redirect on error
 			$id = $model->getId();
 
-			if ($customURL = $this->input->get('returnurl', '', 'string'))
+			if ($customURL = $this->input->getBase64('returnurl', ''))
 			{
 				$customURL = base64_decode($customURL);
 			}
