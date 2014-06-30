@@ -1,3 +1,7 @@
+Awf\Download
+Awf\Download\Adapter\AbstractAdapter
+Awf\Download\Adapter\Curl
+Awf\Download\Adapter\Fopen
 Awf\Document\Toolbar\Toolbar
 Awf\User\AuthenticationInterface
 Awf\User\Authentication
@@ -13,11 +17,6 @@ Awf\Database\Restore
 Awf\Database\Restore\Mysql
 Awf\Database\Restore\Mysqli
 Awf\Database\Installer
-Awf\DownloadInterface
-Awf\Download
-Awf\Download\Adapter\AbstractAdapter
-Awf\Download\Adapter\Curl
-Awf\Download\Adapter\Fopen
 Awf\Filesystem\Factory
 Awf\Filesystem\File
 Awf\Filesystem\FilesystemInterface

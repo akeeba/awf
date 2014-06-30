@@ -8,14 +8,26 @@
     colors="true"
 >
     <php>
-        <const name="AWFTEST_DATABASE_MYSQL_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+    	<!-- Connection information for MySQL tests -->
+        <const name="AWFTEST_DATABASE_MYSQL_DSN" value="host=localhost;dbname=YOUR_USERNAME;user=utuser;pass=YOUR_PASSWORD" />
+        <!-- Alternate database for MySQL tests. The alternate database must be blank -->
         <const name="AWFTEST_DATABASE_MYSQL_ALTDB" value="awf_alt" />
-        <const name="AWFTEST_DATABASE_MYSQLI_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+
+        <!-- Same thing for MySQLi -->
+        <const name="AWFTEST_DATABASE_MYSQLI_DSN" value="host=localhost;dbname=YOUR_USERNAME;user=utuser;pass=YOUR_PASSWORD" />
         <const name="AWFTEST_DATABASE_MYSQLI_ALTDB" value="awf_alt" />
-        <const name="AWFTEST_DATABASE_POSTGRESQL_DSN" value="host=localhost;port=5432;dbname=awf;user=utuser;pass=ut1234" />
+
+        <!-- Same thing for PostgreSQL -->
+        <const name="AWFTEST_DATABASE_POSTGRESQL_DSN" value="host=localhost;port=5432;dbname=YOUR_USERNAME;user=utuser;pass=YOUR_PASSWORD" />
         <const name="AWFTEST_DATABASE_POSTGRESQL_ALTDB" value="awf_alt" />
-        <const name="AWFTEST_DATABASE_SQLSRV_DSN" value="host=localhost;dbname=awf;user=utuser;pass=ut1234" />
+
+        <!-- Same thing for Microsoft SQL Server -->
+        <const name="AWFTEST_DATABASE_SQLSRV_DSN" value="host=localhost;dbname=YOUR_USERNAME;user=utuser;pass=YOUR_PASSWORD" />
         <const name="AWFTEST_DATABASE_SQLSRV_ALTDB" value="awf_alt" />
+
+        <!-- The URL and MD5 hash of a big file used for Awf\Download tests -->
+        <const name="AWFTEST_DOWNLOAD_FILE_URL" value="http://www.example.com/some_big_file.dat" />
+        <const name="AWFTEST_DOWNLOAD_FILE_MD5" value="0123456789abcdef0123456789abcdef" />
     </php>
 
 	<testsuites>
