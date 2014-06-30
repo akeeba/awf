@@ -49,7 +49,7 @@ class DataModel extends Model
 	/** @var   boolean  Should I run automatic checks on the table data? */
 	protected $autoChecks = true;
 
-	/** @var   boolean  Should I auto-fill the fields of the model object when constructing it?  */
+	/** @var   boolean  Should I auto-fill the fields of the model object when constructing it? */
 	protected $autoFill = false;
 
 	/** @var   EventDispatcher  An event dispatcher for model behaviours */
@@ -102,18 +102,18 @@ class DataModel extends Model
 	 *
 	 * You can use the $container['mvc_config'] array to pass some configuration values to the object:
 	 *
-	 * tableName			String. The name of the database table to use. Default: #__appName_viewNamePlural (Ruby on Rails convention)
-	 * idFieldName			String. The table key field name. Default: appName_viewNameSingular_id (Ruby on Rails convention)
-	 * knownFields			Array. The known fields in the table. Default: read from the table itself
-	 * autoChecks			Boolean. Should I turn on automatic data validation checks?
-	 * fieldsSkipChecks		Array. List of fields which should not participate in automatic data validation checks.
-	 * aliasFields			Array. Associative array of "magic" field aliases.
-	 * behavioursDispatcher	EventDispatcher. The model behaviours event dispatcher.
-	 * behaviourObservers	Array. The model behaviour observers to attach to the behavioursDispatcher.
-	 * behaviours			Array. A list of behaviour names to instantiate and attach to the behavioursDispatcher.
-	 * fillable_fields		Array. Which fields should be auto-filled from the model state (by extent, the request)?
-	 * guarded_fields		Array. Which fields should never be auto-filled from the model state (by extent, the request)?
-	 * relations			Array (hashed). The relations to autoload on model creation.
+	 * tableName            String. The name of the database table to use. Default: #__appName_viewNamePlural (Ruby on Rails convention)
+	 * idFieldName            String. The table key field name. Default: appName_viewNameSingular_id (Ruby on Rails convention)
+	 * knownFields            Array. The known fields in the table. Default: read from the table itself
+	 * autoChecks            Boolean. Should I turn on automatic data validation checks?
+	 * fieldsSkipChecks        Array. List of fields which should not participate in automatic data validation checks.
+	 * aliasFields            Array. Associative array of "magic" field aliases.
+	 * behavioursDispatcher    EventDispatcher. The model behaviours event dispatcher.
+	 * behaviourObservers    Array. The model behaviour observers to attach to the behavioursDispatcher.
+	 * behaviours            Array. A list of behaviour names to instantiate and attach to the behavioursDispatcher.
+	 * fillable_fields        Array. Which fields should be auto-filled from the model state (by extent, the request)?
+	 * guarded_fields        Array. Which fields should never be auto-filled from the model state (by extent, the request)?
+	 * relations            Array (hashed). The relations to autoload on model creation.
 	 *
 	 * Setting either fillable_fields or guarded_fields turns on automatic filling of fields in the constructor. If both
 	 * are set only guarded_fields is taken into account. Fields are not filled automatically outside the constructor.
@@ -298,19 +298,19 @@ class DataModel extends Model
 				}
 
 				$defaultRelConfig = array(
-					'type'				=> 'hasOne',
-					'foreignModelClass'	=> null,
-					'localKey'			=> null,
-					'foreignKey'		=> null,
-					'pivotTable'		=> null,
-					'pivotLocalKey'		=> null,
-					'pivotForeignKey'	=> null,
+					'type'              => 'hasOne',
+					'foreignModelClass' => null,
+					'localKey'          => null,
+					'foreignKey'        => null,
+					'pivotTable'        => null,
+					'pivotLocalKey'     => null,
+					'pivotForeignKey'   => null,
 				);
 
 				$relConfig = array_merge($defaultRelConfig, $relConfig);
 
 				$this->relationManager->addRelation($name, $relConfig['type'], $relConfig['foreignModelClass'],
-					$relConfig['localKey'],	$relConfig['foreignKey'], $relConfig['pivotTable'],
+					$relConfig['localKey'], $relConfig['foreignKey'], $relConfig['pivotTable'],
 					$relConfig['pivotLocalKey'], $relConfig['pivotForeignKey']);
 			}
 		}
@@ -480,7 +480,7 @@ class DataModel extends Model
 	/**
 	 * Reset the record data
 	 *
-	 * @param   boolean $useDefaults Should I use the default values? Default: yes
+	 * @param   boolean $useDefaults    Should I use the default values? Default: yes
 	 * @param   boolean $resetRelations Should I reset the relations too? Default: no
 	 *
 	 * @return  static  Self, for chaining
@@ -1868,8 +1868,8 @@ class DataModel extends Model
 	 * Set the field and direction of ordering for the query returned by buildQuery.
 	 * Alias of $this->setState('filter_order', $fieldName) and $this->setState('filter_order_Dir', $direction)
 	 *
-	 * @param   string  $fieldName  The field name to order by
-	 * @param   string  $direction  The direction to order by (ASC for ascending or DESC for descending)
+	 * @param   string $fieldName The field name to order by
+	 * @param   string $direction The direction to order by (ASC for ascending or DESC for descending)
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -1889,11 +1889,14 @@ class DataModel extends Model
 	}
 
 	/**
-	 * Publish the record, i.e. set enabled to 1
+	 * Change the publish state of a record. By default it will set it to 1 (published) unless you specify a different
+	 * value.
+	 *
+	 * @param int $state The publish state. Default: 1 (published).
 	 *
 	 * @return   $this  For chaining
 	 */
-	public function publish()
+	public function publish($state = 1)
 	{
 		if (!$this->hasField('enabled'))
 		{
@@ -1907,7 +1910,7 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforePublish', array(&$this));
 
-		$this->enabled = 1;
+		$this->enabled = $state;
 		$this->save();
 
 		if (method_exists($this, 'onAfterPublish'))
@@ -1967,7 +1970,7 @@ class DataModel extends Model
 	 * Set the limitStart for the query, i.e. how many records to skip.
 	 * Alias of $this->setState('limitstart', $limitStart);
 	 *
-	 * @param   integer  $limitStart  Records to skip from the start
+	 * @param   integer $limitStart Records to skip from the start
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -1987,7 +1990,7 @@ class DataModel extends Model
 	 * Set the limit for the query, i.e. how many records to return.
 	 * Alias of $this->setState('limit', $limit);
 	 *
-	 * @param   integer  $limit  Maximum number of records to return
+	 * @param   integer $limit Maximum number of records to return
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2152,9 +2155,9 @@ class DataModel extends Model
 	/**
 	 * Automatically uses the Filters behaviour to filter records in the model based on your criteria.
 	 *
-	 * @param   string  $fieldName     The field name to filter on
-	 * @param   string  $method        The filtering method, e.g. <>, =, != and so on
-	 * @param   mixed   $values        The value you're filtering on. Some filters (e.g. interval or between) require an array of values
+	 * @param   string $fieldName The field name to filter on
+	 * @param   string $method    The filtering method, e.g. <>, =, != and so on
+	 * @param   mixed  $values    The value you're filtering on. Some filters (e.g. interval or between) require an array of values
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2172,8 +2175,8 @@ class DataModel extends Model
 		}
 
 		$options = array(
-			'method'	=> $method,
-			'value'		=> $values
+			'method' => $method,
+			'value'  => $values
 		);
 
 		// Handle method aliases
@@ -2211,7 +2214,7 @@ class DataModel extends Model
 
 			case 'neq':
 			case 'ne':
-			$options['method'] = 'search';
+				$options['method'] = 'search';
 				$options['operator'] = '!=';
 				break;
 
@@ -2264,7 +2267,6 @@ class DataModel extends Model
 			case '?=':
 				$options['method'] = 'search';
 				break;
-
 		}
 
 		// Handle real methods
@@ -2381,7 +2383,7 @@ class DataModel extends Model
 	 * business logic with raw SQL makes your application harder to maintain and refactor as dependencies to your
 	 * database schema creep in areas of your code that should have nothing to do with it.
 	 *
-	 * @param   string  $rawWhereClause  The raw WHERE clause to add
+	 * @param   string $rawWhereClause The raw WHERE clause to add
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2406,11 +2408,11 @@ class DataModel extends Model
 	 * Instructs the model to eager load the specified relations. The $relations array can have the format:
 	 *
 	 * array('relation1', 'relation2')
-	 * 		Eager load relation1 and relation2 without any callbacks
+	 *        Eager load relation1 and relation2 without any callbacks
 	 * array('relation1' => $callable1, 'relation2' => $callable2)
-	 * 		Eager load relation1 with callback $callable1 etc
+	 *        Eager load relation1 with callback $callable1 etc
 	 * array('relation1', 'relation2' => $callable2)
-	 * 		Eager load relation1 without a callback, relation2 with callback $callable2
+	 *        Eager load relation1 without a callback, relation2 with callback $callable2
 	 *
 	 * The callback must have the signature function(\Awf\Database\Query $query) and doesn't return a value. It is
 	 * supposed to modify the query directly.
@@ -2427,6 +2429,7 @@ class DataModel extends Model
 		if (empty($relations))
 		{
 			$this->eagerRelations = array();
+
 			return $this;
 		}
 
@@ -2475,10 +2478,10 @@ class DataModel extends Model
 		}
 
 		$filter = array(
-			'relation'	=> $relation,
-			'method'	=> $operator,
-			'operator'	=> $operator,
-			'value'		=> $value
+			'relation' => $relation,
+			'method'   => $operator,
+			'operator' => $operator,
+			'value'    => $value
 		);
 
 		// Handle method aliases
