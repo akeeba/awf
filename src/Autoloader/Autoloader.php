@@ -26,6 +26,9 @@ class Autoloader
 	/** @var   Autoloader  The static instance of this autoloader */
 	private static $instance;
 
+	/**
+	 * @return Autoloader
+	 */
 	public static function getInstance()
 	{
 		if (!is_object(self::$instance))
@@ -64,7 +67,7 @@ class Autoloader
 	 * @param   array|string  $paths    The PSR-0 base directories
 	 * @param   boolean       $prepend  Whether to prefix the directories
 	 *
-	 * @return  void
+	 * @return  $this for chaining
 	 *
 	 * @throws  \InvalidArgumentException  When the prefix is invalid
 	 */
@@ -115,6 +118,8 @@ class Autoloader
 				(array)$paths
 			);
 		}
+
+		return $this;
 	}
 
 	/**
