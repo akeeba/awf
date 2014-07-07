@@ -170,7 +170,7 @@ class View
 	 *                                 Inside it you can have an 'mvc_option' array with the following options:<br/>
 	 *                                 name: the name (optional) of the view (defaults to the view class name suffix).<br/>
 	 *                                 escape: the name (optional) of the function to use for escaping strings<br/>
-	 *                                 template_plath: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>
+	 *                                 template_path: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>
 	 *                                 layout: the layout (optional) to use to display the view<br/>
 	 *
 	 * @return  View
