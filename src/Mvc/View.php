@@ -212,7 +212,24 @@ class View
 
 		$templatePath = $this->container->templatePath;
 		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
-		$this->addTemplatePath('template', $fallback);
+		$this->addTemplatePath($fallback);
+
+		// Get extra directories through event dispatchers
+		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', array($this->getName()));
+
+		if (is_array($extraPathsResults) && !empty($extraPathsResults))
+		{
+			foreach ($extraPathsResults as $somePaths)
+			{
+				if (!empty($somePaths))
+				{
+					foreach ($somePaths as $aPath)
+					{
+						$this->addTemplatePath($aPath);
+					}
+				}
+			}
+		}
 
 		$this->baseurl = Uri::base(true, $this->container);
 	}
@@ -248,7 +265,7 @@ class View
 				{
 					foreach ($somePaths as $aPath)
 					{
-						$this->addTemplatePath($path);
+						$this->addTemplatePath($aPath);
 					}
 				}
 			}
