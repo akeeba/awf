@@ -93,8 +93,9 @@ class Application extends \Awf\Application\Application
 		// Load the extra language files
 		$appName = $this->container->application_name;
 		$appNameLower = strtolower($appName);
+		$languageTag = \JFactory::getLanguage()->getTag();
 		Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', false, $this->container->languagePath);
-		Text::loadLanguage(null, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
+		Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
 	}
 
 } 
