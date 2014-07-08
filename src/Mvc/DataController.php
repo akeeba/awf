@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc;
 
-
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
@@ -38,7 +37,6 @@ class DataController extends Controller
 			$this->viewName = Inflector::pluralize($this->view);
 		}
 	}
-
 
 	/**
 	 * Executes a given controller task. The onBefore<task> and onAfter<task> methods are called automatically if they
@@ -834,10 +832,10 @@ class DataController extends Controller
 	 * Returns a named Model object. Makes sure that the Model is a database-aware model, throwing an exception
 	 * otherwise, when $name is null.
 	 *
-	 * @param   string  $name    The Model name. If null we'll use the modelName
+	 * @param   string $name     The Model name. If null we'll use the modelName
 	 *                           variable or, if it's empty, the same name as
 	 *                           the Controller
-	 * @param   array   $config  Configuration parameters to the Model. If skipped
+	 * @param   array  $config   Configuration parameters to the Model. If skipped
 	 *                           we will use $this->config
 	 *
 	 * @return  DataModel  The instance of the Model known to this Controller
@@ -858,6 +856,11 @@ class DataController extends Controller
 
 	/**
 	 * Gets the list of IDs from the request data
+	 *
+	 * @param DataModel $model      The model where the record will be loaded
+	 * @param bool      $loadRecord When true, the record matching the *first* ID found will be loaded into $model
+	 *
+	 * @return array
 	 */
 	public function getIDsFromRequest(DataModel &$model, $loadRecord = true)
 	{

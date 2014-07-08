@@ -98,7 +98,7 @@ catch (Exception $exc)
 	include $filename;
 }
 
-// Finally, unset the temporary variables polluting your namespave
+// Finally, unset the temporary variables polluting your namespace
 unset($prefixes);
 unset($appName);
 unset($containerClass);

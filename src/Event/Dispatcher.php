@@ -57,7 +57,7 @@ class Dispatcher implements Observable
 	/**
 	 * Returns the application this event dispatcher is attached to
 	 *
-	 * @return  Application
+	 * @return  Container
 	 */
 	public function getContainer()
 	{
