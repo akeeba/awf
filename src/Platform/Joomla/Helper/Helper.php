@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf-miniblog
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
- * @license		GNU GPL version 3 or later
+ * @package        awf-miniblog
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Platform\Joomla\Helper;
@@ -14,12 +14,17 @@ use JFactory;
  */
 abstract class Helper
 {
+	/** @var bool Are we running under CLI? */
 	protected static $isCli = null;
+
+	/** @var bool Are we running inside the administrator back-end? */
 	protected static $isBackend = null;
+
+	/** @var bool Are we running inside the public front-end? */
 	protected static $isFrontend = null;
 
 	/**
-	 * Is this the administrative section of the component?
+	 * Is this the administrative back-end section of the site?
 	 *
 	 * @return  boolean
 	 */
@@ -34,7 +39,7 @@ abstract class Helper
 	}
 
 	/**
-	 * Is this the public section of the component?
+	 * Is this the public front-end section of the site?
 	 *
 	 * @return  boolean
 	 */
@@ -49,7 +54,7 @@ abstract class Helper
 	}
 
 	/**
-	 * Is this a component running in a CLI application?
+	 * Is this a component running inside a CLI application?
 	 *
 	 * @return  boolean
 	 */
@@ -79,7 +84,7 @@ abstract class Helper
 			else
 			{
 				$app = JFactory::getApplication();
-				$isCLI = $app instanceof JException || $app instanceof JApplicationCli;
+				$isCLI = $app instanceof \JException || $app instanceof \JApplicationCli;
 			}
 		}
 		catch (\Exception $e)
@@ -99,5 +104,183 @@ abstract class Helper
 		self::$isBackend = $isAdmin && !$isCLI;
 		self::$isFrontend = !$isAdmin && !$isCLI;
 		self::$isCli = !$isAdmin && $isCLI;
+	}
+
+	/**
+	 * Load plugins of a specific type.
+	 *
+	 * @param string $type      The type of the plugins to be loaded
+	 * @param bool   $loadInCli Should I also try to load plugins in CLI mode (default: false)
+	 *
+	 * @return void
+	 */
+	public static function importPlugin($type, $loadInCli = false)
+	{
+		if ($loadInCli || !self::isCli())
+		{
+			\JLoader::import('joomla.plugin.helper');
+			\JPluginHelper::importPlugin($type);
+		}
+	}
+
+	/**
+	 * Execute plugins and fetch back an array with their return values.
+	 *
+	 * @param string $event     The event (trigger) name, e.g. onDoSomethingOrAnother
+	 * @param array  $data      A hash array of data sent to the plugins as part of the trigger
+	 * @param bool   $loadInCli Should I also try to run plugins in CLI mode (default: false)
+	 *
+	 * @return array A simple array containing the results of the plugins triggered
+	 */
+	public function runPlugins($event, $data, $loadInCli = false)
+	{
+		if ($loadInCli || !self::isCli())
+		{
+			// IMPORTANT: DO NOT REPLACE THIS INSTANCE OF JDispatcher WITH ANYTHING ELSE. WE NEED JOOMLA!'S PLUGIN EVENT
+			// DISPATCHER HERE, NOT OUR GENERIC EVENTS DISPATCHER
+			if (version_compare(JVERSION, '3.0', 'ge'))
+			{
+				$dispatcher = \JEventDispatcher::getInstance();
+			}
+			else
+			{
+				$dispatcher = \JDispatcher::getInstance();
+			}
+
+			return $dispatcher->trigger($event, $data);
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
+	 * Perform an ACL check. Please note that FOF uses by default the Joomla!
+	 * CMS convention for ACL privileges, e.g core.edit for the edit privilege.
+	 * If your platform uses different conventions you'll have to override the
+	 * FOF defaults using fof.xml or by specialising the controller.
+	 *
+	 * @param   string $action    The ACL privilege to check, e.g. core.edit
+	 * @param   string $assetname The asset name to check, typically the component's name
+	 *
+	 * @return  boolean  True if the user is allowed this action
+	 */
+	public function authorise($action, $assetname)
+	{
+		if ($this->isCli())
+		{
+			return true;
+		}
+
+		return JFactory::getUser()->authorise($action, $assetname);
+	}
+
+	/**
+	 * Throw an error in a platform-friendly manner
+	 *
+	 * @param int    $code    The error code
+	 * @param string $message The error message
+	 *
+	 * @return \JError on Joomla! 2.5 (exception thrown on Joomla! 3+)
+	 *
+	 * @throws \Exception Thrown on Joomla! 3+
+	 */
+	public function raiseError($code, $message)
+	{
+		if (version_compare(JVERSION, '3.0', 'ge'))
+		{
+			throw new \Exception($message, $code);
+		}
+		else
+		{
+			return \JError::raiseError($code, $message);
+		}
+	}
+
+	/**
+	 * Set the error Handling, if possible
+	 *
+	 * @param integer $level     PHP error level (E_ALL)
+	 * @param string  $log_level What to do with the error (ignore, callback)
+	 * @param array   $options   Options for the error handler
+	 *
+	 * @return  void
+	 */
+	public function setErrorHandling($level, $log_level, $options = array())
+	{
+		if (version_compare(JVERSION, '3.0', 'lt'))
+		{
+			\JError::setErrorHandling($level, $log_level, $options);
+		}
+	}
+
+	/**
+	 * Return the absolute path to the application's template overrides
+	 * directory for a specific component. We will use it to look for template
+	 * files instead of the regular component directories. If the application
+	 * does not have such a thing as template overrides return an empty string.
+	 *
+	 * @param string  $component The name of the component for which to fetch the overrides
+	 * @param boolean $absolute  Should I return an absolute or relative path?
+	 *
+	 * @return string The path to the template overrides directory
+	 */
+	public function getTemplateOverridePath($component, $absolute = true)
+	{
+		if (!self::isCli())
+		{
+			if ($absolute)
+			{
+				$path = JPATH_THEMES . '/';
+			}
+			else
+			{
+				$path = self::isBackend() ? 'administrator/templates/' : 'templates/';
+			}
+
+			if (substr($component, 0, 7) == 'media:/')
+			{
+				$directory = 'media/' . substr($component, 7);
+			}
+			else
+			{
+				$directory = 'html/' . $component;
+			}
+
+			$path .= JFactory::getApplication()->getTemplate() . '/' . $directory;
+		}
+		else
+		{
+			$path = '';
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Load the translation files for a given component.
+	 *
+	 * @param string $component The name of the component, e.g. com_example
+	 *
+	 * @return void
+	 */
+	public function loadTranslations($component)
+	{
+		if ($this->isBackend())
+		{
+			$paths = array(JPATH_ROOT, JPATH_ADMINISTRATOR);
+		}
+		else
+		{
+			$paths = array(JPATH_ADMINISTRATOR, JPATH_ROOT);
+		}
+
+		$jlang = JFactory::getLanguage();
+
+		$jlang->load($component, $paths[0], 'en-GB', true);
+		$jlang->load($component, $paths[0], null, true);
+		$jlang->load($component, $paths[1], 'en-GB', true);
+		$jlang->load($component, $paths[1], null, true);
 	}
 } 
