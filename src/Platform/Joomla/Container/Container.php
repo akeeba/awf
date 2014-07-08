@@ -7,6 +7,8 @@
 
 namespace Awf\Platform\Joomla\Container;
 
+use Awf\Database\Driver;
+
 /**
  * A Container suitable for Joomla! integration
  *
@@ -39,6 +41,52 @@ class Container extends \Awf\Container\Container
 				}
 
 				return $c->session->newSegment($c->session_segment_name);
+			};
+		}
+
+		// Database Driver service
+		if (!isset($this['db']))
+		{
+			$this['db'] = function (Container $c)
+			{
+				$db = \JFactory::getDbo();
+
+				$options = array(
+					'connection'		=> $db->getConnection(),
+					'prefix'			=> $db->getPrefix(),
+					'driver'			=> 'mysqli',
+				);
+
+				switch($db->name) {
+					case 'mysql':
+						$options['driver'] = 'Mysql';
+						break;
+
+					default:
+					case 'mysqli':
+						$options['driver'] = 'Mysqli';
+						break;
+
+					case 'sqlsrv':
+					case 'mssql':
+					case 'sqlazure':
+						$options['driver'] = 'Sqlsrv';
+						break;
+
+					case 'postgresql':
+						$options['driver'] = 'Postgresql';
+						break;
+
+					case 'pdo':
+						$options['driver'] = 'Pdo';
+						break;
+
+					case 'sqlite':
+						$options['driver'] = 'Sqlite';
+						break;
+				}
+
+				return Driver::getInstance($options);
 			};
 		}
 

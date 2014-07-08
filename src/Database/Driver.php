@@ -361,6 +361,12 @@ abstract class Driver implements DatabaseInterface
 		$this->errorNum = 0;
 		$this->log = array();
 
+		// Did we get passed a connection resource?
+		if (isset($options['connection']))
+		{
+			$this->connection = $options['connection'];
+		}
+
 		// Set class options.
 		$this->options = $options;
 	}
