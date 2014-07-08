@@ -736,7 +736,7 @@ class DataController extends Controller
 	/**
 	 * Common method to handle apply and save tasks
 	 *
-	 * @return  void
+	 * @return  bool True on success
 	 */
 	protected function applySave()
 	{
@@ -891,5 +891,234 @@ class DataController extends Controller
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * Calls a global observer event to handle the onBefore/onAfter events of the Controller. The name of the observer
+	 * events has the format onController<Predicate><Task> e.g. onControllerBeforeBrowse. The event handler must have
+	 * the following signature:
+	 *
+	 * function(string $controllerName): bool
+	 *
+	 * The $controllerName is the name of this controller. The return value of the event handler is true (continue
+	 * processing) or false (abort operation). Please note that only a boolean false (not a null, empty array or 0) will
+	 * trigger process abortion.
+	 *
+	 * @param string $task The task to fire the event for
+	 * @param string $when The event predicate: before|after
+	 *
+	 * @return bool True to continue execution, false to abort
+	 *
+	 * @throws \Exception
+	 */
+	protected function callObserverEvent($task, $when = 'before')
+	{
+		// The even name is something like onControllerBeforeBrowse
+		$eventName = 'onController' . ucfirst(strtolower($when)) . ucfirst(strtolower($task));
+
+		// Get the results
+		$results = $this->container->eventDispatcher->trigger('onController', array($this->getName()));
+
+		// If any of the results is a boolean false, return false.
+		if (!empty($results) && is_array($results))
+		{
+			foreach ($results as $result)
+			{
+				if ($result === false)
+				{
+					return false;
+				}
+			}
+		}
+
+		// Otherwise return true
+		return true;
+	}
+
+	/**
+	 * Fires before executing the browse task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeBrowse()
+	{
+		return $this->callObserverEvent('browse', 'before');
+	}
+
+	/**
+	 * Fires before executing the read task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeRead()
+	{
+		return $this->callObserverEvent('read', 'before');
+	}
+
+	/**
+	 * Fires before executing the add task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeAdd()
+	{
+		return $this->callObserverEvent('add', 'before');
+	}
+
+	/**
+	 * Fires before executing the edit task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeEdit()
+	{
+		return $this->callObserverEvent('edit', 'before');
+	}
+
+	/**
+	 * Fires before executing the apply task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeApply()
+	{
+		return $this->callObserverEvent('apply', 'before');
+	}
+
+	/**
+	 * Fires before executing the copy task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeCopy()
+	{
+		return $this->callObserverEvent('copy', 'before');
+	}
+
+	/**
+	 * Fires before executing the save task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeSave()
+	{
+		return $this->callObserverEvent('save', 'before');
+	}
+
+	/**
+	 * Fires before executing the savenew task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeSavenew()
+	{
+		return $this->callObserverEvent('savenew', 'before');
+	}
+
+	/**
+	 * Fires before executing the canceltask. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeCancel()
+	{
+		return $this->callObserverEvent('cancel', 'before');
+	}
+
+	/**
+	 * Fires before executing the publish task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforePublish()
+	{
+		return $this->callObserverEvent('publish', 'before');
+	}
+
+	/**
+	 * Fires before executing the unpublish task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeUnpublish()
+	{
+		return $this->callObserverEvent('unpublish', 'before');
+	}
+
+	/**
+	 * Fires before executing the archive task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeArchive()
+	{
+		return $this->callObserverEvent('archive', 'before');
+	}
+
+	/**
+	 * Fires before executing the trash task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeTrash()
+	{
+		return $this->callObserverEvent('trash', 'before');
+	}
+
+	/**
+	 * Fires before executing the saveorder task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeSaveorder()
+	{
+		return $this->callObserverEvent('saveorder', 'before');
+	}
+
+	/**
+	 * Fires before executing the orderdown task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeOrderdown()
+	{
+		return $this->callObserverEvent('orderdown', 'before');
+	}
+
+	/**
+	 * Fires before executing the orderup task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeOrderup()
+	{
+		return $this->callObserverEvent('orderup', 'before');
+	}
+
+	/**
+	 * Fires before executing the remove task. In turn, it calls the respective event in the global observers to decide
+	 * if the execution of the task should proceed.
+	 *
+	 * @return bool
+	 */
+	public function onBeforeRemove()
+	{
+		return $this->callObserverEvent('remove', 'before');
 	}
 } 
