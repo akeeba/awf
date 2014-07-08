@@ -10,6 +10,7 @@ namespace Awf\Platform\Joomla\Container;
 use Awf\Database\Driver;
 use Awf\Platform\Joomla\Application\Application;
 use Awf\Platform\Joomla\Event\Dispatcher;
+use Awf\Platform\Joomla\Helper\Helper;
 
 /**
  * A Container suitable for Joomla! integration
@@ -29,6 +30,44 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+		// Set up the filesystem path
+		if (empty($values['filesystemBase']))
+		{
+			$values['filesystemBase'] = JPATH_ROOT;
+		}
+
+		// Set up the base path
+		if (empty($values['basePath']))
+		{
+			$basePath = '/components/com_' . strtolower($values['application_name']) . '/' . $values['application_name'];
+			$values['basePath'] = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_ROOT) . $basePath;
+		}
+
+		// Set up the template path
+		if (empty($values['templatePath']))
+		{
+			$values['templatePath'] = $values['basePath'] . '/templates';
+		}
+
+		// Set up the temporary path
+		if (empty($values['temporaryPath']))
+		{
+			$values['temporaryPath'] = \JFactory::getConfig()->get('tmp_path', sys_get_temp_dir());
+		}
+
+		// Set up the language path
+		if (empty($values['languagePath']))
+		{
+			$values['languagePath'] = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_ROOT) . '/language';
+		}
+
+		// Set up the SQL files path
+		if (empty($values['sqlPath']))
+		{
+			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($values['application_name'])
+				. '/sql/xml';
+		}
+
 		// Application service
 		if (!isset($this['application']))
 		{
