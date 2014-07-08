@@ -1,18 +1,28 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
- * @license		GNU GPL version 3 or later
+ * @package        awf
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Platform\Joomla\Container;
 
 use Awf\Database\Driver;
+use Awf\Platform\Joomla\Event\Dispatcher;
 
 /**
  * A Container suitable for Joomla! integration
  *
  * @package Awf\Platform\Joomla\Container
+ *
+ * @property-read  \Awf\Application\Application                              $application           The application instance
+ * @property-read  \Awf\Application\Configuration                            $appConfig             The application configuration registry
+ * @property-read  \Awf\Platform\Joomla\Event\Dispatcher                     $eventDispatcher       The global event dispatched
+ * @property-read  \Awf\Mailer\Mailer                                        $mailer                The email sender. Note: this is a factory method
+ * @property-read  \Awf\Router\Router                                        $router                The URL router
+ * @property-read  \Awf\Session\Segment                                      $segment               The session segment, where values are stored
+ * @property-read  \Awf\Session\Manager                                      $session               The session manager
+ * @property-read  \Awf\User\ManagerInterface                                $userManager           The user manager object
  */
 class Container extends \Awf\Container\Container
 {
@@ -52,12 +62,13 @@ class Container extends \Awf\Container\Container
 				$db = \JFactory::getDbo();
 
 				$options = array(
-					'connection'		=> $db->getConnection(),
-					'prefix'			=> $db->getPrefix(),
-					'driver'			=> 'mysqli',
+					'connection' => $db->getConnection(),
+					'prefix'     => $db->getPrefix(),
+					'driver'     => 'mysqli',
 				);
 
-				switch($db->name) {
+				switch ($db->name)
+				{
 					case 'mysql':
 						$options['driver'] = 'Mysql';
 						break;
@@ -87,6 +98,15 @@ class Container extends \Awf\Container\Container
 				}
 
 				return Driver::getInstance($options);
+			};
+		}
+
+		// Application Event Dispatcher service
+		if (!isset($this['eventDispatcher']))
+		{
+			$this['eventDispatcher'] = function (Container $c)
+			{
+				return new Dispatcher($c);
 			};
 		}
 
