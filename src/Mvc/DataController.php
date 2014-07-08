@@ -944,7 +944,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeBrowse()
+	protected function onBeforeBrowse()
 	{
 		return $this->callObserverEvent('browse', 'before');
 	}
@@ -955,7 +955,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeRead()
+	protected function onBeforeRead()
 	{
 		return $this->callObserverEvent('read', 'before');
 	}
@@ -966,7 +966,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeAdd()
+	protected function onBeforeAdd()
 	{
 		return $this->callObserverEvent('add', 'before');
 	}
@@ -977,7 +977,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeEdit()
+	protected function onBeforeEdit()
 	{
 		return $this->callObserverEvent('edit', 'before');
 	}
@@ -988,7 +988,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeApply()
+	protected function onBeforeApply()
 	{
 		return $this->callObserverEvent('apply', 'before');
 	}
@@ -999,7 +999,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeCopy()
+	protected function onBeforeCopy()
 	{
 		return $this->callObserverEvent('copy', 'before');
 	}
@@ -1010,7 +1010,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeSave()
+	protected function onBeforeSave()
 	{
 		return $this->callObserverEvent('save', 'before');
 	}
@@ -1021,7 +1021,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeSavenew()
+	protected function onBeforeSavenew()
 	{
 		return $this->callObserverEvent('savenew', 'before');
 	}
@@ -1032,7 +1032,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeCancel()
+	protected function onBeforeCancel()
 	{
 		return $this->callObserverEvent('cancel', 'before');
 	}
@@ -1043,7 +1043,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforePublish()
+	protected function onBeforePublish()
 	{
 		return $this->callObserverEvent('publish', 'before');
 	}
@@ -1054,7 +1054,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeUnpublish()
+	protected function onBeforeUnpublish()
 	{
 		return $this->callObserverEvent('unpublish', 'before');
 	}
@@ -1065,7 +1065,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeArchive()
+	protected function onBeforeArchive()
 	{
 		return $this->callObserverEvent('archive', 'before');
 	}
@@ -1076,7 +1076,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeTrash()
+	protected function onBeforeTrash()
 	{
 		return $this->callObserverEvent('trash', 'before');
 	}
@@ -1087,7 +1087,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeSaveorder()
+	protected function onBeforeSaveorder()
 	{
 		return $this->callObserverEvent('saveorder', 'before');
 	}
@@ -1098,7 +1098,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeOrderdown()
+	protected function onBeforeOrderdown()
 	{
 		return $this->callObserverEvent('orderdown', 'before');
 	}
@@ -1109,7 +1109,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeOrderup()
+	protected function onBeforeOrderup()
 	{
 		return $this->callObserverEvent('orderup', 'before');
 	}
@@ -1120,7 +1120,7 @@ class DataController extends Controller
 	 *
 	 * @return bool
 	 */
-	public function onBeforeRemove()
+	protected function onBeforeRemove()
 	{
 		return $this->callObserverEvent('remove', 'before');
 	}
