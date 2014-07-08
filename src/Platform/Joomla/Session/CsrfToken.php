@@ -10,9 +10,6 @@
 
 namespace Awf\Platform\Joomla\Session;
 
-use Awf\Session\Segment;
-use Awf\Session\RandvalInterface;
-
 /**
  * Cross-site request forgery token tools.
  */
