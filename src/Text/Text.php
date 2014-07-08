@@ -64,16 +64,31 @@ abstract class Text
 			$languagePath = Application::getInstance($appName)->getContainer()->languagePath;
 		}
 
-		$filename = $languagePath . '/' . strtolower($appName) . '/' . $langCode . $suffix;
+		$fileNames = array(
+			// langPath/MyApp/en-GB.ini
+			$languagePath . '/' . strtolower($appName) . '/' . $langCode . $suffix,
+			// langPath/MyApp/en-GB/en-GB.ini
+			$languagePath . '/' . strtolower($appName) . '/' . $langCode . '/' . $langCode . $suffix,
+			// langPath/en-GB.ini
+			$languagePath . '/' . $langCode . $suffix,
+			// langPath/en-GB/en-GB.ini
+			$languagePath . '/' . $langCode . '/' . $langCode . $suffix,
+		);
 
-		if (!file_exists($filename))
+		$filename = null;
+
+		foreach ($fileNames as $file)
 		{
-			$filename = $languagePath . '/' . strtolower($appName) . '/' . $langCode . '/' . $langCode . $suffix;
-
-			if (!file_exists($filename))
+			if (@file_exists($file))
 			{
-				return;
+				$filename = $file;
+				break;
 			}
+		}
+
+		if (is_null($filename))
+		{
+			return;
 		}
 
 		$strings = parse_ini_file($filename);
@@ -165,6 +180,11 @@ abstract class Text
 				$user_languages[] = $temp_array;
 			}
 
+			if (!isset($user_languages))
+			{
+				return 'en-GB';
+			}
+
 			if (empty($appName))
 			{
 				$appName = Application::getInstance()->getName();
@@ -177,17 +197,30 @@ abstract class Text
 
 			$baseName = $languagePath . '/' . strtolower($appName) . '/';
 
+			if (!@is_dir($baseName))
+			{
+				$baseName = $languagePath . '/';
+			}
+
+			if (!@is_dir($baseName))
+			{
+				return 'en-GB';
+			}
+
 			// Look for classic file layout
 			foreach ($user_languages as $languageStruct)
 			{
 				// Search for exact language
 				$langFilename = $baseName . $languageStruct[0] . $suffix;
+
 				if (!file_exists($langFilename))
 				{
 					$langFilename = '';
+
 					if (function_exists('glob'))
 					{
 						$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
+
 						if (count($allFiles))
 						{
 							$langFilename = array_shift($allFiles);
@@ -203,7 +236,15 @@ abstract class Text
 
 			// Look for subdirectory layout
 			$allFolders = array();
-			$di = new \DirectoryIterator($baseName);
+
+			try
+			{
+				$di = new \DirectoryIterator($baseName);
+			}
+			catch (\Exception $e)
+			{
+				return 'en-GB';
+			}
 
 			/** @var \DirectoryIterator $file */
 			foreach ($di as $file)
