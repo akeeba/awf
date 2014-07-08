@@ -8,6 +8,8 @@
 namespace Awf\Platform\Joomla\Application;
 
 
+use Awf\Platform\Joomla\Application\Observer\ControllerAcl;
+use Awf\Platform\Joomla\Application\Observer\ViewAlternatePaths;
 use Awf\Text\Text;
 
 class Application extends \Awf\Application\Application
@@ -16,6 +18,12 @@ class Application extends \Awf\Application\Application
 	{
 		// Put a small marker to indicate that we run inside another CMS
 		$this->container->segment->set('insideCMS', true);
+
+		// Attach the Joomla!-specific observer for Controller ACL checks
+		$this->container->eventDispatcher->attach(new ControllerAcl($this->container->eventDispatcher));
+
+		// Attach the Joomla!-specific observer for template override support
+		$this->container->eventDispatcher->attach(new ViewAlternatePaths($this->container->eventDispatcher));
 
 		// @todo Set up the template (theme) to use – different for front-end and back-end
 		$this->setTemplate('CUSTOMTEMPLATE');
