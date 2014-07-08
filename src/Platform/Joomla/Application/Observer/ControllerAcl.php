@@ -76,7 +76,7 @@ class ControllerAcl extends Observer
 		$application_name = $container->application_name;
 		$component_name = 'com_' . strtolower($application_name);
 		/** @var DataController $controller */
-		$controller = Controller::getInstance($application_name, $controller_name, $container);
+		$controller = Controller::getInstance($application_name, $controllerName, $container);
 		$model = $controller->getModel();
 
 		$controller->getIDsFromRequest($model);
