@@ -8,6 +8,7 @@
 namespace Awf\Platform\Joomla\Container;
 
 use Awf\Database\Driver;
+use Awf\Platform\Joomla\Application\Application;
 use Awf\Platform\Joomla\Event\Dispatcher;
 
 /**
@@ -15,19 +16,28 @@ use Awf\Platform\Joomla\Event\Dispatcher;
  *
  * @package Awf\Platform\Joomla\Container
  *
- * @property-read  \Awf\Application\Application                              $application           The application instance
- * @property-read  \Awf\Application\Configuration                            $appConfig             The application configuration registry
- * @property-read  \Awf\Platform\Joomla\Event\Dispatcher                     $eventDispatcher       The global event dispatched
- * @property-read  \Awf\Mailer\Mailer                                        $mailer                The email sender. Note: this is a factory method
- * @property-read  \Awf\Router\Router                                        $router                The URL router
- * @property-read  \Awf\Session\Segment                                      $segment               The session segment, where values are stored
- * @property-read  \Awf\Session\Manager                                      $session               The session manager
- * @property-read  \Awf\User\ManagerInterface                                $userManager           The user manager object
+ * @property-read  \Awf\Platform\Joomla\Application\Application		$application           The application instance
+ * @property-read  \Awf\Application\Configuration                   $appConfig             The application configuration registry
+ * @property-read  \Awf\Platform\Joomla\Event\Dispatcher            $eventDispatcher       The global event dispatcher
+ * @property-read  \Awf\Mailer\Mailer                               $mailer                The email sender. Note: this is a factory method
+ * @property-read  \Awf\Router\Router                               $router                The URL router
+ * @property-read  \Awf\Session\Segment                             $segment               The session segment, where values are stored
+ * @property-read  \Awf\Session\Manager                             $session               The session manager
+ * @property-read  \Awf\User\ManagerInterface                       $userManager           The user manager object
  */
 class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+		// Application service
+		if (!isset($this['application']))
+		{
+			$this['application'] = function (Container $c)
+			{
+				return Application::getInstance($c->application_name, $c);
+			};
+		}
+
 		// Session Manager service
 		if (!isset($this['session']))
 		{
