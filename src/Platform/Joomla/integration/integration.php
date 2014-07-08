@@ -1,5 +1,18 @@
 <?php
-// Bootstrap file for Joomla!
+/**
+ * @package        awf-miniblog
+ * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ *
+ * This is the AWF integration file for the Joomla! 2.x / 3.x CMS. It allows you to run an AWF application as a Joomla!
+ * component. You need to provide the following variables before including this script:
+ *
+ * @var string $appName The application name, e.g. Foobar for com_foobar. It's also the name of your AWF Application's
+ *                      namespace. The admin side in this case will have the namespace FoobarAdmin and component name
+ *                      com_foobar
+ * @var array $containerOverrides Any variables you want to push to the DI Container
+ */
+
 use Awf\Session;
 
 /**
@@ -22,16 +35,21 @@ if (false == include_once JPATH_LIBRARIES . '/awf/Autoloader/Autoloader.php')
 }
 
 // Add our app to the autoloader, if it's not already set
+$componentName = 'com_' . strtolower($appName);
 $prefixes = Awf\Autoloader\Autoloader::getInstance()->getPrefixes();
 if (!array_key_exists($appName . '\\', $prefixes))
 {
 	\Awf\Autoloader\Autoloader::getInstance()
-		->addMap($appName . '\\', JPATH_SITE . '/components/com_' . strtolower($appName))
-		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/com_' . strtolower($appName))
-		->addMap($appName . '\\', JPATH_SITE . '/components/com_' . strtolower($appName) . '/' . $appName)
-		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/com_' . strtolower($appName) . '/' . $appName);
+		->addMap($appName . '\\', JPATH_SITE . '/components/' . $componentName)
+		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/' . $componentName)
+		->addMap($appName . '\\', JPATH_SITE . '/components/' . $componentName . '/' . $appName)
+		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/' . $componentName . '/' . $appName);
 }
 
+// Load Joomla!-specific translation files
+\Awf\Platform\Joomla\Helper\Helper::loadTranslations($componentName);
+
+// Find the name of the DI container class suitable for this component
 $appName = \Awf\Platform\Joomla\Helper\Helper::isBackend() ? ($appName . 'Admin') : $appName;
 $containerClass = "\\$appName\\Container\\Container";
 
@@ -50,6 +68,7 @@ if (!isset($containerOverrides['application_name']))
 	$containerOverrides['application_name'] = $appName;
 }
 
+// Try to create a new DI container
 try
 {
 	$container = new $containerClass($containerOverrides);
@@ -79,7 +98,9 @@ catch (Exception $exc)
 	include $filename;
 }
 
+// Finally, unset the temporary variables polluting your namespave
 unset($prefixes);
 unset($appName);
 unset($containerClass);
 unset($containerOverrides);
+unset($componentName);

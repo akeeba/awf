@@ -132,7 +132,7 @@ abstract class Helper
 	 *
 	 * @return array A simple array containing the results of the plugins triggered
 	 */
-	public function runPlugins($event, $data, $loadInCli = false)
+	public static function runPlugins($event, $data, $loadInCli = false)
 	{
 		if ($loadInCli || !self::isCli())
 		{
@@ -166,9 +166,9 @@ abstract class Helper
 	 *
 	 * @return  boolean  True if the user is allowed this action
 	 */
-	public function authorise($action, $assetname)
+	public static function authorise($action, $assetname)
 	{
-		if ($this->isCli())
+		if (self::isCli())
 		{
 			return true;
 		}
@@ -186,7 +186,7 @@ abstract class Helper
 	 *
 	 * @throws \Exception Thrown on Joomla! 3+
 	 */
-	public function raiseError($code, $message)
+	public static function raiseError($code, $message)
 	{
 		if (version_compare(JVERSION, '3.0', 'ge'))
 		{
@@ -207,7 +207,7 @@ abstract class Helper
 	 *
 	 * @return  void
 	 */
-	public function setErrorHandling($level, $log_level, $options = array())
+	public static function setErrorHandling($level, $log_level, $options = array())
 	{
 		if (version_compare(JVERSION, '3.0', 'lt'))
 		{
@@ -226,7 +226,7 @@ abstract class Helper
 	 *
 	 * @return string The path to the template overrides directory
 	 */
-	public function getTemplateOverridePath($component, $absolute = true)
+	public static function getTemplateOverridePath($component, $absolute = true)
 	{
 		if (!self::isCli())
 		{
@@ -265,9 +265,9 @@ abstract class Helper
 	 *
 	 * @return void
 	 */
-	public function loadTranslations($component)
+	public static function loadTranslations($component)
 	{
-		if ($this->isBackend())
+		if (self::isBackend())
 		{
 			$paths = array(JPATH_ROOT, JPATH_ADMINISTRATOR);
 		}
