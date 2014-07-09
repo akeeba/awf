@@ -12,6 +12,7 @@ use Awf\Platform\Joomla\Application\Application;
 use Awf\Platform\Joomla\Application\Configuration;
 use Awf\Platform\Joomla\Event\Dispatcher;
 use Awf\Platform\Joomla\Helper\Helper;
+use Awf\Platform\Joomla\Router\Router;
 
 /**
  * A Container suitable for Joomla! integration
@@ -22,24 +23,15 @@ use Awf\Platform\Joomla\Helper\Helper;
  * @property-read  \Awf\Platform\Joomla\Application\Configuration   $appConfig             The application configuration registry
  * @property-read  \Awf\Platform\Joomla\Event\Dispatcher            $eventDispatcher       The global event dispatcher
  * @property-read  \JMail                                           $mailer                The email sender. Note: this is a factory method
- * @property-read  \Awf\Router\Router                               $router                The URL router
- * @property-read  \Awf\Session\Segment                             $segment               The session segment, where values are stored
- * @property-read  \Awf\Session\Manager                             $session               The session manager
+ * @property-read  \Awf\Platform\Joomla\Router\Router               $router                The URL router
+ * @property-read  \Awf\Platform\Joomla\Session\Segment             $segment               The session segment, where values are stored
+ * @property-read  \Awf\Platform\Joomla\Session\Manager             $session               The session manager
  * @property-read  \Awf\User\ManagerInterface                       $userManager           The user manager object
  */
 class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
-		// Application Configuration service
-		if (!isset($values['appConfig']))
-		{
-			$values['appConfig'] = function (Container $c)
-			{
-				return new Configuration($c);
-			};
-		}
-
 		// Set up the filesystem path
 		if (empty($values['filesystemBase']))
 		{
@@ -166,6 +158,24 @@ class Container extends \Awf\Container\Container
 			$this['eventDispatcher'] = function (Container $c)
 			{
 				return new Dispatcher($c);
+			};
+		}
+
+		// Application Configuration service
+		if (!isset($values['appConfig']))
+		{
+			$values['appConfig'] = function (Container $c)
+			{
+				return new Configuration($c);
+			};
+		}
+
+		// Application Router service
+		if (!isset($values['router']))
+		{
+			$values['router'] = function (Container $c)
+			{
+				return new Router($c);
 			};
 		}
 
