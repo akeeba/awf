@@ -57,5 +57,9 @@ abstract class Authentication implements AuthenticationInterface
 	 *
 	 * @return  boolean  True if the user is authenticated (or this plugin doesn't apply), false otherwise
 	 */
-	abstract public function onAuthentication($params = array());
+	public function onAuthentication($params = array())
+	{
+		// I think PHP 5.3.5 requires this?
+		return true;
+	}
 }
