@@ -209,7 +209,7 @@ class User implements UserInterface
 		else
 		{
 			// On lower PHP versions we have to use the easier to crack salted MD5/SHA1/SHA256/SHA512 :(
-			$salt = $this->getSalt(64);
+			$salt = base64_encode($this->getSalt(64));
 
 			$hash_algos = function_exists('hash_algos') ? hash_algos() : array();
 
