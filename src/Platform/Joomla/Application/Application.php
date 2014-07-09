@@ -81,6 +81,9 @@ class Application extends \Awf\Application\Application
 		// Put a small marker to indicate that we run inside another CMS
 		$this->container->segment->set('insideCMS', true);
 
+		// Load the configuration
+		$this->container->appConfig->loadConfiguration();
+
 		// Attach the Joomla!-specific observer for Controller ACL checks
 		$this->container->eventDispatcher->attach(new ControllerAcl($this->container->eventDispatcher));
 

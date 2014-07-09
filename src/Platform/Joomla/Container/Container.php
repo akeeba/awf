@@ -9,6 +9,7 @@ namespace Awf\Platform\Joomla\Container;
 
 use Awf\Database\Driver;
 use Awf\Platform\Joomla\Application\Application;
+use Awf\Platform\Joomla\Application\Configuration;
 use Awf\Platform\Joomla\Event\Dispatcher;
 use Awf\Platform\Joomla\Helper\Helper;
 
@@ -18,7 +19,7 @@ use Awf\Platform\Joomla\Helper\Helper;
  * @package Awf\Platform\Joomla\Container
  *
  * @property-read  \Awf\Platform\Joomla\Application\Application		$application           The application instance
- * @property-read  \Awf\Application\Configuration                   $appConfig             The application configuration registry
+ * @property-read  \Awf\Platform\Joomla\Application\Configuration   $appConfig             The application configuration registry
  * @property-read  \Awf\Platform\Joomla\Event\Dispatcher            $eventDispatcher       The global event dispatcher
  * @property-read  \JMail                                           $mailer                The email sender. Note: this is a factory method
  * @property-read  \Awf\Router\Router                               $router                The URL router
@@ -30,6 +31,15 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+		// Application Configuration service
+		if (!isset($values['appConfig']))
+		{
+			$values['appConfig'] = function (Container $c)
+			{
+				return new Configuration($c);
+			};
+		}
+
 		// Set up the filesystem path
 		if (empty($values['filesystemBase']))
 		{
