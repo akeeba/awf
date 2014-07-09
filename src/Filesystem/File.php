@@ -36,7 +36,9 @@ class File implements FilesystemInterface
 	 */
 	public function write($fileName, $contents)
 	{
-		return @file_put_contents($fileName, $contents);
+		$bytes = @file_put_contents($fileName, $contents);
+
+		return ($bytes !== false);
 	}
 
 	/**
