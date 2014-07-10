@@ -9,6 +9,7 @@ namespace Awf\Platform\Joomla\Container;
 
 use Awf\Database\Driver;
 use Awf\Platform\Joomla\Application\Application;
+use Awf\Platform\Joomla\Application\ComponentConfig;
 use Awf\Platform\Joomla\Application\Configuration;
 use Awf\Platform\Joomla\Event\Dispatcher;
 use Awf\Platform\Joomla\Helper\Helper;

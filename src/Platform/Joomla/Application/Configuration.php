@@ -12,7 +12,8 @@ use Awf\Utils\Phpfunc;
 class Configuration extends \Awf\Application\Configuration
 {
 	/**
-	 * Loads the configuration from the Joomla! global configuration itself
+	 * Loads the configuration from the Joomla! global configuration itself. The component's options are loaded into
+	 * the options key. For example, an option called foobar is accessible as $config->get('options.foobar');
 	 *
 	 * @param string  $filePath Ignored
 	 * @param Phpfunc $phpfunc  Ignored
@@ -34,6 +35,7 @@ class Configuration extends \Awf\Application\Configuration
 			'base_url'	=> \JUri::base() . '/index.php?option=com_' . strtolower($this->container->application_name),
 			'live_site'	=> \JUri::base() . '/index.php?option=com_' . strtolower($this->container->application_name),
 			'cms_url'	=> \JUri::base(),
+			'options'	=> array(),
 		);
 
 		// Get the Joomla! FTP layer options
@@ -59,22 +61,56 @@ class Configuration extends \Awf\Application\Configuration
 			);
 		}
 
+		// Populate the options key with the component configuration
+		$db = $this->container->db;
+
+		$sql = $db->getQuery(true)
+			->select($db->qn('params'))
+			->from($db->qn('#__extensions'))
+			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->application_name)));
+
+		try
+		{
+			$configJson = $db->setQuery($sql)->loadResult();
+		}
+		catch (\Exception $e)
+		{
+			$configJson = null;
+		}
+
+		if (!empty($configJson))
+		{
+			$data['options'] = json_decode($configJson, true);
+		}
+
 		// Finally, load the data to the registry class
 		$this->data = new \stdClass();
 		$this->loadArray($data);
 	}
 
 	/**
-	 * Not available in Joomla!
+	 * This method will only save the Joomla!-specific configuration to the #__extensions table. This means only
+	 * everything under the "options" key.
 	 *
 	 * @param   string $filePath Ignored
 	 *
 	 * @return  void
 	 *
-	 * @throws  \RuntimeException  Always
+	 * @throws  \Exception  If we can't save to the database for any reason
 	 */
 	public function saveConfiguration($filePath = null)
 	{
-		throw new \RuntimeException('Cannot save the configuration when running inside Joomla');
+		$optionsRaw = $this->get('options', array());
+		$optionsRaw = (array)$optionsRaw;
+		$optionsJson = json_encode($optionsRaw);
+
+		$db = $this->container->db;
+
+		$sql = $db->getQuery(true)
+			->update($db->qn('#__extensions'))
+			->set($db->qn('params') . ' = ' . $db->q($optionsJson))
+			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->application_name)));
+
+		$db->setQuery($sql)->execute();
 	}
 }
