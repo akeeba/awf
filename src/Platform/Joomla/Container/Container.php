@@ -14,6 +14,7 @@ use Awf\Platform\Joomla\Application\Configuration;
 use Awf\Platform\Joomla\Event\Dispatcher;
 use Awf\Platform\Joomla\Helper\Helper;
 use Awf\Platform\Joomla\Router\Router;
+use Awf\Platform\Joomla\User\Manager;
 
 /**
  * A Container suitable for Joomla! integration
@@ -27,7 +28,7 @@ use Awf\Platform\Joomla\Router\Router;
  * @property-read  \Awf\Platform\Joomla\Router\Router               $router                The URL router
  * @property-read  \Awf\Platform\Joomla\Session\Segment             $segment               The session segment, where values are stored
  * @property-read  \Awf\Platform\Joomla\Session\Manager             $session               The session manager
- * @property-read  \Awf\User\ManagerInterface                       $userManager           The user manager object
+ * @property-read  \Awf\Platform\Joomla\User\Manager				$userManager           The user manager object
  */
 class Container extends \Awf\Container\Container
 {
@@ -177,6 +178,15 @@ class Container extends \Awf\Container\Container
 			$values['router'] = function (Container $c)
 			{
 				return new Router($c);
+			};
+		}
+
+		// User Manager service
+		if (!isset($values['userManager']))
+		{
+			$values['userManager'] = function (Container $c)
+			{
+				return new Manager($c);
 			};
 		}
 

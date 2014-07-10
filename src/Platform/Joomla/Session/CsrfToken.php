@@ -11,7 +11,7 @@
 namespace Awf\Platform\Joomla\Session;
 
 /**
- * Cross-site request forgery token tools.
+ * Cross-site request forgery token tools
  */
 class CsrfToken extends \Awf\Session\CsrfToken
 {
