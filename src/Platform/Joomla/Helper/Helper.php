@@ -156,10 +156,7 @@ abstract class Helper
 	}
 
 	/**
-	 * Perform an ACL check. Please note that FOF uses by default the Joomla!
-	 * CMS convention for ACL privileges, e.g core.edit for the edit privilege.
-	 * If your platform uses different conventions you'll have to override the
-	 * FOF defaults using fof.xml or by specialising the controller.
+	 * Perform an ACL check.
 	 *
 	 * @param   string $action    The ACL privilege to check, e.g. core.edit
 	 * @param   string $assetname The asset name to check, typically the component's name
