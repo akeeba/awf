@@ -90,8 +90,12 @@ class Application extends \Awf\Application\Application
 		// Attach the Joomla!-specific observer for template override support
 		$this->container->eventDispatcher->attach(new ViewAlternatePaths($this->container->eventDispatcher));
 
-		// @todo Set up the template (theme) to use – different for front-end and back-end
-		$this->setTemplate('CUSTOMTEMPLATE');
+		// Set up the template (theme) to use – different for front-end and back-end
+		if (empty($this->template) || ($this->template == $this->container->application_name))
+		{
+			$template = Helper::isBackend() ? 'backend' : 'frontend';
+			$this->setTemplate($template);
+		}
 
 		// Load the extra language files
 		$appName = $this->container->application_name;
@@ -101,4 +105,62 @@ class Application extends \Awf\Application\Application
 		Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
 	}
 
+	/**
+	 * Redirect to another URL.
+	 *
+	 * Optionally enqueues a message in the system message queue (which will be displayed
+	 * the next time a page is loaded) using the enqueueMessage method. If the headers have
+	 * not been sent the redirect will be accomplished using a "301 Moved Permanently"
+	 * code in the header pointing to the new location. If the headers have already been
+	 * sent this will be accomplished using a JavaScript statement.
+	 *
+	 * @param   string  $url     The URL to redirect to. Can only be http/https URL
+	 * @param   string  $msg     An optional message to display on redirect.
+	 * @param   string  $msgType An optional message type. Defaults to message.
+	 * @param   boolean $moved   True if the page is 301 Permanently Moved, otherwise 303 See Other is assumed.
+	 *
+	 * @return  void  Calls exit().
+	 *
+	 * @see     Application::enqueueMessage()
+	 */
+	public function redirect($url, $msg = '', $msgType = 'info', $moved = false)
+	{
+		\JFactory::getApplication()->enqueueMessage($msg, $msgType);
+		\JFactory::getApplication()->redirect($url, $moved);
+	}
+
+	/**
+	 * Enqueue a system message.
+	 *
+	 * @param   string $msg  The message to enqueue.
+	 * @param   string $type The message type. Default is info.
+	 *
+	 * @return  void
+	 */
+	public function enqueueMessage($msg, $type = 'info')
+	{
+		\JFactory::getApplication()->enqueueMessage($msg, $type);
+	}
+
+	/**
+	 * Get the system message queue.
+	 *
+	 * @return  array  The system message queue.
+	 */
+	public function getMessageQueue()
+	{
+		return \JFactory::getApplication()->getMessageQueue();
+	}
+
+	/**
+	 * Method to close the application. Automatically commits the session.
+	 *
+	 * @param   integer $code The exit code (optional; default is 0).
+	 *
+	 * @return  void
+	 */
+	public function close($code = 0)
+	{
+		\JFactory::getApplication()->close($code);
+	}
 } 

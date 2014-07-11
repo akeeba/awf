@@ -364,6 +364,16 @@ abstract class Document
 	}
 
 	/**
+	 * Returns the raw HTTP headers as a hash array
+	 *
+	 * @return array Key = header, value = header value.
+	 */
+	public function getHTTPHeaders()
+	{
+		return $this->HTTPHeaders;
+	}
+
+	/**
 	 * Output the HTTP headers to the browser
 	 *
 	 * @return  void
