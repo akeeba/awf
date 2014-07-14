@@ -32,7 +32,7 @@ class Hybrid implements FilesystemInterface
 	 *
 	 * @param   array   $options  Configuration options for the filesystem abstraction object
 	 *
-	 * @return  FilesystemInterface
+	 * @throws  \RuntimeException
 	 */
 	public function __construct(array $options)
 	{
@@ -67,10 +67,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function write($fileName, $contents)
 	{
-		if (!$this->fileAdapter->write($fileName, $contents) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->write($fileName, $contents);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->write($fileName, $contents);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -82,10 +86,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function delete($fileName)
 	{
-		if (!$this->fileAdapter->delete($fileName) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->delete($fileName);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->delete($fileName);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -98,10 +106,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function copy($from, $to)
 	{
-		if (!$this->fileAdapter->copy($from, $to) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->copy($from, $to);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->copy($from, $to);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -114,10 +126,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function move($from, $to)
 	{
-		if (!$this->fileAdapter->move($from, $to) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->move($from, $to);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->move($from, $to);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -130,10 +146,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function chmod($fileName, $permissions)
 	{
-		if (!$this->fileAdapter->chmod($fileName, $permissions) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->chmod($fileName, $permissions);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->chmod($fileName, $permissions);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -147,10 +167,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function mkdir($dirName, $permissions = 0755)
 	{
-		if (!$this->fileAdapter->mkdir($dirName, $permissions) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->mkdir($dirName, $permissions);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->mkdir($dirName, $permissions);
 		}
+
+		return $ret;
 	}
 
 	/**
@@ -164,10 +188,14 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function rmdir($dirName, $recursive = true)
 	{
-		if (!$this->fileAdapter->rmdir($dirName, $recursive) && is_object($this->abstractionAdapter))
+		$ret = $this->fileAdapter->rmdir($dirName, $recursive);
+
+		if (!$ret && is_object($this->abstractionAdapter))
 		{
 			return $this->abstractionAdapter->rmdir($dirName, $recursive);
 		}
+
+		return $ret;
 	}
 
 	/**

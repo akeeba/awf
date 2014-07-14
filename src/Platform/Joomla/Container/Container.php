@@ -50,7 +50,7 @@ class Container extends \Awf\Container\Container
 		// Set up the template path
 		if (empty($values['templatePath']))
 		{
-			$values['templatePath'] = $values['basePath'] . '/templates';
+			$values['templatePath'] = __DIR__ . '/../templates';
 		}
 
 		// Set up the temporary path
