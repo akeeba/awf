@@ -40,10 +40,12 @@ final class Factory
 
 		$config = $container->appConfig;
 
+		$defaultPort = ($config->get('fs.driver',	'file') == 'ftp') ? '21' : '22';
+
 		$options = array(
 			'driver'		=> $config->get('fs.driver',	'file'),
 			'host'			=> $config->get('fs.host',		'localhost'),
-			'port'			=> $config->get('fs.driver',	'file') == 'ftp' ? '21' : '22',
+			'port'			=> $config->get('fs.port',	$defaultPort),
 			'username'		=> $config->get('fs.username',	''),
 			'password'		=> $config->get('fs.password',	''),
 			'directory'		=> $config->get('fs.dir',		''),
