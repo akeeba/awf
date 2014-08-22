@@ -261,7 +261,7 @@ abstract class Html
 	 *
 	 * @param   string  $title      The title of the tooltip (or combined '::' separated string).
 	 * @param   string  $content    The content to tooltip.
-	 * @param   int     $translate  If true will pass texts through JText.
+	 * @param   int     $translate  If true will pass texts through Text.
 	 * @param   int     $escape     If true will pass texts through htmlspecialchars.
 	 *
 	 * @return  string  The tooltip string
