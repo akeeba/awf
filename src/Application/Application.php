@@ -129,6 +129,7 @@ abstract class Application
 		Text::addIniProcessCallback(array($this, 'processLanguageIniFile'));
 		$languagePath = $container->languagePath;
 		Text::loadLanguage(null, $this->name, '.ini', true, $languagePath);
+		Text::loadLanguage('en-GB', $this->name, '.ini', false, $languagePath);
 	}
 
 	/**
