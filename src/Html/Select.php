@@ -734,17 +734,17 @@ abstract class Select
 			{
 				if ($radioType == 'radio')
 				{
-					$extra .= ((string)$k == (string)$selected ? ' selected="selected" ' : '');
+					$extra .= ((string)$k == (string)$selected ? ' checked="checked" ' : '');
 				}
 				else
 				{
-					$extra .= ((string)$k == (string)$selected ? ' checked="checked" ' : '');
+					$extra .= ((string)$k == (string)$selected ? ' selected="selected" ' : '');
 				}
 			}
 
 			if (!$inline && !$button)
 			{
-				$html .= "\n<div class\"$radioType\">\n";
+				$html .= "\n<div class=\"$radioType\">\n";
 			}
 
 			$class = '';
