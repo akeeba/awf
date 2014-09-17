@@ -111,6 +111,11 @@ class Json extends Raw
 			}
 		}
 
+		if (is_null($tpl))
+		{
+			$tpl = 'json';
+		}
+
 		$hasFailed = false;
 
 		try
