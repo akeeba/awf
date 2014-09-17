@@ -1002,7 +1002,7 @@ class DataModel extends Model
 		}
 
 		// Bind the source value, excluding the ignored fields.
-		foreach ($this->knownFields as $k => $info)
+		foreach ($this->recordData as $k => $currentValue)
 		{
 			// Only process fields not in the ignore array.
 			if (!in_array($k, $ignore))
