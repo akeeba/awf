@@ -224,7 +224,7 @@ class Model
 
 		$this->container = $container;
 
-		$this->config = array_key_exists('mvc_config', $container) ? $container['mvc_config'] : array();
+		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 
 		// Set the model's name
 		$this->name = $this->getName();
