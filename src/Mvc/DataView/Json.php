@@ -26,6 +26,14 @@ class Json extends Raw
 	public $useHypermedia = false;
 
 	/**
+	 * Set to true if your onBefore* methods have already populated the item, items, limitstart etc properties used to
+	 * render a JSON document.
+	 *
+	 * @var bool
+	 */
+	public $alreadyLoaded = false;
+
+	/**
 	 * Public constructor
 	 *
 	 * @param   array  $config  The component's configuration array
@@ -90,10 +98,13 @@ class Json extends Raw
 		/** @var DataModel $model */
 		$model = $this->getModel();
 
-		$this->limitStart = $model->getState('limitstart', 0);
-		$this->limit = $model->getState('limit', 0);
-		$this->items = $model->getItemsArray($this->limitStart, $this->limit);
-		$this->total = $model->count();
+		if (!$this->alreadyLoaded)
+		{
+			$this->limitStart = $model->getState('limitstart', 0);
+			$this->limit = $model->getState('limit', 0);
+			$this->items = $model->getItemsArray($this->limitStart, $this->limit);
+			$this->total = $model->count();
+		}
 
 		$document = $this->container->application->getDocument();
 
@@ -182,9 +193,15 @@ class Json extends Raw
 	 */
 	protected function onBeforeRead($tpl = null)
 	{
+		// Load the model
+		/** @var DataModel $model */
 		$model = $this->getModel();
 
-		$this->item = $model;
+		if (!$this->alreadyLoaded)
+		{
+			$this->item = $model;
+		}
+
 
 		$document = $this->container->application->getDocument();
 
