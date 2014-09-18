@@ -1438,7 +1438,11 @@ class DataModel extends Model
 	{
 		$this->find($keys);
 
-		if (empty($this->{$this->idFieldName}))
+        // We have to assign the value, since empty() is not triggering the __get magic method
+        // http://stackoverflow.com/questions/2045791/php-empty-on-get-accessor
+        $value = $this->{$this->idFieldName};
+
+		if (empty($value))
 		{
 			throw new \RuntimeException('Could not load record', 404);
 		}
@@ -2792,4 +2796,4 @@ class DataModel extends Model
 
 		return $this;
 	}
-} 
+}
