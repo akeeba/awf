@@ -97,7 +97,7 @@ abstract class Grid
 	 *
 	 * @return  mixed    String of html with a checkbox if item is not checked out, null if checked out.
 	 */
-	public static function id($rowNum, $recId, $checkedOut = false, $name = 'cid', $checkedJs)
+	public static function id($rowNum, $recId, $checkedOut = false, $name = 'cid', $checkedJs = '')
 	{
 		if (empty($checkedJs))
 		{
