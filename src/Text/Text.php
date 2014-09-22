@@ -93,6 +93,14 @@ abstract class Text
 
 		$strings = parse_ini_file($filename);
 
+		// Compatibility with Joomla! translation files
+		if ($strings === false)
+		{
+			$rawText = @file_get_contents($filename);
+			$rawText = str_replace('"_QQ_"', '"', $rawText);
+			$strings = parse_ini_string($rawText);
+		}
+
 		if (!empty(static::$iniProcessCallbacks) && !empty($strings))
 		{
 			foreach (static::$iniProcessCallbacks as $callback)
