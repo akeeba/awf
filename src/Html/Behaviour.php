@@ -48,7 +48,7 @@ abstract class Behaviour
 		$document = $app->getDocument();
 
 		Template::addJs('media://js/datepicker/bootstrap-datepicker.js');
-		Template::addJs('media://css/datepicker.css');
+		Template::addCss('media://css/datepicker.css');
 
 		static::$loaded[__METHOD__] = true;
 	}
