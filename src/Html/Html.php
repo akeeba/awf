@@ -367,8 +367,8 @@ abstract class Html
 				$document = $app->getDocument();
 				$document
 					->addScriptDeclaration( <<< JS
-$(document).ready(function(){
-	$('#$id-container').datepicker({
+akeeba.jQuery(document).ready(function(){
+	akeeba.jQuery('#$id-container').datepicker({
 		format: "$format",
 		todayBtn: "linked",
 		language: "$lang",
