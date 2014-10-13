@@ -91,12 +91,16 @@ abstract class Text
 			return;
 		}
 
-		$strings = parse_ini_file($filename);
+		// Suppress the warning message when error reporting is enabled
+		$strings = @parse_ini_file($filename);
 
-		// Compatibility with Joomla! translation files
+		// Compatibility with Joomla! translation files and Transifex' broken way to conforming to a broken standard.
 		if ($strings === false)
 		{
 			$rawText = @file_get_contents($filename);
+			$rawText = str_replace('\\"_QQ_\\"', '"', $rawText);
+			$rawText = str_replace('\\"_QQ_"', '"', $rawText);
+			$rawText = str_replace('"_QQ_\\"', '"', $rawText);
 			$rawText = str_replace('"_QQ_"', '"', $rawText);
 			$strings = parse_ini_string($rawText);
 		}
