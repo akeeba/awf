@@ -65,7 +65,7 @@ class TreeModel extends DataModel
 	public function check()
 	{
 		// Create a slug if there is a title and an empty slug
-		if ($this->hasField('title') && $this->hasField('slug') && empty($this->slug))
+		if ($this->hasField('title') && $this->hasField('slug') && !$this->slug)
 		{
 			$this->slug = String::toSlug($this->title);
 		}

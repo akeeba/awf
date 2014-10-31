@@ -27,8 +27,9 @@ class TreeModelTest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'idFieldName' => 'dbtest_nestedset_id',
-                'tableName'   => '#__dbtest_nestedsets'
+                'autoChecks'  => false,
+                'idFieldName' => $test['id'],
+                'tableName'   => $test['table']
             )
         ));
 
@@ -42,17 +43,17 @@ class TreeModelTest extends DatabaseMysqliCase
 
         $return = $table->check();
 
-        $this->assertEquals($check['return'], $return, 'TreeModel::check returned the wrong value');
+        $this->assertInstanceOf('\\Awf\Mvc\\TreeModel', $return, 'TreeModel::check should return an instance of itself - Case: '.$check['case']);
 
         foreach($check['fields'] as $field => $expected)
         {
             if(is_null($expected))
             {
-                $this->assertObjectNotHasAttribute($field, $table, 'TreeModel::check set the field '.$field.' even if it should not');
+                $this->assertObjectNotHasAttribute($field, $table, 'TreeModel::check set the field '.$field.' even if it should not - Case: '.$check['case']);
             }
             else
             {
-                $this->assertEquals($expected, $table->$field, 'TreeModel::check failed to set the field '.$field);
+                $this->assertEquals($expected, $table->$field, 'TreeModel::check failed to set the field '.$field.' - Case: '.$check['case']);
             }
         }
     }
@@ -69,11 +70,11 @@ class TreeModelTest extends DatabaseMysqliCase
                 )
             ),
             array(
+                'case' => 'Title is set and slug is empty',
                 'fields' => array(
                     'slug'   => 'test-title',
                     'hash'   => sha1('test-title')
                 ),
-                'return' => true
             )
         );
 
@@ -87,11 +88,11 @@ class TreeModelTest extends DatabaseMysqliCase
                 )
             ),
             array(
+                'case'   => 'Title and slug are set',
                 'fields' => array(
                     'slug'   => 'old-slug',
                     'hash'   => sha1('old-slug')
                 ),
-                'return' => true
             )
         );
 
@@ -102,11 +103,11 @@ class TreeModelTest extends DatabaseMysqliCase
                 'fields' => array()
             ),
             array(
+                'case' => 'Bare table without hash nor slug fields',
                 'fields' => array(
                     'slug' => null,
                     'hash' => null
                 ),
-                'return' => true
             )
         );
 
