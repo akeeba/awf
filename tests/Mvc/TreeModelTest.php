@@ -13,6 +13,7 @@ namespace Awf\Tests\TreeModel;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Database\Driver;
 use Awf\Tests\Stubs\Fakeapp\Container;
+use Awf\Tests\Stubs\Mvc\TreeModelStub;
 
 class TreeModelTest extends DatabaseMysqliCase
 {
@@ -56,6 +57,29 @@ class TreeModelTest extends DatabaseMysqliCase
                 $this->assertEquals($expected, $table->$field, 'TreeModel::check failed to set the field '.$field.' - Case: '.$check['case']);
             }
         }
+    }
+
+    /**
+     * @group               TreeModelReorder
+     * @group               TreeModel
+     * @covers              TreeModel::reorder
+     * @preventDataLoading
+     */
+    public function testReorder()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $table->reorder();
     }
 
     public function getTestCheck()
