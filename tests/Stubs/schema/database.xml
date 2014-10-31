@@ -30,4 +30,159 @@
       <value>four</value>
     </row>
   </table>
+
+  <table name="awf_dbtest_nestedsets">
+    <column>dbtest_nestedset_id</column>
+    <column>title</column>
+    <column>slug</column>
+    <column>lft</column>
+    <column>rgt</column>
+    <column>hash</column>
+
+    <row>
+      <value>1</value>
+      <value>ROOT</value>
+      <value>root</value>
+      <value>1</value>
+      <value>32</value>
+      <value>77e7e78b05578758626744dcdf57007c71797399</value>
+    </row>
+
+    <row>
+      <value>2</value>
+      <value>Electronics</value>
+      <value>electronics</value>
+      <value>2</value>
+      <value>15</value>
+      <value>89f1ebf5ace10fe4d43c85a7ad419905164b9883</value>
+    </row>
+
+    <row>
+      <value>3</value>
+      <value>Audio</value>
+      <value>audio</value>
+      <value>3</value>
+      <value>4</value>
+      <value>acdac205f5e24cb75113c4b281a2c13f08b75159</value>
+    </row>
+
+    <row>
+      <value>4</value>
+      <value>Imaging</value>
+      <value>imaging</value>
+      <value>5</value>
+      <value>14</value>
+      <value>731feee62c52c112d615a7851cd03f2cf5ed0794</value>
+    </row>
+
+    <row>
+      <value>5</value>
+      <value>Photography</value>
+      <value>photography</value>
+      <value>6</value>
+      <value>11</value>
+      <value>b987e3f155a21c976430d228badd3fcf156bbeb2</value>
+    </row>
+
+    <row>
+      <value>6</value>
+      <value>Compact</value>
+      <value>compact</value>
+      <value>7</value>
+      <value>8</value>
+      <value>1df39aa58ad4033d56b836b47d7830d400029d70</value>
+    </row>
+
+    <row>
+      <value>7</value>
+      <value>DSLR</value>
+      <value>dslr</value>
+      <value>9</value>
+      <value>10</value>
+      <value>ccf5f51bcde86b4c4b8af749948d133351463bab</value>
+    </row>
+
+    <row>
+      <value>8</value>
+      <value>Video</value>
+      <value>video</value>
+      <value>12</value>
+      <value>13</value>
+      <value>bc17c1f0179a888f2a7e8389f67d4f2cf5cf4531</value>
+    </row>
+
+    <row>
+      <value>9</value>
+      <value>Computers</value>
+      <value>computers</value>
+      <value>16</value>
+      <value>31</value>
+      <value>62d3cc0d94efd1c3ff52b19f67c74f0b058a4d64</value>
+    </row>
+
+    <row>
+      <value>10</value>
+      <value>Smartphones</value>
+      <value>smartphones</value>
+      <value>17</value>
+      <value>22</value>
+      <value>42be68579ce19ac3c57bf8d3ff11bfdd465bbe85</value>
+    </row>
+
+    <row>
+      <value>11</value>
+      <value>Apple</value>
+      <value>apple</value>
+      <value>18</value>
+      <value>19</value>
+      <value>476432a3e85a0aa21c23f5abd2975a89b6820d63</value>
+    </row>
+
+    <row>
+      <value>12</value>
+      <value>Android</value>
+      <value>android</value>
+      <value>20</value>
+      <value>21</value>
+      <value>1928f95c598b9e69462fcb512625cf8e28923044</value>
+    </row>
+
+    <row>
+      <value>13</value>
+      <value>Laptops</value>
+      <value>laptops</value>
+      <value>23</value>
+      <value>24</value>
+      <value>8632c32a7b0a4b8b0c3856f9af2f93ff486719d2</value>
+    </row>
+
+    <row>
+      <value>14</value>
+      <value>Tablets</value>
+      <value>tablets</value>
+      <value>25</value>
+      <value>30</value>
+      <value>e75fe50d9415216b8c0140cb9fc6b1f30474ba33</value>
+    </row>
+
+    <row>
+      <value>15</value>
+      <value>Apple</value>
+      <value>apple</value>
+      <value>26</value>
+      <value>27</value>
+      <value>476432a3e85a0aa21c23f5abd2975a89b6820d63</value>
+    </row>
+
+    <row>
+      <value>16</value>
+      <value>Android</value>
+      <value>android</value>
+      <value>28</value>
+      <value>29</value>
+      <value>1928f95c598b9e69462fcb512625cf8e28923044</value>
+    </row>
+
+
+  </table>
 </dataset>
