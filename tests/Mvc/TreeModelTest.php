@@ -140,6 +140,54 @@ class TreeModelTest extends DatabaseMysqliCase
         \PHPUnit_Framework_Error_Notice::$enabled = true;
     }
 
+    /**
+     * @group               TreeModelInsertAsRoot
+     * @group               TreeModel
+     * @covers              TreeModel::insertAsRoot
+     */
+    public function testInsertAsRoot()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        $table->title = 'New root';
+        $table->insertAsRoot();
+
+        $this->assertTrue($table->isRoot(), 'TreeModel::insertAsRoot failed to create a new root');
+    }
+
+    /**
+     * @group               TreeModelInsertAsRoot
+     * @group               TreeModel
+     * @covers              TreeModel::insertAsRoot
+     */
+    public function testInsertAsRootException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        $table->findOrFail(1);
+        $table->insertAsRoot();
+    }
+
     public function getTestCheck()
     {
         $data[] = array(
