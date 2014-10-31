@@ -63,7 +63,6 @@ class TreeModelTest extends DatabaseMysqliCase
      * @group               TreeModelReorder
      * @group               TreeModel
      * @covers              TreeModel::reorder
-     * @preventDataLoading
      */
     public function testReorder()
     {
@@ -80,6 +79,28 @@ class TreeModelTest extends DatabaseMysqliCase
 
         $table = new TreeModelStub($container);
         $table->reorder();
+    }
+
+    /**
+     * @group               TreeModelMove
+     * @group               TreeModel
+     * @covers              TreeModel::move
+     */
+    public function testMove()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $table->move(-1);
     }
 
     public function getTestCheck()
