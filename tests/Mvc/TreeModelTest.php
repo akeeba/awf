@@ -103,6 +103,43 @@ class TreeModelTest extends DatabaseMysqliCase
         $table->move(-1);
     }
 
+    /**
+     * @group               TreeModelCreate
+     * @group               TreeModel
+     * @covers              TreeModel::create
+     * @dataProvider        getTestCreate
+     */
+    public function testCreate($test)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $matcher = $this->never();
+
+        if(!$test['root'])
+        {
+            $matcher = $this->once();
+        }
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('insertAsChildOf', 'getParent'), array($container));
+
+        // This is just a little trick, so insertAsChildOf won't complain about the argument passed
+        \PHPUnit_Framework_Error_Notice::$enabled = false;
+        $table->expects($this->once())->method('insertAsChildOf')->willReturnSelf();
+        $table->expects($matcher)->method('getParent')->willReturnSelf();
+
+        $table->findOrFail($test['loadid']);
+        $table->create($test['data']);
+
+        \PHPUnit_Framework_Error_Notice::$enabled = true;
+    }
+
     public function getTestCheck()
     {
         $data[] = array(
@@ -153,6 +190,33 @@ class TreeModelTest extends DatabaseMysqliCase
                     'slug' => null,
                     'hash' => null
                 ),
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestCreate()
+    {
+        // Create a node under the root
+        $data[] = array(
+            array(
+                'root'   => true,
+                'loadid' => 1,
+                'data'   => array(
+                    'title' => 'Created node'
+                )
+            )
+        );
+
+        // Create a node in any other position
+        $data[] = array(
+            array(
+                'root'   => false,
+                'loadid' => 2,
+                'data'   => array(
+                    'title' => 'Created node'
+                )
             )
         );
 

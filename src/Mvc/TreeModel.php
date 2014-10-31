@@ -257,18 +257,12 @@ class TreeModel extends DataModel
 	 * @param   array $data The data to use in the new record
 	 *
 	 * @return  static  The new node
-     *
-     * @throws  \RuntimeException
 	 */
 	public function create($data)
 	{
-        // Sanity checks on current node position
-        if($this->lft >= $this->rgt)
-        {
-            throw new \RuntimeException('Invalid position values for the current node');
-        }
-
-		$newNode = $this->reset()->bind($data);
+		$newNode = $this->getClone();
+		$newNode->reset();
+		$newNode->bind($data);
 
 		if ($this->isRoot())
 		{
