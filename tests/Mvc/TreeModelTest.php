@@ -855,6 +855,114 @@ class TreeModelTest extends DatabaseMysqlCase
         $table->moveToLeftOf($sibling);
     }
 
+    /**
+     * @group               TreeModelMoveToRightOf
+     * @group               TreeModel
+     * @covers              TreeModel::moveToRightOf
+     * @dataProvider        getTestMoveToRightOf
+     */
+    public function testMoveToRightOf($test, $check)
+    {
+        /** @var TreeModelStub $table */
+        /** @var TreeModelStub $sibling */
+
+        $msg = 'TreeModel::moveToRightOf %s - Case: '.$check['case'];
+        $db  = self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $sibling = $table->getClone();
+
+        // Am I request to create a different root?
+        if($test['newRoot'])
+        {
+            $root = $table->getClone();
+            $root->title = 'New root';
+            $root->insertAsRoot();
+
+            $child = $table->getClone();
+            $child->title = 'First child 2nd root';
+            $child->insertAsChildOf($root);
+
+            $child->reset();
+
+            $child->title = 'Second child 2nd root';
+            $child->insertAsChildOf($root);
+        }
+
+        $table->findOrFail($test['loadid']);
+        $sibling->findOrFail($test['siblingid']);
+
+        $return = $table->moveToRightOf($sibling);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+
+        // Assertions on the objects
+        $this->assertEquals($check['table']['lft'], $table->lft, sprintf($msg, 'Failed to assign the correct lft value to the node'));
+        $this->assertEquals($check['table']['rgt'], $table->rgt, sprintf($msg, 'Failed to assign the correct rgt value to the node'));
+
+        // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from('#__dbtest_nestedsets')
+            ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+        $nodeDb = $db->setQuery($query)->loadObject();
+
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from('#__dbtest_nestedsets')
+            ->where('dbtest_nestedset_id = '.$sibling->dbtest_nestedset_id);
+        $siblingDb = $db->setQuery($query)->loadObject();
+
+        $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Node object and database lft values are not the same'));
+        $this->assertEquals($table->rgt, $nodeDb->rgt, sprintf($msg, 'Node object and database rgt values are not the same'));
+        $this->assertEquals($check['sibling']['lft'], $siblingDb->lft, sprintf($msg, 'Saved the wrong lft value for the sibling'));
+        $this->assertEquals($check['sibling']['rgt'], $siblingDb->rgt, sprintf($msg, 'Saved the wrong rgt value for the sibling'));
+    }
+
+    /**
+     * @group               TreeModelMoveToRightOf
+     * @group               TreeModel
+     * @covers              TreeModel::moveToRightOf
+     * @dataProvider        getTestMoveToRightOfException
+     */
+    public function testMoveToRightOfException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $sibling = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['siblingid'])
+        {
+            $sibling->findOrFail($test['siblingid']);
+        }
+
+        $table->moveToRightOf($sibling);
+    }
+
     public function getTestForceDelete()
     {
         /*
@@ -1404,6 +1512,73 @@ class TreeModelTest extends DatabaseMysqlCase
     }
 
     public function getTestMoveToLeftOfException()
+    {
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 1,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 1
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToRightOf()
+    {
+        // Moving a node to the left
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 10,
+                'siblingid' => 13
+            ),
+            array(
+                'case'    => 'Moving a node to the left',
+                'table'   => array('lft' => 19, 'rgt' => 24),
+                'sibling' => array('lft' => 17, 'rgt' => 18)
+            )
+        );
+
+        // Trying to move the rightmost node to the right (no changes at all)
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 14,
+                'siblingid' => 13
+            ),
+            array(
+                'case'    => 'Trying to move the rightmost node to the right (no changes at all)',
+                'table'   => array('lft' => 25, 'rgt' => 30),
+                'sibling' => array('lft' => 23, 'rgt' => 24)
+            )
+        );
+
+        // There are more roots, let's try to move one
+        $data[] = array(
+            array(
+                'newRoot' => true,
+                'loadid' => 1,
+                'siblingid' => 17
+            ),
+            array(
+                'case'    => "There are more roots, let's try to move one",
+                'table'   => array('lft' => 7, 'rgt' => 38),
+                'sibling' => array('lft' => 1, 'rgt' => 6)
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToRightOfException()
     {
         $data[] = array(
             'loadid'    => 0,
