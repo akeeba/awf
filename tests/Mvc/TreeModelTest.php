@@ -309,7 +309,14 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => null,
                 'delete'    => 15,
                 'mock'      => array(
-                    'before'    => function($self){return false;}
+                    'before'    => function($self){
+                        $k = $self->getIdFieldName();
+                        if($self->$k == 15){
+                            return false;
+                        }
+
+                        return true;
+                    }
                 )
             ),
             array(
@@ -376,7 +383,14 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => null,
                 'delete'    => 14,
                 'mock'      => array(
-                    'before'    => function($self){ return false; }
+                    'before'    => function($self){
+                        $k = $self->getIdFieldName();
+                        if($self->$k == 14){
+                            return false;
+                        }
+
+                        return true;
+                    }
                 )
             ),
             array(

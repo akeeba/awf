@@ -83,7 +83,7 @@ class TreeModelStub extends TreeModel
             return call_user_func_array($func, array($this));
         }
 
-        return null;
+        return true;
     }
 
     public function onAfterDelete($oid)
