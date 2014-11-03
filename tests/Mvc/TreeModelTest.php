@@ -15,6 +15,8 @@ use Awf\Database\Driver;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\TreeModelStub;
 
+require_once 'TreeModelDataprovider.php';
+
 class TreeModelTest extends DatabaseMysqlCase
 {
     /**
@@ -1052,6 +1054,97 @@ class TreeModelTest extends DatabaseMysqlCase
         }
 
         $table->makeFirstChildOf($parent);
+    }
+
+    /**
+     * @group               TreeModelMakeLastChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::makeLastChildOf
+     * @dataProvider        TreeModelDataprovider::getTestMakeLastChildOf
+     */
+    public function testMakeLastChildOf($test, $check)
+    {
+        /** @var TreeModelStub $table */
+        /** @var TreeModelStub $parent */
+
+        $msg = 'TreeModel::makeLastChildOf %s - Case: '.$check['case'];
+        $db  = self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        $table->findOrFail($test['loadid']);
+        $parent->findOrFail($test['parentid']);
+
+        $return = $table->makeLastChildOf($parent);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+
+        // Assertions on the objects
+        $this->assertEquals($check['table']['lft'], $table->lft, sprintf($msg, 'Failed to assign the correct lft value to the node'));
+        $this->assertEquals($check['table']['rgt'], $table->rgt, sprintf($msg, 'Failed to assign the correct rgt value to the node'));
+
+        // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+        $nodeDb = $db->setQuery($query)->loadObject();
+
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$parent->dbtest_nestedset_id);
+        $parentDb = $db->setQuery($query)->loadObject();
+
+        $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Node object and database lft values are not the same'));
+        $this->assertEquals($table->rgt, $nodeDb->rgt, sprintf($msg, 'Node object and database rgt values are not the same'));
+        $this->assertEquals($check['parent']['lft'], $parentDb->lft, sprintf($msg, 'Saved the wrong lft value for the parent'));
+        $this->assertEquals($check['parent']['rgt'], $parentDb->rgt, sprintf($msg, 'Saved the wrong rgt value for the parent'));
+    }
+
+    /**
+     * @group               TreeModelMakeLastChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::makeLastChildOf
+     * @dataProvider        TreeModelDataprovider::getTestMakeLastChildOfException
+     */
+    public function testMakeLastChildOfException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['siblingid'])
+        {
+            $parent->findOrFail($test['parentid']);
+        }
+
+        $table->makeLastChildOf($parent);
     }
 
     public function getTestForceDelete()
