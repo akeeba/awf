@@ -537,7 +537,7 @@ class TreeModelDataprovider
         $data[] = array(
             array(
                 'newRoot' => true,
-                'loadid' => 17,
+                'loadid' => array('lft' => 33),
                 'siblingid' => 1
             ),
             array(
@@ -605,7 +605,7 @@ class TreeModelDataprovider
             array(
                 'newRoot' => true,
                 'loadid' => 1,
-                'siblingid' => 17
+                'siblingid' => array('lft' => 33)
             ),
             array(
                 'case'    => "There are more roots, let's try to move one",
