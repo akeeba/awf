@@ -344,6 +344,101 @@ class TreeModelTest extends DatabaseMysqlCase
         $table->insertAsFirstChildOf($parent);
     }
 
+    /**
+     * @group               TreeModelInsertAsLastChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::insertAsLastChildOf
+     * @dataProvider        getTestInsertAsLastChildOf
+     */
+    public function testInsertAsLastChildOf($test, $check)
+    {
+        /** @var TreeModelStub $table */
+        /** @var TreeModelStub $parent */
+
+        $msg = 'TreeModel::insertAsLastChildOf %s - Case: '.$check['case'];
+        $db  = self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table  = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['title'])
+        {
+            $table->title = $test['title'];
+        }
+
+        $parent->findOrFail($test['parentid']);
+        $parentLft = $parent->lft;
+        $parentRgt = $parent->rgt;
+
+        $return = $table->insertAsLastChildOf($parent);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+
+        // Assertions on the objects
+        $this->assertNotEquals($test['loadid'], $table->getId(), sprintf($msg, 'Should always create a new node'));
+
+        $this->assertEquals($parentLft, $parent->lft, sprintf($msg, 'Should not touch the lft value of the parent'));
+        $this->assertEquals($parentRgt + 2, $parent->rgt, sprintf($msg, 'Should increase the rgt value by 2'));
+        $this->assertEquals(1, $table->rgt - $table->lft, sprintf($msg, 'Should insert the node as leaf'));
+        $this->assertEquals(1, $parent->rgt - $table->rgt, sprintf($msg, 'Should insert the node as last child'));
+
+        // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+        $nodeDb = $db->setQuery($query)->loadObject();
+
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$parent->dbtest_nestedset_id);
+        $parentDb = $db->setQuery($query)->loadObject();
+
+        $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Children object and database lft values are not the same'));
+        $this->assertEquals($table->rgt, $nodeDb->rgt, sprintf($msg, 'Children object and database rgt values are not the same'));
+        $this->assertEquals($parent->lft, $parentDb->lft, sprintf($msg, 'Parent object and database lft values are not the same'));
+        $this->assertEquals($parent->rgt, $parentDb->rgt, sprintf($msg, 'Parent object and database rgt values are not the same'));
+    }
+
+    /**
+     * @group               TreeModelInsertAsLastChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::insertAsLastChildOf
+     */
+    public function testInsertAsLastChildOfException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table  = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        $table->insertAsLastChildOf($parent);
+    }
+
     public function getTestForceDelete()
     {
         /*
@@ -622,6 +717,71 @@ class TreeModelTest extends DatabaseMysqlCase
             ),
             array(
                 'case' => "Copying an existing node of the same parent (it's the first child)"
+            )
+        );
+
+        // Copying an existing node of another parent
+        $data[] = array(
+            array(
+                'loadid'   => 4,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => 'Copying an existing node of another parent'
+            )
+        );
+
+        return $data;
+    }
+
+    public function getTestInsertAsLastChildOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid'   => 0,
+                'parentid' => 14,
+                'title'    => 'Last child'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node of the same parent (it's not the last child)
+        $data[] = array(
+            array(
+                'loadid'   => 15,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's not the last child)"
+            )
+        );
+
+        // Copying an existing node of the same parent (it's the last child)
+        $data[] = array(
+            array(
+                'loadid'   => 16,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's the last child)"
+            )
+        );
+
+        // Copying an existing node with children
+        $data[] = array(
+            array(
+                'loadid'   => 10,
+                'parentid' => 9,
+                'title'    => ''
+            ),
+            array(
+                'case' => 'Copying an existing node with children'
             )
         );
 
