@@ -439,6 +439,100 @@ class TreeModelTest extends DatabaseMysqlCase
         $table->insertAsLastChildOf($parent);
     }
 
+    /**
+     * @group               TreeModelInsertLeftOf
+     * @group               TreeModel
+     * @covers              TreeModel::insertLeftOf
+     * @dataProvider        getTestInsertLeftOf
+     */
+    public function testInsertLeftOf($test, $check)
+    {
+        /** @var TreeModelStub $table */
+        /** @var TreeModelStub $sibling */
+
+        $msg = 'TreeModel::insertAsLastChildOf %s - Case: '.$check['case'];
+        $db  = self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table  = new TreeModelStub($container);
+        $sibling = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['title'])
+        {
+            $table->title = $test['title'];
+        }
+
+        $sibling->findOrFail($test['siblingid']);
+        $siblingLft = $sibling->lft;
+        $siblingRgt = $sibling->rgt;
+
+        $return = $table->insertLeftOf($sibling);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself for chaining'));
+
+        // Assertions on the objects
+        $this->assertNotEquals($test['loadid'], $table->getId(), sprintf($msg, 'Should always create a new node'));
+        $this->assertEquals($siblingLft + 2, $sibling->lft, sprintf($msg, 'Should increase the lft value by 2'));
+        $this->assertEquals($siblingRgt + 2, $sibling->rgt, sprintf($msg, 'Should increase the rgt value by 2'));
+        $this->assertEquals(1, $table->rgt - $table->lft, sprintf($msg, 'Should insert the node as leaf'));
+        $this->assertEquals(1, $sibling->lft - $table->rgt, sprintf($msg, 'Should insert the node on the left of the sibling'));
+
+        // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+        $nodeDb = $db->setQuery($query)->loadObject();
+
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$sibling->dbtest_nestedset_id);
+        $siblingDb = $db->setQuery($query)->loadObject();
+
+        $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Node object and database lft values are not the same'));
+        $this->assertEquals($table->rgt, $nodeDb->rgt, sprintf($msg, 'Node object and database rgt values are not the same'));
+        $this->assertEquals($sibling->lft, $siblingDb->lft, sprintf($msg, 'Sibling object and database lft values are not the same'));
+        $this->assertEquals($sibling->rgt, $siblingDb->rgt, sprintf($msg, 'Sibling object and database rgt values are not the same'));
+    }
+
+    /**
+     * @group               TreeModelInsertLeftOf
+     * @group               TreeModel
+     * @covers              TreeModel::insertLeftOf
+     */
+    public function testInsertLeftOfException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table  = new TreeModelStub($container);
+        $sibling = $table->getClone();
+
+        $table->insertLeftOf($sibling);
+    }
+
     public function getTestForceDelete()
     {
         /*
@@ -794,6 +888,35 @@ class TreeModelTest extends DatabaseMysqlCase
             ),
             array(
                 'case' => 'Copying an existing node of another parent'
+            )
+        );
+
+        return $data;
+    }
+
+    public function getTestInsertLeftOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid' => 0,
+                'siblingid' => 13,
+                'title' => 'Left sibling'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node
+        $data[] = array(
+            array(
+                'loadid' => 10,
+                'siblingid' => 13,
+                'title' => ''
+            ),
+            array(
+                'case' => 'Copying an existing node'
             )
         );
 
