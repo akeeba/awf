@@ -627,6 +627,66 @@ class TreeModelTest extends DatabaseMysqlCase
         $table->insertRightOf($sibling);
     }
 
+    /**
+     * @group               TreeModelMoveLeft
+     * @group               TreeModel
+     * @covers              TreeModel::moveLeft
+     * @dataProvider        getTestMoveLeft
+     */
+    public function testMoveLeft($test, $check)
+    {
+        $counter = 0;
+        $sibling = null;
+        $msg     = 'TreeModel::moveLeft %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('moveToLeftOf'), array($container));
+        $table->expects($this->any())->method('moveToLeftOf')->willReturnCallback(
+            function($leftSibling) use (&$counter, &$sibling){
+                $counter++;
+                $sibling = $leftSibling->dbtest_nestedset_id;
+            }
+        );
+
+        $table->findOrFail($test['loadid']);
+
+        $table->moveLeft();
+
+        $this->assertEquals($check['counter'], $counter, sprintf($msg, "Invoked moveToLefOf the wrong number of time"));
+        $this->assertEquals($check['sibling'], $sibling, sprintf($msg, "Invoked moveToLefOf with the wrong sibling"));
+    }
+
+    /**
+     * @group               TreeModelMoveLeft
+     * @group               TreeModel
+     * @covers              TreeModel::moveLeft
+     */
+    public function testMoveLeftException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table  = new TreeModelStub($container);
+
+        $table->moveLeft();
+    }
+
     public function getTestForceDelete()
     {
         /*
@@ -1040,6 +1100,47 @@ class TreeModelTest extends DatabaseMysqlCase
             ),
             array(
                 'case' => 'Copying an existing node'
+            )
+        );
+
+        return $data;
+    }
+
+    public function getTestMoveLeft()
+    {
+        // Node in the middle of another two
+        $data[] = array(
+            array(
+                'loadid' => 13
+            ),
+            array(
+                'case'    => 'Node in the middle of another two',
+                'counter' => 1,
+                'sibling' => 10
+            )
+        );
+
+        // Root node
+        $data[] = array(
+            array(
+                'loadid' => 1
+            ),
+            array(
+                'case'    => 'Root node',
+                'counter' => 0,
+                'sibling' => null
+            )
+        );
+
+        // Already a leftmost node
+        $data[] = array(
+            array(
+                'loadid' => 10
+            ),
+            array(
+                'case'    => 'Already a leftmost node',
+                'counter' => 0,
+                'sibling' => null
             )
         );
 
