@@ -12,6 +12,7 @@ namespace Awf\Tests\TreeModel;
 
 use Awf\Tests\Database\DatabaseMysqlCase;
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\TreeModelStub;
 
@@ -1182,5 +1183,37 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $this->assertEquals($check['move'], $counter, sprintf($msg, 'Invoke the moveToRightOf method the wrong number of times'));
         $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, 'TreeModel::makeRoot should return an instance of itself');
+    }
+
+    /**
+     * @group               TreeModelGetLevel
+     * @group               TreeModel
+     * @covers              TreeModel::getLevel
+     * @dataProvider        TreeModelDataprovider::getTestGetLevel
+     */
+    public function testGetLevel($test, $check)
+    {
+        $msg     = 'TreeModel::getLevel %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $table->findOrFail($test['loadid']);
+
+        if($test['cache'])
+        {
+            ReflectionHelper::setValue($table, 'treeDepth', $test['cache']);
+        }
+
+        $level = $table->getLevel();
+
+        $this->assertEquals($check['level'], $level, sprintf($msg, 'Returned the wrong level'));
     }
 }

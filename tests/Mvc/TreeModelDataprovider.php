@@ -811,4 +811,45 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestGetLevel()
+    {
+        // Node
+        $data[] = array(
+            array(
+                'cache' => null,
+                'loadid' => 2
+            ),
+            array(
+                'case'  => 'Node',
+                'level' => 1
+            )
+        );
+
+        // Root
+        $data[] = array(
+            array(
+                'cache' => null,
+                'loadid' => 1
+            ),
+            array(
+                'case'  => 'Root',
+                'level' => 0
+            )
+        );
+
+        // Cached value
+        $data[] = array(
+            array(
+                'cache' => 'cached',
+                'loadid' => 1
+            ),
+            array(
+                'case'  => 'Cached value',
+                'level' => 'cached'
+            )
+        );
+
+        return $data;
+    }
 }
