@@ -911,15 +911,15 @@ class TreeModelTest extends DatabaseMysqlCase
 
         // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
         $query = $db->getQuery(true)
-            ->select('*')
-            ->from('#__dbtest_nestedsets')
-            ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
         $nodeDb = $db->setQuery($query)->loadObject();
 
         $query = $db->getQuery(true)
-            ->select('*')
-            ->from('#__dbtest_nestedsets')
-            ->where('dbtest_nestedset_id = '.$sibling->dbtest_nestedset_id);
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$sibling->dbtest_nestedset_id);
         $siblingDb = $db->setQuery($query)->loadObject();
 
         $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Node object and database lft values are not the same'));
@@ -961,6 +961,97 @@ class TreeModelTest extends DatabaseMysqlCase
         }
 
         $table->moveToRightOf($sibling);
+    }
+
+    /**
+     * @group               TreeModelMakeFirstChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::makeFirstChildOf
+     * @dataProvider        getTestMakeFirstChildOf
+     */
+    public function testMakeFirstChildOf($test, $check)
+    {
+        /** @var TreeModelStub $table */
+        /** @var TreeModelStub $parent */
+
+        $msg = 'TreeModel::makeFirstChildOf %s - Case: '.$check['case'];
+        $db  = self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        $table->findOrFail($test['loadid']);
+        $parent->findOrFail($test['parentid']);
+
+        $return = $table->makeFirstChildOf($parent);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+
+        // Assertions on the objects
+        $this->assertEquals($check['table']['lft'], $table->lft, sprintf($msg, 'Failed to assign the correct lft value to the node'));
+        $this->assertEquals($check['table']['rgt'], $table->rgt, sprintf($msg, 'Failed to assign the correct rgt value to the node'));
+
+        // Great, the returned objects are ok, what about the ACTUAL data saved inside the db?
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$table->dbtest_nestedset_id);
+        $nodeDb = $db->setQuery($query)->loadObject();
+
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from('#__dbtest_nestedsets')
+                    ->where('dbtest_nestedset_id = '.$parent->dbtest_nestedset_id);
+        $parentDb = $db->setQuery($query)->loadObject();
+
+        $this->assertEquals($table->lft, $nodeDb->lft, sprintf($msg, 'Node object and database lft values are not the same'));
+        $this->assertEquals($table->rgt, $nodeDb->rgt, sprintf($msg, 'Node object and database rgt values are not the same'));
+        $this->assertEquals($check['parent']['lft'], $parentDb->lft, sprintf($msg, 'Saved the wrong lft value for the parent'));
+        $this->assertEquals($check['parent']['rgt'], $parentDb->rgt, sprintf($msg, 'Saved the wrong rgt value for the parent'));
+    }
+
+    /**
+     * @group               TreeModelMakeFirstChildOf
+     * @group               TreeModel
+     * @covers              TreeModel::makeFirstChildOf
+     * @dataProvider        getTestMakeFirstChildOfException
+     */
+    public function testMakeFirstChildOfException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $parent = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['siblingid'])
+        {
+            $parent->findOrFail($test['parentid']);
+        }
+
+        $table->makeFirstChildOf($parent);
     }
 
     public function getTestForceDelete()
@@ -1531,7 +1622,7 @@ class TreeModelTest extends DatabaseMysqlCase
         return $data;
     }
 
-    public static function getTestMoveToRightOf()
+    public function getTestMoveToRightOf()
     {
         // Moving a node to the left
         $data[] = array(
@@ -1578,7 +1669,7 @@ class TreeModelTest extends DatabaseMysqlCase
         return $data;
     }
 
-    public static function getTestMoveToRightOfException()
+    public function getTestMoveToRightOfException()
     {
         $data[] = array(
             'loadid'    => 0,
@@ -1593,6 +1684,70 @@ class TreeModelTest extends DatabaseMysqlCase
         $data[] = array(
             'loadid'    => 0,
             'siblingid' => 1
+        );
+
+        return $data;
+    }
+
+    public function getTestMakeFirstChildOf()
+    {
+        // Moving a single node
+        $data[] = array(
+            array(
+                'loadid'   => 13,
+                'parentid' => 2
+            ),
+            array(
+                'case'   => 'Moving a single node',
+                'table'  => array('lft' => 3, 'rgt' => 4),
+                'parent' => array('lft' => 2, 'rgt' => 17)
+            )
+        );
+
+        // Moving an entire subtree
+        $data[] = array(
+            array(
+                'loadid'   => 10,
+                'parentid' => 2
+            ),
+            array(
+                'case'   => 'Moving an entire subtree',
+                'table'  => array('lft' => 3, 'rgt' => 8),
+                'parent' => array('lft' => 2, 'rgt' => 21)
+            )
+        );
+
+        // Moving a single node under the same parent
+        $data[] = array(
+            array(
+                'loadid'   => 13,
+                'parentid' => 9
+            ),
+            array(
+                'case'   => 'Moving a single node under the same parent',
+                'table'  => array('lft' => 17, 'rgt' => 18),
+                'parent' => array('lft' => 16, 'rgt' => 31)
+            )
+        );
+
+        return $data;
+    }
+
+    public function getTestMakeFirstChildOfException()
+    {
+        $data[] = array(
+            'loadid'   => 0,
+            'parentid' => 0
+        );
+
+        $data[] = array(
+            'loadid'   => 1,
+            'parentid' => 0
+        );
+
+        $data[] = array(
+            'loadid'   => 0,
+            'parentid' => 1
         );
 
         return $data;
