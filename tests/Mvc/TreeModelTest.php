@@ -37,7 +37,7 @@ class TreeModelTest extends DatabaseMysqlCase
         ));
 
         $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('resetTreeCache'), array($container));
-        $table->expects($this->any())->method('resetTreeCache')->willReturn($this->returnValue(null));
+        $table->expects($this->any())->method('resetTreeCache')->willReturn(null);
 
         foreach($test['fields'] as $field => $value)
         {
@@ -1145,5 +1145,42 @@ class TreeModelTest extends DatabaseMysqlCase
         }
 
         $table->makeLastChildOf($parent);
+    }
+
+    /**
+     * @group               TreeModelMakeRoot
+     * @group               TreeModel
+     * @covers              TreeModel::makeRoot
+     * @dataProvider        TreeModelDataprovider::getTestMakeRoot
+     */
+    public function testMakeRoot($test, $check)
+    {
+        $msg     = 'TreeModel::makeRoot %s - Case: '.$check['case'];
+        $counter = 0;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('moveToRightOf', 'isRoot', 'getRoot', 'equals'), array($container));
+        $table->expects($this->any())->method('isRoot')->willReturn($test['mock']['isRoot']);
+        $table->expects($this->any())->method('getRoot')->willReturnSelf();
+        $table->expects($this->any())->method('equals')->willReturn($test['mock']['equals']);
+        $table->expects($this->any())->method('moveToRightOf')->willReturnCallback(
+            function() use (&$counter) {
+                $counter++;
+                return true;
+            }
+        );
+
+        $return = $table->makeRoot();
+
+        $this->assertEquals($check['move'], $counter, sprintf($msg, 'Invoke the moveToRightOf method the wrong number of times'));
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, 'TreeModel::makeRoot should return an instance of itself');
     }
 }

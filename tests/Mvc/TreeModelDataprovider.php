@@ -764,4 +764,51 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestMakeRoot()
+    {
+        // Node is root
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isRoot' => true,
+                    'equals' => true
+                )
+            ),
+            array(
+                'case' => 'Node is root',
+                'move' => 0
+            )
+        );
+
+        // Node is equal to the root
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isRoot' => false,
+                    'equals' => true
+                )
+            ),
+            array(
+                'case' => 'Node is equal to the root',
+                'move' => 0
+            )
+        );
+
+        // Ok, we can move it
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isRoot' => false,
+                    'equals' => false
+                )
+            ),
+            array(
+                'case' => 'Ok, we can move it',
+                'move' => 1
+            )
+        );
+
+        return $data;
+    }
 }
