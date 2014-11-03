@@ -15,8 +15,6 @@ use Awf\Database\Driver;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\TreeModelStub;
 
-use \Mockery as m;
-
 class TreeModelTest extends DatabaseMysqlCase
 {
     /**
@@ -82,18 +80,9 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $db = self::$driver;
 
-        //$table = m::mock('FoftestTableNestedset[onBeforeDelete]', array('#__foftest_nestedsets', 'foftest_nestedset_id', &$db, array('_table_class' => 'FoftestTableNestedset')));
-        $table = new TreeModelStub($container);
-
-        /*$table->shouldAllowMockingProtectedMethods()->shouldReceive('onBeforeDelete')->andReturnUsing(function($oid) use($test){
-            // Check if the current node allows delete or not (default: yes)
-            if(isset($test['mock']['before'][$oid]) && !$test['mock']['before'][$oid])
-            {
-                return false;
-            }
-
-            return true;
-        });*/
+        $table = new TreeModelStub($container, array(
+            'onBeforeDelete' => $test['mock']['before']
+        ));
 
         if($test['loadid'])
         {
@@ -102,7 +91,15 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $return = $table->forceDelete($test['delete']);
 
-        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+        if($check['return'])
+        {
+            $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $return, sprintf($msg, 'Should return an instance of itself'));
+        }
+        else
+        {
+            $this->assertFalse($return, sprintf($msg, 'Should return false'));
+        }
+
 
         $pk    = $table->getIdFieldName();
         $query = $db->getQuery(true)->select($pk)->from($table->getTableName());
@@ -266,11 +263,12 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => null,
                 'delete'    => 15,
                 'mock'      => array(
-                    'before'    => array()
+                    'before'    => function(){return true; }
                 )
             ),
             array(
-                'case' => 'Delete a single leaf item',
+                'case'    => 'Delete a single leaf item',
+                'return'  => true,
                 'deleted' => array(15),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -288,11 +286,12 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => 15,
                 'delete'    => null,
                 'mock'      => array(
-                    'before'    => array()
+                    'before'    => function(){return true; }
                 )
             ),
             array(
-                'case' => 'Delete a single leaf item (loaded table)',
+                'case'    => 'Delete a single leaf item (loaded table)',
+                'return'  => true,
                 'deleted' => array(15),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -305,18 +304,17 @@ class TreeModelTest extends DatabaseMysqlCase
         );
 
         // Delete a single leaf item - prevented
-        /*$data[] = array(
+        $data[] = array(
             array(
                 'loadid'    => null,
                 'delete'    => 15,
                 'mock'      => array(
-                    'before'    => array(
-                        15 => false
-                    )
+                    'before'    => function($self){return false;}
                 )
             ),
             array(
-                'case' => 'Delete a single leaf item - prevented',
+                'case'    => 'Delete a single leaf item - prevented',
+                'return'  => false,
                 'deleted' => array(),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -326,7 +324,7 @@ class TreeModelTest extends DatabaseMysqlCase
                     14 => array('lft' => 25, 'rgt' => 30)
                 )
             )
-        );*/
+        );
 
         // Delete a single trunk item
         $data[] = array(
@@ -334,11 +332,12 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => null,
                 'delete'    => 14,
                 'mock'      => array(
-                    'before'    => array()
+                    'before'    => function(){return true; }
                 )
             ),
             array(
-                'case' => 'Delete a single trunk item',
+                'case'    => 'Delete a single trunk item',
+                'return'  => true,
                 'deleted' => array(14, 15, 16),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -355,11 +354,12 @@ class TreeModelTest extends DatabaseMysqlCase
                 'loadid'    => 14,
                 'delete'    => null,
                 'mock'      => array(
-                    'before'    => array()
+                    'before'    => function(){return true; }
                 )
             ),
             array(
-                'case' => 'Delete a single trunk item (loaded table)',
+                'case'    => 'Delete a single trunk item (loaded table)',
+                'return'  => true,
                 'deleted' => array(14, 15, 16),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -371,18 +371,17 @@ class TreeModelTest extends DatabaseMysqlCase
         );
 
         // Delete a single trunk item - prevented
-        /*$data[] = array(
+        $data[] = array(
             array(
                 'loadid'    => null,
                 'delete'    => 14,
                 'mock'      => array(
-                    'before'    => array(
-                        14 => false
-                    )
+                    'before'    => function($self){ return false; }
                 )
             ),
             array(
-                'case' => 'Delete a single trunk item - prevented',
+                'case'    => 'Delete a single trunk item - prevented',
+                'return'  => false,
                 'deleted' => array(),
                 // Associative array where the index is the node id, so I can double check if the lft rgt values
                 // are correctly updated
@@ -391,7 +390,7 @@ class TreeModelTest extends DatabaseMysqlCase
                     9 => array('lft' => 16, 'rgt' => 31)
                 )
             )
-        );*/
+        );
 
         return $data;
     }

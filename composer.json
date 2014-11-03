@@ -23,7 +23,6 @@
 	},
 	"version": "0.0.1",
 	"require-dev": {
-		"mikey179/vfsStream": "v1.2.0",
-		"mockery/mockery": "dev-master"
+		"mikey179/vfsStream": "v1.2.0"
 	}
 }

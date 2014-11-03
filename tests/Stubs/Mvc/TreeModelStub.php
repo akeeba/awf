@@ -13,7 +13,8 @@ use Awf\Mvc\TreeModel;
 
 class TreeModelStub extends TreeModel
 {
-    protected $name = 'nestedset';
+    private   $methods = array();
+    protected $name   = 'nestedset';
 
     /**
      * Assigns callback functions to the class, the $methods array should be an associative one, where
@@ -30,10 +31,23 @@ class TreeModelStub extends TreeModel
     {
         foreach($methods as $method => $function)
         {
-            $this->$method = $function;
+            $this->methods[$method] = $function;
         }
 
         parent::__construct($container);
+    }
+
+    public function __call($method, $args)
+    {
+        if (isset($this->methods[$method]))
+        {
+            $func = $this->methods[$method];
+
+            // Let's pass an instance of ourself, so we can manipulate other closures
+            array_unshift($args, $this);
+
+            return call_user_func_array($func, $args);
+        }
     }
 
     /**
@@ -44,9 +58,9 @@ class TreeModelStub extends TreeModel
      */
     public function getName()
     {
-        if(isset($this->_getName))
+        if(isset($this->methods['getName']))
         {
-            $func = $this->_getName;
+            $func = $this->methods['getName'];
 
             return call_user_func_array($func, array());
         }
@@ -62,11 +76,11 @@ class TreeModelStub extends TreeModel
      */
     public function onBeforeDelete()
     {
-        if(isset($this->_onBeforeDelete))
+        if(isset($this->methods['onBeforeDelete']))
         {
-            $func = $this->_onBeforeDelete;
+            $func = $this->methods['onBeforeDelete'];
 
-            return call_user_func_array($func, array());
+            return call_user_func_array($func, array($this));
         }
 
         return null;
@@ -74,11 +88,11 @@ class TreeModelStub extends TreeModel
 
     public function onAfterDelete($oid)
     {
-        if(isset($this->_onAfterDelete))
+        if(isset($this->methods['onAfterDelete']))
         {
-            $func = $this->_onAfterDelete;
+            $func = $this->methods['onAfterDelete'];
 
-            return call_user_func_array($func, array());
+            return call_user_func_array($func, array($this, $oid));
         }
 
         return parent::onAfterDelete($oid);
