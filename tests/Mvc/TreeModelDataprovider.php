@@ -2,6 +2,705 @@
 
 class TreeModelDataprovider
 {
+    public static function getTestForceDelete()
+    {
+        /*
+         * At the moment I can only test when onBeforeDelete return false in the first level only.
+         * That's because the iterator is spawning a new class every time, so the mock we setup is not used
+         * and the check if performed vs the "real" object, which of course returns false.
+         */
+
+        // Delete a single leaf item
+        $data[] = array(
+            array(
+                'loadid'    => null,
+                'delete'    => 15,
+                'mock'      => array(
+                    'before'    => function(){return true; }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single leaf item',
+                'return'  => true,
+                'deleted' => array(15),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1  => array('lft' => 1, 'rgt' => 30),
+                    9  => array('lft' => 16, 'rgt' => 29),
+                    14 => array('lft' => 25, 'rgt' => 28)
+                )
+            )
+        );
+
+        // Delete a single leaf item (loaded table)
+        $data[] = array(
+            array(
+                'loadid'    => 15,
+                'delete'    => null,
+                'mock'      => array(
+                    'before'    => function(){return true; }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single leaf item (loaded table)',
+                'return'  => true,
+                'deleted' => array(15),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1  => array('lft' => 1, 'rgt' => 30),
+                    9  => array('lft' => 16, 'rgt' => 29),
+                    14 => array('lft' => 25, 'rgt' => 28)
+                )
+            )
+        );
+
+        // Delete a single leaf item - prevented
+        $data[] = array(
+            array(
+                'loadid'    => null,
+                'delete'    => 15,
+                'mock'      => array(
+                    'before'    => function($self){
+                        $k = $self->getIdFieldName();
+                        if($self->$k == 15){
+                            return false;
+                        }
+
+                        return true;
+                    }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single leaf item - prevented',
+                'return'  => false,
+                'deleted' => array(),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1  => array('lft' => 1, 'rgt' => 32),
+                    9  => array('lft' => 16, 'rgt' => 31),
+                    14 => array('lft' => 25, 'rgt' => 30)
+                )
+            )
+        );
+
+        // Delete a single trunk item
+        $data[] = array(
+            array(
+                'loadid'    => null,
+                'delete'    => 14,
+                'mock'      => array(
+                    'before'    => function(){return true; }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single trunk item',
+                'return'  => true,
+                'deleted' => array(14, 15, 16),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1 => array('lft' =>  1, 'rgt' => 26),
+                    9 => array('lft' => 16, 'rgt' => 25)
+                )
+            )
+        );
+
+        // Delete a single trunk item (loaded table)
+        $data[] = array(
+            array(
+                'loadid'    => 14,
+                'delete'    => null,
+                'mock'      => array(
+                    'before'    => function(){return true; }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single trunk item (loaded table)',
+                'return'  => true,
+                'deleted' => array(14, 15, 16),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1 => array('lft' =>  1, 'rgt' => 26),
+                    9 => array('lft' => 16, 'rgt' => 25)
+                )
+            )
+        );
+
+        // Delete a single trunk item - prevented
+        $data[] = array(
+            array(
+                'loadid'    => null,
+                'delete'    => 14,
+                'mock'      => array(
+                    'before'    => function($self){
+                        $k = $self->getIdFieldName();
+                        if($self->$k == 14){
+                            return false;
+                        }
+
+                        return true;
+                    }
+                )
+            ),
+            array(
+                'case'    => 'Delete a single trunk item - prevented',
+                'return'  => false,
+                'deleted' => array(),
+                // Associative array where the index is the node id, so I can double check if the lft rgt values
+                // are correctly updated
+                'nodes'   => array(
+                    1 => array('lft' =>  1, 'rgt' => 32),
+                    9 => array('lft' => 16, 'rgt' => 31)
+                )
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestCheck()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_nestedsets',
+                'id'    => 'dbtest_nestedset_id',
+                'fields' => array(
+                    'title' => 'Test title',
+                    'slug'  => ''
+                )
+            ),
+            array(
+                'case' => 'Title is set and slug is empty',
+                'fields' => array(
+                    'slug'   => 'test-title',
+                    'hash'   => sha1('test-title')
+                ),
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_nestedsets',
+                'id'    => 'dbtest_nestedset_id',
+                'fields' => array(
+                    'title' => 'Test title',
+                    'slug'  => 'old-slug'
+                )
+            ),
+            array(
+                'case'   => 'Title and slug are set',
+                'fields' => array(
+                    'slug'   => 'old-slug',
+                    'hash'   => sha1('old-slug')
+                ),
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_nestedbares',
+                'id'    => 'id',
+                'fields' => array()
+            ),
+            array(
+                'case' => 'Bare table without hash nor slug fields',
+                'fields' => array(
+                    'slug' => null,
+                    'hash' => null
+                ),
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestCreate()
+    {
+        // Create a node under the root
+        $data[] = array(
+            array(
+                'root'   => true,
+                'loadid' => 1,
+                'data'   => array(
+                    'title' => 'Created node'
+                )
+            )
+        );
+
+        // Create a node in any other position
+        $data[] = array(
+            array(
+                'root'   => false,
+                'loadid' => 2,
+                'data'   => array(
+                    'title' => 'Created node'
+                )
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestInsertAsFirstChildOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid'   => 0,
+                'parentid' => 14,
+                'title'    => 'First child'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node of the same parent (it's not the first child)
+        $data[] = array(
+            array(
+                'loadid'   => 16,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's not the first child)"
+            )
+        );
+
+        // Copying an existing node of the same parent (it's the first child)
+        $data[] = array(
+            array(
+                'loadid'   => 15,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's the first child)"
+            )
+        );
+
+        // Copying an existing node of another parent
+        $data[] = array(
+            array(
+                'loadid'   => 4,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => 'Copying an existing node of another parent'
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestInsertAsLastChildOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid'   => 0,
+                'parentid' => 14,
+                'title'    => 'Last child'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node of the same parent (it's not the last child)
+        $data[] = array(
+            array(
+                'loadid'   => 15,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's not the last child)"
+            )
+        );
+
+        // Copying an existing node of the same parent (it's the last child)
+        $data[] = array(
+            array(
+                'loadid'   => 16,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => "Copying an existing node of the same parent (it's the last child)"
+            )
+        );
+
+        // Copying an existing node with children
+        $data[] = array(
+            array(
+                'loadid'   => 10,
+                'parentid' => 9,
+                'title'    => ''
+            ),
+            array(
+                'case' => 'Copying an existing node with children'
+            )
+        );
+
+        // Copying an existing node of another parent
+        $data[] = array(
+            array(
+                'loadid'   => 4,
+                'parentid' => 14,
+                'title'    => ''
+            ),
+            array(
+                'case' => 'Copying an existing node of another parent'
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestInsertLeftOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid' => 0,
+                'siblingid' => 13,
+                'title' => 'Left sibling'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node
+        $data[] = array(
+            array(
+                'loadid' => 10,
+                'siblingid' => 13,
+                'title' => ''
+            ),
+            array(
+                'case' => 'Copying an existing node'
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestInsertRightOf()
+    {
+        // Creating a new node
+        $data[] = array(
+            array(
+                'loadid' => 0,
+                'siblingid' => 13,
+                'title' => 'Right sibling'
+            ),
+            array(
+                'case' => 'Creating a new node'
+            )
+        );
+
+        // Copying an existing node
+        $data[] = array(
+            array(
+                'loadid' => 10,
+                'siblingid' => 13,
+                'title' => ''
+            ),
+            array(
+                'case' => 'Copying an existing node'
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveLeft()
+    {
+        // Node in the middle of another two
+        $data[] = array(
+            array(
+                'loadid' => 13
+            ),
+            array(
+                'case'    => 'Node in the middle of another two',
+                'counter' => 1,
+                'sibling' => 10
+            )
+        );
+
+        // Root node
+        $data[] = array(
+            array(
+                'loadid' => 1
+            ),
+            array(
+                'case'    => 'Root node',
+                'counter' => 0,
+                'sibling' => null
+            )
+        );
+
+        // Already a leftmost node
+        $data[] = array(
+            array(
+                'loadid' => 10
+            ),
+            array(
+                'case'    => 'Already a leftmost node',
+                'counter' => 0,
+                'sibling' => null
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveRight()
+    {
+        // Node in the middle of another two
+        $data[] = array(
+            array(
+                'loadid' => 13
+            ),
+            array(
+                'case'    => 'Node in the middle of another two',
+                'counter' => 1,
+                'sibling' => 14
+            )
+        );
+
+        // Root node
+        $data[] = array(
+            array(
+                'loadid' => 1
+            ),
+            array(
+                'case'    => 'Root node',
+                'counter' => 0,
+                'sibling' => null
+            )
+        );
+
+        // Already a rightmost node
+        $data[] = array(
+            array(
+                'loadid' => 14
+            ),
+            array(
+                'case'    => 'Already a rightmost node',
+                'counter' => 0,
+                'sibling' => null
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToLeftOf()
+    {
+        // Moving a node to the left
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 13,
+                'siblingid' => 10
+            ),
+            array(
+                'case'    => 'Moving a node to the left',
+                'table'   => array('lft' => 17, 'rgt' => 18),
+                'sibling' => array('lft' => 19, 'rgt' => 24)
+            )
+        );
+
+        // Trying to move the leftmost node to the left (no changes at all)
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 10,
+                'siblingid' => 13
+            ),
+            array(
+                'case'    => 'Trying to move the leftmost node to the left (no changes at all)',
+                'table'   => array('lft' => 17, 'rgt' => 22),
+                'sibling' => array('lft' => 23, 'rgt' => 24)
+            )
+        );
+
+        // There are more roots, let's try to move one
+        $data[] = array(
+            array(
+                'newRoot' => true,
+                'loadid' => 17,
+                'siblingid' => 1
+            ),
+            array(
+                'case'    => "There are more roots, let's try to move one",
+                'table'   => array('lft' => 1, 'rgt' => 6),
+                'sibling' => array('lft' => 7, 'rgt' => 38)
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToLeftOfException()
+    {
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 1,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 1
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToRightOf()
+    {
+        // Moving a node to the left
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 10,
+                'siblingid' => 13
+            ),
+            array(
+                'case'    => 'Moving a node to the left',
+                'table'   => array('lft' => 19, 'rgt' => 24),
+                'sibling' => array('lft' => 17, 'rgt' => 18)
+            )
+        );
+
+        // Trying to move the rightmost node to the right (no changes at all)
+        $data[] = array(
+            array(
+                'newRoot' => false,
+                'loadid' => 14,
+                'siblingid' => 13
+            ),
+            array(
+                'case'    => 'Trying to move the rightmost node to the right (no changes at all)',
+                'table'   => array('lft' => 25, 'rgt' => 30),
+                'sibling' => array('lft' => 23, 'rgt' => 24)
+            )
+        );
+
+        // There are more roots, let's try to move one
+        $data[] = array(
+            array(
+                'newRoot' => true,
+                'loadid' => 1,
+                'siblingid' => 17
+            ),
+            array(
+                'case'    => "There are more roots, let's try to move one",
+                'table'   => array('lft' => 7, 'rgt' => 38),
+                'sibling' => array('lft' => 1, 'rgt' => 6)
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMoveToRightOfException()
+    {
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 1,
+            'siblingid' => 0
+        );
+
+        $data[] = array(
+            'loadid'    => 0,
+            'siblingid' => 1
+        );
+
+        return $data;
+    }
+
+    public static function getTestMakeFirstChildOf()
+    {
+        // Moving a single node
+        $data[] = array(
+            array(
+                'loadid'   => 13,
+                'parentid' => 2
+            ),
+            array(
+                'case'   => 'Moving a single node',
+                'table'  => array('lft' => 3, 'rgt' => 4),
+                'parent' => array('lft' => 2, 'rgt' => 17)
+            )
+        );
+
+        // Moving an entire subtree
+        $data[] = array(
+            array(
+                'loadid'   => 10,
+                'parentid' => 2
+            ),
+            array(
+                'case'   => 'Moving an entire subtree',
+                'table'  => array('lft' => 3, 'rgt' => 8),
+                'parent' => array('lft' => 2, 'rgt' => 21)
+            )
+        );
+
+        // Moving a single node under the same parent
+        $data[] = array(
+            array(
+                'loadid'   => 13,
+                'parentid' => 9
+            ),
+            array(
+                'case'   => 'Moving a single node under the same parent',
+                'table'  => array('lft' => 17, 'rgt' => 18),
+                'parent' => array('lft' => 16, 'rgt' => 31)
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestMakeFirstChildOfException()
+    {
+        $data[] = array(
+            'loadid'   => 0,
+            'parentid' => 0
+        );
+
+        $data[] = array(
+            'loadid'   => 1,
+            'parentid' => 0
+        );
+
+        $data[] = array(
+            'loadid'   => 0,
+            'parentid' => 1
+        );
+
+        return $data;
+    }
+
     public static function getTestMakeLastChildOf()
     {
         // Moving a single node
