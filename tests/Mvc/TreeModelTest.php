@@ -1277,6 +1277,40 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $parent, sprintf($msg, 'Should return an instance of TreeModel'));
         $this->assertEquals($check['parent'], $parent->dbtest_nestedset_id, sprintf($msg, 'Returned the wrong parent id'));
+    }
 
+    /**
+     * @group               TreeModelIsRoot
+     * @group               TreeModel
+     * @covers              TreeModel::isRoot
+     * @dataProvider        TreeModelDataprovider::getTestIsRoot
+     */
+    public function testIsRoot($test, $check)
+    {
+        $msg       = 'TreeModel::isRoot %s - Case: '.$check['case'];
+        $counter   = 0;
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('getLevel'), array($container));
+        $table->expects($this->any())->method('getLevel')->willReturnCallback(
+            function()use (&$counter, $test){
+                $counter++;
+                return $test['mock']['getLevel'];
+            }
+        );
+
+        $table->findOrFail($test['loadid']);
+
+        $result = $table->isRoot();
+
+        $this->assertEquals($check['getLevel'], $counter, sprintf($msg, 'Invoked the wrong number of times getLevel method'));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
     }
 }

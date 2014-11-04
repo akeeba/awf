@@ -941,4 +941,57 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestIsRoot()
+    {
+        // Root node
+        $data[] = array(
+            array(
+                'loadid' => 1,
+                'mock' => array(
+                    'getLevel' => 0
+                )
+
+            ),
+            array(
+                'case'     => '',
+                'getLevel' => 0,
+                'result'   => true
+            )
+        );
+
+        // Child node
+        $data[] = array(
+            array(
+                'loadid' => 2,
+                'mock' => array(
+                    'getLevel' => 1
+                )
+
+            ),
+            array(
+                'case'     => '',
+                'getLevel' => 1,
+                'result'   => false
+            )
+        );
+
+        // Second root
+        $data[] = array(
+            array(
+                'loadid' => 2,
+                'mock' => array(
+                    'getLevel' => 0
+                )
+
+            ),
+            array(
+                'case'     => '',
+                'getLevel' => 1,
+                'result'   => true
+            )
+        );
+
+        return $data;
+    }
 }
