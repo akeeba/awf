@@ -1635,4 +1635,121 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestGetNestedList()
+    {
+        $data[] = array(
+            array(
+                'column'    => 'title',
+                'key'       => 'dbtest_nestedset_id',
+                'separator' => ' '
+            ),
+            array(
+                'result' => array(
+                    1 => 'ROOT',
+                    2 => ' Electronics',
+                    3 => '  Audio',
+                    4 => '  Imaging',
+                    5 => '   Photography',
+                    6 => '    Compact',
+                    7 => '    DSLR',
+                    8 => '   Video',
+                    9 => ' Computers',
+                    10 => '  Smartphones',
+                    11 => '   Apple',
+                    12 => '   Android',
+                    13 => '  Laptops',
+                    14 => '  Tablets',
+                    15 => '   Apple',
+                    16 => '   Android',
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'column'    => 'title',
+                'key'       => 'dbtest_nestedset_id',
+                'separator' => '-'
+            ),
+            array(
+                'result' => array(
+                    1 => 'ROOT',
+                    2 => '-Electronics',
+                    3 => '--Audio',
+                    4 => '--Imaging',
+                    5 => '---Photography',
+                    6 => '----Compact',
+                    7 => '----DSLR',
+                    8 => '---Video',
+                    9 => '-Computers',
+                    10 => '--Smartphones',
+                    11 => '---Apple',
+                    12 => '---Android',
+                    13 => '--Laptops',
+                    14 => '--Tablets',
+                    15 => '---Apple',
+                    16 => '---Android',
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'column'    => '',
+                'key'       => '',
+                'separator' => '-'
+            ),
+            array(
+                'result' => array(
+                    1 => 'ROOT',
+                    2 => '-Electronics',
+                    3 => '--Audio',
+                    4 => '--Imaging',
+                    5 => '---Photography',
+                    6 => '----Compact',
+                    7 => '----DSLR',
+                    8 => '---Video',
+                    9 => '-Computers',
+                    10 => '--Smartphones',
+                    11 => '---Apple',
+                    12 => '---Android',
+                    13 => '--Laptops',
+                    14 => '--Tablets',
+                    15 => '---Apple',
+                    16 => '---Android',
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'column'    => 'slug',
+                'key'       => 'dbtest_nestedset_id',
+                'separator' => ' '
+            ),
+            array(
+                'result' => array(
+                    1 => 'root',
+                    2 => ' electronics',
+                    3 => '  audio',
+                    4 => '  imaging',
+                    5 => '   photography',
+                    6 => '    compact',
+                    7 => '    dslr',
+                    8 => '   video',
+                    9 => ' computers',
+                    10 => '  smartphones',
+                    11 => '   apple',
+                    12 => '   android',
+                    13 => '  laptops',
+                    14 => '  tablets',
+                    15 => '   apple',
+                    16 => '   android',
+                )
+            )
+        );
+
+        return $data;
+    }
 }

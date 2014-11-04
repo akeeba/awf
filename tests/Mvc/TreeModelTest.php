@@ -1778,4 +1778,28 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $table->getRoot();
     }
+
+    /**
+     * @group               TreeModelGetNestedList
+     * @group               TreeModel
+     * @covers              TreeModel::getNestedList
+     * @dataProvider        TreeModelDataprovider::getTestGetNestedList
+     */
+    public function testGetNestedList($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        $result = $table->getNestedList($test['column'], $test['key'], $test['separator']);
+
+        $this->assertEquals($check['result'], $result, 'TreeModel::getNestedList returned the wrong list');
+    }
 }
