@@ -1216,4 +1216,67 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $this->assertEquals($check['level'], $level, sprintf($msg, 'Returned the wrong level'));
     }
+
+    /**
+     * @group               TreeModelGetLevel
+     * @group               TreeModel
+     * @covers              TreeModel::getLevel
+     */
+    public function testGetLevelException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $table->getLevel();
+    }
+
+    /**
+     * @group               TreeModelGetParent
+     * @group               TreeModel
+     * @covers              TreeModel::getParent
+     * @dataProvider        TreeModelDataprovider::getTestGetParent
+     */
+    public function testGetParent($test, $check)
+    {
+        $msg     = 'TreeModel::getParent %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table   = new TreeModelStub($container);
+        $table->findOrFail($test['loadid']);
+
+        if(!is_null($test['cache']))
+        {
+            if($test['cache'] == 'loadself')
+            {
+                ReflectionHelper::setValue($table, 'treeParent', $table);
+            }
+            else
+            {
+                ReflectionHelper::setValue($table, 'treeParent', $test['cache']);
+            }
+        }
+
+        $parent = $table->getParent();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\TreeModel', $parent, sprintf($msg, 'Should return an instance of TreeModel'));
+        $this->assertEquals($check['parent'], $parent->dbtest_nestedset_id, sprintf($msg, 'Returned the wrong parent id'));
+
+    }
 }

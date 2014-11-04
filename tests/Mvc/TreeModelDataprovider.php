@@ -852,4 +852,93 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestGetParent()
+    {
+        // Root node, we simply return ourselves
+        $data[] = array(
+            array(
+                'loadid' => 1,
+                'cache'  => null,
+            ),
+            array(
+                'case'   => 'Root node',
+                'parent' => 1
+            )
+        );
+
+        // Child node, first level
+        $data[] = array(
+            array(
+                'loadid' => 1,
+                'cache'  => null,
+            ),
+            array(
+                'case'   => 'Child node, first level',
+                'parent' => 1
+            )
+        );
+
+        // Child node, first level
+        $data[] = array(
+            array(
+                'loadid' => 9,
+                'cache'  => null,
+            ),
+            array(
+                'case'   => 'Child node, first level',
+                'parent' => 1
+            )
+        );
+
+        // Child node
+        $data[] = array(
+            array(
+                'loadid' => 16,
+                'cache'  => null,
+            ),
+            array(
+                'case'   => 'Child node',
+                'parent' => 14
+            )
+        );
+
+        // Child node - wrong cache
+        $data[] = array(
+            array(
+                'loadid' => 16,
+                'cache'  => 'dummy',
+            ),
+            array(
+                'case'   => 'Child node - wrong cache',
+                'parent' => 14
+            )
+        );
+
+        // Child node - wrong cache 2
+        $data[] = array(
+            array(
+                'loadid' => 16,
+                'cache'  => new stdClass(),
+            ),
+            array(
+                'case'   => 'Child node - wrong cache 2',
+                'parent' => 14
+            )
+        );
+
+        // Child node - correct cache
+        $data[] = array(
+            array(
+                'loadid' => 16,
+                'cache'  => 'loadself',
+            ),
+            array(
+                'case'   => 'Child node - correct cache',
+                'parent' => 16
+            )
+        );
+
+        return $data;
+    }
 }
