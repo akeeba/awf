@@ -1021,4 +1021,68 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestIsDescendantOf()
+    {
+        $data[] = array(
+            array(
+                'loadid'  => 10,
+                'otherid' => 9
+            ),
+            array(
+                'case'   => 'Node is actually a descendant',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid'  => 3,
+                'otherid' => 9
+            ),
+            array(
+                'case'   => 'Node is not a descendant',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid'  => 9,
+                'otherid' => 9
+            ),
+            array(
+                'case'   => 'Node is itself',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestIsDescendantOfException()
+    {
+        $data[] = array(
+            array(
+                'loadid'  => 0,
+                'otherid' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid'  => 1,
+                'otherid' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid'  => 0,
+                'otherid' => 1
+            )
+        );
+
+        return $data;
+    }
 }

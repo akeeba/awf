@@ -1362,4 +1362,67 @@ class TreeModelTest extends DatabaseMysqlCase
         $table = new TreeModelStub($container);
         $table->isLeaf();
     }
+
+    /**
+     * @group               TreeModelIsDescendantOf
+     * @group               TreeModel
+     * @covers              TreeModel::isDescendantOf
+     * @dataProvider        TreeModelDataprovider::getTestIsDescendantOf
+     */
+    public function testIsDescendantOf($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $other = $table->getClone();
+
+        $table->findOrFail($test['loadid']);
+        $other->findOrFail($test['otherid']);
+
+        $result = $table->isDescendantOf($other);
+
+        $this->assertEquals($check['result'], $result, 'TreeModel::isDescendantOf returned the wrong value - Case: '.$check['case']);
+    }
+
+    /**
+     * @group               TreeModelIsDescendantOf
+     * @group               TreeModel
+     * @covers              TreeModel::isDescendantOf
+     * @dataProvider        TreeModelDataprovider::getTestIsDescendantOfException
+     */
+    public function testIsDescendantOfException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $other  = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['otherid'])
+        {
+            $other->findOrFail($test['otherid']);
+        }
+
+        $table->isDescendantOf($other);
+    }
 }
