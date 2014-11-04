@@ -1488,4 +1488,79 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $table->isSelfOrDescendantOf($other);
     }
+
+    /**
+     * @group               TreeModelEquals
+     * @group               TreeModel
+     * @covers              TreeModel::equals
+     * @dataProvider        TreeModelDataprovider::getTestEquals
+     */
+    public function testEquals($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $other = $table->getClone();
+
+        $table->findOrFail($test['loadid']);
+        $other->findOrFail($test['otherid']);
+
+        if(!is_null($test['forceTableId']))
+        {
+            $pk = $table->getIdFieldName();
+            $table->$pk = $test['forceTableId'];
+        }
+
+        if(!is_null($test['forceOtherId']))
+        {
+            $pk = $other->getIdFieldName();
+            $other->$pk = $test['forceOtherId'];
+        }
+
+        $result = $table->equals($other);
+
+        $this->assertEquals($check['result'], $result, 'TreeModel::equals returned the wrong value - Case: '.$check['case']);
+    }
+
+    /**
+     * @group               TreeModelEquals
+     * @group               TreeModel
+     * @covers              TreeModel::equals
+     * @dataProvider        TreeModelDataprovider::getTestEqualsException
+     */
+    public function testEqualsException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $other = $table->getClone();
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['otherid'])
+        {
+            $other->findOrFail($test['otherid']);
+        }
+
+        $table->equals($other);
+    }
 }
