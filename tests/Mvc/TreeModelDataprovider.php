@@ -1222,4 +1222,198 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestInSameScope()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table and other node are leaf',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is leaf and other node is a root',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is leaf and other node is a child',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table and other node are root',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is root and other node is leaf',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is root and other node is child',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table and other node are children',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    ),
+                    'other' => array(
+                        'isLeaf'  => true,
+                        'isRoot'  => false,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is child and other node is leaf',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'table' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => false,
+                        'isChild' => true
+                    ),
+                    'other' => array(
+                        'isLeaf'  => false,
+                        'isRoot'  => true,
+                        'isChild' => false
+                    )
+                )
+            ),
+            array(
+                'case'   => 'Table is child and other node is root',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }

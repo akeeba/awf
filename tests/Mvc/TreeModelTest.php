@@ -1563,4 +1563,36 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $table->equals($other);
     }
+
+    /**
+     * @group               TreeModelInSameScope
+     * @group               TreeModel
+     * @covers              TreeModel::inSameScope
+     * @dataProvider        TreeModelDataprovider::getTestInSameScope
+     */
+    public function testInSameScope($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('isLeaf', 'isRoot', 'isChild'), array($container));
+        $table->expects($this->any())->method('isLeaf')->willReturn($test['mock']['table']['isLeaf']);
+        $table->expects($this->any())->method('isRoot')->willReturn($test['mock']['table']['isRoot']);
+        $table->expects($this->any())->method('isChild')->willReturn($test['mock']['table']['isChild']);
+
+        $other = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('isLeaf', 'isRoot', 'isChild'), array($container));
+        $other->expects($this->any())->method('isLeaf')->willReturn($test['mock']['other']['isLeaf']);
+        $other->expects($this->any())->method('isRoot')->willReturn($test['mock']['other']['isRoot']);
+        $other->expects($this->any())->method('isChild')->willReturn($test['mock']['other']['isChild']);
+
+        $result = $table->inSameScope($other);
+
+        $this->assertEquals($check['result'], $result, 'TreeModel::inSameScope returned the wrong value - Case: '.$check['case']);
+    }
 }
