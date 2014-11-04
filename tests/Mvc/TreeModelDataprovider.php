@@ -1416,4 +1416,39 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestScopeImmediateDescendants()
+    {
+        $data[] = array(
+            array(
+                'loadid' => 5
+            ),
+            array(
+                'case'   => 'Node with direct descendants',
+                'result' => array(7,9)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid' => 8
+            ),
+            array(
+                'case'   => 'Leaf node',
+                'result' => array(0)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'loadid' => 2
+            ),
+            array(
+                'case'   => 'Node with several descendants',
+                'result' => array(3, 5)
+            )
+        );
+
+        return $data;
+    }
 }

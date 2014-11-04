@@ -1595,4 +1595,60 @@ class TreeModelTest extends DatabaseMysqlCase
 
         $this->assertEquals($check['result'], $result, 'TreeModel::inSameScope returned the wrong value - Case: '.$check['case']);
     }
+
+    /**
+     * @group               TreeModelScopeImmediateDescendants
+     * @group               TreeModel
+     * @covers              TreeModel::scopeImmediateDescendants
+     * @dataProvider        TreeModelDataprovider::getTestScopeImmediateDescendants
+     */
+    public function testScopeImmediateDescendants($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $table->findOrFail($test['loadid']);
+
+        ReflectionHelper::invoke($table, 'scopeImmediateDescendants');
+
+        // Let's get the built where clause and "normalize" it
+        $reflection = ReflectionHelper::getValue($table, 'whereClauses');
+        $where = array_pop($reflection);
+        preg_match_all('#IN\s?\((.*?)\)#', $where, $matches);
+
+        $where = explode(',', str_replace("'", '', $matches[1][0]));
+        $where = array_map('trim', $where);
+
+        $this->assertEquals($check['result'], $where, 'TreeModel::scopeImmediateDescendants applied the wrong where - Case: '.$check['case']);
+    }
+
+    /**
+     * @group               TreeModelScopeImmediateDescendants
+     * @group               TreeModel
+     * @covers              TreeModel::scopeImmediateDescendants
+     */
+    public function testScopeImmediateDescendantsException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        ReflectionHelper::invoke($table, 'scopeImmediateDescendants');
+    }
 }
