@@ -1784,7 +1784,7 @@ class TreeModel extends DataModel
 					->whereRaw($fldLft . ' = (' . (string)$subQuery . ')')
 					->firstOrFail();
 
-				if (($root->lft < $this->lft) && ($root->rgt > $this->rgt))
+				if ($this->isDescendantOf($root))
 				{
 					$this->treeRoot = $root;
 				}

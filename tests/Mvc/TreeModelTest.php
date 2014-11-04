@@ -1651,4 +1651,131 @@ class TreeModelTest extends DatabaseMysqlCase
 
         ReflectionHelper::invoke($table, 'scopeImmediateDescendants');
     }
+
+    /**
+     * @group               TreeModelGetRoot
+     * @group               TreeModel
+     * @covers              TreeModel::getRoot
+     * @dataProvider        TreeModelDataprovider::getTestRoot
+     */
+    public function testGetRoot($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        // Am I request to create a different root?
+        if($test['newRoot'])
+        {
+            $root = $table->getClone();
+            $root->title = 'New root';
+            $root->insertAsRoot();
+
+            $child = $table->getClone();
+            $child->title = 'First child 2nd root';
+            $child->insertAsChildOf($root);
+
+            $child->reset();
+
+            $child->title = 'Second child 2nd root';
+            $child->insertAsChildOf($root);
+
+            $grandson = $child->getClone();
+            $grandson->reset();
+            $grandson->title = 'First grandson of second child';
+            $grandson->insertAsChildOf($child);
+        }
+
+        $table->findOrFail($test['loadid']);
+
+        if(!is_null($test['cache']))
+        {
+            if($test['cache'] == 'loadself')
+            {
+                ReflectionHelper::setValue($table, 'treeRoot', $table);
+            }
+            else
+            {
+                ReflectionHelper::setValue($table, 'treeRoot', $test['cache']);
+            }
+        }
+
+        // I have to check the lft value, since the id could change throught test iteration (table deleted and not truncated)
+        $return = $table->getRoot();
+        $root   = $return->lft;
+
+        $this->assertEquals($check['result'], $root, 'TreeModel::getRoot returned the wrong root - Case: '.$check['case']);
+    }
+
+    /**
+     * @group               TreeModelGetRoot
+     * @group               TreeModel
+     * @covers              TreeModel::getRoot
+     * @dataProvider        TreeModelDataprovider::getTestRootException
+     */
+    public function testGetRootException($test)
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $counter   = 0;
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\TreeModelStub', array('firstOrFail', 'isRoot'), array($container));
+        $table->expects($this->any())->method('isRoot')->willReturn(false);
+
+        // I want to throw an exception at the first run
+        if($test['mock']['firstOrFail'][0])
+        {
+            $table->expects($this->any())->method('firstOrFail')->willThrowException(new \RuntimeException());
+        }
+        // The first run is ok, the exception will be thrown at the second call
+        else
+        {
+            $table->expects($this->any())->method('firstOrFail')->willReturnCallback(
+                function() use($table, &$counter){
+                    if(!$counter)
+                    {
+                        $counter++;
+
+                        $clone = $table->getClone();
+                        $clone->lft = 1000;
+                        $clone->rgt = 1001;
+
+                        return $clone;
+                    }
+                    else
+                    {
+                        throw new \RuntimeException();
+                    }
+                }
+            );
+        }
+
+        if($test['loadid'])
+        {
+            $table->findOrFail($test['loadid']);
+        }
+
+        if($test['wrongNode'])
+        {
+            $table->lft = 2000;
+            $table->rgt = 2001;
+        }
+
+        $table->getRoot();
+    }
 }
