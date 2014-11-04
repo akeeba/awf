@@ -1313,4 +1313,53 @@ class TreeModelTest extends DatabaseMysqlCase
         $this->assertEquals($check['getLevel'], $counter, sprintf($msg, 'Invoked the wrong number of times getLevel method'));
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
     }
+
+    /**
+     * @group               TreeModelIsLeaf
+     * @group               TreeModel
+     * @covers              TreeModel::isLeaf
+     * @dataProvider        TreeModelDataprovider::getTestIsLeaf
+     */
+    public function testIsLeaf($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+
+        $table->lft = $test['lft'];
+        $table->rgt = $test['rgt'];
+
+        $result = $table->isLeaf();
+
+        $this->assertEquals($check['result'], $result, 'TreeModel::isLeaf returned the wrong value - Case: '.$check['case']);
+    }
+
+    /**
+     * @group               TreeModelIsLeaf
+     * @group               TreeModel
+     * @covers              TreeModel::isLeaf
+     */
+    public function testIsLeafException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $table = new TreeModelStub($container);
+        $table->isLeaf();
+    }
 }

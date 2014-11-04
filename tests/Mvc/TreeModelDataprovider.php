@@ -994,4 +994,31 @@ class TreeModelDataprovider
 
         return $data;
     }
+
+    public static function getTestIsLeaf()
+    {
+        $data[] = array(
+            array(
+                'lft' => 10,
+                'rgt' => 11
+            ),
+            array(
+                'case'   => 'Node is a leaf',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'lft' => 10,
+                'rgt' => 13
+            ),
+            array(
+                'case'   => 'Node is not a leaf',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }
