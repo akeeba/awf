@@ -427,6 +427,8 @@ class Controller
 
 	/**
 	 * Alias to the display() task
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function main()
 	{

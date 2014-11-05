@@ -13,8 +13,8 @@ use Awf\Mvc\Controller;
 
 class ControllerStub extends Controller
 {
-    private   $methods = array();
-    protected $name   = 'nestedset';
+    private   $mockedMethods = array();
+    protected $name          = 'dummycontroller';
 
     /**
      * Assigns callback functions to the class, the $methods array should be an associative one, where
@@ -31,7 +31,7 @@ class ControllerStub extends Controller
     {
         foreach($methods as $method => $function)
         {
-            $this->methods[$method] = $function;
+            $this->mockedMethods[$method] = $function;
         }
 
         parent::__construct($container);
@@ -39,9 +39,9 @@ class ControllerStub extends Controller
 
     public function __call($method, $args)
     {
-        if (isset($this->methods[$method]))
+        if (isset($this->mockedMethods[$method]))
         {
-            $func = $this->methods[$method];
+            $func = $this->mockedMethods[$method];
 
             // Let's pass an instance of ourself, so we can manipulate other closures
             array_unshift($args, $this);
@@ -58,9 +58,9 @@ class ControllerStub extends Controller
      */
     public function getName()
     {
-        if(isset($this->methods['getName']))
+        if(isset($this->mockedMethods['getName']))
         {
-            $func = $this->methods['getName'];
+            $func = $this->mockedMethods['getName'];
 
             return call_user_func_array($func, array());
         }
@@ -76,9 +76,9 @@ class ControllerStub extends Controller
      */
     public function onBeforeDummy()
     {
-        if(isset($this->methods['onBeforeDummy']))
+        if(isset($this->mockedMethods['onBeforeDummy']))
         {
-            $func = $this->methods['onBeforeDummy'];
+            $func = $this->mockedMethods['onBeforeDummy'];
 
             return call_user_func_array($func, array($this));
         }
@@ -88,9 +88,9 @@ class ControllerStub extends Controller
 
     public function onAfterDummy($oid)
     {
-        if(isset($this->methods['onAfterDummy']))
+        if(isset($this->mockedMethods['onAfterDummy']))
         {
-            $func = $this->methods['onAfterDummy'];
+            $func = $this->mockedMethods['onAfterDummy'];
 
             return call_user_func_array($func, array($this, $oid));
         }
