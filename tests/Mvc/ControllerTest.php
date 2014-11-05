@@ -63,4 +63,25 @@ class ControllerTest extends DatabaseMysqlCase
             $this->assertArrayNotHasKey(strtolower($test['task']), $taskMap, sprintf($msg, 'Should not add the method to the internal mapping'));
         }
     }
+
+    /**
+     * @group           Controller
+     * @group           ControllerUnregisterTask
+     * @covers          Controller::unregisterTask
+     */
+    public function testUnregisterTask()
+    {
+        $msg        = 'Controller::unregisterDefaultTask %s';
+        $container  = new Container();
+        $controller = new ControllerStub($container);
+
+        ReflectionHelper::setValue($controller, 'taskMap', array('foo' => 'bar'));
+
+        $result  = $controller->unregisterTask('foo');
+
+        $taskMap = ReflectionHelper::getValue($controller, 'taskMap');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Controller', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertArrayNotHasKey('foo', $taskMap, sprintf($msg, 'Should remove the task form the mapping'));
+    }
 }
