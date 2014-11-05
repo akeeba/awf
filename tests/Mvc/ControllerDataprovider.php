@@ -71,4 +71,77 @@ class ControllerDataprovider
 
         return $data;
     }
+
+    public static function getTestSetRedirect()
+    {
+        $data[] = array(
+            array(
+                'url'  => 'index.php',
+                'msg'  => null,
+                'type' => null,
+                'mock' => array(
+                    'type' => null
+                )
+            ),
+            array(
+                'case'     => 'Url is set, message and type are null; controller messageType is null',
+                'redirect' => 'index.php',
+                'message'  => null,
+                'type'     => 'info'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'url'  => 'index.php',
+                'msg'  => null,
+                'type' => null,
+                'mock' => array(
+                    'type' => 'warning'
+                )
+            ),
+            array(
+                'case'     => 'Url is set, message and type are null; controller messageType is not null',
+                'redirect' => 'index.php',
+                'message'  => null,
+                'type'     => 'warning'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'url'  => 'index.php',
+                'msg'  => null,
+                'type' => 'info',
+                'mock' => array(
+                    'type' => 'warning'
+                )
+            ),
+            array(
+                'case'     => 'Url and type are set, message is null; controller messageType is not null',
+                'redirect' => 'index.php',
+                'message'  => null,
+                'type'     => 'info'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'url'  => 'index.php',
+                'msg'  => 'Foobar',
+                'type' => 'info',
+                'mock' => array(
+                    'type' => 'warning'
+                )
+            ),
+            array(
+                'case'     => 'Url, type and message are set, controller messageType is not null',
+                'redirect' => 'index.php',
+                'message'  => 'Foobar',
+                'type'     => 'info'
+            )
+        );
+
+        return $data;
+    }
 }

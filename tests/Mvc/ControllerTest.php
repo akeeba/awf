@@ -114,4 +114,29 @@ class ControllerTest extends DatabaseMysqlCase
         $this->assertEquals($check['message'], $message, sprintf($msg, 'Did not set the message correctly'));
         $this->assertEquals($check['type'], $type, sprintf($msg, 'Did not set the message type correctly'));
     }
+
+    /**
+     * @group           Controller
+     * @group           ControllerSetRedirect
+     * @covers          Controller::setRedirect
+     * @dataProvider    ControllerDataprovider::getTestSetRedirect
+     */
+    public function testSetRedirect($test, $check)
+    {
+        $msg        = 'Controller::setRedirect %s - Case: '.$check['case'];
+        $controller = new ControllerStub();
+
+        ReflectionHelper::setValue($controller, 'messageType', $test['mock']['type']);
+
+        $result  = $controller->setRedirect($test['url'], $test['msg'], $test['type']);
+
+        $redirect = ReflectionHelper::getValue($controller, 'redirect');
+        $message  = ReflectionHelper::getValue($controller, 'message');
+        $type     = ReflectionHelper::getValue($controller, 'messageType');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Controller', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['redirect'], $redirect, sprintf($msg, 'Did not set the redirect url correctly'));
+        $this->assertEquals($check['message'], $message, sprintf($msg, 'Did not set the message correctly'));
+        $this->assertEquals($check['type'], $type, sprintf($msg, 'Did not set the message type correctly'));
+    }
 }
