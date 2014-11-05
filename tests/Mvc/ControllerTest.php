@@ -11,6 +11,7 @@ namespace Awf\Tests\Controller;
 
 use Awf\Tests\Database\DatabaseMysqlCase;
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\ControllerStub;
@@ -19,6 +20,44 @@ require_once 'ControllerDataprovider.php';
 
 class ControllerTest extends DatabaseMysqlCase
 {
+    /**
+     * @group           Controller
+     * @group           ControllerRedirect
+     * @covers          Controller::redirect
+     * @dataProvider    ControllerDataprovider::getTestRedirect
+     */
+    public function testRedirect($test, $check)
+    {
+        $msg        = 'Controller::redirect %s - Case: '.$check['case'];
+        $controller = new ControllerStub();
+        $counter    = 0;
+        $fakeapp    = new ClosureHelper(array(
+            'redirect' => function () use(&$counter){
+                $counter++;
+            }
+        ));
+
+        ReflectionHelper::setValue($controller, 'redirect', $test['mock']['redirect']);
+
+        // Let's save current app istances, I'll have to restore them later
+        $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
+        ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
+
+        $result = $controller->redirect();
+
+        ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', $oldinstances);
+
+        // If the redirection has been invoked, I have to nullify the result. In the real world I would be immediatly
+        // redirected to another page.
+        if($counter)
+        {
+            $result = null;
+        }
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+        $this->assertEquals($check['redirect'], $counter, sprintf($msg, 'Failed to perform the redirection'));
+    }
+
     /**
      * @group           Controller
      * @group           ControllerRegisterDefaultTask

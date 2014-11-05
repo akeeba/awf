@@ -2,6 +2,37 @@
 
 class ControllerDataprovider
 {
+    public static function getTestRedirect()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'redirect' => 'index.php'
+                )
+            ),
+            array(
+                'case'     => 'A redirect as been set',
+                'result'   => null,
+                'redirect' => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'redirect' => null
+                )
+            ),
+            array(
+                'case'     => 'No redirection set',
+                'result'   => false,
+                'redirect' => 0
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestRegisterTask()
     {
         $data[] = array(
