@@ -84,4 +84,34 @@ class ControllerTest extends DatabaseMysqlCase
         $this->assertInstanceOf('\\Awf\\Mvc\\Controller', $result, sprintf($msg, 'Should return an instance of itself'));
         $this->assertArrayNotHasKey('foo', $taskMap, sprintf($msg, 'Should remove the task form the mapping'));
     }
+
+    /**
+     * @group           Controller
+     * @group           ControllerSetMessage
+     * @covers          Controller::setMessage
+     * @dataProvider    ControllerDataprovider::getTestSetMessage
+     */
+    public function testSetMessage($test, $check)
+    {
+        $msg        = 'Controller::setMessage %s - Case: '.$check['case'];
+        $controller = new ControllerStub();
+
+        ReflectionHelper::setValue($controller, 'message', $test['mock']['previous']);
+
+        if(is_null($test['type']))
+        {
+            $result  = $controller->setMessage($test['message']);
+        }
+        else
+        {
+            $result  = $controller->setMessage($test['message'], $test['type']);
+        }
+
+        $message = ReflectionHelper::getValue($controller, 'message');
+        $type    = ReflectionHelper::getValue($controller, 'messageType');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Should return the previous message'));
+        $this->assertEquals($check['message'], $message, sprintf($msg, 'Did not set the message correctly'));
+        $this->assertEquals($check['type'], $type, sprintf($msg, 'Did not set the message type correctly'));
+    }
 }
