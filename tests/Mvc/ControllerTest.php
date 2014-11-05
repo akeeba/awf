@@ -33,4 +33,34 @@ class ControllerTest extends DatabaseMysqlCase
 
         $this->assertInstanceOf('\\Awf\\Mvc\\Controller', $result, 'Controller::registerDefaultTask should return an instance of itself');
     }
+
+    /**
+     * @group           Controller
+     * @group           ControllerRegisterTask
+     * @covers          Controller::registerTask
+     * @dataProvider    ControllerDataprovider::getTestRegisterTask
+     */
+    public function testRegisterTask($test, $check)
+    {
+        $msg        = 'Controller::registerDefaultTask %s - Case: '.$check['case'];
+        $container  = new Container();
+        $controller = new ControllerStub($container);
+
+        ReflectionHelper::setValue($controller, 'methods', $test['mock']['methods']);
+
+        $result  = $controller->registerTask($test['task'], $test['method']);
+
+        $taskMap = ReflectionHelper::getValue($controller, 'taskMap');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Controller', $result, sprintf($msg, 'Should return an instance of itself'));
+
+        if($check['register'])
+        {
+            $this->assertArrayHasKey(strtolower($test['task']), $taskMap, sprintf($msg, 'Should add the method to the internal mapping'));
+        }
+        else
+        {
+            $this->assertArrayNotHasKey(strtolower($test['task']), $taskMap, sprintf($msg, 'Should not add the method to the internal mapping'));
+        }
+    }
 }
