@@ -22,6 +22,21 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerGetTask
+     * @covers          Controller::getTask
+     */
+    public function testGetTask()
+    {
+        $controller = new ControllerStub();
+        ReflectionHelper::setValue($controller, 'task', 'foobar');
+
+        $task = $controller->getTask();
+
+        $this->assertEquals('foobar', $task, 'Controller::getTask failed to return the current task');
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerGetTasks
      * @covers          Controller::getTasks
      */
