@@ -16,6 +16,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\ControllerStub;
 use Awf\Tests\Stubs\Mvc\ModelStub;
+use Awf\Tests\Stubs\Mvc\ViewStub;
 
 require_once 'ControllerDataprovider.php';
 
@@ -67,6 +68,23 @@ class ControllerTest extends DatabaseMysqlCase
 
         $this->assertArrayHasKey('foobar', $models, 'Controller::setModel Failed to save the model');
         $this->assertSame($model, $models['foobar'], 'Controller::setModel Failed to store the same copy of the passed model');
+    }
+
+    /**
+     * @group           Controller
+     * @group           ControllerSetView
+     * @covers          Controller::setView
+     */
+    public function testSetView()
+    {
+        $view       = new ViewStub();
+        $controller = new ControllerStub();
+        $controller->setView('foobar', $view);
+
+        $views = ReflectionHelper::getValue($controller, 'viewInstances');
+
+        $this->assertArrayHasKey('foobar', $views, 'Controller::setView Failed to save the view');
+        $this->assertSame($view, $views['foobar'], 'Controller::setView Failed to store the same copy of the passed view');
     }
 
     /**
