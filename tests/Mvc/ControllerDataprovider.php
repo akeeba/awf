@@ -2,6 +2,107 @@
 
 class ControllerDataprovider
 {
+    public static function getTestGetView()
+    {
+        $data[] = array(
+            array(
+                'name' => 'foobar',
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => null,
+                    'instances' => array(),
+                    'format'    => null
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, name passed, view not cached, internal reference are empty',
+                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'foobar',
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => null,
+                    'instances' => array(),
+                    'format'    => 'html'
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, name passed, view not cached, internal reference are empty',
+                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => null,
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => 'foobar',
+                    'instances' => array(),
+                    'format'    => null
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, name not passed, fetched from the viewName property',
+                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => null,
+                'mock' => array(
+                    'view' => 'foobar',
+                    'viewName' => null,
+                    'instances' => array(),
+                    'format'    => null
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, name not passed, fetched from the view property',
+                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'foobar',
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => null,
+                    'instances' => array(),
+                    'format'    => 'json'
+                )
+            ),
+            array(
+                'case'   => 'Creating JSON view, name passed, view not cached, internal reference are empty',
+                'result' => '\\Fakeapp\\View\\Foobar\\Json'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'foobar',
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => null,
+                    'instances' => array('foobar' => new \Awf\Tests\Stubs\Mvc\ViewStub()),
+                    'format'    => null
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, fetched from the cache',
+                'result' => '\\Awf\Tests\\Stubs\\Mvc\\ViewStub'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestRedirect()
     {
         $data[] = array(

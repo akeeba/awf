@@ -9,6 +9,7 @@
 
 namespace Awf\Tests\Controller;
 
+use Awf\Input\Input;
 use Awf\Tests\Database\DatabaseMysqlCase;
 use Awf\Database\Driver;
 use Awf\Tests\Helpers\ClosureHelper;
@@ -22,6 +23,32 @@ require_once 'ControllerDataprovider.php';
 
 class ControllerTest extends DatabaseMysqlCase
 {
+    /**
+     * @group           Controller
+     * @group           ControllerGetView
+     * @covers          Controller::getView
+     * @dataProvider    ControllerDataprovider::getTestGetView
+     */
+    public function testGetView($test, $check)
+    {
+        $msg        = 'Controller::getView %s - Case: '.$check['case'];
+        $container  = new Container(array(
+            'input' => new Input(array(
+                'format' => $test['mock']['format']
+            ))
+        ));
+        $controller = new ControllerStub($container);
+
+        ReflectionHelper::setValue($controller, 'viewName', $test['mock']['viewName']);
+        ReflectionHelper::setValue($controller, 'view', $test['mock']['view']);
+        ReflectionHelper::setValue($controller, 'viewInstances', $test['mock']['instances']);
+
+        // Since a static call to View::getInstance is performed, I have limited space for tests. For example
+        // there's no use on passing the config parameter, since I can't check it
+        $result = $controller->getView($test['name']);
+
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong view'));
+    }
 
     /**
      * @group           Controller
