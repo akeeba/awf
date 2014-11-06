@@ -38,6 +38,21 @@ class ControllerTest extends DatabaseMysqlCase
 
     /**
      * @group           Controller
+     * @group           ControllerSetModelName
+     * @covers          Controller::setModelName
+     */
+    public function testSetModelName()
+    {
+        $controller = new ControllerStub();
+        $controller->setModelName('foobar');
+
+        $value = ReflectionHelper::getValue($controller, 'modelName');
+
+        $this->assertEquals('foobar', $value, 'Controller::setModelName failed to set the model name');
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerGetTask
      * @covers          Controller::getTask
      */
