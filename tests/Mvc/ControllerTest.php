@@ -25,6 +25,30 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerGetModel
+     * @covers          Controller::getModel
+     * @dataProvider    ControllerDataprovider::getTestGetModel
+     */
+    public function testGetModel($test, $check)
+    {
+        $msg        = 'Controller::getModel %s - Case: '.$check['case'];
+        $container  = new Container();
+        $controller = new ControllerStub($container);
+
+        ReflectionHelper::setValue($controller, 'modelName', $test['mock']['modelName']);
+        ReflectionHelper::setValue($controller, 'view', $test['mock']['view']);
+        ReflectionHelper::setValue($controller, 'modelInstances', $test['mock']['instances']);
+
+        $result = $controller->getModel($test['name'], $test['config']);
+
+        $config = $result->passedContainer['mvc_config'];
+
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong view'));
+        $this->assertEquals($check['config'], $config, sprintf($msg, 'Passed configuration was not considered'));
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerGetView
      * @covers          Controller::getView
      * @dataProvider    ControllerDataprovider::getTestGetView
