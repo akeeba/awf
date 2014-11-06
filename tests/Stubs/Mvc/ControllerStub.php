@@ -65,7 +65,7 @@ class ControllerStub extends Controller
             return call_user_func_array($func, array());
         }
 
-        return $this->name;
+        return parent::getName();
     }
 
     /**

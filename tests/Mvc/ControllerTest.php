@@ -20,6 +20,22 @@ require_once 'ControllerDataprovider.php';
 
 class ControllerTest extends DatabaseMysqlCase
 {
+
+    /**
+     * @group           Controller
+     * @group           ControllerSetViewName
+     * @covers          Controller::setViewName
+     */
+    public function testSetViewName()
+    {
+        $controller = new ControllerStub();
+        $controller->setViewName('foobar');
+
+        $value = ReflectionHelper::getValue($controller, 'viewName');
+
+        $this->assertEquals('foobar', $value, 'Controller::setViewName failed to set the view name');
+    }
+
     /**
      * @group           Controller
      * @group           ControllerGetTask
