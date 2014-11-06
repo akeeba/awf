@@ -43,11 +43,12 @@ class ControllerTest extends DatabaseMysqlCase
         ReflectionHelper::setValue($controller, 'view', $test['mock']['view']);
         ReflectionHelper::setValue($controller, 'viewInstances', $test['mock']['instances']);
 
-        // Since a static call to View::getInstance is performed, I have limited space for tests. For example
-        // there's no use on passing the config parameter, since I can't check it
-        $result = $controller->getView($test['name']);
+        $result = $controller->getView($test['name'], $test['config']);
+
+        $config = $result->passedContainer['mvc_config'];
 
         $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong view'));
+        $this->assertEquals($check['config'], $config, sprintf($msg, 'Passed configuration was not considered'));
     }
 
     /**

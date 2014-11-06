@@ -2,9 +2,10 @@
 
 namespace Fakeapp\View\Foobar;
 
-use Awf\Mvc\View;
+use Awf\Tests\Stubs\Mvc\ViewStub;
 
-class Json extends View
+// We will extend our stub, so we can add inspector methods if we need them
+class Json extends ViewStub
 {
 
 }

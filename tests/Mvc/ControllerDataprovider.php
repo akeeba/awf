@@ -7,6 +7,7 @@ class ControllerDataprovider
         $data[] = array(
             array(
                 'name' => 'foobar',
+                'config' => array(),
                 'mock' => array(
                     'view' => null,
                     'viewName' => null,
@@ -16,13 +17,15 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating HTML view, name passed, view not cached, internal reference are empty',
-                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+                'result' => '\\Fakeapp\\View\\Foobar\\Html',
+                'config' => array()
             )
         );
 
         $data[] = array(
             array(
                 'name' => 'foobar',
+                'config' => array(),
                 'mock' => array(
                     'view' => null,
                     'viewName' => null,
@@ -32,13 +35,15 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating HTML view, name passed, view not cached, internal reference are empty',
-                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+                'result' => '\\Fakeapp\\View\\Foobar\\Html',
+                'config' => array()
             )
         );
 
         $data[] = array(
             array(
                 'name' => null,
+                'config' => array(),
                 'mock' => array(
                     'view' => null,
                     'viewName' => 'foobar',
@@ -48,13 +53,15 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating HTML view, name not passed, fetched from the viewName property',
-                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+                'result' => '\\Fakeapp\\View\\Foobar\\Html',
+                'config' => array()
             )
         );
 
         $data[] = array(
             array(
                 'name' => null,
+                'config' => array(),
                 'mock' => array(
                     'view' => 'foobar',
                     'viewName' => null,
@@ -64,13 +71,15 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating HTML view, name not passed, fetched from the view property',
-                'result' => '\\Fakeapp\\View\\Foobar\\Html'
+                'result' => '\\Fakeapp\\View\\Foobar\\Html',
+                'config' => array()
             )
         );
 
         $data[] = array(
             array(
                 'name' => 'foobar',
+                'config' => array(),
                 'mock' => array(
                     'view' => null,
                     'viewName' => null,
@@ -80,13 +89,15 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating JSON view, name passed, view not cached, internal reference are empty',
-                'result' => '\\Fakeapp\\View\\Foobar\\Json'
+                'result' => '\\Fakeapp\\View\\Foobar\\Json',
+                'config' => array()
             )
         );
 
         $data[] = array(
             array(
                 'name' => 'foobar',
+                'config' => array(),
                 'mock' => array(
                     'view' => null,
                     'viewName' => null,
@@ -96,7 +107,26 @@ class ControllerDataprovider
             ),
             array(
                 'case'   => 'Creating HTML view, fetched from the cache',
-                'result' => '\\Awf\Tests\\Stubs\\Mvc\\ViewStub'
+                'result' => '\\Awf\Tests\\Stubs\\Mvc\\ViewStub',
+                'config' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'foobar',
+                'config' => array('foo' => 'bar'),
+                'mock' => array(
+                    'view' => null,
+                    'viewName' => null,
+                    'instances' => array(),
+                    'format'    => null
+                )
+            ),
+            array(
+                'case'   => 'Creating HTML view, name and config passed, view not cached, internal reference are empty',
+                'result' => '\\Fakeapp\\View\\Foobar\\Html',
+                'config' => array('foo' => 'bar')
             )
         );
 
