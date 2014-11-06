@@ -15,6 +15,7 @@ use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\ControllerStub;
+use Awf\Tests\Stubs\Mvc\ModelStub;
 
 require_once 'ControllerDataprovider.php';
 
@@ -49,6 +50,23 @@ class ControllerTest extends DatabaseMysqlCase
         $value = ReflectionHelper::getValue($controller, 'modelName');
 
         $this->assertEquals('foobar', $value, 'Controller::setModelName failed to set the model name');
+    }
+
+    /**
+     * @group           Controller
+     * @group           ControllerSetModel
+     * @covers          Controller::setModel
+     */
+    public function testSetModel()
+    {
+        $model      = new ModelStub();
+        $controller = new ControllerStub();
+        $controller->setModel('foobar', $model);
+
+        $models = ReflectionHelper::getValue($controller, 'modelInstances');
+
+        $this->assertArrayHasKey('foobar', $models, 'Controller::setModel Failed to save the model');
+        $this->assertSame($model, $models['foobar'], 'Controller::setModel Failed to store the same copy of the passed model');
     }
 
     /**
