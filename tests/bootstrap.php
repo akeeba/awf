@@ -2,7 +2,7 @@
 /**
  * @package		awf
  * @subpackage  tests
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * Bootstrap file for unit testing
@@ -27,6 +27,9 @@ if (false == include __DIR__ . '/../vendor/autoload.php')
 
 	exit(1);
 }
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // This is necessary for the session testing
 ini_set('session.use_only_cookies', false);

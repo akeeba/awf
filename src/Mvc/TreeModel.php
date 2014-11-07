@@ -65,7 +65,7 @@ class TreeModel extends DataModel
 	public function check()
 	{
 		// Create a slug if there is a title and an empty slug
-		if ($this->hasField('title') && $this->hasField('slug') && empty($this->slug))
+		if ($this->hasField('title') && $this->hasField('slug') && !$this->slug)
 		{
 			$this->slug = String::toSlug($this->title);
 		}
@@ -89,14 +89,15 @@ class TreeModel extends DataModel
 	/**
 	 * Delete a node, either the currently loaded one or the one specified in $id. If an $id is specified that node
 	 * is loaded before trying to delete it. In the end the data model is reset. If the node has any children nodes
-	 * they will be removed before the node itself is deleted if $recursive == true (default: true).
+	 * they will be removed before the node itself is deleted.
 	 *
-	 * @param   mixed $id        Primary key (id field) value
-	 * @param   bool  $recursive Should I recursively delete any nodes in the subtree? (default: true)
+	 * @param   mixed $id Primary key (id field) value
+	 *
+	 * @throws \UnexpectedValueException
 	 *
 	 * @return  $this  for chaining
 	 */
-	public function forceDelete($id = null, $recursive = true)
+	public function forceDelete($id = null)
 	{
 		// Load the specified record (if necessary)
 		if (!empty($id))
@@ -104,37 +105,119 @@ class TreeModel extends DataModel
 			$this->findOrFail($id);
 		}
 
-		// Recursively delete all children nodes as long as we are not a leaf node and $recursive is enabled
-		if ($recursive && !$this->isLeaf())
+		$k  = $this->getIdFieldName();
+		$pk = (!$id) ? $this->$k : $id;
+
+		// If no primary key is given, return false.
+		if (!$pk)
 		{
-			// Get a reference to the database
-			$db = $this->getDbo();
+			throw new \UnexpectedValueException('Null primary key not allowed.');
+		}
 
-			// Get my lft/rgt values
-			$myLeft = $this->lft;
-			$myRight = $this->rgt;
+		// Execute the logic only if I have a primary key, otherwise I could have weird results
+		// Perform the checks on the current node *BEFORE* starting to delete the children
+		if (method_exists($this, 'onBeforeDelete'))
+		{
+			if(!$this->onBeforeDelete($pk))
+			{
+				return false;
+			}
+		}
 
-			$fldLft = $db->qn($this->getFieldAlias('lft'));
-			$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+		$result = true;
 
+		// Recursively delete all children nodes as long as we are not a leaf node
+		if (!$this->isLeaf())
+		{
 			// Get all sub-nodes
-			$subNodes = $this->getClone()->reset()
-				->whereRaw($fldLft . ' > ' . $myLeft)
-				->whereRaw($fldRgt . ' < ' . $myRight)
-				->get(true);
+			$table = $this->getClone();
+			$table->bind($this->getData());
+			$subNodes = $table->getDescendants();
 
 			// Delete all subnodes (goes through the model to trigger the observers)
 			if (!empty($subNodes))
 			{
-				array_walk($subNodes, function($item, $key){
-					/** @var TreeModel $item */
-					$item->forceDelete(null, false);
-				});
+				/** @var \Awf\Mvc\TreeModel $item */
+				foreach ($subNodes as $item)
+				{
+					// We have to pass the id, so we are getting it again from the database.
+					// We have to do in this way, since a previous child could have changed our lft and rgt values
+					if(!$item->forceDelete($item->$k))
+					{
+						// A subnode failed or prevents the delete, continue deleting other nodes,
+						// but preserve the current node (ie the parent)
+						$result = false;
+					}
+				};
+
+				// Load it again, since while deleting a children we could have updated ourselves, too
+				$this->find($pk);
 			}
 		}
 
-		// Finally delete the node itself
-		parent::delete($id);
+		if($result)
+		{
+			$db = $this->getDbo();
+
+			// Delete the row by primary key.
+			$query = $db->getQuery(true);
+			$query->delete();
+			$query->from($this->getTableName());
+			$query->where($db->qn($this->getIdFieldName()) . ' = ' . $db->q($pk));
+
+			$db->setQuery($query)->execute();
+
+			if(method_exists($this, 'onAfterDelete'))
+			{
+				$this->onAfterDelete($pk);
+			}
+		}
+
+		return $this;
+	}
+
+	protected function onAfterDelete($oid)
+	{
+		$db = $this->getDbo();
+
+		$myLeft  = $this->lft;
+		$myRight = $this->rgt;
+
+		$fldLft = $db->qn($this->getFieldAlias('lft'));
+		$fldRgt = $db->qn($this->getFieldAlias('rgt'));
+
+		// Move all siblings to the left
+		$width = $this->rgt - $this->lft + 1;
+
+		// Wrap everything in a transaction
+		$db->transactionStart();
+
+		try
+		{
+			// Shrink lft values
+			$query = $db->getQuery(true)
+						->update($db->qn($this->getTableName()))
+						->set($fldLft . ' = ' . $fldLft . ' - '.$width)
+						->where($fldLft . ' > ' . $db->q($myLeft));
+			$db->setQuery($query)->execute();
+
+			// Shrink rgt values
+			$query = $db->getQuery(true)
+						->update($db->qn($this->getTableName()))
+						->set($fldRgt . ' = ' . $fldRgt . ' - '.$width)
+						->where($fldRgt . ' > ' . $db->q($myRight));
+			$db->setQuery($query)->execute();
+
+			// Commit the transaction
+			$db->transactionCommit();
+		}
+		catch (\Exception $e)
+		{
+			// Roll back the transaction on error
+			$db->transactionRollback();
+
+			throw $e;
+		}
 
 		return $this;
 	}
@@ -174,18 +257,12 @@ class TreeModel extends DataModel
 	 * @param   array $data The data to use in the new record
 	 *
 	 * @return  static  The new node
-     *
-     * @throws  \RuntimeException
 	 */
 	public function create($data)
 	{
-        // Sanity checks on current node position
-        if($this->lft >= $this->rgt)
-        {
-            throw new \RuntimeException('Invalid position values for the current node');
-        }
-
-		$newNode = $this->reset()->bind($data);
+		$newNode = $this->getClone();
+		$newNode->reset();
+		$newNode->bind($data);
 
 		if ($this->isRoot())
 		{
@@ -1707,7 +1784,7 @@ class TreeModel extends DataModel
 					->whereRaw($fldLft . ' = (' . (string)$subQuery . ')')
 					->firstOrFail();
 
-				if (($root->lft < $this->lft) && ($root->rgt > $this->rgt))
+				if ($this->isDescendantOf($root))
 				{
 					$this->treeRoot = $root;
 				}

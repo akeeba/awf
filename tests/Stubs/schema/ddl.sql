@@ -496,3 +496,30 @@ CREATE TABLE `awf_dbtest_composite` (
   `ordering` INTEGER NOT NULL DEFAULT '0',
   CONSTRAINT `idx_dbtest_composite` PRIMARY KEY (`id1`,`id2`)
 );
+
+-- Table for nested sets
+DROP TABLE IF EXISTS `awf_dbtest_nestedsets`;
+CREATE TABLE `awf_dbtest_nestedsets` (
+  `dbtest_nestedset_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `title` varchar(255) NOT NULL DEFAULT '',
+  `slug` varchar(255) NOT NULL DEFAULT '',
+  `lft` int(11) DEFAULT NULL,
+  `rgt` int(11) DEFAULT NULL,
+  `hash` char(40) DEFAULT NULL
+);
+
+CREATE INDEX `idx_nestedsets_lft` ON `awf_dbtest_nestedsets` (`lft`);
+CREATE INDEX `idx_nestedsets_lft_2` ON `awf_dbtest_nestedsets` (`lft`, `rgt`);
+CREATE INDEX `idx_nestedsets_rgt` ON `awf_dbtest_nestedsets` (`rgt`);
+CREATE INDEX `idx_nestedsets_char` ON `awf_dbtest_nestedsets` (`hash`);
+
+CREATE TABLE `awf_dbtest_nestedbares` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `title` varchar(255) NOT NULL DEFAULT '',
+  `lft` int(11) DEFAULT NULL,
+  `rgt` int(11) DEFAULT NULL
+);
+
+CREATE INDEX `idx_nestedbares_lft` ON `awf_dbtest_nestedbares` (`lft`);
+CREATE INDEX `idx_nestedbares_lft_2` ON `awf_dbtest_nestedbares` (`lft`, `rgt`);
+CREATE INDEX `idx_nestedbares_rgt` ON `awf_dbtest_nestedbares` (`rgt`);
