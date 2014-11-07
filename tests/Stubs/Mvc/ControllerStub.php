@@ -97,5 +97,10 @@ class ControllerStub extends Controller
 
         return true;
     }
+
+    protected function imnothere()
+    {
+        // This function is here just to be sure that the Controller is not including it inside the task map
+    }
 }
 

@@ -64,6 +64,32 @@ class ControllerTest extends DatabaseMysqlCase
 
     /**
      * @group           Controller
+     * @group           ControllerConstruct
+     * @covers          Controller::__construct
+     */
+    public function test__constructTaskMap()
+    {
+        $container  = new Container();
+        $controller = new ControllerStub($container);
+
+        $tasks = ReflectionHelper::getValue($controller, 'taskMap');
+
+        // Remove reference to __call magic method
+        unset($tasks['__call']);
+
+        $check = array(
+            'onbeforedummy' => 'onBeforeDummy',
+            'onafterdummy'  => 'onAfterDummy',
+            'display'       => 'display',
+            'main'          => 'main',
+            '__default'     => 'main'
+        );
+
+        $this->assertEquals($check, $tasks, 'Controller::__construct failed to create the taskMap array');
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerExecute
      * @covers          Controller::execute
      * @dataProvider    ControllerDataprovider::getTestExecute
