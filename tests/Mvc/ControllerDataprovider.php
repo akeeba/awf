@@ -2,6 +2,171 @@
 
 class ControllerDataprovider
 {
+    public static function getTestExecute()
+    {
+        $data[] = array(
+            array(
+                'task' => 'foobar',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => true,
+                    'after' => true,
+                    'taskMap' => array(
+                        'foobar' => 'foobar',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array',
+                'doTask' => 'foobar',
+                'before' => 0,
+                'task' => 1,
+                'after' => 0,
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'foobar',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => false,
+                    'after' => true,
+                    'taskMap' => array(
+                        'foobar' => 'foobar',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array',
+                'doTask' => 'foobar',
+                'before' => 0,
+                'task' => 1,
+                'after' => 0,
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'foobar',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => true,
+                    'after' => true,
+                    'taskMap' => array(
+                        '__default' => 'foobar'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined as default inside the taskMap array',
+                'doTask' => 'foobar',
+                'before' => 0,
+                'task' => 1,
+                'after' => 0,
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'dummy',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => true,
+                    'after' => true,
+                    'taskMap' => array(
+                        'dummy' => 'dummy',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array, onBefore and onAfter return true',
+                'doTask' => 'dummy',
+                'before' => 1,
+                'task' => 1,
+                'after' => 1,
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'dummy',
+                'mock' => array(
+                    'before' => false,
+                    'task'  => true,
+                    'after' => true,
+                    'taskMap' => array(
+                        'dummy' => 'dummy',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array, onBefore returns false and onAfter returns true',
+                'doTask' => null,
+                'before' => 1,
+                'task' => 0,
+                'after' => 0,
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'dummy',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => true,
+                    'after' => false,
+                    'taskMap' => array(
+                        'dummy' => 'dummy',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array, onBefore returns true and onAfter returns false',
+                'doTask' => 'dummy',
+                'before' => 1,
+                'task' => 1,
+                'after' => 1,
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'task' => 'dummy',
+                'mock' => array(
+                    'before' => true,
+                    'task'  => false,
+                    'after' => false,
+                    'taskMap' => array(
+                        'dummy' => 'dummy',
+                        '__default' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Task is defined inside the taskMap array, task returns false onBefore returns true and onAfter returns false',
+                'doTask' => 'dummy',
+                'before' => 1,
+                'task' => 1,
+                'after' => 1,
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestDisplay()
     {
         $data[] = array(

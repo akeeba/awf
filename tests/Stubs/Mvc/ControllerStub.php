@@ -86,13 +86,13 @@ class ControllerStub extends Controller
         return true;
     }
 
-    public function onAfterDummy($oid)
+    public function onAfterDummy()
     {
         if(isset($this->mockedMethods['onAfterDummy']))
         {
             $func = $this->mockedMethods['onAfterDummy'];
 
-            return call_user_func_array($func, array($this, $oid));
+            return call_user_func_array($func, array($this));
         }
 
         return true;

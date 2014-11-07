@@ -25,8 +25,66 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerExecute
+     * @covers          Controller::execute
+     * @dataProvider    ControllerDataprovider::getTestExecute
+     */
+    public function testExecute($test, $check)
+    {
+        $msg        = 'Controller::execute %s - Case: '.$check['case'];
+        $before     = 0;
+        $task       = 0;
+        $after      = 0;
+        $container  = new Container();
+        $controller = new ControllerStub($container, array(
+            'onBeforeDummy' => function() use (&$before, $test){
+                $before++;
+                return $test['mock']['before'];
+            },
+            'onAfterDummy' => function() use (&$after, $test){
+                $after++;
+                return $test['mock']['after'];
+            },
+            $test['task'] => function() use(&$task, $test){
+                $task++;
+                return $test['mock']['task'];
+            }
+        ));
+
+        ReflectionHelper::setValue($controller, 'taskMap', $test['mock']['taskMap']);
+
+        $result = $controller->execute($test['task']);
+
+        $doTask = ReflectionHelper::getValue($controller, 'doTask');
+
+        $this->assertEquals($check['doTask'], $doTask, sprintf($msg, 'Failed to set the $doTask property'));
+        $this->assertEquals($check['before'], $before, sprintf($msg, 'Invoked the onBefore<task> method the wrong amount of times'));
+        $this->assertEquals($check['task'], $task, sprintf($msg, 'Invoked the <task> method the wrong amount of times'));
+        $this->assertEquals($check['after'], $after, sprintf($msg, 'Invoked the onAfter<task> method the wrong amount of times'));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+    }
+
+    /**
+     * @group           Controller
+     * @group           ControllerExecute
+     * @covers          Controller::execute
+     */
+    public function testExecuteException()
+    {
+        $this->setExpectedException('Exception');
+
+        $container  = new Container();
+        $controller = new ControllerStub($container);
+
+        ReflectionHelper::setValue($controller, 'taskMap', array());
+
+        $controller->execute('foobar');
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerDisplay
-     * @covers          Controller::Display
+     * @covers          Controller::display
      * @dataProvider    ControllerDataprovider::getTestDisplay
      */
     public function testDisplay($test, $check)
