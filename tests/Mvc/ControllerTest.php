@@ -25,6 +25,45 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerConstruct
+     * @covers          Controller::__construct
+     * @dataProvider    ControllerDataprovider::getTest__construct
+     */
+    public function test__construct($test, $check)
+    {
+        $containerSetup = array(
+            'input' => new Input(
+                array(
+                    'layout' => $test['layout']
+                )
+            )
+        );
+
+        if($test['mvc'])
+        {
+            $containerSetup['mvc_config'] = $test['mvc'];
+        }
+
+        $msg       = 'Controller::__construct %s - Case: '.$check['case'];
+        $container = new Container($containerSetup);
+
+        // First of all let's get the mock of the object WITHOUT calling the constructor
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ControllerStub', array('registerDefaultTask', 'setModelName', 'setViewName'), array(), '', false);
+        $controller->expects($this->once())->method('registerDefaultTask')->with($this->equalTo($check['defaultTask']));
+        $controller->expects($check['viewName'] ? $this->once() : $this->never())->method('setViewName')->with($this->equalTo($check['viewName']));
+        $controller->expects($check['modelName'] ? $this->once() : $this->never())->method('setModelName')->with($this->equalTo($check['modelName']));
+
+        // Now I can explicitly call the constructor
+        $controller->__construct($container);
+
+        $layout  = ReflectionHelper::getValue($controller, 'layout');
+
+        $this->assertEquals($check['layout'], $layout, sprintf($msg, 'Failed to set the layout'));
+        $this->assertEquals($check['defView'], $controller->default_view, sprintf($msg, 'Failed to set the default view'));
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerExecute
      * @covers          Controller::execute
      * @dataProvider    ControllerDataprovider::getTestExecute

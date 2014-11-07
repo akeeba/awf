@@ -243,7 +243,7 @@ class Controller
 			$container = Application::getInstance()->getContainer();
 		}
 
-		if (array_key_exists('mvc_config', $container))
+		if (isset($container['mvc_config']))
 		{
 			$config = $container['mvc_config'];
 		}

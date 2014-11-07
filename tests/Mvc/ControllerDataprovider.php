@@ -2,6 +2,46 @@
 
 class ControllerDataprovider
 {
+    public static function getTest__construct()
+    {
+        $data[] = array(
+            array(
+                'layout' => null,
+                'mvc'    => null
+            ),
+            array(
+                'case' => 'No layout, no mvc_config passed',
+                'defaultTask' => 'main',
+                'defView'     => 'dummycontroller',
+                'layout'      => null,
+                'viewName'    => false,
+                'modelName'   => false
+            )
+        );
+
+        $data[] = array(
+        array(
+            'layout' => 'foobar',
+            'mvc'    => array(
+                'viewName'  => 'dummy',
+                'modelName' => 'dummy',
+                'default_view' => 'foobar',
+                'default_task' => 'dummy'
+            )
+        ),
+        array(
+            'case' => 'Layout and mvc_config passed',
+            'defaultTask' => 'dummy',
+            'defView'     => 'foobar',
+            'layout'      => 'foobar',
+            'viewName'    => 'dummy',
+            'modelName'   => 'dummy'
+        )
+    );
+
+        return $data;
+    }
+
     public static function getTestExecute()
     {
         $data[] = array(
