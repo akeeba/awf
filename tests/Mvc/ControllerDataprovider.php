@@ -2,6 +2,49 @@
 
 class ControllerDataprovider
 {
+    public static function getTestDisplay()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getModel'  => false,
+                    'task'      => 'foobar',
+                    'doTask'    => 'foobar',
+                    'layout'    => null
+                )
+            ),
+            array(
+                'case'          => 'Model not created, layout is null',
+                'modelCounter'  => 0,
+                'layoutCounter' => 0,
+                'layout'        => null,
+                'task'          => 'foobar',
+                'doTask'        => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getModel'  => new \Awf\Tests\Stubs\Mvc\ModelStub(),
+                    'task'      => 'foobar',
+                    'doTask'    => 'foobar',
+                    'layout'    => 'dummy'
+                )
+            ),
+            array(
+                'case'          => 'Model created, layout is not null',
+                'modelCounter'  => 1,
+                'layoutCounter' => 1,
+                'layout'        => 'dummy',
+                'task'          => 'foobar',
+                'doTask'        => 'foobar'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestGetModel()
     {
         $data[] = array(

@@ -501,7 +501,7 @@ class Controller
 	 *
 	 * @return  View  The instance of the Model known to this Controller
 	 */
-	public final function getView($name = null, $config = array())
+	public function getView($name = null, $config = array())
 	{
 		if (!empty($name))
 		{

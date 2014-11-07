@@ -25,6 +25,52 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerDisplay
+     * @covers          Controller::Display
+     * @dataProvider    ControllerDataprovider::getTestDisplay
+     */
+    public function testDisplay($test, $check)
+    {
+        $msg = 'Controller::display %s - Case: '.$check['case'];
+
+        $layoutCounter = 0;
+        $layoutCheck   = null;
+        $modelCounter  = 0;
+        $container     = new Container();
+
+        $view = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ViewStub', array('setDefaultModel', 'setLayout', 'display'), array($container));
+        $view->expects($this->any())->method('display')->willReturn(null);
+        $view->expects($this->any())->method('setDefaultModel')->willReturnCallback(
+            function($model) use (&$modelCounter){
+                $modelCounter++;
+            }
+        );
+        $view->expects($this->any())->method('setLayout')->willReturnCallback(
+            function($layout) use (&$layoutCounter, &$layoutCheck){
+                $layoutCounter++;
+                $layoutCheck = $layout;
+            }
+        );
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ControllerStub', array('getView', 'getModel'), array($container));
+        $controller->expects($this->any())->method('getModel')->willReturn($test['mock']['getModel']);
+        $controller->expects($this->any())->method('getView')->willReturn($view);
+
+        ReflectionHelper::setValue($controller, 'task'  , $test['mock']['task']);
+        ReflectionHelper::setValue($controller, 'doTask', $test['mock']['doTask']);
+        ReflectionHelper::setValue($controller, 'layout', $test['mock']['layout']);
+
+        $controller->display();
+
+        $this->assertEquals($check['modelCounter'], $modelCounter, sprintf($msg, 'Failed to set view default model the correct amount of times'));
+        $this->assertEquals($check['layoutCounter'], $layoutCounter, sprintf($msg, 'Failed to set view layout the correct amount of times'));
+        $this->assertEquals($check['layout'], $layoutCheck, sprintf($msg, 'Set the wrong view layout'));
+        $this->assertEquals($check['task'], $view->task, sprintf($msg, 'Set the wrong view task'));
+        $this->assertEquals($check['doTask'], $view->doTask, sprintf($msg, 'Set the wrong view doTask'));
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerGetModel
      * @covers          Controller::getModel
      * @dataProvider    ControllerDataprovider::getTestGetModel
