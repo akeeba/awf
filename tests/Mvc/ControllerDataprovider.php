@@ -2,6 +2,89 @@
 
 class ControllerDataprovider
 {
+    public static function getTestgetInstance()
+    {
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => null,
+                'controller' => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container nor controller. No view set in the input',
+                'result' => 'Fakeapp\\Controller\\DefaultController'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => 'Fakeapp',
+                'container'  => null,
+                'controller' => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'With application, no container nor controller. No view set in the input',
+                'result' => 'Fakeapp\\Controller\\DefaultController'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => null,
+                'controller' => 'foobar',
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container and controller is set (singular). No view set in the input',
+                'result' => 'Fakeapp\\Controller\\Foobars'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'controller' => 'foobar',
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container and controller is set (singular). No view set in the input',
+                'result' => 'Fakeapp\\Controller\\Foobars'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'controller' => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, with container and no controller. No view set in the input',
+                'result' => 'Fakeapp\\Controller\\DefaultController'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'controller' => null,
+                'view'       => 'dummy'
+            ),
+            array(
+                'case'   => 'No application, with container and no controller. View set in the input',
+                'result' => 'Fakeapp\\Controller\\Dummy'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTest__construct()
     {
         $data[] = array(

@@ -25,6 +25,31 @@ class ControllerTest extends DatabaseMysqlCase
 {
     /**
      * @group           Controller
+     * @group           ControllerGetInstance
+     * @covers          Controller::getInstance
+     * @dataProvider    ControllerDataprovider::getTestgetInstance
+     */
+    public function testGetInstance($test, $check)
+    {
+        $msg       = 'Controller::getInstance %s - Case: '.$check['case'];
+        $container = null;
+
+        if($test['container'])
+        {
+            $container = new Container(array(
+                'input' => new Input(array(
+                    'view' => $test['view']
+                ))
+            ));
+        }
+
+        $result = ControllerStub::getInstance($test['appName'], $test['controller'], $container);
+
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Loaded the wrong controller'));
+    }
+
+    /**
+     * @group           Controller
      * @group           ControllerConstruct
      * @covers          Controller::__construct
      * @dataProvider    ControllerDataprovider::getTest__construct
