@@ -6,11 +6,13 @@ class ControllerDataprovider
     {
         $data[] = array(
             array(
-                'layout' => null,
-                'mvc'    => null
+                'container' => true,
+                'layout'    => null,
+                'mvc'       => null
             ),
             array(
-                'case' => 'No layout, no mvc_config passed',
+                'case'        => 'No layout, no mvc_config passed',
+                'counterApp'  => 0,
                 'defaultTask' => 'main',
                 'defView'     => 'dummycontroller',
                 'layout'      => null,
@@ -20,24 +22,43 @@ class ControllerDataprovider
         );
 
         $data[] = array(
-        array(
-            'layout' => 'foobar',
-            'mvc'    => array(
-                'viewName'  => 'dummy',
-                'modelName' => 'dummy',
-                'default_view' => 'foobar',
-                'default_task' => 'dummy'
+            array(
+                'container' => true,
+                'layout'    => 'foobar',
+                'mvc'       => array(
+                    'viewName'  => 'dummy',
+                    'modelName' => 'dummy',
+                    'default_view' => 'foobar',
+                    'default_task' => 'dummy'
+                )
+            ),
+            array(
+                'case'        => 'Layout and mvc_config passed',
+                'counterApp'  => 0,
+                'defaultTask' => 'dummy',
+                'defView'     => 'foobar',
+                'layout'      => 'foobar',
+                'viewName'    => 'dummy',
+                'modelName'   => 'dummy'
             )
-        ),
-        array(
-            'case' => 'Layout and mvc_config passed',
-            'defaultTask' => 'dummy',
-            'defView'     => 'foobar',
-            'layout'      => 'foobar',
-            'viewName'    => 'dummy',
-            'modelName'   => 'dummy'
-        )
-    );
+        );
+
+        $data[] = array(
+            array(
+                'container' => false,
+                'layout'    => null,
+                'mvc'       => null
+            ),
+            array(
+                'case'        => 'No layout, no mvc_config passed, no container passed',
+                'counterApp'  => 1,
+                'defaultTask' => 'main',
+                'defView'     => 'dummycontroller',
+                'layout'      => null,
+                'viewName'    => false,
+                'modelName'   => false
+            )
+        );
 
         return $data;
     }

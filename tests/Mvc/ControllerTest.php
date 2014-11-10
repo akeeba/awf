@@ -44,8 +44,28 @@ class ControllerTest extends DatabaseMysqlCase
             $containerSetup['mvc_config'] = $test['mvc'];
         }
 
-        $msg       = 'Controller::__construct %s - Case: '.$check['case'];
-        $container = new Container($containerSetup);
+        $msg        = 'Controller::__construct %s - Case: '.$check['case'];
+        $container  = null;
+        $counterApp = 0;
+
+        if($test['container'])
+        {
+            $container = new Container($containerSetup);
+        }
+        else
+        {
+            $fakeapp    = new ClosureHelper(array(
+                'getContainer' => function () use(&$counterApp, &$containerSetup){
+                    $counterApp++;
+
+                    return new Container($containerSetup);
+                }
+            ));
+
+            // Let's save current app istances, I'll have to restore them later
+            $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
+        }
 
         // First of all let's get the mock of the object WITHOUT calling the constructor
         $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ControllerStub', array('registerDefaultTask', 'setModelName', 'setViewName'), array(), '', false);
@@ -56,10 +76,16 @@ class ControllerTest extends DatabaseMysqlCase
         // Now I can explicitly call the constructor
         $controller->__construct($container);
 
+        if(!$test['container'])
+        {
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', $oldinstances);
+        }
+
         $layout  = ReflectionHelper::getValue($controller, 'layout');
 
         $this->assertEquals($check['layout'], $layout, sprintf($msg, 'Failed to set the layout'));
         $this->assertEquals($check['defView'], $controller->default_view, sprintf($msg, 'Failed to set the default view'));
+        $this->assertEquals($check['counterApp'], $counterApp, sprintf($msg, 'Failed to correctly get the container from the Application'));
     }
 
     /**
