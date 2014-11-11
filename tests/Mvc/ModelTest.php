@@ -100,6 +100,21 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           Model
+     * @group           Model__set
+     * @covers          Model::__set
+     */
+    public function test__set()
+    {
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ModelStub', array('setState'));
+        $model->expects($this->once())->method('setState')->with($this->equalTo('foo'), $this->equalTo('bar'));
+
+        $result = $model->foo = 'bar';
+
+        $this->assertEquals('bar', $result, 'Model::__set Returned the wrong value');
+    }
+
+    /**
+     * @group           Model
      * @group           Model__call
      * @covers          Model::__call
      */
