@@ -20,6 +20,25 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Model
+     * @group           ModelClearState
+     * @covers          Model::clearState
+     */
+    public function testClearState()
+    {
+        $model = new ModelStub();
+        ReflectionHelper::setValue($model, 'state', (object) array('foo' => 'bar'));
+
+        $result = $model->clearState();
+
+        // Let's convert the object to an array, so I can assert that is empty
+        $state = (array) ReflectionHelper::getValue($model, 'state');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Model', $result, 'Model::clearState should return an instance of itself');
+        $this->assertEmpty($state, 'Model::clearState failed to clear the internal state');
+    }
+
+    /**
+     * @group           Model
      * @group           ModelClearInput
      * @covers          Model::clearInput
      */
