@@ -2,6 +2,67 @@
 
 class ModelDataprovider
 {
+    public static function getTestSetState()
+    {
+        $data[] = array(
+            array(
+                'property' => 'foo',
+                'value'    => 'bar',
+                'mock'     => array(
+                    'state' => null
+                )
+            ),
+            array(
+                'case' => 'Setting a propery to a value, internal state is empty',
+                'result' => 'bar',
+                'state' => (object) array(
+                    'foo' => 'bar'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'property' => 'foo',
+                'value'    => 'bar',
+                'mock'     => array(
+                    'state' => (object) array(
+                        'dummy' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Setting a propery to a value, internal state is not empty',
+                'result' => 'bar',
+                'state' => (object) array(
+                    'foo' => 'bar',
+                    'dummy' => 'test'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'property' => 'foo',
+                'value'    => 'bar',
+                'mock'     => array(
+                    'state' => (object) array(
+                        'foo' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Trying to overwrite a propery value, internal state is not empty',
+                'result' => 'bar',
+                'state' => (object) array(
+                    'foo' => 'bar'
+                )
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSavestate()
     {
         $data[] = array(

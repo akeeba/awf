@@ -18,6 +18,29 @@ require_once 'ModelDataprovider.php';
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
+
+    /**
+     * @group           Model
+     * @group           ModelSetState
+     * @covers          Model::setState
+     * @dataProvider    ModelDataprovider::getTestSetState
+     */
+    public function testSetState($test, $check)
+    {
+        $msg = 'Model::setState %s - Case: '.$check['case'];
+
+        $model = new ModelStub();
+
+        ReflectionHelper::setValue($model, 'state', $test['mock']['state']);
+
+        $result = $model->setState($test['property'], $test['value']);
+
+        $state  = ReflectionHelper::getValue($model, 'state');
+
+        $this->assertEquals($check['state'], $state, sprintf($msg, 'Failed to set the property'));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+    }
+
     /**
      * @group           Model
      * @group           ModelClearState
