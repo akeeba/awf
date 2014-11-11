@@ -3,14 +3,11 @@
  * @package        awf
  * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
- *
- * This class is adapted from Joomla! Framework
  */
 
 namespace Awf\Tests\Controller;
 
 use Awf\Input\Input;
-use Awf\Tests\Database\DatabaseMysqlCase;
 use Awf\Database\Driver;
 use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -21,7 +18,7 @@ use Awf\Tests\Stubs\Mvc\ViewStub;
 
 require_once 'ControllerDataprovider.php';
 
-class ControllerTest extends DatabaseMysqlCase
+class ControllerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Controller
