@@ -20,6 +20,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Model
+     * @group           ModelGetClone
+     * @covers          Model::getClone
+     */
+    public function testGetClone()
+    {
+        $model = new ModelStub();
+        $clone = $model->getClone();
+
+        $this->assertNotSame($model, $clone, 'Model::getClone failed to clone the current instance');
+    }
+
+    /**
+     * @group           Model
      * @group           ModelSavestate
      * @covers          Model::savestate
      * @dataProvider    ModelDataprovider::getTestSavestate

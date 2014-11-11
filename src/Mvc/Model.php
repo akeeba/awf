@@ -484,7 +484,7 @@ class Model
 	 *
 	 * @return  $this for chaining
 	 */
-	public function &getClone()
+	public function getClone()
 	{
 		$clone = clone($this);
 
