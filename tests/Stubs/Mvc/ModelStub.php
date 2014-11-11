@@ -18,6 +18,9 @@ class ModelStub extends Model
     /**  @var null The container passed in the construct */
     public    $passedContainer = null;
 
+    /**  @var null The container passed in the getInstance method */
+    public static $passedContainerStatic = null;
+
     /** @var array Simply counter to check if a specific function is called */
     public    $methodCounter = array(
         'getClone'   => 0,
@@ -53,6 +56,16 @@ class ModelStub extends Model
         }
 
         parent::__construct($container);
+    }
+
+    public static function getInstance($appName = '', $modelName = '', $container = null)
+    {
+        if(is_object($container))
+        {
+            self::$passedContainerStatic = clone $container;
+        }
+
+        return parent::getInstance($appName, $modelName, $container);
     }
 
     public function __call($method, $args)

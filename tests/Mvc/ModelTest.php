@@ -79,6 +79,27 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           Model
+     * @group           ModelGetTmpInstance
+     * @covers          Model::getTmpInstance
+     */
+    public function testGetTmpInstance()
+    {
+        // I will only check if the additional config options are set
+        $model = ModelStub::getTmpInstance('', 'Foobar');
+
+        $container = $model::$passedContainerStatic;
+
+        $this->assertArrayHasKey('modelTemporaryInstance', $container['mvc_config']);
+        $this->assertArrayHasKey('modelClearState', $container['mvc_config']);
+        $this->assertArrayHasKey('modelClearInput', $container['mvc_config']);
+
+        $this->assertTrue($container['mvc_config']['modelTemporaryInstance']);
+        $this->assertTrue($container['mvc_config']['modelClearState']);
+        $this->assertTrue($container['mvc_config']['modelClearInput']);
+    }
+
+    /**
+     * @group           Model
      * @group           Model__construct
      * @covers          Model::__construct
      * @dataProvider    ModelDataprovider::getTest__construct()
