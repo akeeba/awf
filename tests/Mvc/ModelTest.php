@@ -21,6 +21,64 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Model
+     * @group           ModelGetInstance
+     * @covers          Model::getInstance
+     * @dataProvider    ModelDataprovider::getTestGetInstance
+     */
+    public function testGetInstance($test, $check)
+    {
+        $msg       = 'Model::getInstance %s - Case: '.$check['case'];
+        $container = null;
+        $counter   = array(
+            'getClone'   => 0,
+            'savestate'  => 0,
+            'clearState' => 0,
+            'clearInput' => 0
+        );
+
+        if($test['container'])
+        {
+            $setup = array(
+                'input' => new Input(array(
+                    'view' => $test['view']
+                ))
+            );
+
+            // This is an Ugly Test™, however in this way we will be able to test if the option we are passing are considered
+            if(isset($test['tempInstance']))
+            {
+                $setup['mvc_config']['modelTemporaryInstance'] = $test['tempInstance'];
+            }
+
+            if(isset($test['clearState']))
+            {
+                $setup['mvc_config']['modelClearState'] = $test['clearState'];
+            }
+
+            if(isset($test['clearInput']))
+            {
+                $setup['mvc_config']['modelClearInput'] = $test['clearInput'];
+            }
+
+            $container = new Container($setup);
+        }
+
+        $result  = ModelStub::getInstance($test['appName'], $test['model'], $container);
+
+        if(isset($result->methodCounter))
+        {
+            $counter = $result->methodCounter;
+        }
+
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Loaded the wrong controller'));
+        $this->assertEquals($check['getClone'], $counter['getClone'], sprintf($msg, 'Invoked getClone the wrong number of times (modelTemporaryInstance option)'));
+        $this->assertEquals($check['savestate'], $counter['savestate'], sprintf($msg, 'Invoked savestate the wrong number of times (modelTemporaryInstance option)'));
+        $this->assertEquals($check['clearState'], $counter['clearState'], sprintf($msg, 'Invoked clearState the wrong number of times (modelClearState option)'));
+        $this->assertEquals($check['clearInput'], $counter['clearInput'], sprintf($msg, 'Invoked clearInput the wrong number of times (modelClearInput option)'));
+    }
+
+    /**
+     * @group           Model
      * @group           Model__construct
      * @covers          Model::__construct
      * @dataProvider    ModelDataprovider::getTest__construct()

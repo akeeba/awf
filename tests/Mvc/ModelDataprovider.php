@@ -2,6 +2,133 @@
 
 class ModelDataprovider
 {
+    public static function getTestgetInstance()
+    {
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => null,
+                'model'      => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container nor model. No view set in the input',
+                'result' => 'Fakeapp\\Model\\DefaultModel',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => 'Fakeapp',
+                'container'  => null,
+                'model'      => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'With application, no container nor model. No view set in the input',
+                'result' => 'Fakeapp\\Model\\DefaultModel',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => null,
+                'model'      => 'foobar',
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container and model is set (singular). No view set in the input',
+                'result' => 'Fakeapp\\Model\\Foobar',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'model'      => 'foobar',
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, no container and model is set (singular). No view set in the input',
+                'result' => 'Fakeapp\\Model\\Foobar',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'model'      => null,
+                'view'       => ''
+            ),
+            array(
+                'case'   => 'No application, with container and no model. No view set in the input',
+                'result' => 'Fakeapp\\Model\\DefaultModel',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'model'      => null,
+                'view'       => 'dummy'
+            ),
+            array(
+                'case'   => 'No application, with container and no model. View set in the input',
+                'result' => 'Fakeapp\\Model\\Dummies',
+                'getClone' => 0,
+                'savestate' => 0,
+                'clearState' => 0,
+                'clearInput' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'appName'    => null,
+                'container'  => true,
+                'model'      => 'foobar',
+                'view'       => '',
+                'tempInstance' => true,
+                'clearState' => true,
+                'clearInput' => true,
+            ),
+            array(
+                'case'   => 'No application, with container and model is set (singular). No view set in the input. Passing extra options in the config',
+                'result' => 'Fakeapp\\Model\\Foobar',
+                'getClone' => 1,
+                'savestate' => 1,
+                'clearState' => 1,
+                'clearInput' => 1
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTest__construct()
     {
         $data[] = array(

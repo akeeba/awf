@@ -95,7 +95,7 @@ class Model
 	 *
 	 * @throws  \RuntimeException  If the Model is not found
 	 */
-	public static function &getInstance($appName = null, $modelName = '', $container = null)
+	public static function getInstance($appName = null, $modelName = '', $container = null)
 	{
 		if (empty($appName) && !is_object($container))
 		{
@@ -112,7 +112,7 @@ class Model
 			$container = Application::getInstance($appName)->getContainer();
 		}
 
-		$config = array_key_exists('mvc_config', $container) ? $container['mvc_config'] : array();
+		$config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 
 		if (empty($modelName))
 		{

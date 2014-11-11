@@ -18,6 +18,14 @@ class ModelStub extends Model
     /**  @var null The container passed in the construct */
     public    $passedContainer = null;
 
+    /** @var array Simply counter to check if a specific function is called */
+    public    $methodCounter = array(
+        'getClone'   => 0,
+        'savestate'  => 0,
+        'clearState' => 0,
+        'clearInput' => 0
+    );
+
     protected $name   = 'nestedset';
 
     /**
@@ -78,6 +86,34 @@ class ModelStub extends Model
         }
 
         return $this->name;
+    }
+
+    public function clearInput()
+    {
+        $this->methodCounter['clearInput']++;
+
+        return parent::clearInput();
+    }
+
+    public function clearState()
+    {
+        $this->methodCounter['clearState']++;
+
+        return parent::clearState();
+    }
+
+    public function getClone()
+    {
+        $this->methodCounter['getClone']++;
+
+        return parent::getClone();
+    }
+
+    public function savestate($newState)
+    {
+        $this->methodCounter['savestate']++;
+
+        return parent::savestate($newState);
     }
 }
 
