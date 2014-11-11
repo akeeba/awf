@@ -18,6 +18,20 @@ require_once 'ModelDataprovider.php';
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group           Model
+     * @group           ModelGetHash
+     * @covers          Model::getHash
+     */
+    public function testGetHash()
+    {
+        $model = new ModelStub();
+
+        // Sadly I can't test for the internal cache, since the variable is declared as static local, so I can't manipulate it :(
+        $hash = $model->getHash();
+
+        $this->assertEquals('Fakeapp.nestedset.', $hash, 'Model::getHash returned the wrong value');
+    }
 
     /**
      * @group           Model
