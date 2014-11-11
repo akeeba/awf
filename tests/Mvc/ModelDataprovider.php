@@ -46,4 +46,65 @@ class ModelDataprovider
 
         return $data;
     }
+
+    public static function getTestPopulatesavestate()
+    {
+        // Savestate is -999 => we are going to save the state
+        $data[] = array(
+            array(
+                'state' => -999,
+                'mock'  => array(
+                    'state' => null
+                )
+            ),
+            array(
+                'savestate' => 1,
+                'state'     => true
+            )
+        );
+
+        // We already saved the state, nothing happens
+        $data[] = array(
+            array(
+                'state' => -999,
+                'mock'  => array(
+                    'state' => true
+                )
+            ),
+            array(
+                'savestate' => 0,
+                'state'     => null
+            )
+        );
+
+        // Savestate is 1 => we are going to save the state
+        $data[] = array(
+            array(
+                'state' => 1,
+                'mock'  => array(
+                    'state' => null
+                )
+            ),
+            array(
+                'savestate' => 1,
+                'state'     => 1
+            )
+        );
+
+        // Savestate is -1 => we are NOT going to save the state
+        $data[] = array(
+            array(
+                'state' => -1,
+                'mock'  => array(
+                    'state' => null
+                )
+            ),
+            array(
+                'savestate' => 1,
+                'state'     => -1
+            )
+        );
+
+        return $data;
+    }
 }

@@ -554,7 +554,7 @@ class Model
 	 *
 	 * @return  static
 	 */
-	public function populateSavesate()
+	public function populateSavestate()
 	{
 		if (is_null($this->_savestate))
 		{

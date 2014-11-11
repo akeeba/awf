@@ -9,7 +9,9 @@
 
 namespace Awf\Tests\Model;
 
+use Awf\Input\Input;
 use Awf\Tests\Helpers\ReflectionHelper;
+use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\ModelStub;
 
 require_once 'ModelDataprovider.php';
@@ -32,6 +34,36 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\\Awf\\Mvc\\Model', $result, sprintf($msg, 'Should return an instance of itself'));
         $this->assertSame($check['state'], $state, sprintf($msg, 'Failed to set the savestate'));
+    }
+
+    /**
+     * @group           Model
+     * @group           ModelPopulateSavestate
+     * @covers          Model::populateSavestate
+     * @dataProvider    ModelDataprovider::getTestPopulatesavestate
+     */
+    public function testPopulateSavestate($test, $check)
+    {
+        $container = new Container(array(
+            'input' => new Input(array(
+                'savestate' => $test['state']
+            ))
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ModelStub', array('savestate'), array($container));
+
+        $matcher = $this->never();
+
+        if($check['savestate'])
+        {
+            $matcher = $this->once();
+        }
+
+        $model->expects($matcher)->method('savestate')->with($this->equalTo($check['state']));
+
+        ReflectionHelper::setValue($model, '_savestate', $test['mock']['state']);
+
+        $model->populateSavestate();
     }
 
     /**
