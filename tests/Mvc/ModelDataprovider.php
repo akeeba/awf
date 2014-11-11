@@ -2,6 +2,125 @@
 
 class ModelDataprovider
 {
+    public static function getTest__construct()
+    {
+        $data[] = array(
+            array(
+                'container' => false,
+                'mvc'       => array()
+            ),
+            array(
+                'case'       => 'Container not passed, state is not set in the mvc_config, no populate, no ignore',
+                'state'      => (object) array(),
+                'populate'   => false,
+                'ignore'     => false,
+                'counterApp' => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'container' => true,
+                'mvc'       => array(
+                    'state' => array(
+                        'dummy' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case'       => 'Passed container, state is set in the mvc_config (array), no populate, no ignore',
+                'state'      => (object) array(
+                    'dummy' => 'test'
+                ),
+                'populate'   => false,
+                'ignore'     => false,
+                'counterApp' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'container' => true,
+                'mvc'       => array(
+                    'state' => 'wrong'
+                )
+            ),
+            array(
+                'case'       => 'Passed container, state is set in the mvc_config (string - wrong), no populate, no ignore',
+                'state'      => (object) array(),
+                'populate'   => false,
+                'ignore'     => false,
+                'counterApp' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'container' => true,
+                'mvc'       => array(
+                    'state' => (object) array(
+                        'dummy' => 'test'
+                    )
+                )
+            ),
+            array(
+                'case'       => 'Passed container, state is set in the mvc_config (object), no populate, no ignore',
+                'state'      => (object) array(
+                    'dummy' => 'test'
+                ),
+                'populate'   => false,
+                'ignore'     => false,
+                'counterApp' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'container' => true,
+                'mvc'       => array(
+                    'state' => (object) array(
+                        'dummy' => 'test'
+                    ),
+                    'use_populate' => true,
+                    'ignore_request' => true
+                )
+            ),
+            array(
+                'case'       => 'Passed container, state is set in the mvc_config (object), with populate and ignore',
+                'state'      => (object) array(
+                    'dummy' => 'test'
+                ),
+                'populate'   => true,
+                'ignore'     => true,
+                'counterApp' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'container' => true,
+                'mvc'       => array(
+                    'state' => (object) array(
+                        'dummy' => 'test'
+                    ),
+                    'use_populate'   => false,
+                    'ignore_request' => false
+                )
+            ),
+            array(
+                'case'       => 'Passed container, state is set in the mvc_config (object), with populate and ignore (they are set to false)',
+                'state'      => (object) array(
+                    'dummy' => 'test'
+                ),
+                'populate'   => false,
+                'ignore'     => false,
+                'counterApp' => 0
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSetState()
     {
         $data[] = array(

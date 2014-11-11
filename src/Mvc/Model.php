@@ -240,6 +240,11 @@ class Model
 			{
 				$this->state = (object)$this->config['state'];
 			}
+			// Protect vs malformed state
+			else
+			{
+				$this->state = new \stdClass();
+			}
 		}
 		else
 		{

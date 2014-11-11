@@ -10,6 +10,7 @@
 namespace Awf\Tests\Model;
 
 use Awf\Input\Input;
+use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\ModelStub;
@@ -18,6 +19,67 @@ require_once 'ModelDataprovider.php';
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @group           Model
+     * @group           Model__construct
+     * @covers          Model::__construct
+     * @dataProvider    ModelDataprovider::getTest__construct()
+     */
+    public function test__construct($test, $check)
+    {
+        $containerSetup = array(
+            'input' => new Input(array(
+                'foo' => 'bar'
+            ))
+        );
+
+        if($test['mvc'])
+        {
+            $containerSetup['mvc_config'] = $test['mvc'];
+        }
+
+        $msg        = 'Model::__construct %s - Case: '.$check['case'];
+        $container  = null;
+        $counterApp = 0;
+
+        if($test['container'])
+        {
+            $container = new Container($containerSetup);
+        }
+        else
+        {
+            $fakeapp    = new ClosureHelper(array(
+                'getContainer' => function () use(&$counterApp, &$containerSetup){
+                    $counterApp++;
+
+                    return new Container($containerSetup);
+                }
+            ));
+
+            // Let's save current app istances, I'll have to restore them later
+            $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
+        }
+
+        $model = new ModelStub($container);
+
+        if(!$test['container'])
+        {
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', $oldinstances);
+        }
+
+        $state     = ReflectionHelper::getValue($model, 'state');
+        $populate  = ReflectionHelper::getValue($model, '_state_set');
+        $ignore    = ReflectionHelper::getValue($model, '_ignoreRequest');
+        $input     = ReflectionHelper::getValue($model, 'input');
+
+        $this->assertEquals(array('foo' => 'bar'), $input->getData(), sprintf($msg, 'Should use the passed input object'));
+        $this->assertEquals($check['state'], $state, sprintf($msg, 'Failed to set the internal state object'));
+        $this->assertEquals($check['populate'], $populate, sprintf($msg, 'Failed to set the internal state marker'));
+        $this->assertEquals($check['ignore'], $ignore, sprintf($msg, 'Failed to set the internal state marker'));
+        $this->assertEquals($check['counterApp'], $counterApp, sprintf($msg, 'Failed to correctly get the container from the Application'));
+    }
+
     /**
      * @group           Model
      * @group           ModelGetHash
