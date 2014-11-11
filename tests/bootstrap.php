@@ -28,7 +28,8 @@ if (false == include __DIR__ . '/../vendor/autoload.php')
 	exit(1);
 }
 
-error_reporting(E_ALL);
+// Don't report strict errors. This is needed because sometimes a test complains about arguments passed as reference
+error_reporting(E_ALL & ~E_STRICT);
 ini_set('display_errors', 1);
 
 // This is necessary for the session testing

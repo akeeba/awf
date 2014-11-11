@@ -31,6 +31,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::__construct
 	 * @since   1.0
 	 */
@@ -74,6 +75,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::__call
 	 * @since   1.0
 	 */
@@ -106,6 +108,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::__get
 	 * @since   1.0
 	 */
@@ -157,6 +160,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::count
 	 * @since   1.0
 	 */
@@ -183,6 +187,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::get
 	 * @since   1.0
 	 */
@@ -229,6 +234,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::def
 	 * @since   1.0
 	 */
@@ -254,6 +260,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::set
 	 * @since   1.0
 	 */
@@ -274,6 +281,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::get
 	 * @since   1.0
 	 */
@@ -324,6 +332,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::get
 	 * @since   1.0
 	 */
@@ -375,6 +384,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::getArray
 	 * @since   1.0
 	 */
@@ -403,6 +413,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::getMethod
 	 * @backupGlobals 1
 	 * @since   1.0
@@ -425,6 +436,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::loadAllInputs
 	 * @backupGlobals 1
 	 * @since   1.0
@@ -454,6 +466,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::serialize
 	 * @since   1.0
 	 */
@@ -479,6 +492,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @return  void
 	 *
+	 * @group   Input
 	 * @covers  Awf\Input\Input::unserialize
 	 * @since   1.0
 	 */
@@ -522,4 +536,3 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		$this->instance = new Input($array, array('filter' => new \Awf\Tests\Stubs\Input\FilterMock));
 	}
 }
-	
