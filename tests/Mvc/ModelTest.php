@@ -100,6 +100,21 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           Model
+     * @group           Model__call
+     * @covers          Model::__call
+     */
+    public function test__call()
+    {
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ModelStub', array('setState'));
+        $model->expects($this->once())->method('setState')->with($this->equalTo('foo'), $this->equalTo('bar'));
+
+        $result = $model->foo('bar');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Model', $result, 'Model::__call should return an istance of itself');
+    }
+
+    /**
+     * @group           Model
      * @group           ModelSavestate
      * @covers          Model::savestate
      * @dataProvider    ModelDataprovider::getTestSavestate

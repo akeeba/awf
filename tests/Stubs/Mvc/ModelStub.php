@@ -58,6 +58,8 @@ class ModelStub extends Model
 
             return call_user_func_array($func, $args);
         }
+
+        return parent::__call($method, $args);
     }
 
     /**
