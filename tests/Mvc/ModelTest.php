@@ -20,6 +20,31 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Model
+     * @group           ModelClearInput
+     * @covers          Model::clearInput
+     */
+    public function testClearInput()
+    {
+        $container = new Container(array(
+            'input' => new Input(array(
+                'foo' => 'bar'
+            ))
+        ));
+
+        $model = new ModelStub($container);
+
+        $result = $model->clearInput();
+
+        /** @var Input $input */
+        $input = ReflectionHelper::getValue($model, 'input');
+        $data  = $input->getData();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\Model', $result, 'Model::clearInput should return an instance of itself');
+        $this->assertEmpty($data, 'Model::clearInput should clear the internal input');
+    }
+
+    /**
+     * @group           Model
      * @group           ModelGetClone
      * @covers          Model::getClone
      */
