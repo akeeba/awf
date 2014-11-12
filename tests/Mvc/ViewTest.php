@@ -136,6 +136,75 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewDisplay
+     * @covers          View::display
+     * @dataProvider    ViewDataprovider::getTestDisplay
+     */
+    public function testDisplay($test, $check)
+    {
+        $msg     = 'View::display %s - Case: '.$check['case'];
+        $before  = array('counter' => 0, 'tpl' => null);
+        $after   = array('counter' => 0, 'tpl' => null);
+        $methods = array();
+
+        if(isset($test['mock']['before']))
+        {
+            $methods['onBeforeDummy'] = function($self, $tpl) use($test, &$before){
+                $before['counter']++;
+                $before['tpl'] = $tpl;
+
+                return $test['mock']['before'];
+            };
+        }
+
+        if(isset($test['mock']['after']))
+        {
+            $methods['onAfterDummy'] = function($self, $tpl) use($test, &$after){
+                $after['counter']++;
+                $after['tpl'] = $tpl;
+
+                return $test['mock']['after'];
+            };
+        }
+
+        $view = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ViewStub', array('loadTemplate'), array(null, $methods));
+
+        if($check['exception'] === false)
+        {
+            $this->expectOutputString($check['output']);
+        }
+        else
+        {
+            $this->setExpectedException('Exception', '', $check['exception']);
+        }
+
+        // Do I really invoke the load method?
+        if($check['load'])
+        {
+            $view->expects($this->once())->method('loadTemplate')->with($check['tpl'])->willReturn($test['mock']['output']);
+        }
+        else
+        {
+            $view->expects($this->never())->method('loadTemplate');
+        }
+
+        ReflectionHelper::setValue($view, 'doTask', $test['mock']['doTask']);
+
+        $result = $view->display($test['tpl']);
+
+        // I can run assertions only if the display method doesn't bail out with an exception
+        if($check['exception'] === false)
+        {
+            $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to correctly process the onBefore method'));
+            $this->assertEquals($check['after'], $before, sprintf($msg, 'Failed to correctly process the onAfter method'));
+
+            // If we don't get an exception, we should return true
+            $this->assertSame(true, $result, sprintf($msg, 'Should return true if an exception is not thrown'));
+        }
+    }
+
+    /**
+     * @group           View
      * @group           ViewGetLayout
      * @covers          View::getLayout
      */
