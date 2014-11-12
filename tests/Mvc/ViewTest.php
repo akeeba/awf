@@ -31,6 +31,38 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewGet
+     * @covers          View::get
+     * @dataProvider    ViewDataprovider::getTestGet
+     */
+    public function testGet($test, $check)
+    {
+        $msg  = 'View::get %s - Case: '.$check['case'];
+        $view = new ViewStub();
+
+        if($test['mock']['viewProperty'])
+        {
+            $key = $test['mock']['viewProperty']['key'];
+            $view->$key = $test['mock']['viewProperty']['value'];
+        }
+
+        ReflectionHelper::setValue($view, 'defaultModel', $test['mock']['defaultModel']);
+        ReflectionHelper::setValue($view, 'modelInstances', $test['mock']['instances']);
+
+        $result = $view->get($test['property'], $test['default'], $test['model']);
+
+        if(is_object($result))
+        {
+            $this->assertInstanceOf('\\Awf\\Mvc\\Model', $result, sprintf($msg, 'Should return an instance of the model'));
+        }
+        else
+        {
+            $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+        }
+    }
+
+    /**
+     * @group           View
      * @group           ViewGetModel
      * @covers          View::getModel
      * @dataProvider    ViewDataprovider::getTestGetModel

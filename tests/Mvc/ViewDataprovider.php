@@ -2,6 +2,143 @@
 
 class ViewDataprovider
 {
+    public function getTestGet()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'foobars',
+                    'instances' => array(
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                    )
+                ),
+                'property' => 'foobar',
+                'default'  => null,
+                'model'    => null
+            ),
+            array(
+                'case'   => 'Using default model, get<Property>() exists in the model',
+                'result' => 'ok'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'foobars',
+                    'instances' => array(
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                    )
+                ),
+                'property' => 'dummy',
+                'default'  => null,
+                'model'    => null
+            ),
+            array(
+                'case'   => 'Using default model, <Property>() exists in the model',
+                'result' => 'ok'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'foobars',
+                    'instances' => array(
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                    )
+                ),
+                'property' => 'nothere',
+                'default'  => 'default',
+                'model'    => null
+            ),
+            array(
+                'case'   => "Using default model, there isn't any method in the model",
+                'result' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'dummy',
+                    'instances' => array(
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                    )
+                ),
+                'property' => 'foobar',
+                'default'  => null,
+                'model'    => 'foobars'
+            ),
+            array(
+                'case'   => 'Requesting for a specific model, get<Property>() exists in the model',
+                'result' => 'ok'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'dummy',
+                    'instances' => array(
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                    )
+                ),
+                'property' => 'dummy',
+                'default'  => null,
+                'model'    => 'foobars'
+            ),
+            array(
+                'case'   => 'Requesting for a specific model, <Property>() exists in the model',
+                'result' => 'ok'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(
+                        'key'   => 'foobar',
+                        'value' => 'test'
+                    ),
+                    'defaultModel' => 'foobars',
+                    'instances' => array()
+                ),
+                'property' => 'foobar',
+                'default'  => 'default',
+                'model'    => null
+            ),
+            array(
+                'case'   => 'Model not found, getting (existing) view property',
+                'result' => 'test'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'viewProperty' => array(),
+                    'defaultModel' => 'foobars',
+                    'instances' => array()
+                ),
+                'property' => 'foobar',
+                'default'  => 'default',
+                'model'    => null
+            ),
+            array(
+                'case'   => 'Model not found, getting (non-existing) view property',
+                'result' => 'default'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestGetModel()
     {
         $data[] = array(

@@ -384,6 +384,8 @@ class View
 				{
 					return $default;
 				}
+
+				return $result;
 			}
 		}
 		// If the model doesn't exist, try to fetch a View property

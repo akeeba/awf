@@ -101,6 +101,22 @@ class ModelStub extends Model
         return $this->name;
     }
 
+    /**
+     * Method to test if the view can invoke model methods using the syntax $view->get('foobar');
+     */
+    public function getFoobar()
+    {
+        return 'ok';
+    }
+
+    /**
+     * Method to test if the view can invoke model methods using the syntax $view->get('dummy');
+     */
+    public function dummy()
+    {
+        return 'ok';
+    }
+
     public function clearInput()
     {
         $this->methodCounter['clearInput']++;
