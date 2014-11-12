@@ -31,6 +31,23 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewSetDefaultModel
+     * @covers          View::setDefaultModel
+     */
+    public function testSetDefaultModel()
+    {
+        $model = new ModelStub();
+
+        $view  = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ViewStub', array('setDefaultModelName', 'setModel'));
+        $view->expects($this->once())->method('setDefaultModelName')->with($this->equalTo('nestedset'));
+        // The first param is NULL since we mocked the previous function and the property defaultModel is not set
+        $view->expects($this->once())->method('setModel')->with($this->equalTo(null), $this->equalTo($model));
+
+        $view->setDefaultModel($model);
+    }
+
+    /**
+     * @group           View
      * @group           ViewSetDefaultModelName
      * @covers          View::setDefaultModelName
      */
