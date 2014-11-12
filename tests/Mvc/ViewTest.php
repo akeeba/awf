@@ -104,6 +104,20 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewGetLayout
+     * @covers          View::getLayout
+     */
+    public function testGetLayout()
+    {
+        $view = new ViewStub();
+
+        ReflectionHelper::setValue($view, 'layout', 'foobar');
+
+        $this->assertEquals('foobar', $view->getLayout(), 'View::getLayout Failed to return the layout');
+    }
+
+    /**
+     * @group           View
      * @group           ViewGetLayoutTemplate
      * @covers          View::getLayoutTemplate
      */
