@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -13,6 +13,7 @@ use Awf\Hal\Link;
 use Awf\Mvc\DataModel;
 use Awf\Pagination\Pagination;
 use Awf\Router\Router;
+use Awf\Text\Text;
 use Awf\Uri\Uri;
 
 class Json extends Raw
@@ -418,4 +419,4 @@ class Json extends Raw
 
 		return $protoUri;
 	}
-} 
+}

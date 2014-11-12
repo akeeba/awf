@@ -597,6 +597,4 @@ class Model
 	{
 		return $this->_ignoreRequest;
 	}
-
-
 }

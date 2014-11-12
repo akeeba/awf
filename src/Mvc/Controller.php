@@ -24,6 +24,13 @@ use Awf\Utils;
 class Controller
 {
 	/**
+	 * The name of the controller
+	 *
+	 * @var    array
+	 */
+	protected $name = null;
+
+	/**
 	 * The mapped task that was performed.
 	 *
 	 * @var    string
@@ -405,8 +412,8 @@ class Controller
 		$viewType = $this->input->getCmd('format', 'html');
 
 		$view = $this->getView();
-		$view->task = $this->task;
-		$view->doTask = $this->doTask;
+		$view->setTask($this->task);
+		$view->setDoTask($this->doTask);
 
 		// Get/Create the model
 		if ($model = $this->getModel())
