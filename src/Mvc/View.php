@@ -411,7 +411,7 @@ class View
 	 *
 	 * @return  Model  The instance of the Model known to this Controller
 	 */
-	public final function getModel($name = null, $config = array())
+	public function getModel($name = null, $config = array())
 	{
 		if (!empty($name))
 		{
@@ -423,7 +423,7 @@ class View
 		}
 		else
 		{
-			$modelName = strtolower($this->view);
+			$modelName = strtolower($this->name);
 		}
 
 		if (!array_key_exists($modelName, $this->modelInstances))

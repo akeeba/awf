@@ -260,7 +260,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
 
         $config = $result->passedContainer['mvc_config'];
 
-        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong view'));
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong model'));
         $this->assertEquals($check['config'], $config, sprintf($msg, 'Passed configuration was not considered'));
     }
 

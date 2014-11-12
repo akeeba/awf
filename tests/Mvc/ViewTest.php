@@ -31,6 +31,30 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewGetModel
+     * @covers          View::getModel
+     * @dataProvider    ViewDataprovider::getTestGetModel
+     */
+    public function testGetModel($test, $check)
+    {
+        $msg        = 'View::getModel %s - Case: '.$check['case'];
+        $container  = new Container();
+        $controller = new ViewStub($container);
+
+        ReflectionHelper::setValue($controller, 'defaultModel', $test['mock']['defaultModel']);
+        ReflectionHelper::setValue($controller, 'name', $test['mock']['name']);
+        ReflectionHelper::setValue($controller, 'modelInstances', $test['mock']['instances']);
+
+        $result = $controller->getModel($test['name'], $test['config']);
+
+        $config = $result->passedContainer['mvc_config'];
+
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong model'));
+        $this->assertEquals($check['config'], $config, sprintf($msg, 'Passed configuration was not considered'));
+    }
+
+    /**
+     * @group           View
      * @group           ViewSetDefaultModel
      * @covers          View::setDefaultModel
      */
