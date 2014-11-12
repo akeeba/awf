@@ -101,4 +101,19 @@ class ViewTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('foobar', $models, 'View::setModel Failed to save the model');
         $this->assertSame($model, $models['foobar'], 'View::setModel Failed to store the same copy of the passed model');
     }
+
+    /**
+     * @group           View
+     * @group           ViewGetContainer
+     * @covers          View::getContainer
+     */
+    public function testGetContainer()
+    {
+        $container = new Container();
+        $view      = new ViewStub($container);
+
+        $newContainer = $view->getContainer();
+
+        $this->assertSame($container, $newContainer, 'View::getContainer Failed to return the passed container');
+    }
 }
