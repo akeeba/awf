@@ -118,6 +118,29 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewSetLayout
+     * @covers          View::setLayout
+     * @dataProvider    ViewDataprovider::getTestSetLayout
+     */
+    public function testSetLayout($test, $check)
+    {
+        $msg  = 'View::setLayout %s - Case: '.$check['case'];
+        $view = new ViewStub();
+
+        ReflectionHelper::setValue($view, 'layout', $test['mock']['layout']);
+
+        $result = $view->setLayout($test['layout']);
+
+        $layout = ReflectionHelper::getValue($view, 'layout');
+        $tmpl   = ReflectionHelper::getValue($view, 'layoutTemplate');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+        $this->assertEquals($check['layout'], $layout, sprintf($msg, 'Set the wrong layout'));
+        $this->assertEquals($check['tmpl'], $tmpl, sprintf($msg, 'Set the wrong layout template'));
+    }
+
+    /**
+     * @group           View
      * @group           ViewGetLayoutTemplate
      * @covers          View::getLayoutTemplate
      */

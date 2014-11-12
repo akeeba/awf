@@ -95,4 +95,54 @@ class ViewDataprovider
 
         return $data;
     }
+
+    public static function getTestSetLayout()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => null
+                ),
+                'layout' => 'foobar'
+            ),
+            array(
+                'case'   => 'Internal layout is null, passing simple layout',
+                'result' => null,
+                'layout' => 'foobar',
+                'tmpl'   => '_'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'previous'
+                ),
+                'layout' => 'foobar'
+            ),
+            array(
+                'case'   => 'Internal layout is set, passing simple layout',
+                'result' => 'previous',
+                'layout' => 'foobar',
+                'tmpl'   => '_'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => null
+                ),
+                'layout' => 'foo:bar'
+            ),
+            array(
+                'case'   => 'Internal layout is null, passing layout + template',
+                'result' => null,
+                'layout' => 'bar',
+                'tmpl'   => 'foo'
+            )
+        );
+
+        return $data;
+    }
 }
