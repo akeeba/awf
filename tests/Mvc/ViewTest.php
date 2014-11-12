@@ -31,6 +31,21 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @group           View
+     * @group           ViewSetDefaultModelName
+     * @covers          View::setDefaultModelName
+     */
+    public function testDefaultModelName()
+    {
+        $view = new ViewStub();
+        $view->setDefaultModelName('foobar');
+
+        $name = ReflectionHelper::getValue($view, 'defaultModel');
+
+        $this->assertEquals('foobar', $name, 'View::setDefaultModelName Failed to set the internal name');
+    }
+
+    /**
+     * @group           View
      * @group           ViewSetModel
      * @covers          View::setModel
      */
