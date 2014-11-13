@@ -21,7 +21,7 @@ use Awf\Text\Text;
  */
 class DataController extends Controller
 {
-	public function __construct(Container $container)
+	public function __construct(Container $container = null)
 	{
 		parent::__construct($container);
 
@@ -1124,4 +1124,4 @@ class DataController extends Controller
 	{
 		return $this->callObserverEvent('remove', 'before');
 	}
-} 
+}

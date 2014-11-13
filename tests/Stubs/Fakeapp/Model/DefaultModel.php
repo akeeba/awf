@@ -2,6 +2,9 @@
 
 namespace Fakeapp\Model;
 
-class DefaultModel {
+use Awf\Tests\Stubs\Mvc\ModelStub;
+
+class DefaultModel extends ModelStub
+{
 
 }
