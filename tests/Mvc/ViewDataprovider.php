@@ -370,6 +370,116 @@ class ViewDataprovider
         return $data;
     }
 
+    public static function getTestLoadTemplate()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array('test')
+                ),
+                'tpl'    => null,
+                'strict' => false
+            ),
+            array(
+                'case'   => 'No template, no strict, we immediatly have a result',
+                'result' => 'test'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array('throw', 'throw', 'throw', 'throw', 'throw', 'throw')
+                ),
+                'tpl'    => null,
+                'strict' => false
+            ),
+            array(
+                'case'   => 'No template, no strict, we immediatly throw an exception',
+                'result' => new \Exception()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array(new \Exception(), new \Exception(), new \Exception(), new \Exception(), new \Exception(), new \Exception())
+                ),
+                'tpl'    => null,
+                'strict' => false
+            ),
+            array(
+                'case'   => 'No template, no strict, we immediatly return an exception',
+                'result' => new \Exception()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array('throw', 'test')
+                ),
+                'tpl'    => null,
+                'strict' => false
+            ),
+            array(
+                'case'   => 'No template, no strict, we have a result after throwing some exceptions',
+                'result' => 'test'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array(new \Exception(), 'test')
+                ),
+                'tpl'    => null,
+                'strict' => false
+            ),
+            array(
+                'case'   => 'No template, no strict, we have a result after returning some exceptions',
+                'result' => 'test'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array('test')
+                ),
+                'tpl'    => 'dummy',
+                'strict' => false
+            ),
+            array(
+                'case'   => 'With template, no strict, we immediatly have a result',
+                'result' => 'test'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'layout' => 'foobar',
+                    'any'    => array('test')
+                ),
+                'tpl'    => 'dummy',
+                'strict' => true
+            ),
+            array(
+                'case'   => 'With template and strict, we immediatly have a result',
+                'result' => 'test'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSetLayout()
     {
         $data[] = array(

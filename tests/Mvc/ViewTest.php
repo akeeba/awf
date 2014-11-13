@@ -204,6 +204,38 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * In this test I will only check for the result of the function
+     *
+     * @group           View
+     * @group           ViewLoadTemplate
+     * @covers          View::loadTemplate
+     * @dataProvider    ViewDataprovider::getTestLoadTemplate
+     */
+    public function testLoadTemplate($test, $check)
+    {
+        $msg = 'View::loadTemplate %s - Case: '.$check['case'];
+
+        $view = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\ViewStub', array('loadAnyTemplate', 'getLayout'));
+        $view->expects($this->any())->method('getLayout')->willReturn($test['mock']['layout']);
+        $view->expects($this->any())->method('loadAnyTemplate')->willReturnCallback(
+            function() use (&$test){
+                $result = array_shift($test['mock']['any']);
+
+                if($result == 'throw')
+                {
+                    throw new \Exception();
+                }
+
+                return $result;
+            }
+        );
+
+        $result = $view->loadTemplate($test['tpl'], $test['strict']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+    }
+
+    /**
      * @group           View
      * @group           ViewGetLayout
      * @covers          View::getLayout
