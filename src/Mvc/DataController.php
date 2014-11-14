@@ -879,7 +879,10 @@ class DataController extends Controller
 		{
 			if (empty($id))
 			{
-				$ids = array($kid);
+				if(!empty($kid))
+				{
+					$ids = array($kid);
+				}
 			}
 			else
 			{
