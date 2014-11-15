@@ -2,6 +2,56 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestSavenew()
+    {
+        // Everything is fine, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'apply'     => true
+                )
+            ),
+            array(
+                'redirect' => true,
+                'url' => 'http://www.example.com/index.php?view=dummycontroller&task=add',
+                'msg' => 'FAKEAPP_LBL_DUMMYCONTROLLER_SAVED'
+            )
+        );
+
+        // Everything is fine, custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'apply'     => true
+                )
+            ),
+            array(
+                'redirect' => true,
+                'url' => 'http://www.example.com/index.php?view=custom',
+                'msg' => 'FAKEAPP_LBL_DUMMYCONTROLLER_SAVED'
+            )
+        );
+
+        // An error occurs, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'apply'     => false
+                )
+            ),
+            array(
+                'redirect' => false,
+                'url' => '',
+                'msg' => ''
+            )
+        );
+
+        return $data;
+    }
+
     public function getTestCancel()
     {
         // Getting the id from the model, no custom redirect set

@@ -13,6 +13,36 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerSavenew
+     * @covers          DataController::savenew
+     * @dataProvider    DataControllerDataprovider::getTestSavenew
+     */
+    public function testSavenew($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'applySave', 'setRedirect'), array($container));
+        $controller->expects($this->once())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->once())->method('applySave')->willReturn($test['mock']['apply']);
+        $controller->expects($check['redirect'] ? $this->once() : $this->never())->method('setRedirect')->willReturn(null)
+            ->with($this->equalTo($check['url']), $this->equalTo($check['msg']))
+        ;
+
+        $controller->savenew();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerCancel
      * @covers          DataController::cancel
      * @dataProvider    DataControllerDataprovider::getTestCancel
