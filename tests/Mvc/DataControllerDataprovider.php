@@ -2,6 +2,83 @@
 
 class DataControllerDataprovider
 {
+    public function getTestOrderup()
+    {
+        // Everything works fine, no custom redirect set, getting the id from the model
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'move'      => array(true),
+                    'getId'     => 3,
+                    'ids'       => array()
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'getFromReq' => false,
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'move'      => array(true),
+                    'getId'     => null,
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'getFromReq' => true,
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set, getting the id from the model
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'move'      => array(true),
+                    'getId'     => 3,
+                    'ids'       => array()
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'getFromReq' => false,
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Move throws an error, no custom redirect set, getting the id from the model
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'move'      => array('throw'),
+                    'getId'     => 3,
+                    'ids'       => array()
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'getFromReq' => false,
+                'msg'  => 'Exception in move',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestRemove()
     {
         // Everything works fine, no custom redirect set
