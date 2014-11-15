@@ -13,6 +13,40 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerCancel
+     * @covers          DataController::cancel
+     * @dataProvider    DataControllerDataprovider::getTestCancel
+     */
+    public function testCancel($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('unlock', 'getId'), array($container));
+        $model->expects($this->once())->method('getId')->willReturn($test['mock']['getId']);
+        $model->expects($this->once())->method('unlock')->willReturn(null);
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($check['getFromReq'] ? $this->once() : $this->never())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null)->with($this->equalTo($check['url']));
+
+        // In this test we can't check if data has been removed from the Session, since I'll have to mock the entire framework
+        // my pc, myself and probably the entire universe
+        $controller->cancel();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerOrderdown
      * @covers          DataController::orderdown
      * @dataProvider    DataControllerDataprovider::getTestOrderdown

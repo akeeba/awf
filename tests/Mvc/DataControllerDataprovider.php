@@ -2,6 +2,56 @@
 
 class DataControllerDataprovider
 {
+    public function getTestCancel()
+    {
+        // Getting the id from the model, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'getId'     => 3,
+                    'ids'       => array()
+                )
+            ),
+            array(
+                'getFromReq' => false,
+                'url'        => 'http://www.example.com/index.php?view=dummycontrollers'
+            )
+        );
+
+        // Getting the id from request, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'getId'     => null,
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'getFromReq' => true,
+                'url'        => 'http://www.example.com/index.php?view=dummycontrollers'
+            )
+        );
+
+        // Getting the id from the model, custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'getId'     => 3,
+                    'ids'       => array()
+                )
+            ),
+            array(
+                'getFromReq' => false,
+                'url'        => 'http://www.example.com/index.php?view=custom'
+            )
+        );
+
+        return $data;
+    }
+
     public function getTestOrderdown()
     {
         // Everything works fine, no custom redirect set, getting the id from the model
