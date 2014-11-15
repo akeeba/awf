@@ -2,6 +2,79 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestRemove()
+    {
+        // Everything works fine, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array(true),
+                    'delete'    => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'FAKEAPP_LBL_DUMMYCONTROLLER_DELETED',
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'find'      => array(true),
+                    'delete'    => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => 'FAKEAPP_LBL_DUMMYCONTROLLER_DELETED',
+                'type' => null
+            )
+        );
+
+        // Delete throws an error
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array(true),
+                    'delete'    => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in delete',
+                'type' => 'error'
+            )
+        );
+
+        // Find throws an error
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array('throw'),
+                    'delete'    => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in find',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestGetModel()
     {
         $data[] = array(

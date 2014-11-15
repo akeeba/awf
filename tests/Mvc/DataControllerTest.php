@@ -6,12 +6,73 @@ use Awf\Input\Input;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Stubs\Mvc\DataControllerStub;
-use Awf\Tests\Stubs\Mvc\DataModelStub;
 
 require_once 'DataControllerDataprovider.php';
 
 class DataControllertest extends DatabaseMysqliCase
 {
+    /**
+     * @group           DataController
+     * @group           DataControllerRemove
+     * @covers          DataController::remove
+     * @dataProvider    DataControllerDataprovider::getTestRemove
+     */
+    public function testRemove($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('find', 'delete'), array($container));
+        $model->expects($this->any())->method('find')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['find']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in find');
+                }
+
+                return $ret;
+            }
+        );
+
+        $model->expects($this->any())->method('delete')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['delete']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in delete');
+                }
+
+                return $ret;
+            }
+        );
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($this->any())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null);
+
+        $controller->expects($this->once())->method('setRedirect')->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo($check['type']));
+
+        $controller->remove();
+    }
+
     /**
      * @group           DataController
      * @group           DataControllerGetModel
