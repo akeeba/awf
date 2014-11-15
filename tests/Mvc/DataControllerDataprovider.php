@@ -2,6 +2,79 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestCopy()
+    {
+        // Everything works fine, no custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array(true),
+                    'copy'      => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'FAKEAPP_LBL_DUMMYCONTROLLER_COPIED',
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'find'      => array(true),
+                    'copy'      => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => 'FAKEAPP_LBL_DUMMYCONTROLLER_COPIED',
+                'type' => null
+            )
+        );
+
+        // Copy throws an error
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array(true),
+                    'copy'      => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in copy',
+                'type' => 'error'
+            )
+        );
+
+        // Find throws an error
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'find'      => array('throw'),
+                    'copy'      => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in find',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSave()
     {
         // Everything is fine, no custom redirect set

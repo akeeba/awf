@@ -13,6 +13,68 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerCopy
+     * @covers          DataController::copy
+     * @dataProvider    DataControllerDataprovider::getTestCopy
+     */
+    public function testCopy($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('find', 'copy'), array($container));
+        $model->expects($this->any())->method('find')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['find']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in find');
+                }
+
+                return $ret;
+            }
+        );
+
+        $model->expects($this->any())->method('copy')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['copy']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in copy');
+                }
+
+                return $ret;
+            }
+        );
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($this->any())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null);
+
+        $controller->expects($this->once())->method('setRedirect')->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo($check['type']));
+
+        $controller->copy();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerSave
      * @covers          DataController::save
      * @dataProvider    DataControllerDataprovider::getTestSave
