@@ -13,6 +13,31 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerApply
+     * @covers          DataController::apply
+     * @dataProvider    DataControllerDataprovider::getTestApply
+     */
+    public function testApply($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'id' => $test['mock']['id'],
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+        ));
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'applySave', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->any())->method('applySave')->willReturn($test['mock']['apply']);
+        $controller->expects($check['redirect'] ? $this->once() : $this->never())->method('setRedirect')
+            ->willReturn(null)->with($this->equalTo($check['url']), $this->equalTo($check['msg']));
+
+        $controller->apply();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerCopy
      * @covers          DataController::copy
      * @dataProvider    DataControllerDataprovider::getTestCopy

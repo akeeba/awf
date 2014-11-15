@@ -2,6 +2,56 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestApply()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'        => 3,
+                    'returnurl' => '',
+                    'apply'     => true
+                )
+            ),
+            array(
+                'redirect' => true,
+                'url'      => 'http://www.example.com/index.php?view=dummycontroller&task=edit&id=3',
+                'msg'      => 'FAKEAPP_LBL_DUMMYCONTROLLER_SAVED'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'        => 3,
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'apply'     => true
+                )
+            ),
+            array(
+                'redirect' => true,
+                'url'      => 'http://www.example.com/index.php?view=custom',
+                'msg'      => 'FAKEAPP_LBL_DUMMYCONTROLLER_SAVED'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'        => 3,
+                    'returnurl' => '',
+                    'apply'     => false
+                )
+            ),
+            array(
+                'redirect' => false,
+                'url'      => '',
+                'msg'      => ''
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestCopy()
     {
         // Everything works fine, no custom redirect set
