@@ -178,7 +178,7 @@ class DataController extends Controller
 		}
 
 		// Set the layout to item, if it's not set in the URL
-		if (is_null($this->layout))
+		if (empty($this->layout))
 		{
 			$this->layout = 'item';
 		}
@@ -198,8 +198,7 @@ class DataController extends Controller
 		$model->reset();
 
 		// Set the layout to form, if it's not set in the URL
-
-		if (is_null($this->layout))
+		if (empty($this->layout))
 		{
 			$this->layout = 'form';
 		}
@@ -254,7 +253,7 @@ class DataController extends Controller
 		}
 
 		// Set the layout to form, if it's not set in the URL
-		if (is_null($this->layout))
+		if (empty($this->layout))
 		{
 			$this->layout = 'form';
 		}
