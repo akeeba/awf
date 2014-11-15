@@ -13,6 +13,54 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerOrderdown
+     * @covers          DataController::orderdown
+     * @dataProvider    DataControllerDataprovider::getTestOrderdown
+     */
+    public function testOrderdown($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('move', 'getId'), array($container));
+        $model->expects($this->once())->method('getId')->willReturn($test['mock']['getId']);
+        $model->expects($this->any())->method('move')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['move']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in move');
+                }
+
+                return $ret;
+            }
+        );
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($check['getFromReq'] ? $this->once() : $this->never())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null);
+
+        $controller->expects($this->once())->method('setRedirect')->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo($check['type']));
+
+        $controller->orderdown();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerOrderup
      * @covers          DataController::orderup
      * @dataProvider    DataControllerDataprovider::getTestOrderup
