@@ -2,6 +2,99 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestEdit()
+    {
+        // Getting the id from the model, no layout, no data in the session, everything works fine
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'flash' => null,
+                    'getId' => true ,
+                    'lock'  => true,
+                    'layout'=> ''
+                )
+            ),
+            array(
+                'bind'       => false,
+                'getFromReq' => false,
+                'redirect'   => false,
+                'url'        => '',
+                'msg'        => '',
+                'display'    => true,
+                'layout'     => 'form'
+            )
+        );
+
+        // Getting the id from the request, with layout, fetch data from the session, everything works fine
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'flash' => array('foo' => 'bar'),
+                    'getId' => false ,
+                    'lock'  => true,
+                    'layout'=> 'custom'
+                )
+            ),
+            array(
+                'bind'       => array('foo' => 'bar'),
+                'getFromReq' => true,
+                'redirect'   => false,
+                'url'        => '',
+                'msg'        => '',
+                'display'    => true,
+                'layout'     => 'custom'
+            )
+        );
+
+        // Lock throws an error, no custom url
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'flash' => null,
+                    'getId' => true ,
+                    'lock'  => 'throw',
+                    'layout'=> ''
+                )
+            ),
+            array(
+                'bind'       => false,
+                'getFromReq' => false,
+                'redirect'   => true,
+                'url'        => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'        => 'Exception thrown while locking',
+                'display'    => false,
+                'layout'     => ''
+            )
+        );
+
+        // Lock throws an error, custom url set
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'flash' => null,
+                    'getId' => true ,
+                    'lock'  => 'throw',
+                    'layout'=> ''
+                )
+            ),
+            array(
+                'bind'       => false,
+                'getFromReq' => false,
+                'redirect'   => true,
+                'url'        => 'http://www.example.com/index.php?view=custom',
+                'msg'        => 'Exception thrown while locking',
+                'display'    => false,
+                'layout'     => ''
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestApply()
     {
         $data[] = array(

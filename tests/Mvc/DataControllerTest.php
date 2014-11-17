@@ -3,6 +3,7 @@
 namespace Awf\Tests\DataController;
 
 use Awf\Input\Input;
+use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Stubs\Mvc\DataControllerStub;
@@ -11,6 +12,62 @@ require_once 'DataControllerDataprovider.php';
 
 class DataControllertest extends DatabaseMysqliCase
 {
+    /**
+     * @group           DataController
+     * @group           DataControllerEdit
+     * @covers          DataController::edit
+     * @dataProvider    DataControllerDataprovider::getTestEdit
+     */
+    public function testEdit($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $container->segment->setFlash('Fakeapp_dummycontrollers', $test['mock']['flash']);
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getId', 'lock', 'bind'), array($container));
+        $model->expects($this->any())->method('getId')->willReturn($test['mock']['getId']);
+
+        $method = $model->expects($this->any())->method('lock');
+
+        if($test['mock']['lock'] === 'throw')
+        {
+            $method->willThrowException(new \Exception('Exception thrown while locking'));
+        }
+        else
+        {
+            $method->willReturn(null);
+        }
+
+        $model->expects($check['bind'] ? $this->once() : $this->never())->method('bind')
+                ->with($check['bind'])->willReturn(null);
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub',
+            array('getModel', 'getIDsFromRequest', 'setRedirect', 'display'), array($container));
+
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($check['getFromReq'] ? $this->once() : $this->never())->method('getIDsFromRequest')->willReturn(null);
+        $controller->expects($check['redirect'] ? $this->once() : $this->never())->method('setRedirect')
+            ->willReturn(null)->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo('error'));
+        $controller->expects($check['display'] ? $this->once() : $this->never())->method('display')->willReturn(null);
+
+        ReflectionHelper::setValue($controller, 'layout', $test['mock']['layout']);
+
+        $controller->edit();
+
+        $layout = ReflectionHelper::getValue($controller, 'layout');
+        $this->assertEquals($check['layout'], $layout, 'DataController::edit failed to set the layout');
+    }
+
     /**
      * @group           DataController
      * @group           DataControllerApply
