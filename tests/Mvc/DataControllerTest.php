@@ -14,6 +14,37 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerAdd
+     * @covers          DataController::add
+     * @dataProvider    DataControllerDataprovider::getTestAdd
+     */
+    public function testAdd($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $container->segment->setFlash('Fakeapp_dummycontrollers', $test['mock']['flash']);
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('reset', 'bind'), array($container));
+        $model->expects($this->any())->method('reset')->willReturn(null);
+        $model->expects($check['bind'] ? $this->once() : $this->never())->method('bind')
+            ->with($check['bind'])->willReturn(null);
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('getModel', 'display'), array($container));
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($this->any())->method('display')->willReturn(null);
+
+        $controller->add();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerEdit
      * @covers          DataController::edit
      * @dataProvider    DataControllerDataprovider::getTestEdit

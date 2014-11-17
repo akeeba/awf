@@ -2,6 +2,33 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestAdd()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'flash' => ''
+                )
+            ),
+            array(
+                'bind' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'flash' => array('foo' => 'bar')
+                )
+            ),
+            array(
+                'bind' => array('foo' => 'bar')
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestEdit()
     {
         // Getting the id from the model, no layout, no data in the session, everything works fine
