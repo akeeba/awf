@@ -190,7 +190,10 @@ class Sftp implements FilesystemInterface
 			$this->connection = null;
 			$this->sftpHandle = null;
 
-			throw new \RuntimeException(sprintf('Cannot change to initial SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $this->directory), 500);
+			if (!empty($this->directory))
+			{
+				throw new \RuntimeException(sprintf('Cannot change to initial SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $this->directory), 500);
+			}
 		}
 	}
 
@@ -412,31 +415,37 @@ class Sftp implements FilesystemInterface
 		$list = array();
 		$dir = ltrim($dir, '/');
 
-		$handle = opendir("ssh2.sftp://" . $this->sftpHandle . "/$dir");
-
-		if (!is_resource($handle))
+		try
+		{
+			$di = new \DirectoryIterator("ssh2.sftp://" . $this->sftpHandle . "/$dir");
+		}
+		catch (\Exception $e)
 		{
 			throw new \RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
-
-			return false;
 		}
 
-		while (($entry = readdir($handle)) !== false)
+		if (!$di->valid())
 		{
-			if (substr($entry, 0, 1) == '.')
-			{
-				continue;
-			}
-
-			if (!is_dir("ssh2.sftp://" . $this->sftpHandle . "/$dir/$entry"))
-			{
-				continue;
-			}
-
-			$list[] = $entry;
+			throw new \RuntimeException(sprintf('Cannot change to SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
 		}
 
-		closedir($handle);
+		/** @var \DirectoryIterator $entry */
+		foreach ($di as $entry)
+		{
+			if ($entry->isDot())
+			{
+				continue;
+			}
+
+			if (!$entry->isDir())
+			{
+				continue;
+			}
+
+			$list[] = $entry->getFilename();
+		}
+
+		unset($di);
 
 		if (!empty($list))
 		{
