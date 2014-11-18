@@ -2,6 +2,101 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestRead()
+    {
+        // Getting the id from the model, using the default layout
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId'  => array(3, null),
+                    'ids'    => 0,
+                    'layout' => ''
+                )
+            ),
+            array(
+                'getIdCount'   => 1,
+                'getIdFromReq' => 0,
+                'display'      => 1,
+                'exception'    => false,
+                'layout'       => 'item'
+            )
+        );
+
+        // Getting the id from the model, using a custom layout
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId'  => array(3, null),
+                    'ids'    => 0,
+                    'layout' => 'custom'
+                )
+            ),
+            array(
+                'getIdCount'   => 1,
+                'getIdFromReq' => 0,
+                'display'      => 1,
+                'exception'    => false,
+                'layout'       => 'custom'
+            )
+        );
+
+        // Getting the id from the request, using the default layout
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId'  => array(false, 3),
+                    'ids'    => array(3),
+                    'layout' => ''
+                )
+            ),
+            array(
+                'getIdCount'   => 2,
+                'getIdFromReq' => 1,
+                'display'      => 1,
+                'exception'    => false,
+                'layout'       => 'item'
+            )
+        );
+
+        // Getting the id from the request, something wrong happens - part 1
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId'  => array(false, 3),
+                    'ids'    => array(),
+                    'layout' => ''
+                )
+            ),
+            array(
+                'getIdCount'   => 2,
+                'getIdFromReq' => 1,
+                'display'      => 0,
+                'exception'    => true,
+                'layout'       => 'item'
+            )
+        );
+
+        // Getting the id from the request, something wrong happens - part 2
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId'  => array(false, false),
+                    'ids'    => array(3),
+                    'layout' => ''
+                )
+            ),
+            array(
+                'getIdCount'   => 2,
+                'getIdFromReq' => 1,
+                'display'      => 0,
+                'exception'    => true,
+                'layout'       => 'item'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestAdd()
     {
         $data[] = array(

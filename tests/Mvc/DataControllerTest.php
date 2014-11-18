@@ -14,6 +14,45 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerRead
+     * @covers          DataController::read
+     * @dataProvider    DataControllerDataprovider::getTestRead
+     */
+    public function testRead($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'dbtest_nestedset_id',
+                'tableName'   => '#__dbtest_nestedsets'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getId'), array($container));
+        $model->expects($this->exactly($check['getIdCount']))->method('getId')->willReturnOnConsecutiveCalls($test['mock']['getId'][0], $test['mock']['getId'][1]);
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('getModel', 'getIDsFromRequest', 'display'), array($container));
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($check['getIdFromReq'] ? $this->once() : $this->never())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($check['display'] ? $this->once() : $this->never())->method('display')->willReturn(null);
+
+        ReflectionHelper::setValue($controller, 'layout', $test['mock']['layout']);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('Exception', 'FAKEAPP_ERR_NESTEDSET_NOTFOUND');
+        }
+
+        $controller->read();
+
+        $layout = ReflectionHelper::getValue($controller, 'layout');
+
+        $this->assertEquals($check['layout'], $layout, 'DataController::read failed to set the layout');
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerAdd
      * @covers          DataController::add
      * @dataProvider    DataControllerDataprovider::getTestAdd
