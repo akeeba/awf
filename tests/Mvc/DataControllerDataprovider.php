@@ -2,6 +2,51 @@
 
 class DataControllerDataprovider
 {
+    public static function getTestBrowse()
+    {
+        // Don't want any state saving
+        $data[]= array(
+            array(
+                'mock' => array(
+                    'input' => array(
+                        'savestate' => 0
+                    )
+                )
+            ),
+            array(
+                'set' => false
+            )
+        );
+
+        // I asked for saving the state
+        $data[]= array(
+            array(
+                'mock' => array(
+                    'input' => array(
+                        'savestate' => -999
+                    )
+                )
+            ),
+            array(
+                'set' => true
+            )
+        );
+
+        // Variable not set, by default I save the state
+        $data[]= array(
+            array(
+                'mock' => array(
+                    'input' => array()
+                )
+            ),
+            array(
+                'set' => true
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestRead()
     {
         // Getting the id from the model, using the default layout

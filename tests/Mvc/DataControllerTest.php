@@ -14,6 +14,27 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerBrowse
+     * @covers          DataController::browse
+     * @dataProvider    DataControllerDataprovider::getTestBrowse
+     */
+    public function testBrowse($test, $check)
+    {
+        $input = $this->getMock('\\Awf\\Input\\Input', array('set'), array($test['mock']['input']));
+        $input->expects($check['set'] ? $this->once() : $this->never())->method('set')->with($this->equalTo('savestate'), $this->equalTo(true));
+
+        $container = new Container(array(
+            'input' => $input
+        ));
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('display'), array($container));
+        $controller->expects($this->any())->method('display')->willReturn(null);
+
+        $controller->browse();
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerRead
      * @covers          DataController::read
      * @dataProvider    DataControllerDataprovider::getTestRead
