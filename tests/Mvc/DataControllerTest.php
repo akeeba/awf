@@ -412,7 +412,7 @@ class DataControllertest extends DatabaseMysqliCase
                     ->select('id')
                     ->from($db->qn('#__dbtest_ordering'))
                     ->order($db->qn('ordering').' ASC');
-        $rows = $db->setQuery($query)->loadRowList();
+        $rows = $db->setQuery($query)->loadColumn();
 
         $this->assertEquals($check['rows'], $rows, sprintf($msg, 'Failed to save the order of the rows'));
     }

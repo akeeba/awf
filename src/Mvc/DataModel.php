@@ -546,6 +546,45 @@ class DataModel extends Model
 	}
 
 	/**
+	 * Magic checker on a property. It follows the same logic of the __get magic method, however, if nothing is found, it
+	 * won't return the state of a variable (we are checking if a property is set)
+	 *
+	 * @param   string  $name   The name of the field to check
+	 *
+	 * @return  bool    Is the field set?
+	 */
+	public function __isset($name)
+	{
+		$value   = null;
+		$isState = false;
+
+		if (substr($name, 0, 3) == 'flt')
+		{
+			$isState = true;
+			$name = strtolower(substr($name, 3, 1)) . substr($name, 4);
+		}
+
+		// If $name is a field name, get its value
+		if (!$isState && array_key_exists($name, $this->recordData))
+		{
+			$value = $this->getFieldValue($name);
+		}
+		elseif (!$isState && array_key_exists($name, $this->aliasFields) && array_key_exists($this->aliasFields[$name], $this->recordData))
+		{
+			$name = $this->aliasFields[$name];
+
+			$value = $this->getFieldValue($name);
+		}
+		elseif ($this->relationManager->isMagicProperty($name))
+		{
+			$value = $this->relationManager->$name;
+		}
+
+		// As the for the core function isset, the property must exists AND must be NOT null
+		return ($value !== null);
+	}
+
+	/**
 	 * Magic getter. It will return the value of a field or, if no such field is found, the value of the relevant state
 	 * variable.
 	 *
@@ -1011,7 +1050,7 @@ class DataModel extends Model
 				{
 					$this->setFieldValue($k, $data[$k]);
 				}
-				elseif (is_object($data) && property_exists($data, $k))
+				elseif (is_object($data) && isset($data->$k))
 				{
 					$this->setFieldValue($k, $data->$k);
 				}

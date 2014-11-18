@@ -576,7 +576,23 @@ class DataControllerDataprovider
             ),
             array(
                 'case' => 'No custom redirect set',
-                'url'  => 'http://www.example.com/index.php?view=dummycontrollers'
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'rows' => array(2,3,1,4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'ordering'  => array(3,1,2,4),
+                'returnurl' => 'http://www.example.com/index.php?view=custom',
+                'mock' => array(
+                    'ids' => array(1,2,3,4)
+                )
+            ),
+            array(
+                'case' => 'Custom redirect set',
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'rows' => array(2,3,1,4)
             )
         );
 
