@@ -1007,9 +1007,13 @@ class DataModel extends Model
 			// Only process fields not in the ignore array.
 			if (!in_array($k, $ignore))
 			{
-				if (isset($data[$k]))
+				if (is_array($data) && isset($data[$k]))
 				{
 					$this->setFieldValue($k, $data[$k]);
+				}
+				elseif (is_object($data) && property_exists($data, $k))
+				{
+					$this->setFieldValue($k, $data->$k);
 				}
 			}
 		}
