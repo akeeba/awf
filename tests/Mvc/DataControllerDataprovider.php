@@ -568,10 +568,15 @@ class DataControllerDataprovider
     {
         $data[] = array(
             array(
-
+                'ordering'  => array(3,1,2,4),
+                'returnurl' => '',
+                'mock' => array(
+                    'ids' => array(1,2,3,4)
+                )
             ),
             array(
-
+                'case' => 'No custom redirect set',
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers'
             )
         );
 

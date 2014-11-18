@@ -7,6 +7,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Stubs\Mvc\DataControllerStub;
+use Awf\Tests\Stubs\Mvc\DataModelStub;
 
 require_once 'DataControllerDataprovider.php';
 
@@ -373,6 +374,8 @@ class DataControllertest extends DatabaseMysqliCase
     }
 
     /**
+     * The best way to test with method is to run it and check vs the database
+     *
      * @group           DataController
      * @group           DataControllerSaveorder
      * @covers          DataController::saveorder
@@ -380,7 +383,38 @@ class DataControllertest extends DatabaseMysqliCase
      */
     public function testSaveorder($test, $check)
     {
-        
+        $msg = 'DataController::saveorder %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'order'     => $test['ordering'],
+                'returnurl' => $test['returnurl'] ? base64_encode($test['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest_ordering'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($this->any())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->any())->method('setRedirect')->willReturn(null)->with($this->equalTo($check['url']));
+
+        $controller->saveorder();
+
+        $db = self::$driver;
+
+        $query = $db->getQuery(true)
+                    ->select('id')
+                    ->from($db->qn('#__dbtest_ordering'))
+                    ->order($db->qn('ordering').' ASC');
+        $rows = $db->setQuery($query)->loadRowList();
+
+        $this->assertEquals($check['rows'], $rows, sprintf($msg, 'Failed to save the order of the rows'));
     }
 
     /**
