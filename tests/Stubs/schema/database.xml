@@ -31,6 +31,42 @@
     </row>
   </table>
 
+  <table name="awf_dbtest_ordering">
+    <column>id</column>
+    <column>title</column>
+    <column>start_date</column>
+    <column>description</column>
+    <column>ordering</column>
+    <row>
+      <value>1</value>
+      <value>Testing</value>
+      <value>1980-04-18 00:00:00</value>
+      <value>one</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>2</value>
+      <value>Testing2</value>
+      <value>1980-04-18 00:00:00</value>
+      <value>one</value>
+      <value>2</value>
+    </row>
+    <row>
+      <value>3</value>
+      <value>Testing3</value>
+      <value>1980-04-18 00:00:00</value>
+      <value>three</value>
+      <value>3</value>
+    </row>
+    <row>
+      <value>4</value>
+      <value>Testing4</value>
+      <value>1980-04-18 00:00:00</value>
+      <value>four</value>
+      <value>4</value>
+    </row>
+  </table>
+
   <table name="awf_dbtest_nestedsets">
     <column>dbtest_nestedset_id</column>
     <column>title</column>

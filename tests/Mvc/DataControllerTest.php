@@ -374,6 +374,17 @@ class DataControllertest extends DatabaseMysqliCase
 
     /**
      * @group           DataController
+     * @group           DataControllerSaveorder
+     * @covers          DataController::saveorder
+     * @dataProvider    DataControllerDataprovider::getTestsaveorder
+     */
+    public function testSaveorder($test, $check)
+    {
+        
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerOrderdown
      * @covers          DataController::orderdown
      * @dataProvider    DataControllerDataprovider::getTestOrderdown

@@ -564,6 +564,20 @@ class DataControllerDataprovider
         return $data;
     }
 
+    public static function getTestSaveorder()
+    {
+        $data[] = array(
+            array(
+
+            ),
+            array(
+
+            )
+        );
+
+        return $data;
+    }
+
     public function getTestOrderdown()
     {
         // Everything works fine, no custom redirect set, getting the id from the model

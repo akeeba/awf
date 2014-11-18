@@ -498,9 +498,9 @@ class DataController extends Controller
 
 		$model = $this->getModel();
 
-		$ids = $this->getIDsFromRequest($model, false);
-
-		$orders = $this->input->get('order', array(), 'array');
+		$ids      = $this->getIDsFromRequest($model, false);
+		$orders   = $this->input->get('order', array(), 'array');
+		$ordering = $model->getFieldAlias('ordering');
 
 		if ($n = count($ids))
 		{
@@ -516,7 +516,7 @@ class DataController extends Controller
 
 				if ($item->getId() == $ids[$i])
 				{
-					$item->ordering = $neworder;
+					$item->$ordering = $neworder;
 					$model->save($item);
 				}
 			}
