@@ -14,6 +14,38 @@ class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
+     * @group           DataControllerConstruct
+     * @covers          DataController::__construct
+     * @dataProvider    DataControllerDataprovider::getTest__construct
+     */
+    public function test__construct($test, $check)
+    {
+        $msg = 'DataController::__construct %s - Case: '.$check['case'];
+
+        $setup = array();
+
+        if($test['model'])
+        {
+            $setup['mvc_config']['modelName'] = $test['model'];
+        }
+
+        if($test['view'])
+        {
+            $setup['mvc_config']['viewName'] = $test['view'];
+        }
+
+        $container  = new Container($setup);
+        $controller = new DataControllerStub($container);
+
+        $modelName = ReflectionHelper::getValue($controller, 'modelName');
+        $viewName  = ReflectionHelper::getValue($controller, 'viewName');
+
+        $this->assertEquals($check['model'], $modelName, sprintf($msg, 'Failed to set the correct modelName'));
+        $this->assertEquals($check['view'], $viewName, sprintf($msg, 'Failed to set the correct viewName'));
+    }
+
+    /**
+     * @group           DataController
      * @group           DataControllerBrowse
      * @covers          DataController::browse
      * @dataProvider    DataControllerDataprovider::getTestBrowse

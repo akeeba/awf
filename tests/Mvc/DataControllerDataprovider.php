@@ -2,6 +2,35 @@
 
 class DataControllerDataprovider
 {
+    public static function getTest__construct()
+    {
+        $data[] = array(
+            array(
+                'model' => '',
+                'view'  => ''
+            ),
+            array(
+                'case'  => 'Model and view not passed',
+                'model' => 'dummycontrollers',
+                'view'  => 'dummycontrollers'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'model' => 'custom',
+                'view'  => 'foobar'
+            ),
+            array(
+                'case'  => 'Model and view passed',
+                'model' => 'custom',
+                'view'  => 'foobar'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestBrowse()
     {
         // Don't want any state saving
