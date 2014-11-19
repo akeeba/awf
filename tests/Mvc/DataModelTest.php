@@ -92,4 +92,61 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['eager'], $eager, sprintf($msg, 'Eager relations are not correctly set'));
         $this->assertEmpty($filters, sprintf($msg, 'Relations filters should be empty'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelCall
+     * @covers          DataModel::__call
+     * @dataProvider    DataModelDataprovider::getTest__call
+     */
+    public function test__call($test, $check)
+    {
+        $msg = 'DataModel::__call %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model  = new DataModelStub($container);
+
+        $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('isMagicMethod', '__call'), array($model));
+        $relation->expects($check['magic'] ? $this->once() : $this->never())->method('isMagicMethod')->willReturn($test['mock']['magic']);
+        $relation->expects($check['relationCall'] ? $this->once() : $this->never())->method('__call')->willReturn(null);
+
+        ReflectionHelper::setValue($model, 'relationManager', $relation);
+
+        $method = $test['method'];
+
+        // I have to use this syntax to check when I don't pass any argument
+        // N.B. If I use the __call syntax to set a property, I have to use a REAL property, otherwise the __set magic
+        // method kicks in and its behavior it's out the scope of this test
+        if(isset($test['argument']))
+        {
+            $result = $model->$method($test['argument'][0], $test['argument'][1]);
+        }
+        else
+        {
+            $result = $model->$method();
+        }
+
+        $count = isset($model->methodCounter[$check['method']]) ? $model->methodCounter[$check['method']] : 0;
+        $property = ReflectionHelper::getValue($model, $check['property']);
+
+        if(is_object($result))
+        {
+            $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        }
+        else
+        {
+            $this->assertNull($result, sprintf($msg, 'Should return null when the relation manager is involved'));
+        }
+
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific caller method a wrong amount of times'));
+        $this->assertEquals($check['value'], $property, sprintf($msg, 'Failed to set the property'));
+    }
 }

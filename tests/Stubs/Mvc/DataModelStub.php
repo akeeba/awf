@@ -23,8 +23,12 @@ class DataModelStub extends DataModel
 
     /** @var array Simply counter to check if a specific function is called */
     public    $methodCounter = array(
-        'SetDummyAttribute'   => 0
+        'SetDummyAttribute'   => 0,
+        'scopeDummyProperty'  => 0
     );
+
+    public $dummyProperty = 'default';
+    public $dummyPropertyNoFunction = 'default';
 
     protected $name   = 'nestedset';
 
@@ -98,9 +102,25 @@ class DataModelStub extends DataModel
         return $this->name;
     }
 
+    /**
+     * Method invoked by setFieldValue to set the value of an attribute
+     *
+     * @see     DataModel::setFieldValue
+     * @param   $value
+     */
     public function SetDummyAttribute($value)
     {
         $this->methodCounter['SetDummyAttribute']++;
+    }
+
+    /**
+     * Method invoked by the __call magic method
+     *
+     * @see     DataModel::__call
+     */
+    public function scopeDummyProperty()
+    {
+        $this->methodCounter['scopeDummyProperty']++;
     }
 }
 
