@@ -471,7 +471,7 @@ class DataModelDataprovider
             array(
                 'case'          => 'Field is not set and is not a magic property',
                 'getField'      => false,
-                'magic'         => true,
+                'magic'         => 'foobar',
                 'relationGet'  => false,
                 'isset'         => false
             )
@@ -490,7 +490,7 @@ class DataModelDataprovider
             array(
                 'case'          => 'Field is not set and is a magic property, returns NOT NULL',
                 'getField'      => false,
-                'magic'         => true,
+                'magic'         => 'foobar',
                 'relationGet'   => true,
                 'isset'         => true
             )
@@ -509,9 +509,66 @@ class DataModelDataprovider
             array(
                 'case'          => 'Field is not set and is a magic property, returns NULL',
                 'getField'      => false,
-                'magic'         => true,
+                'magic'         => 'foobar',
                 'relationGet'   => true,
                 'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => false,
+                    'magic'     => '',
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'fltState'
+            ),
+            array(
+                'case'          => 'Field starts with flt, no magic property set',
+                'getField'      => null,
+                'magic'         => 'state',
+                'relationGet'   => false,
+                'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => false,
+                    'magic'     => true,
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'fltState'
+            ),
+            array(
+                'case'          => 'Field starts with flt, magic property set and returns NULL',
+                'getField'      => null,
+                'magic'         => 'state',
+                'relationGet'   => true,
+                'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => false,
+                    'magic'     => true,
+                    'alias'     => array(),
+                    'relationGet' => 1
+                ),
+                'property' => 'fltState'
+            ),
+            array(
+                'case'          => 'Field starts with flt, magic property set and returns NOT NULL',
+                'getField'      => null,
+                'magic'         => 'state',
+                'relationGet'   => true,
+                'isset'         => true
             )
         );
 

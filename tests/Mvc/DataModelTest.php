@@ -174,7 +174,8 @@ class DataModeltest extends DatabaseMysqliCase
                 ->willReturn($test['mock']['getField']);
 
         $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('isMagicProperty', '__get'), array($model));
-        $relation->expects($check['magic'] ? $this->once() : $this->never())->method('isMagicProperty')->willReturn($test['mock']['magic']);
+        $relation->expects($check['magic'] ? $this->once() : $this->never())->method('isMagicProperty')->with($check['magic'])
+            ->willReturn($test['mock']['magic']);
         $relation->expects($check['relationGet'] ? $this->once() : $this->never())->method('__get')->willReturn($test['mock']['relationGet']);
 
         ReflectionHelper::setValue($model, 'relationManager', $relation);
