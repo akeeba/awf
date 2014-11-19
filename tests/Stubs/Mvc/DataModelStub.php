@@ -23,10 +23,7 @@ class DataModelStub extends DataModel
 
     /** @var array Simply counter to check if a specific function is called */
     public    $methodCounter = array(
-        'getClone'   => 0,
-        'savestate'  => 0,
-        'clearState' => 0,
-        'clearInput' => 0
+        'SetDummyAttribute'   => 0
     );
 
     protected $name   = 'nestedset';
@@ -99,6 +96,11 @@ class DataModelStub extends DataModel
         }
 
         return $this->name;
+    }
+
+    public function SetDummyAttribute($value)
+    {
+        $this->methodCounter['SetDummyAttribute']++;
     }
 }
 
