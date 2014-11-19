@@ -375,4 +375,146 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTest__isset()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => 1,
+                    'magic'     => '',
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'id'
+            ),
+            array(
+                'case'          => 'Field is set and has a NOT NULL value',
+                'getField'      => 'id',
+                'magic'         => false,
+                'relationGet'   => false,
+                'isset'         => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => null,
+                    'magic'     => '',
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'id'
+            ),
+            array(
+                'case'          => 'Field is set and has a NULL value',
+                'getField'      => 'id',
+                'magic'         => false,
+                'relationGet'   => false,
+                'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => 1,
+                    'magic'     => '',
+                    'alias'     => array(
+                        'foobar' => 'id'
+                    ),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field had an alias and has a NOT NULL value',
+                'getField'      => 'id',
+                'magic'         => false,
+                'relationGet'   => false,
+                'isset'         => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => null,
+                    'magic'     => '',
+                    'alias'     => array(
+                        'foobar' => 'id'
+                    ),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field had an alias and has a NULL value',
+                'getField'      => 'id',
+                'magic'         => false,
+                'relationGet'   => false,
+                'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => null,
+                    'magic'     => false,
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field is not set and is not a magic property',
+                'getField'      => false,
+                'magic'         => true,
+                'relationGet'  => false,
+                'isset'         => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => null,
+                    'magic'     => true,
+                    'alias'     => array(),
+                    'relationGet' => 1
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field is not set and is a magic property, returns NOT NULL',
+                'getField'      => false,
+                'magic'         => true,
+                'relationGet'   => true,
+                'isset'         => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'  => null,
+                    'magic'     => true,
+                    'alias'     => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field is not set and is a magic property, returns NULL',
+                'getField'      => false,
+                'magic'         => true,
+                'relationGet'   => true,
+                'isset'         => false
+            )
+        );
+
+        return $data;
+    }
 }

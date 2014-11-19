@@ -580,7 +580,7 @@ class DataModel extends Model
 			$value = $this->relationManager->$name;
 		}
 
-		// As the for the core function isset, the property must exists AND must be NOT null
+		// As the core function isset, the property must exists AND must be NOT null
 		return ($value !== null);
 	}
 

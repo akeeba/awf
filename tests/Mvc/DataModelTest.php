@@ -149,4 +149,42 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific caller method a wrong amount of times'));
         $this->assertEquals($check['value'], $property, sprintf($msg, 'Failed to set the property'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelIsset
+     * @covers          DataModel::__isset
+     * @dataProvider    DataModelDataprovider::getTest__isset
+     */
+    public function test__isset($test, $check)
+    {
+        $msg = 'DataModel::__call %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getFieldValue'), array($container));
+        $model->expects($check['getField'] ? $this->once() : $this->never())->method('getFieldValue')->with($check['getField'])
+                ->willReturn($test['mock']['getField']);
+
+        $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('isMagicProperty', '__get'), array($model));
+        $relation->expects($check['magic'] ? $this->once() : $this->never())->method('isMagicProperty')->willReturn($test['mock']['magic']);
+        $relation->expects($check['relationGet'] ? $this->once() : $this->never())->method('__get')->willReturn($test['mock']['relationGet']);
+
+        ReflectionHelper::setValue($model, 'relationManager', $relation);
+
+        $property = $test['property'];
+
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        $isset = isset($model->$property);
+
+        $this->assertEquals($check['isset'], $isset, sprintf($msg, 'Failed to correctly detect if a property is set'));
+    }
 }
