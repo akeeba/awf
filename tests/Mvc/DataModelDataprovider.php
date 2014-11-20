@@ -574,4 +574,137 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTest__get()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 1,
+                    'getState'    => 0,
+                    'magic'       => '',
+                    'alias'       => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'id'
+            ),
+            array(
+                'case'          => 'Standard field of the DataModel',
+                'getField'      => 'id',
+                'getState'      => false,
+                'magic'         => false,
+                'relationGet'   => false,
+                'get'           => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 1,
+                    'getState'    => 0,
+                    'magic'       => '',
+                    'alias'       => array(
+                        'foobar' => 'id'
+                    ),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Standard field with an alias of the DataModel',
+                'getField'      => 'id',
+                'getState'      => false,
+                'magic'         => false,
+                'relationGet'   => false,
+                'get'           => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 0,
+                    'getState'    => 1,
+                    'magic'       => false,
+                    'alias'       => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field with has not a magic property method inside the relation manager',
+                'getField'      => false,
+                'getState'      => 'foobar',
+                'magic'         => 'foobar',
+                'relationGet'   => false,
+                'get'           => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 0,
+                    'getState'    => 0,
+                    'magic'       => true,
+                    'alias'       => array(),
+                    'relationGet' => 1
+                ),
+                'property' => 'foobar'
+            ),
+            array(
+                'case'          => 'Field has a magic property method inside the relation manager',
+                'getField'      => false,
+                'getState'      => false,
+                'magic'         => 'foobar',
+                'relationGet'   => 'foobar',
+                'get'           => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 0,
+                    'getState'    => 1,
+                    'magic'       => false,
+                    'alias'       => array(),
+                    'relationGet' => null
+                ),
+                'property' => 'fltFoobar'
+            ),
+            array(
+                'case'          => 'Field with has not a magic property method inside the relation manager - Magic name',
+                'getField'      => false,
+                'getState'      => 'foobar',
+                'magic'         => 'foobar',
+                'relationGet'   => false,
+                'get'           => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getField'    => 0,
+                    'getState'    => 0,
+                    'magic'       => true,
+                    'alias'       => array(),
+                    'relationGet' => 1
+                ),
+                'property' => 'fltFoobar'
+            ),
+            array(
+                'case'          => 'Field has a magic property method inside the relation manager - Magic name',
+                'getField'      => false,
+                'getState'      => false,
+                'magic'         => 'foobar',
+                'relationGet'   => 'foobar',
+                'get'           => 1
+            )
+        );
+
+        return $data;
+    }
 }

@@ -158,7 +158,7 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function test__isset($test, $check)
     {
-        $msg = 'DataModel::__call %s - Case: '.$check['case'];
+        $msg = 'DataModel::__isset %s - Case: '.$check['case'];
 
         $container = new Container(array(
             'db' => self::$driver,
@@ -187,5 +187,47 @@ class DataModeltest extends DatabaseMysqliCase
         $isset = isset($model->$property);
 
         $this->assertEquals($check['isset'], $isset, sprintf($msg, 'Failed to correctly detect if a property is set'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGet
+     * @covers          DataModel::__get
+     * @dataProvider    DataModelDataprovider::getTest__get
+     */
+    public function test__get($test, $check)
+    {
+        $msg = 'DataModel::__get %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getFieldValue', 'getState'), array($container));
+        $model->expects($check['getField'] ? $this->once() : $this->never())->method('getFieldValue')->with($check['getField'])
+            ->willReturn($test['mock']['getField']);
+
+        $model->expects($check['getState'] ? $this->once() : $this->never())->method('getState')->with($check['getState'])
+            ->willReturn($test['mock']['getState']);
+
+        $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('isMagicProperty', '__get'), array($model));
+        $relation->expects($check['magic'] ? $this->once() : $this->never())->method('isMagicProperty')->with($check['magic'])
+            ->willReturn($test['mock']['magic']);
+        $relation->expects($check['relationGet'] ? $this->once() : $this->never())->method('__get')->willReturn($test['mock']['relationGet']);
+
+        ReflectionHelper::setValue($model, 'relationManager', $relation);
+
+        $property = $test['property'];
+
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        $get = $model->$property;
+
+        $this->assertEquals($check['get'], $get, sprintf($msg, 'Failed to get the property value'));
     }
 }
