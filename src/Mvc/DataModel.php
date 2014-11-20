@@ -733,7 +733,9 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforeArchive', array(&$this));
 
-		$this->enabled = 2;
+		$enabled = $this->getFieldAlias('enabled');
+
+		$this->$enabled = 2;
 		$this->save();
 
 		if (method_exists($this, 'onAfterArchive'))

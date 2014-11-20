@@ -481,12 +481,22 @@ CREATE TABLE `awf_dbtest` (
   `description` TEXT NOT NULL DEFAULT ''
 );
 
-CREATE TABLE `awf_dbtest_ordering` (
+CREATE TABLE `awf_dbtest_extended` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `title` TEXT NOT NULL DEFAULT '',
   `start_date` TEXT NOT NULL DEFAULT '',
   `description` TEXT NOT NULL DEFAULT '',
-  `ordering` TINYINT NOT NULL DEFAULT '0'
+  `ordering` TINYINT NOT NULL DEFAULT '0',
+  `enabled` TINYINT NOT NULL DEFAULT '0'
+);
+
+CREATE TABLE `awf_dbtest_alias` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `title` TEXT NOT NULL DEFAULT '',
+  `start_date` TEXT NOT NULL DEFAULT '',
+  `description` TEXT NOT NULL DEFAULT '',
+  `xx_ordering` TINYINT NOT NULL DEFAULT '0',
+  `xx_enabled` TINYINT NOT NULL DEFAULT '0'
 );
 
 CREATE TABLE `awf_dbtest_composite` (

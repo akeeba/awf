@@ -394,7 +394,7 @@ class DataControllertest extends DatabaseMysqliCase
             'mvc_config' => array(
                 'autoChecks'  => false,
                 'idFieldName' => 'id',
-                'tableName'   => '#__dbtest_ordering'
+                'tableName'   => '#__dbtest_extended'
             )
         ));
 
@@ -410,7 +410,7 @@ class DataControllertest extends DatabaseMysqliCase
 
         $query = $db->getQuery(true)
                     ->select('id')
-                    ->from($db->qn('#__dbtest_ordering'))
+                    ->from($db->qn('#__dbtest_extended'))
                     ->order($db->qn('ordering').' ASC');
         $rows = $db->setQuery($query)->loadColumn();
 

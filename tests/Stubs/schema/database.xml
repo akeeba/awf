@@ -31,7 +31,7 @@
     </row>
   </table>
 
-  <table name="awf_dbtest_ordering">
+  <table name="awf_dbtest_extended">
     <column>id</column>
     <column>title</column>
     <column>start_date</column>

@@ -914,4 +914,130 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestArchive()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => '',
+                    'after'  => '',
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest'
+            ),
+            array(
+                'case'       => 'Table with no enabled field',
+                'dispatcher' => 0,
+                'save'       => false,
+                'exception'  => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => '',
+                    'after'  => '',
+                    'alias'  => array(
+                        'enabled' => 'xx_enabled'
+                    )
+                ),
+                'table' => '#__dbtest_alias'
+            ),
+            array(
+                'case'       => 'Table with enabled field (alias)',
+                'dispatcher' => 2,
+                'save'       => true,
+                'exception'  => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => '',
+                    'after'  => '',
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'case'       => 'Table with enabled field',
+                'dispatcher' => 2,
+                'save'       => true,
+                'exception'  => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => function(){ return false;},
+                    'after'  => '',
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'case'       => 'Table with enabled field, onBefore returns false',
+                'dispatcher' => 2,
+                'save'       => true,
+                'exception'  => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => function(){ return true;},
+                    'after'  => function(){ return false;},
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'case'       => 'Table with enabled field, onAfter returns false',
+                'dispatcher' => 2,
+                'save'       => true,
+                'exception'  => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => function(){ throw new \Exception();},
+                    'after'  => function(){ return false;},
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'case'       => 'Table with enabled field, onBefore throws an exception',
+                'dispatcher' => 0,
+                'save'       => false,
+                'exception'  => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'before' => function(){ return true;},
+                    'after'  => function(){ throw new \Exception();},
+                    'alias'  => array()
+                ),
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'case'       => 'Table with enabled field, onAfter throws an exception',
+                'dispatcher' => 1,
+                'save'       => true,
+                'exception'  => true
+            )
+        );
+
+        return $data;
+    }
 }

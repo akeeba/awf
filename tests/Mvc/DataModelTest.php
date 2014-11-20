@@ -301,4 +301,64 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
         $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific getter method a wrong amount of times'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelArchive
+     * @covers          DataModel::archive
+     * @dataProvider    DataModelDataprovider::getTestArchive
+     */
+    public function testArchive($test, $check)
+    {
+        $msg     = 'DataModel::getFieldValue %s - Case: '.$check['case'];
+        $methods = array();
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        if($test['mock']['before'])
+        {
+            $methods['onBeforeArchive'] = $test['mock']['before'];
+        }
+
+        if($test['mock']['after'])
+        {
+            $methods['onAfterArchive'] = $test['mock']['after'];
+        }
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container, $methods));
+        $model->expects($check['save'] ? $this->once() : $this->never())->method('save')->willReturn(null);
+
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeArchive')),
+            array($this->equalTo('onAfterArchive'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('Exception');
+        }
+
+        $result = $model->archive();
+
+        if($check['save'])
+        {
+            $enabled = $model->getFieldAlias('enabled');
+            $value   = $model->$enabled;
+
+            $this->assertEquals(2, $value, sprintf($msg, 'Should set the value of the enabled field to 2'));
+        }
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an istance of itself'));
+    }
 }

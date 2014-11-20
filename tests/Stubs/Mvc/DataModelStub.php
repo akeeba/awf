@@ -104,6 +104,26 @@ class DataModelStub extends DataModel
         return $this->name;
     }
 
+    public function onBeforeArchive()
+    {
+        if(isset($this->methods['onBeforeArchive']))
+        {
+            $func = $this->methods['onBeforeArchive'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterArchive()
+    {
+        if(isset($this->methods['onAfterArchive']))
+        {
+            $func = $this->methods['onAfterArchive'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
     /**
      * Method invoked by setFieldValue to set the value of an attribute
      *
