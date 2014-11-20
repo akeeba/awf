@@ -265,4 +265,40 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific setter method a wrong amount of times'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetFieldValue
+     * @covers          DataModel::getFieldValue
+     * @dataProvider    DataModelDataprovider::getTestGetFieldValue
+     */
+    public function testGetFieldValue($test, $check)
+    {
+        $msg = 'DataModel::getFieldValue %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        if($test['find'])
+        {
+            $model->find($test['find']);
+        }
+
+        $result = $model->getFieldValue($test['property'], $test['default']);
+
+        $count = isset($model->methodCounter[$check['method']]) ? $model->methodCounter[$check['method']] : 0;
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific getter method a wrong amount of times'));
+    }
 }

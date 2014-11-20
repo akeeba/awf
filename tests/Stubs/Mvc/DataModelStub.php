@@ -24,6 +24,7 @@ class DataModelStub extends DataModel
     /** @var array Simply counter to check if a specific function is called */
     public    $methodCounter = array(
         'SetDummyAttribute'    => 0,
+        'GetDummyAttribute'    => 0,
         'scopeDummyProperty'   => 0,
         'scopeDummyNoProperty' => 0
     );
@@ -112,6 +113,16 @@ class DataModelStub extends DataModel
     public function SetDummyAttribute($value)
     {
         $this->methodCounter['SetDummyAttribute']++;
+    }
+
+    /**
+     * Method invoked by setFieldValue to set the value of an attribute
+     *
+     * @see     DataModel::getFieldValue
+     */
+    public function GetDummyAttribute()
+    {
+        $this->methodCounter['GetDummyAttribute']++;
     }
 
     /**

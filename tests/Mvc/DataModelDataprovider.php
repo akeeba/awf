@@ -822,4 +822,96 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestGetFieldValue()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array()
+                ),
+                'find'     => 1,
+                'property' => 'id',
+                'default'  => null
+            ),
+            array(
+                'case'   => 'Getting a property that exists',
+                'method' => 'GetIdAttribute',
+                'result' => 1,
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array()
+                ),
+                'find'     => null,
+                'property' => 'id',
+                'default'  => null
+            ),
+            array(
+                'case'   => 'Getting a property that exists, record not loaded',
+                'method' => 'GetIdAttribute',
+                'result' => null,
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array()
+                ),
+                'find'     => null,
+                'property' => 'foobar',
+                'default'  => 'test'
+            ),
+            array(
+                'case'   => 'Getting a property that does not exist',
+                'method' => 'GetFoobarAttribute',
+                'result' => 'test',
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array(
+                        'foobar' => 'title'
+                    )
+                ),
+                'find'     => 1,
+                'property' => 'foobar',
+                'default'  => null
+            ),
+            array(
+                'case'   => 'Getting a property that exists using an alias',
+                'method' => 'GetTitleAttribute',
+                'result' => 'Testing',
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array()
+                ),
+                'find'     => 1,
+                'property' => 'dummy',
+                'default'  => null
+            ),
+            array(
+                'case'   => 'Getting a property that has a specific getter',
+                'method' => 'GetDummyAttribute',
+                'result' => null,
+                'count'  => 1
+            )
+        );
+
+        return $data;
+    }
 }
