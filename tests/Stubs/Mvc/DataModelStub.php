@@ -23,8 +23,9 @@ class DataModelStub extends DataModel
 
     /** @var array Simply counter to check if a specific function is called */
     public    $methodCounter = array(
-        'SetDummyAttribute'   => 0,
-        'scopeDummyProperty'  => 0
+        'SetDummyAttribute'    => 0,
+        'scopeDummyProperty'   => 0,
+        'scopeDummyNoProperty' => 0
     );
 
     public $dummyProperty = 'default';
@@ -121,6 +122,16 @@ class DataModelStub extends DataModel
     public function scopeDummyProperty()
     {
         $this->methodCounter['scopeDummyProperty']++;
+    }
+
+    /**
+     * Method invoked by the __set magic method
+     *
+     * @see     DataModel::__set
+     */
+    public function scopeDummyNoProperty()
+    {
+        $this->methodCounter['scopeDummyNoProperty']++;
     }
 }
 

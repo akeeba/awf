@@ -677,7 +677,7 @@ class DataModel extends Model
 			$method = 'scope' . ucfirst($name);
 			$this->{$method}($value);
 		}
-		// If $name is not a field name, get the value of a state variable
+		// If $name is not a field name, set the value of a state variable
 		else
 		{
 			$this->setState($name, $value);

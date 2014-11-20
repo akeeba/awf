@@ -230,4 +230,39 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals($check['get'], $get, sprintf($msg, 'Failed to get the property value'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelSet
+     * @covers          DataModel::__set
+     * @dataProvider    DataModelDataprovider::getTest__set
+     */
+    public function test__set($test, $check)
+    {
+        $msg = 'DataModel::__set %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('setFieldValue', 'setState', '__call'), array($container));
+        $model->expects($check['call'] ? $this->once() : $this->never())->method('__call')->willReturn(null);
+
+        $model->expects($check['setField'] ? $this->once() : $this->never())->method('setFieldValue')->with($check['setField'])->willReturn(null);
+        $model->expects($check['setState'] ? $this->once() : $this->never())->method('setState')->with($check['setState'])->willReturn(null);
+
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        $property = $test['property'];
+        $model->$property = $test['value'];
+
+        $count = isset($model->methodCounter[$check['method']]) ? $model->methodCounter[$check['method']] : 0;
+
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Invoked the specific setter method a wrong amount of times'));
+    }
 }

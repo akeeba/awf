@@ -707,4 +707,119 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTest__set()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array()
+                ),
+                'property' => 'id',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Setting a property that exists in the table',
+                'call'     => false,
+                'count'    => 0,
+                'method'   => 'scopeId',
+                'setField' => 'id',
+                'setState' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array(
+                        'foobar' => 'id'
+                    )
+                ),
+                'property' => 'foobar',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Setting a property that exists in the table using an alias',
+                'call'     => false,
+                'count'    => 0,
+                'method'   => 'scopeId',
+                'setField' => 'id',
+                'setState' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array()
+                ),
+                'property' => 'foobar',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Property does not exists, so we set the state',
+                'call'     => false,
+                'count'    => 0,
+                'method'   => 'scopeFoobar',
+                'setField' => false,
+                'setState' => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array()
+                ),
+                'property' => 'dummyNoProperty',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Property does not exists, but we have a magic method scope',
+                'call'     => false,
+                'count'    => 1,
+                'method'   => 'scopeDummyNoProperty',
+                'setField' => false,
+                'setState' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array()
+                ),
+                'property' => 'fltFoobar',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Property does not exists, but its name is magic for the state',
+                'call'     => false,
+                'count'    => 0,
+                'method'   => 'scopeFoobar',
+                'setField' => false,
+                'setState' => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias'    => array()
+                ),
+                'property' => 'scopeFoobar',
+                'value'    => 10
+            ),
+            array(
+                'case'     => 'Property does not exists, but its name is magic for the state - Going to invoke the call method of the model',
+                'call'     => true,
+                'count'    => 0,
+                'method'   => 'scopeFoobar',
+                'setField' => false,
+                'setState' => false
+            )
+        );
+
+        return $data;
+    }
 }
