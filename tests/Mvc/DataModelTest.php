@@ -13,6 +13,53 @@ class DataModeltest extends DatabaseMysqliCase
 {
     /**
      * @group           DataModel
+     * @group           DataModelGetDbo
+     * @covers          DataModel::getDbo
+     * @dataProvider    DataModelDataprovider::getTestGetDbo
+     */
+    public function testGetDbo($test, $check)
+    {
+        // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
+        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $msg       = 'DataModel::setFieldValue %s - Case: '.$check['case'];
+        $dbcounter = 0;
+        $selfDb    = clone self::$driver;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $newContainer = new Container(array(
+            'db' => function() use (&$dbcounter, $selfDb){
+                $dbcounter++;
+                return $selfDb;
+            }
+        ));
+
+        ReflectionHelper::setValue($model, 'container', $newContainer);
+
+        if($test['nuke'])
+        {
+            ReflectionHelper::setValue($model, 'dbo', null);
+        }
+
+        $db = $model->getDbo();
+
+        $this->assertInstanceOf('\\Awf\\Database\\Driver', $db, sprintf($msg, 'Should return an instance of Driver'));
+        $this->assertEquals($check['dbCounter'], $dbcounter, sprintf($msg, ''));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelSetFieldValue
      * @covers          DataModel::setFieldValue
      * @dataProvider    DataModelDataprovider::getTestSetFieldValue

@@ -2,6 +2,31 @@
 
 class DataModelDataprovider
 {
+    public static function getTestGetDbo()
+    {
+        $data[] = array(
+            array(
+                'nuke' => false
+            ),
+            array(
+                'case' => 'The internal db pointer is an object',
+                'dbCounter' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'nuke' => true
+            ),
+            array(
+                'case' => 'The internal db pointer is not an object, getting from the container',
+                'dbCounter' => 1
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSetFieldValue()
     {
         $data[] = array(
