@@ -1040,4 +1040,73 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestHasField()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getAlias' => 'id',
+                    'fields'   => array(
+                        'id' => 'dummy'
+                    )
+                ),
+                'field' => 'id'
+            ),
+            array(
+                'case'   => 'Field exists, no alias',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getAlias' => 'nothere',
+                    'fields'   => array(
+                        'id' => 'dummy'
+                    )
+                ),
+                'field' => 'nothere'
+            ),
+            array(
+                'case'   => 'Field does not exists, no alias',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getAlias' => 'foobar',
+                    'fields'   => array(
+                        'id' => 'dummy'
+                    )
+                ),
+                'field' => 'id'
+            ),
+            array(
+                'case'   => 'Field does no exists, has an alias',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getAlias' => 'foobar',
+                    'fields'   => array(
+                        'foobar' => 'dummy'
+                    )
+                ),
+                'field' => 'id'
+            ),
+            array(
+                'case'   => 'Field exists, has an alias',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }
