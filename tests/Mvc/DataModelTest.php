@@ -537,4 +537,30 @@ class DataModeltest extends DatabaseMysqliCase
 
         $model->bind($test['data']);
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetData
+     * @covers          DataModel::getData
+     */
+    public function testGetData()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->find(1);
+
+        $result = $model->getData();
+
+        $check = array('id' => 1, 'title' => 'Testing', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one');
+
+        $this->assertEquals($check, $result, 'DataModel::getData Returned the wrong result');
+    }
 }
