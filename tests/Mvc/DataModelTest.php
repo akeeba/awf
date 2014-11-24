@@ -621,4 +621,42 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals($check, $result, 'DataModel::getData Returned the wrong result');
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelCheck
+     * @covers          DataModel::check
+     * @dataProvider    DataModelDataprovider::getTestCheck
+     */
+    public function testCheck($test, $check)
+    {
+        $msg = 'DataModel::check %is - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        ReflectionHelper::setValue($model, 'autoChecks', $test['mock']['auto']);
+
+        if($test['load'])
+        {
+            $model->find($test['load']);
+        }
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('RuntimeException', $check['exception']);
+        }
+
+        $result = $model->check();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
 }

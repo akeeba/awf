@@ -1672,4 +1672,51 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestCheck()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'auto' => false
+                ),
+                'table' => '#__dbtest',
+                'load'  => null
+            ),
+            array(
+                'case' => 'No autochecks set',
+                'exception' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'auto' => true
+                ),
+                'table' => '#__dbtest',
+                'load'  => 1
+            ),
+            array(
+                'case' => 'Table loaded',
+                'exception' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'auto' => true
+                ),
+                'table' => '#__dbtest',
+                'load'  => null
+            ),
+            array(
+                'case' => 'Check failed',
+                'exception' => 'FAKEAPP_NESTEDSET_ERR_TITLE_EMPTY'
+            )
+        );
+
+        return $data;
+    }
 }
