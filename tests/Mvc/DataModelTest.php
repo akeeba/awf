@@ -446,7 +446,7 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function testGetFieldAlias($test, $check)
     {
-        $msg = 'DataModel::hasField %s - Case: '.$check['case'];
+        $msg = 'DataModel::getFieldAlias %s - Case: '.$check['case'];
 
         $container = new Container(array(
             'db' => self::$driver,
@@ -464,5 +464,77 @@ class DataModeltest extends DatabaseMysqliCase
         $result = $model->getFieldAlias($test['field']);
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelBind
+     * @covers          DataModel::bind
+     * @dataProvider    DataModelDataprovider::getTestBind
+     */
+    public function testBind($test, $check)
+    {
+        $msg       = 'DataModel::bind %s - Case: '.$check['case'];
+        $checkBind = array();
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('setFieldValue'), array($container));
+        $model->expects($this->any())->method('setFieldValue')->willReturnCallback(
+            function($key, $value) use (&$checkBind){
+                $checkBind[$key] = $value;
+            }
+        );
+
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeBind')),
+            array($this->equalTo('onAfterBind'))
+        )
+            ->willReturnCallback(
+                function($event, $params) use ($test){
+                    if($event == 'onBeforeBind' && !is_null($test['mock']['beforeDisp'])){
+                        $params[1] = $test['mock']['beforeDisp'];
+                    }
+                }
+            );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->bind($test['data'], $test['ignore']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['bind'], $checkBind, sprintf($msg, 'Failed to bind the data to the model'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelBind
+     * @covers          DataModel::bind
+     * @dataProvider    DataModelDataprovider::getTestBindException
+     */
+    public function testBindException($test)
+    {
+        $this->setExpectedException('InvalidArgumentException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $model->bind($test['data']);
     }
 }

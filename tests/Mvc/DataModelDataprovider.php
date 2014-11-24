@@ -1169,4 +1169,130 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestBind()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'beforeDisp' => null
+                ),
+                'data' => array(
+                    'id' => 1,
+                    'title' => 'test'
+                ),
+                'ignore' => array()
+            ),
+            array(
+                'case' => 'Data array contains properties that exists',
+                'dispatcher' => 2,
+                'bind' => array('id' => 1, 'title' => 'test')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'beforeDisp' => null
+                ),
+                'data' => array(
+                    'id' => 1,
+                    'title' => 'test'
+                ),
+                'ignore' => array('title')
+            ),
+            array(
+                'case' => 'Data array contains properties that exists, ignoring some of them (array format)',
+                'dispatcher' => 2,
+                'bind' => array('id' => 1)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'beforeDisp' => null
+                ),
+                'data' => array(
+                    'id' => 1,
+                    'title' => 'test',
+                    'description' => 'test'
+                ),
+                'ignore' => 'title description'
+            ),
+            array(
+                'case' => 'Data array contains properties that exists, ignoring some of them (string format)',
+                'dispatcher' => 2,
+                'bind' => array('id' => 1)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'beforeDisp' => null
+                ),
+                'data' => array(
+                    'id' => 1,
+                    'title' => 'test',
+                    'foobar' => 'foo'
+                ),
+                'ignore' => array()
+            ),
+            array(
+                'case' => 'Trying to bind a property that does not exist',
+                'dispatcher' => 2,
+                'bind' => array('id' => 1, 'title' => 'test')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'beforeDisp' => array(
+                        'id' => 1,
+                        'title' => 'test',
+                    )
+                ),
+                'data' => null,
+                'ignore' => array()
+            ),
+            array(
+                'case' => 'Passing invalid data, however the onBeforeBind converts it to a valid one',
+                'dispatcher' => 2,
+                'bind' => array('id' => 1, 'title' => 'test')
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestBindException()
+    {
+        $data[] = array(
+            array(
+                'data' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'data' => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'data' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'data' => false
+            )
+        );
+
+        return $data;
+    }
 }
