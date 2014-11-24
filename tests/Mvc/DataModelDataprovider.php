@@ -1134,4 +1134,39 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestGetFieldAlias()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array(
+                        'foobar' => 'test'
+                    )
+                ),
+                'field' => 'id'
+            ),
+            array(
+                'case'   => 'Alias not set for the field',
+                'result' => 'id'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'alias' => array(
+                        'id' => 'foobar'
+                    )
+                ),
+                'field' => 'id'
+            ),
+            array(
+                'case'   => 'Alias set for the field',
+                'result' => 'foobar'
+            )
+        );
+
+        return $data;
+    }
 }

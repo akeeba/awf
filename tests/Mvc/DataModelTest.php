@@ -437,4 +437,32 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetFieldAlias
+     * @covers          DataModel::getFieldAlias
+     * @dataProvider    DataModelDataprovider::getTestGetFieldAlias
+     */
+    public function testGetFieldAlias($test, $check)
+    {
+        $msg = 'DataModel::hasField %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        ReflectionHelper::setValue($model, 'aliasFields', $test['mock']['alias']);
+
+        $result = $model->getFieldAlias($test['field']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
