@@ -2,6 +2,383 @@
 
 class DataModelDataprovider
 {
+    public static function getTestGetTableFields()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => null,
+                    'tableName'  => null
+                ),
+                'table' => '#__dbtest'
+            ),
+            array(
+                'case' => 'Table exists, abstract name, loaded cache',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => null,
+                    'tableName'  => '#__dbtest'
+                ),
+                'table' => null
+            ),
+            array(
+                'case' => 'Table exists, abstract name, loaded cache, table name got from the object',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => null,
+                    'tableName'  => null
+                ),
+                'table' => '#__wrong'
+            ),
+            array(
+                'case' => 'Table does not exist, abstract name, loaded cache',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => null,
+                    'tableName'  => null
+                ),
+                'table' => 'awf_dbtest'
+            ),
+            array(
+                'case' => 'Table exists, actual name, loaded cache',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => 'nuke',
+                    'tableName'  => null
+                ),
+                'table' => '#__dbtest'
+            ),
+            array(
+                'case' => 'Table exists, abstract name, clean cache',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => array(
+                        '#__dbtest' => 'unset'
+                    ),
+                    'tableName'  => null
+                ),
+                'table' => '#__dbtest'
+            ),
+            array(
+                'case' => 'Table exists, abstract name, table not inside the cache',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'tables'     => array(
+                        '#__dbtest' => false
+                    ),
+                    'tableName'  => null
+                ),
+                'table' => '#__dbtest'
+            ),
+            array(
+                'case' => 'Table exists, abstract name, table had a false value inside the cache',
+                'result' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                )
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestGetDbo()
     {
         $data[] = array(

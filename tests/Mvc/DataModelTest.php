@@ -13,6 +13,64 @@ class DataModeltest extends DatabaseMysqliCase
 {
     /**
      * @group           DataModel
+     * @group           DataModelGetTableFields
+     * @covers          DataModel::getTableFields
+     * @dataProvider    DataModelDataprovider::getTestGetTableFields
+     */
+    public function testGetTableFields($test, $check)
+    {
+        $msg = 'DataModel::getTableFields %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        // Mocking the whole database it's simply too hard. We will play with the cache and we won't get 100% code coverage
+        if($test['mock']['tables'] !== null)
+        {
+            $tables = ReflectionHelper::getValue($model, 'tableFieldCache');
+
+            if($test['mock']['tables'] == 'nuke')
+            {
+                $tables = array();
+            }
+            else
+            {
+                foreach($test['mock']['tables'] as $mockedTable => $value)
+                {
+                    if($value == 'unset')
+                    {
+                        unset($tables[$mockedTable]);
+                    }
+                    else
+                    {
+                        $tables[$mockedTable] = $value;
+                    }
+                }
+            }
+
+            ReflectionHelper::setValue($model, 'tableFieldCache', $tables);
+        }
+
+        if($test['mock']['tableName'] !== null)
+        {
+            ReflectionHelper::setValue($model, 'tableName', $test['mock']['tableName']);
+        }
+
+        $result = $model->getTableFields($test['table']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelGetDbo
      * @covers          DataModel::getDbo
      * @dataProvider    DataModelDataprovider::getTestGetDbo
