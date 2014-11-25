@@ -2010,8 +2010,24 @@ class DataModelDataprovider
                 'case'   => 'Table with no publish support',
                 'before' => 0,
                 'after'  => 0,
+                'find'   => false,
                 'dispatcher' => 0,
                 'enabled' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+                'id' => null
+            ),
+            array(
+                'case'   => 'Table with publish support, already loaded',
+                'before' => 1,
+                'after'  => 1,
+                'find'   => false,
+                'dispatcher' => 2,
+                'enabled' => 0
             )
         );
 
@@ -2021,9 +2037,10 @@ class DataModelDataprovider
                 'id' => 1
             ),
             array(
-                'case'   => 'Table with publish support',
+                'case'   => 'Table with publish support, not loaded',
                 'before' => 1,
                 'after'  => 1,
+                'find'   => true,
                 'dispatcher' => 2,
                 'enabled' => 0
             )

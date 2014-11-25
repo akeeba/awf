@@ -164,6 +164,26 @@ class DataModelStub extends DataModel
         }
     }
 
+    public function onBeforeRestore()
+    {
+        if(isset($this->methods['onBeforeRestore']))
+        {
+            $func = $this->methods['onBeforeRestore'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterRestore()
+    {
+        if(isset($this->methods['onAfterRestore']))
+        {
+            $func = $this->methods['onAfterRestore'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
     /**
      * Method invoked by setFieldValue to set the value of an attribute
      *

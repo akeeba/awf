@@ -2018,7 +2018,7 @@ class DataModel extends Model
 	 *
 	 * @return  $this  for chaining
 	 */
-	public function restore($id)
+	public function restore($id = null)
 	{
 		if (!$this->hasField('enabled'))
 		{
@@ -2030,7 +2030,12 @@ class DataModel extends Model
 			$this->findOrFail($id);
 		}
 
-		$id = $this->{$this->idFieldName};
+		$id = $this->getId();
+
+		if(!$id)
+		{
+			throw new \RuntimeException("Can't change the state of a not loaded DataModel");
+		}
 
 		if (method_exists($this, 'onBeforeRestore'))
 		{
