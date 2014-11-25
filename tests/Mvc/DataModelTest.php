@@ -438,7 +438,8 @@ class DataModeltest extends DatabaseMysqliCase
             $methods['onAfterArchive'] = $test['mock']['after'];
         }
 
-        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container, $methods));
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId'), array($container, $methods));
+        $model->expects($this->any())->method('getId')->willReturn(1);
         $model->expects($check['save'] ? $this->once() : $this->never())->method('save')->willReturn(null);
 
         $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
@@ -466,6 +467,28 @@ class DataModeltest extends DatabaseMysqliCase
         }
 
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an istance of itself'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelArchive
+     * @covers          DataModel::archive
+     */
+    public function testArchiveException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->archive();
     }
 
     /**

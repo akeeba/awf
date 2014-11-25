@@ -721,6 +721,11 @@ class DataModel extends Model
 	 */
 	public function archive()
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't archive a not loaded DataModel");
+		}
+
 		if (!$this->hasField('enabled'))
 		{
 			return $this;
