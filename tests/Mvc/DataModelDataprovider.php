@@ -1815,4 +1815,99 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestLock()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest',
+                'user_id' => ''
+            ),
+            array(
+                'case' => 'Table without locking support',
+                'before' => 0,
+                'after'  => 0,
+                'dispatcher' => 0,
+                'locked_by' => null,
+                'locked_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_extended',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with locking support, user_id passed',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 90,
+                'locked_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => 88
+                ),
+                'table' => '#__dbtest_extended',
+                'user_id' => null
+            ),
+            array(
+                'case' => 'Table with locking support, user_id not passed',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 88,
+                'locked_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_lockedby',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with only the locked_by field',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 90,
+                'locked_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_lockedon',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with only the locked_on field',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => null,
+                'locked_on' => true
+            )
+        );
+
+        return $data;
+    }
 }

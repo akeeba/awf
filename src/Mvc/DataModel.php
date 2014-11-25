@@ -1777,8 +1777,9 @@ class DataModel extends Model
 
 		if ($this->hasField('locked_on'))
 		{
-			$date = new Date();
-			$this->locked_on = $date->toSql(false, $db);
+			$date             = new Date();
+			$locked_on        = $this->getFieldAlias('locked_on');
+			$this->$locked_on = $date->toSql(false, $db);
 		}
 
 		if ($this->hasField('locked_by'))
@@ -1788,7 +1789,9 @@ class DataModel extends Model
 				$userManager = $this->container->userManager;
 				$userId = $userManager->getUser()->getId();
 			}
-			$this->locked_by = $userId;
+
+			$locked_by        = $this->getFieldAlias('locked_by');
+			$this->$locked_by = $userId;
 		}
 
 		$this->save();

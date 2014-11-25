@@ -804,4 +804,79 @@ class DataModeltest extends DatabaseMysqliCase
             $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
         }
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelLock
+     * @covers          DataModel::lock
+     * @dataProvider    DataModelDataprovider::getTestLock
+     */
+    public function testLock($test, $check)
+    {
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::lock %s - Case: '.$check['case'];
+
+        $fakeUserManager = new TestClosure(array(
+            'getUser' => function() use ($test){
+                return new TestClosure(array(
+                    'getId' => function() use ($test){
+                        return $test['mock']['user_id'];
+                    }
+                ));
+            }
+        ));
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'userManager' => $fakeUserManager,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeLock' => function() use(&$before){
+                $before++;
+            },
+            'onAfterLock' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container, $methods));
+        $model->expects($this->any())->method('save')->willReturn(null);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeLock')),
+            array($this->equalTo('onAfterLock'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->lock($test['user_id']);
+
+        $locked_by = $model->getFieldValue('locked_by');
+        $locked_on = $model->getFieldValue('locked_on');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
+        $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
+        $this->assertEquals($check['locked_by'], $locked_by, sprintf($msg, 'Failed to set the locking user'));
+
+        // The time is calculated on the fly, so I can only check if it's null or not
+        if($check['locked_on'])
+        {
+            $this->assertNotNull($locked_on, sprintf($msg, 'Failed to set the locking time'));
+        }
+        else
+        {
+            $this->assertNull($locked_on, sprintf($msg, 'Failed to set the locking time'));
+        }
+    }
 }
