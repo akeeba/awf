@@ -941,8 +941,9 @@ class DataModeltest extends DatabaseMysqliCase
             }
         );
 
-        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container, $methods));
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId'), array($container, $methods));
         $model->expects($this->any())->method('save')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn(1);
 
         // Let's mock the dispatcher, too. So I can check if events are really triggered
         $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
@@ -961,6 +962,28 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
         $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
         $this->assertEquals($check['enabled'], $enabled, sprintf($msg, 'Failed to set the enabled field'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelPublish
+     * @covers          DataModel::publish
+     */
+    public function testPublishException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->publish();
     }
 
     /**

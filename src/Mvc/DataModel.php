@@ -1967,6 +1967,11 @@ class DataModel extends Model
 	 */
 	public function publish($state = 1)
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't change the state of a not loaded DataModel");
+		}
+
 		if (!$this->hasField('enabled'))
 		{
 			return $this;
