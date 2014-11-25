@@ -1761,6 +1761,11 @@ class DataModel extends Model
 	 */
 	public function lock($userId = null)
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't lock a not loaded DataModel");
+		}
+
 		if (!$this->hasField('locked_on') && !$this->hasField('locked_by'))
 		{
 			return $this;
