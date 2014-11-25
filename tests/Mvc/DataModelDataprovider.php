@@ -1951,4 +1951,51 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestPublish()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+                'state' => 1
+            ),
+            array(
+                'case'    => 'Table with no publish support',
+                'dispatcher' => 0,
+                'before'  => 0,
+                'after'   => 0,
+                'enabled' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+                'state' => 1
+            ),
+            array(
+                'case'    => 'Table with publish support (record enabling)',
+                'dispatcher' => 2,
+                'before'  => 1,
+                'after'   => 1,
+                'enabled' => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+                'state' => 0
+            ),
+            array(
+                'case'    => 'Table with publish support (record disabling)',
+                'dispatcher' => 2,
+                'before'  => 1,
+                'after'   => 1,
+                'enabled' => 0
+            )
+        );
+
+        return $data;
+    }
 }

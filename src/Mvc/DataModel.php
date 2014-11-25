@@ -1979,7 +1979,9 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforePublish', array(&$this));
 
-		$this->enabled = $state;
+		$enabled = $this->getFieldAlias('enabled');
+
+		$this->$enabled = $state;
 		$this->save();
 
 		if (method_exists($this, 'onAfterPublish'))
