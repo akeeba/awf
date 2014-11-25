@@ -725,4 +725,42 @@ class DataModeltest extends DatabaseMysqliCase
 
         $model->create(array('foo' => 'bar'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelFirstOrFail
+     * @covers          DataModel::firstOrFail
+     * @dataProvider    DataModelDataprovider::getTestFirstOrFail
+     */
+    public function testFirstOrFail($test, $check)
+    {
+        $msg = 'DataModel::firstOrFail %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $fakeCollection = new TestClosure(array(
+            'first' => function() use ($test){
+                return $test['mock']['first'];
+            }
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('get'), array($container));
+        $model->expects($this->once())->method('get')->willReturn($fakeCollection);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('RuntimeException');
+        }
+
+        $result = $model->firstOrFail(array());
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+    }
 }
