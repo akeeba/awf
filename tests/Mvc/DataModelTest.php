@@ -6,6 +6,7 @@ use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\DataModelStub;
+use Awf\Tests\Stubs\Utils\TestClosure;
 
 require_once 'DataModelDataprovider.php';
 
@@ -630,7 +631,7 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function testCheck($test, $check)
     {
-        $msg = 'DataModel::check %is - Case: '.$check['case'];
+        $msg = 'DataModel::check %s - Case: '.$check['case'];
 
         $container = new Container(array(
             'db' => self::$driver,
@@ -658,6 +659,47 @@ class DataModeltest extends DatabaseMysqliCase
         $result = $model->check();
 
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelFirstOrCreate
+     * @covers          DataModel::firstOrCreate
+     * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
+     */
+    public function testFirstOrCreate($test, $check)
+    {
+        $msg = 'DataModel::firstOrCreate %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $fakeCollection = new TestClosure(array(
+            'first' => function() use ($test){
+                return $test['mock']['first'];
+            }
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('get', 'create'), array($container));
+        $model->expects($this->once())->method('get')->willReturn($fakeCollection);
+        $model->expects($check['create'] ? $this->once() : $this->never())->method('create')->willReturn(null);
+
+        $result = $model->firstOrCreate(array());
+
+        if($check['result'] == 'object')
+        {
+            $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Returned the wrong value'));
+        }
+        else
+        {
+            $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+        }
     }
 
     /**

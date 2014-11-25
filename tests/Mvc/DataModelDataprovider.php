@@ -1719,4 +1719,36 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestFirstOrCreate()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    // I just need to return any value to flag the record as loaded
+                    'first' => 'foobar'
+                )
+            ),
+            array(
+                'case' => 'I was able to get first record',
+                'create' => false,
+                'result' => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'first' => null
+                )
+            ),
+            array(
+                'case' => "I couldn't get the first record",
+                'create' => true,
+                'result' => 'object'
+            )
+        );
+
+        return $data;
+    }
 }
