@@ -763,4 +763,45 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelFirstOrNew
+     * @covers          DataModel::firstOrNew
+     * @dataProvider    DataModelDataprovider::getTestFirstOrNew
+     */
+    public function testFirstOrNew($test, $check)
+    {
+        $msg = 'DataModel::firstOrNew %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $fakeCollection = new TestClosure(array(
+            'first' => function() use ($test){
+                return $test['mock']['first'];
+            }
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('get', 'reset'), array($container));
+        $model->expects($this->once())->method('get')->willReturn($fakeCollection);
+        $model->expects($check['reset'] ? $this->once() : $this->never())->method('reset')->willReturn(null);
+
+        $result = $model->firstOrNew(array());
+
+        if($check['result'] == 'object')
+        {
+            $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Returned the wrong value'));
+        }
+        else
+        {
+            $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
+        }
+    }
 }

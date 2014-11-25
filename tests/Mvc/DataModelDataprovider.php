@@ -1783,4 +1783,36 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestFirstOrNew()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    // I just need to return any value to flag the record as loaded
+                    'first' => 'foobar'
+                )
+            ),
+            array(
+                'case' => 'I was able to get first record',
+                'reset' => false,
+                'result' => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'first' => null
+                )
+            ),
+            array(
+                'case' => "I couldn't get the first record",
+                'reset' => true,
+                'result' => 'object'
+            )
+        );
+
+        return $data;
+    }
 }
