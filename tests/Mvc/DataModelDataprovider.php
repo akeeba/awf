@@ -1910,4 +1910,45 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestOrderBy()
+    {
+        $data[] = array(
+            array(
+                'field' => 'foobar',
+                'dir'   => 'asc'
+            ),
+            array(
+                'case'  => 'Passing field and direction (lowercase)',
+                'field' => 'foobar',
+                'dir'   => 'ASC'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'field' => 'foobar',
+                'dir'   => 'desc'
+            ),
+            array(
+                'case'  => 'Passing field and direction (lowercase)',
+                'field' => 'foobar',
+                'dir'   => 'DESC'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'field' => 'foobar',
+                'dir'   => ''
+            ),
+            array(
+                'case'  => 'Passing field only',
+                'field' => 'foobar',
+                'dir'   => 'ASC'
+            )
+        );
+
+        return $data;
+    }
 }

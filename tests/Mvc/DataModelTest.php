@@ -879,4 +879,34 @@ class DataModeltest extends DatabaseMysqliCase
             $this->assertNull($locked_on, sprintf($msg, 'Failed to set the locking time'));
         }
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelOrderBy
+     * @covers          DataModel::orderBy
+     * @dataProvider    DataModelDataprovider::getTestOrderBy
+     */
+    public function testOrderBy($test, $check)
+    {
+        $msg    = 'DataModel::orderBy %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('setState'), array($container));
+        $model->expects($this->exactly(2))->method('setState')->willReturn(null)->withConsecutive(
+            array($this->equalTo('filter_order'), $this->equalTo($check['field'])),
+            array($this->equalTo('filter_order_Dir'), $this->equalTo($check['dir']))
+        );
+
+        $result = $model->orderBy($test['field'], $test['dir']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
 }
