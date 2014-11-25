@@ -2005,17 +2005,17 @@ class DataModel extends Model
 	 */
 	public function restore($id)
 	{
+		if (!$this->hasField('enabled'))
+		{
+			return $this;
+		}
+
 		if (!empty($id))
 		{
 			$this->findOrFail($id);
 		}
 
 		$id = $this->{$this->idFieldName};
-
-		if (!$this->hasField('enabled'))
-		{
-			return $this;
-		}
 
 		if (method_exists($this, 'onBeforeRestore'))
 		{
@@ -2024,7 +2024,9 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforeRestore', array(&$this, &$id));
 
-		$this->enabled = 0;
+		$enabled = $this->getFieldAlias('enabled');
+
+		$this->$enabled = 0;
 		$this->save();
 
 		if (method_exists($this, 'onAfterRestore'))
