@@ -1389,4 +1389,30 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelTake
+     * @covers          DataModel::take
+     * @dataProvider    DataModelDataprovider::getTestTake
+     */
+    public function testTake($test, $check)
+    {
+        $msg = 'DataModel::take %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('setState'), array($container));
+        $model->expects($this->once())->method('setState')->willReturn(null)->with($this->equalTo('limit'), $this->equalTo($check['limit']));
+
+        $result = $model->take($test['limit']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
 }

@@ -2306,4 +2306,69 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestTake()
+    {
+        $data[] = array(
+            array(
+                'limit' => 10
+            ),
+            array(
+                'case' => 'Limit is positive',
+                'limit' => 10
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limit' => null
+            ),
+            array(
+                'case' => 'Limit is null',
+                'limit' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limit' => -1
+            ),
+            array(
+                'case' => 'Limit is negative',
+                'limit' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limit' => array(1)
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limit' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limit' => new stdClass()
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limit' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limit' => true
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limit' => 0
+            )
+        );
+
+        return $data;
+    }
 }

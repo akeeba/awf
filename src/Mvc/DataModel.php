@@ -2101,7 +2101,8 @@ class DataModel extends Model
 	 */
 	public function take($limit = null)
 	{
-		if (is_null($limit))
+		// Only positive integers are allowed
+		if(!is_int($limit) || $limit < 0 || !$limit)
 		{
 			$limit = 0;
 		}
