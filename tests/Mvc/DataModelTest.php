@@ -781,7 +781,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => $test['table']
             )
@@ -819,6 +818,27 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
         $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
         $this->assertSame($check['enabled'], $enabled, sprintf($msg, 'Failed to set the enabled field'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelTrash
+     * @covers          DataModel::trash
+     */
+    public function testTrashException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->trash();
     }
 
     /**
