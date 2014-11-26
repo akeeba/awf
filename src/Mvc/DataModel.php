@@ -1440,14 +1440,19 @@ class DataModel extends Model
 	 *
 	 * @return  $this  for chaining
 	 */
-	public function trash($id)
+	public function trash($id = null)
 	{
 		if (!empty($id))
 		{
 			$this->findOrFail($id);
 		}
 
-		$id = $this->{$this->idFieldName};
+		$id = $this->getId();
+
+		if(!$id)
+		{
+			throw new \RuntimeException("Can't trash a not loaded DataModel");
+		}
 
 		if (!$this->hasField('enabled'))
 		{
@@ -1461,7 +1466,8 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforeTrash', array(&$this, &$id));
 
-		$this->enabled = -2;
+		$enabled = $this->getFieldAlias('enabled');
+		$this->$enabled = -2;
 		$this->save();
 
 		if (method_exists($this, 'onAfterTrash'))

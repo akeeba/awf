@@ -124,6 +124,26 @@ class DataModelStub extends DataModel
         }
     }
 
+    public function onBeforeTrash()
+    {
+        if(isset($this->methods['onBeforeTrash']))
+        {
+            $func = $this->methods['onBeforeTrash'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterTrash()
+    {
+        if(isset($this->methods['onAfterTrash']))
+        {
+            $func = $this->methods['onAfterTrash'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
     public function onBeforeLock()
     {
         if(isset($this->methods['onBeforeLock']))

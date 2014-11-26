@@ -767,6 +767,61 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelTrash
+     * @covers          DataModel::trash
+     * @dataProvider    DataModelDataprovider::getTestTrash
+     */
+    public function testTrash($test, $check)
+    {
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::trash %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeTrash' => function() use(&$before){
+                $before++;
+            },
+            'onAfterTrash' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId', 'findOrFail'), array($container, $methods));
+        $model->expects($this->any())->method('save')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn(1);
+        $model->expects($check['find'] ? $this->once() : $this->never())->method('findOrFail')->willReturn(null);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeTrash')),
+            array($this->equalTo('onAfterTrash'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->trash($test['id']);
+
+        $enabled = $model->getFieldValue('enabled');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
+        $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
+        $this->assertSame($check['enabled'], $enabled, sprintf($msg, 'Failed to set the enabled field'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate

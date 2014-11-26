@@ -1773,6 +1773,56 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestTrash()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+                'id' => ''
+            ),
+            array(
+                'case'   => 'Table with no publish support',
+                'before' => 0,
+                'after'  => 0,
+                'find'   => false,
+                'dispatcher' => 0,
+                'enabled' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+                'id' => null
+            ),
+            array(
+                'case'   => 'Table with publish support, already loaded',
+                'before' => 1,
+                'after'  => 1,
+                'find'   => false,
+                'dispatcher' => 2,
+                'enabled' => -2
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+                'id' => 1
+            ),
+            array(
+                'case'   => 'Table with publish support, not loaded',
+                'before' => 1,
+                'after'  => 1,
+                'find'   => true,
+                'dispatcher' => 2,
+                'enabled' => -2
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestFirstOrCreate()
     {
         $data[] = array(
