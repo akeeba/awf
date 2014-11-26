@@ -737,6 +737,36 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelDelete
+     * @covers          DataModel::delete
+     * @dataProvider    DataModelDataprovider::getTestDelete
+     */
+    public function testDelete($test, $check)
+    {
+        $msg = 'DataModel::delete %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('trash', 'forceDelete'), array($container));
+        $model->expects($check['trash'] ? $this->once() : $this->never())->method('trash')->willReturnSelf();
+        $model->expects($check['force'] ? $this->once() : $this->never())->method('forceDelete')->willReturnSelf();
+
+        ReflectionHelper::setValue($model, 'softDelete', $test['soft']);
+
+        $result = $model->delete($test['id']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate

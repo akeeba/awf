@@ -1720,6 +1720,59 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestDelete()
+    {
+        $data[] = array(
+            array(
+                'id'   => null,
+                'soft' => true
+            ),
+            array(
+                'case' => 'Id not provided, soft delete',
+                'trash' => true,
+                'force' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'id'   => null,
+                'soft' => false
+            ),
+            array(
+                'case' => 'Id not provided, db delete',
+                'trash' => false,
+                'force' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'id'   => 2,
+                'soft' => true
+            ),
+            array(
+                'case' => 'Id provided, soft delete',
+                'trash' => true,
+                'force' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'id'   => 2,
+                'soft' => false
+            ),
+            array(
+                'case' => 'Id provided, db delete',
+                'trash' => false,
+                'force' => true
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestFirstOrCreate()
     {
         $data[] = array(
