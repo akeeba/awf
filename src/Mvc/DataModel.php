@@ -1496,7 +1496,7 @@ class DataModel extends Model
 
         // We have to assign the value, since empty() is not triggering the __get magic method
         // http://stackoverflow.com/questions/2045791/php-empty-on-get-accessor
-        $value = $this->{$this->idFieldName};
+        $value = $this->getId();
 
 		if (empty($value))
 		{

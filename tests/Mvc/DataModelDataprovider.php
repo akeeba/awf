@@ -1823,6 +1823,63 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestFindOrFail()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId' => 1
+                ),
+                'keys' => null
+            ),
+            array(
+                'case' => 'Record found, not passing any keys',
+                'exception' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId' => null
+                ),
+                'keys' => null
+            ),
+            array(
+                'case' => 'Record not found, not passing any keys',
+                'exception' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId' => 1
+                ),
+                'keys' => 1
+            ),
+            array(
+                'case' => 'Record found, passing keys',
+                'exception' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getId' => null
+                ),
+                'keys' => 1
+            ),
+            array(
+                'case' => 'Record not found, passing keys',
+                'exception' => true
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestFirstOrCreate()
     {
         $data[] = array(

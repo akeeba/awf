@@ -822,6 +822,39 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelFindOrFail
+     * @covers          DataModel::findOrFail
+     * @dataProvider    DataModelDataprovider::getTestFindOrFail
+     */
+    public function testFindOrFail($test, $check)
+    {
+        $msg    = 'DataModel::findOrFail %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('find', 'getId'), array($container));
+        $model->expects($this->any())->method('find')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn($test['mock']['getId']);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('RuntimeException');
+        }
+
+        $result = $model->findOrFail($test['keys']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
