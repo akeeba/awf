@@ -2152,6 +2152,11 @@ class DataModel extends Model
 	 */
 	public function touch($userId = null)
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't touch a not loaded DataModel");
+		}
+
 		if (!$this->hasField('modified_on') && !$this->hasField('modified_by'))
 		{
 			return $this;
@@ -2163,7 +2168,8 @@ class DataModel extends Model
 		// Update the created_on / modified_on
 		if ($this->hasField('modified_on'))
 		{
-			$this->modified_on = $date->toSql(false, $db);
+			$modified_on        = $this->getFieldAlias('modified_on');
+			$this->$modified_on = $date->toSql(false, $db);
 		}
 
 		// Update the created_by / modified_by values if necessary
@@ -2175,7 +2181,8 @@ class DataModel extends Model
 				$userId = $userManager->getUser()->getId();
 			}
 
-			$this->modified_by = $userId;
+			$modified_by        = $this->getFieldAlias('modified_by');
+			$this->$modified_by = $userId;
 		}
 
 		$this->save();

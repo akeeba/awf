@@ -2371,4 +2371,84 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestTouch()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest',
+                'user_id' => ''
+            ),
+            array(
+                'case' => 'Table without modifying support',
+                'modified_by' => null,
+                'modified_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_extended',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with modifying support, user_id passed',
+                'modified_by' => 90,
+                'modified_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => 88
+                ),
+                'table' => '#__dbtest_extended',
+                'user_id' => null
+            ),
+            array(
+                'case' => 'Table with modifying support, user_id not passed',
+                'modified_by' => 88,
+                'modified_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_modifiedby',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with only the modified_by field',
+                'modified_by' => 90,
+                'modified_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'user_id' => ''
+                ),
+                'table' => '#__dbtest_modifiedon',
+                'user_id' => 90
+            ),
+            array(
+                'case' => 'Table with only the modified_on field',
+                'modified_by' => null,
+                'modified_on' => true
+            )
+        );
+
+        return $data;
+    }
 }

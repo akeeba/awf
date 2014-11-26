@@ -1415,4 +1415,77 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelTouch
+     * @covers          DataModel::touch
+     * @dataProvider    DataModelDataprovider::getTestTouch
+     */
+    public function testTouch($test, $check)
+    {
+        $msg    = 'DataModel::touch %s - Case: '.$check['case'];
+
+        $fakeUserManager = new TestClosure(array(
+            'getUser' => function() use ($test){
+                return new TestClosure(array(
+                    'getId' => function() use ($test){
+                        return $test['mock']['user_id'];
+                    }
+                ));
+            }
+        ));
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'userManager' => $fakeUserManager,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId'), array($container));
+        $model->expects($this->any())->method('save')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn(1);
+
+        $result = $model->touch($test['user_id']);
+
+        $modified_by = $model->getFieldValue('modified_by');
+        $modified_on = $model->getFieldValue('modified_on');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['modified_by'], $modified_by, sprintf($msg, 'Failed to set the modifying user'));
+
+        // The time is calculated on the fly, so I can only check if it's null or not
+        if($check['modified_on'])
+        {
+            $this->assertNotNull($modified_on, sprintf($msg, 'Failed to set the modifying time'));
+        }
+        else
+        {
+            $this->assertNull($modified_on, sprintf($msg, 'Failed to set the modifying time'));
+        }
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelTouch
+     * @covers          DataModel::touch
+     */
+    public function testTouchException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->touch();
+    }
 }
