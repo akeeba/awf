@@ -710,6 +710,33 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelCopy
+     * @covers          DataModel::copy
+     */
+    public function testCopy()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container));
+        $model->expects($this->any())->method('save')->willReturn(null);
+
+        $model->find(2);
+        $model->copy();
+
+        $id = $model->getId();
+
+        $this->assertNull($id, 'DataModel::copy Should set the table ID to null before saving the record');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
