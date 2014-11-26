@@ -686,6 +686,30 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelGetId
+     * @covers          DataModel::getId
+     */
+    public function testGetId()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->find(2);
+
+        $id = $model->getId();
+
+        $this->assertEquals(2, $id, 'DataModel::getId Failed to return the correct id');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
