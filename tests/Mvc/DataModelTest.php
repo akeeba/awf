@@ -1600,4 +1600,78 @@ class DataModeltest extends DatabaseMysqliCase
         $model = new DataModelStub($container);
         $model->unlock();
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelUnpublish
+     * @covers          DataModel::unpublish
+     * @dataProvider    DataModelDataprovider::getTestUnpublish
+     */
+    public function testUnpublish($test, $check)
+    {
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::unpublish %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeUnpublish' => function() use(&$before){
+                $before++;
+            },
+            'onAfterUnpublish' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId'), array($container, $methods));
+        $model->expects($this->any())->method('save')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn(1);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeUnpublish')),
+            array($this->equalTo('onAfterUnpublish'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->unpublish();
+
+        $enabled = $model->getFieldValue('enabled');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
+        $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
+        $this->assertSame($check['enabled'], $enabled, sprintf($msg, 'Failed to set the enabled field'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelUnpublish
+     * @covers          DataModel::unpublish
+     */
+    public function testUnpublishException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->unpublish();
+    }
 }

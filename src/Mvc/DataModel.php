@@ -2247,6 +2247,11 @@ class DataModel extends Model
 	 */
 	public function unpublish()
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't unlock a not loaded DataModel");
+		}
+
 		if (!$this->hasField('enabled'))
 		{
 			return $this;
@@ -2259,7 +2264,9 @@ class DataModel extends Model
 
 		$this->behavioursDispatcher->trigger('onBeforeUnpublish', array(&$this));
 
-		$this->enabled = 0;
+		$enabled = $this->getFieldAlias('enabled');
+
+		$this->$enabled = 0;
 		$this->save();
 
 		if (method_exists($this, 'onAfterUnpublish'))

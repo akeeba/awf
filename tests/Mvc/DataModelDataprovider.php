@@ -2526,4 +2526,35 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestUnpublish()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+            ),
+            array(
+                'case'   => 'Table with no publish support',
+                'before' => 0,
+                'after'  => 0,
+                'dispatcher' => 0,
+                'enabled' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+            ),
+            array(
+                'case'   => 'Table with publish support',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'enabled' => 0
+            )
+        );
+
+        return $data;
+    }
 }
