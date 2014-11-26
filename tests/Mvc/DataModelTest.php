@@ -1363,4 +1363,30 @@ class DataModeltest extends DatabaseMysqliCase
         $model = new DataModelStub($container);
         $model->restore();
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelSkip
+     * @covers          DataModel::skip
+     * @dataProvider    DataModelDataprovider::getTestSkip
+     */
+    public function testSkip($test, $check)
+    {
+        $msg = 'DataModel::skip %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('setState'), array($container));
+        $model->expects($this->once())->method('setState')->willReturn(null)->with($this->equalTo('limitstart'), $this->equalTo($check['limitstart']));
+
+        $result = $model->skip($test['limitstart']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
 }

@@ -2080,7 +2080,8 @@ class DataModel extends Model
 	 */
 	public function skip($limitStart = null)
 	{
-		if (is_null($limitStart))
+		// Only positive integers are allowed
+		if(!is_int($limitStart) || $limitStart < 0 || !$limitStart)
 		{
 			$limitStart = 0;
 		}

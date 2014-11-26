@@ -2241,4 +2241,69 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestSkip()
+    {
+        $data[] = array(
+            array(
+                'limitstart' => 10
+            ),
+            array(
+                'case' => 'Limitstart is positive',
+                'limitstart' => 10
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limitstart' => null
+            ),
+            array(
+                'case' => 'Limitstart is null',
+                'limitstart' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limitstart' => -1
+            ),
+            array(
+                'case' => 'Limitstart is negative',
+                'limitstart' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limitstart' => array(1)
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limitstart' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limitstart' => new stdClass()
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limitstart' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'limitstart' => true
+            ),
+            array(
+                'case' => 'Wrong type',
+                'limitstart' => 0
+            )
+        );
+
+        return $data;
+    }
 }
