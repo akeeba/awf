@@ -2,6 +2,7 @@
 
 namespace Awf\Tests\DataModel;
 
+use Awf\Date\Date;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -1487,5 +1488,96 @@ class DataModeltest extends DatabaseMysqliCase
 
         $model = new DataModelStub($container);
         $model->touch();
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelUnlock
+     * @covers          DataModel::unlock
+     * @dataProvider    DataModelDataprovider::getTestUnlock
+     */
+    public function testUnlock($test, $check)
+    {
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::unlock %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeUnlock' => function() use(&$before){
+                $before++;
+            },
+            'onAfterUnlock' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save', 'getId'), array($container, $methods));
+        $model->expects($this->any())->method('save')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn(1);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly($check['dispatcher']))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeUnlock')),
+            array($this->equalTo('onAfterUnlock'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        if($model->hasField('locked_on'))
+        {
+            $now = new Date();
+            $model->setFieldValue('locked_on', $now->toSql());
+        }
+
+        $result = $model->unlock();
+
+        $locked_by = $model->getFieldValue('locked_by');
+        $locked_on = $model->getFieldValue('locked_on');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['before'], $before, sprintf($msg, 'Failed to call the onBefore method'));
+        $this->assertEquals($check['after'], $after, sprintf($msg, 'Failed to call the onAfter method'));
+        $this->assertEquals($check['locked_by'], $locked_by, sprintf($msg, 'Failed to set the locking user'));
+
+        // The time is calculated on the fly, so I can only check if it's null or not
+        if($check['locked_on'])
+        {
+            $this->assertEquals(self::$driver->getNullDate(), $locked_on, sprintf($msg, 'Failed to set the locking time'));
+        }
+        else
+        {
+            $this->assertNull($locked_on, sprintf($msg, 'Failed to set the locking time'));
+        }
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelUnlock
+     * @covers          DataModel::unlock
+     */
+    public function testUnlockException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $this->setExpectedException('RuntimeException');
+
+        $model = new DataModelStub($container);
+        $model->unlock();
     }
 }

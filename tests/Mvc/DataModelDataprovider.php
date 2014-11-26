@@ -2451,4 +2451,79 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestUnlock()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+            ),
+            array(
+                'case' => 'Table without locking support',
+                'before' => 0,
+                'after'  => 0,
+                'dispatcher' => 0,
+                'locked_by' => null,
+                'locked_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+            ),
+            array(
+                'case' => 'Table with locking support, user_id passed',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 0,
+                'locked_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended',
+            ),
+            array(
+                'case' => 'Table with locking support, user_id not passed',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 0,
+                'locked_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_lockedby',
+            ),
+            array(
+                'case' => 'Table with only the locked_by field',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => 0,
+                'locked_on' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_lockedon',
+            ),
+            array(
+                'case' => 'Table with only the locked_on field',
+                'before' => 1,
+                'after'  => 1,
+                'dispatcher' => 2,
+                'locked_by' => null,
+                'locked_on' => true
+            )
+        );
+
+        return $data;
+    }
 }

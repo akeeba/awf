@@ -2197,6 +2197,11 @@ class DataModel extends Model
 	 */
 	public function unlock()
 	{
+		if(!$this->getId())
+		{
+			throw new \RuntimeException("Can't unlock a not loaded DataModel");
+		}
+
 		if (!$this->hasField('locked_on') && !$this->hasField('locked_by'))
 		{
 			return $this;
@@ -2213,12 +2218,14 @@ class DataModel extends Model
 
 		if ($this->hasField('locked_on'))
 		{
-			$this->locked_on = $db->getNullDate();
+			$locked_on        = $this->getFieldAlias('locked_on');
+			$this->$locked_on = $db->getNullDate();
 		}
 
 		if ($this->hasField('locked_by'))
 		{
-			$this->locked_by = 0;
+			$locked_by        = $this->getFieldAlias('locked_by');
+			$this->$locked_by = 0;
 		}
 
 		$this->save();
