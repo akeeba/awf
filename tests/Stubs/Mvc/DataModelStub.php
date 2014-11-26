@@ -104,6 +104,10 @@ class DataModelStub extends DataModel
         return $this->name;
     }
 
+    /*
+     * The base object will perform a "method_exists" check, so we have to create them, otherwise they won't be invoked
+     */
+
     public function onBeforeArchive()
     {
         if(isset($this->methods['onBeforeArchive']))
@@ -139,6 +143,26 @@ class DataModelStub extends DataModel
         if(isset($this->methods['onAfterTrash']))
         {
             $func = $this->methods['onAfterTrash'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onBeforeDelete()
+    {
+        if(isset($this->methods['onBeforeDelete']))
+        {
+            $func = $this->methods['onBeforeDelete'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterDelete()
+    {
+        if(isset($this->methods['onAfterDelete']))
+        {
+            $func = $this->methods['onAfterDelete'];
 
             return call_user_func_array($func, array());
         }

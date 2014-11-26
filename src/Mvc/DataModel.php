@@ -1645,7 +1645,12 @@ class DataModel extends Model
 			$this->findOrFail($id);
 		}
 
-		$id = $this->{$this->idFieldName};
+		$id = $this->getId();
+
+		if(!$id)
+		{
+			throw new \RuntimeException("Can't delete a not loaded DataModel object");
+		}
 
 		if (method_exists($this, 'onBeforeDelete'))
 		{

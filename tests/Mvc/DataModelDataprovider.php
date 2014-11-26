@@ -1880,6 +1880,39 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestForceDelete()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id' => 1
+                ),
+                'id' => 1
+            ),
+            array(
+                'case' => 'Passing the id',
+                'id'   => 1,
+                'find' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id' => 1
+                ),
+                'id' => null
+            ),
+            array(
+                'case' => 'Loaded record',
+                'id'   => 1,
+                'find' => false
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestFirstOrCreate()
     {
         $data[] = array(

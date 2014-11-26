@@ -855,6 +855,92 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelForceDelete
+     * @covers          DataModel::forceDelete
+     * @dataProvider    DataModelDataprovider::getTestForceDelete
+     */
+    public function testForceDelete($test, $check)
+    {
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::forceDelete %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeDelete' => function() use(&$before){
+                $before++;
+            },
+            'onAfterDelete' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getId', 'findOrFail', 'reset'), array($container, $methods));
+        $model->expects($this->once())->method('reset')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn($test['mock']['id']);
+        $model->expects($check['find'] ? $this->once() : $this->never())->method('findOrFail')->willReturn(null);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly(2))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeDelete')),
+            array($this->equalTo('onAfterDelete'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->delete($test['id']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals(1, $before, sprintf($msg, 'Failed to call the onBefore method'));
+        $this->assertEquals(1, $after, sprintf($msg, 'Failed to call the onAfter method'));
+
+        // Now let's check if the record was really deleted
+        $db = self::$driver;
+
+        $query = $db->getQuery(true)
+                    ->select('COUNT(*)')
+                    ->from($db->qn('#__dbtest'))
+                    ->where($db->qn('id').' = '.$db->q($check['id']));
+        $count = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals(0, $count, sprintf($msg, ''));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelForceDelete
+     * @covers          DataModel::forceDelete
+     */
+    public function testForceDeleteException()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $this->setExpectedException('RuntimeException');
+
+        $model->forceDelete();
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelFirstOrCreate
      * @covers          DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
