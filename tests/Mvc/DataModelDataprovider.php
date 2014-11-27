@@ -1887,6 +1887,45 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestGet()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'limitstart' => 10,
+                    'limit'      => 10
+                ),
+                'override'   => false,
+                'limitstart' => 0,
+                'limit'      => 0
+            ),
+            array(
+                'case'       => 'Not overriding the limits',
+                'limitstart' => 10,
+                'limit'      => 10
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'limitstart' => 10,
+                    'limit'      => 10
+                ),
+                'override'   => true,
+                'limitstart' => 5,
+                'limit'      => 5
+            ),
+            array(
+                'case'       => 'Overriding the limits',
+                'limitstart' => 5,
+                'limit'      => 5
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestDelete()
     {
         $data[] = array(

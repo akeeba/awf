@@ -259,7 +259,7 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
-     * @group           DataModelIsset
+     * @group           DataModel__isset
      * @covers          DataModel::__isset
      * @dataProvider    DataModelDataprovider::getTest__isset
      */
@@ -298,7 +298,7 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
-     * @group           DataModelGet
+     * @group           DataModel__get
      * @covers          DataModel::__get
      * @dataProvider    DataModelDataprovider::getTest__get
      */
@@ -340,7 +340,7 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
-     * @group           DataModelSet
+     * @group           DataModel__set
      * @covers          DataModel::__set
      * @dataProvider    DataModelDataprovider::getTest__set
      */
@@ -845,6 +845,52 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelGet
+     * @covers          DataModel::get
+     * @dataProvider    DataModelDataprovider::getTestGet
+     */
+    public function testGet($test, $check)
+    {
+        $msg = 'DataModel::get %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getState', 'getItemsArray', 'eagerLoad'), array($container));
+
+        $model->expects($this->any())->method('eagerLoad')->willReturn(null);
+        $model->expects($this->any())->method('getState')->willReturnCallback(
+            function($state, $default) use ($test)
+            {
+                if($state == 'limitstart')
+                {
+                    return $test['mock']['limitstart'];
+                }
+                elseif($state == 'limit')
+                {
+                    return $test['mock']['limit'];
+                }
+
+                return $default;
+            }
+        );
+
+        $model->expects($this->once())->method('getItemsArray')
+            ->with($this->equalTo($check['limitstart']), $this->equalTo($check['limit']))
+            ->willReturn(array());
+
+        $result = $model->get($test['override'], $test['limitstart'], $test['limit']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $result, sprintf($msg, 'Returned the wrong object'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelGetId
      * @covers          DataModel::getId
      */
@@ -853,7 +899,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
