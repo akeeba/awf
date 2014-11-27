@@ -1227,7 +1227,7 @@ class DataModel extends Model
 
 		while ($start < ($totalItems - 1))
 		{
-			$this->get(false, $start, $chunkSize)->transform($callback);
+			$this->get(true, $start, $chunkSize)->transform($callback);
 
 			$start += $chunkSize;
 		}
