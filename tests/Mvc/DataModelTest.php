@@ -687,6 +687,37 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelChunk
+     * @covers          DataModel::chunk
+     * @dataProvider    DataModelDataprovider::getTestChunk
+     */
+    public function testChunk($test, $check)
+    {
+        $msg     = 'DataModel::chunk %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $fakeGet = new TestClosure(array(
+            'transform' => function(){}
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('count', 'get'), array($container));
+        $model->expects($this->once())->method('count')->willReturn($test['mock']['count']);
+        $model->expects($this->exactly($check['get']))->method('get')->willReturn($fakeGet);
+
+        $result = $model->chunk($test['chunksize'], function(){});
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelCount
      * @covers          DataModel::count
      */

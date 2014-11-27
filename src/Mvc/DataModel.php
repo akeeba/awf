@@ -1209,12 +1209,12 @@ class DataModel extends Model
 	/**
 	 * Process a large collection of records a few at a time.
 	 *
-	 * @param   integer           $chunkSize How many records to process at once
-	 * @param   callable|\Closure $callback  A callable or closure to process each record
+	 * @param   integer   $chunkSize How many records to process at once
+	 * @param   callable  $callback  A callable to process each record
 	 *
 	 * @return  $this  Self, for chaining
 	 */
-	public function chunk($chunkSize, $callback)
+	public function chunk($chunkSize, callable $callback)
 	{
 		$totalItems = $this->count();
 

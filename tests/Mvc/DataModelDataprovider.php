@@ -1720,6 +1720,50 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestChunk()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'count' => 0
+                ),
+                'chunksize' => 5
+            ),
+            array(
+                'case' => 'Records not found',
+                'get'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'count' => 10
+                ),
+                'chunksize' => 5
+            ),
+            array(
+                'case' => 'Records found they are a multiple of the chunksize',
+                'get'  => 2
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'count' => 10
+                ),
+                'chunksize' => 4
+            ),
+            array(
+                'case' => 'Records found they are not a multiple of the chunksize',
+                'get'  => 3
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestBuildQuery()
     {
         $data[] = array(

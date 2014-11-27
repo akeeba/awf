@@ -552,11 +552,11 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	/**
 	 * Transform each item in the collection using a callback.
 	 *
-	 * @param  Closure $callback
+	 * @param  callable $callback
 	 *
 	 * @return Collection
 	 */
-	public function transform(Closure $callback)
+	public function transform(callable $callback)
 	{
 		$this->items = array_map($callback, $this->items);
 
@@ -755,4 +755,4 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 		return $items;
 	}
 
-} 
+}
