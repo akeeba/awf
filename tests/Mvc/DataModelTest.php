@@ -687,6 +687,51 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelCount
+     * @covers          DataModel::count
+     */
+    public function testCount()
+    {
+        $db     = self::$driver;
+        $after  = 0;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'buildCountQuery' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $mockedQuery = $db->getQuery(true)->select('*')->from('#__dbtest');
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('buildQuery'), array($container, $methods));
+        $model->expects($this->any())->method('buildQuery')->willReturn($mockedQuery);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->once())->method('trigger')->withConsecutive(
+            array($this->equalTo('buildCountQuery'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->count();
+
+        $query = $db->getQuery(true)->select('COUNT(*)')->from('#__dbtest');
+        $count = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals($count, $result, 'DataModel::count Failed to return the right amount of rows');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelBuildQuery
      * @covers          DataModel::buildQuery
      * @dataProvider    DataModelDataprovider::getTestBuildQuery
@@ -695,7 +740,7 @@ class DataModeltest extends DatabaseMysqliCase
     {
         // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
         // That's harmless and appears in debug only, you might want to suppress exception thowing
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $before = 0;
         $after  = 0;
