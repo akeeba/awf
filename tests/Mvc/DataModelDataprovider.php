@@ -1720,6 +1720,129 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestBuildQuery()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array()
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query, no order field or direction',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`id` ASC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(),
+                    'order' => 'title'
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query or direction, with (known) order field',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`title` ASC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(),
+                    'order' => 'foobar'
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query or direction, with (unknown) order field',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`id` ASC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(),
+                    'order' => 'title',
+                    'dir'   => 'asc'
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query, with (known) order field and lowercase direction',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`title` ASC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(),
+                    'order' => 'title',
+                    'dir'   => 'DESC'
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query, with (known) order field and uppercase direction',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`title` DESC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(),
+                    'order' => 'title',
+                    'dir'   => 'wrong'
+                ),
+                'override' => false
+            ),
+            array(
+                'case' => 'No limits override, no additional query, with (known) order field and invalid direction',
+                'filter' => true,
+                'where'  => array(),
+                'order'  => array('`title` ASC')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'where' => array(
+                        'foobar = 1'
+                    ),
+                    'order' => 'title',
+                    'dir'   => 'DESC'
+                ),
+                'override' => true
+            ),
+            array(
+                'case' => 'Limits override, additional query, with (known) order field and uppercase direction',
+                'filter' => false,
+                'where'  => array('foobar = 1'),
+                'order'  => array()
+            )
+        );
+
+
+        return $data;
+    }
+
     public static function getTestDelete()
     {
         $data[] = array(

@@ -1273,7 +1273,7 @@ class DataModel extends Model
 		$db = $this->getDbo();
 		$query = $db->getQuery(true)
 			->select('*')
-			->from($this->tableName);
+			->from($this->getTableName());
 
 		// Run the "before build query" hook and behaviours
 		if (method_exists($this, 'onBeforeBuildQuery'))
@@ -1299,12 +1299,18 @@ class DataModel extends Model
 
 			if (!array_key_exists($order, $this->knownFields))
 			{
-				$order = $this->idFieldName;
+				$order = $this->getIdFieldName();
 			}
 
 			$order = $db->qn($order);
 
-			$dir = $this->getState('filter_order_Dir', 'ASC', 'cmd');
+			$dir = strtoupper($this->getState('filter_order_Dir', 'ASC', 'cmd'));
+
+			if(!in_array($dir, array('ASC', 'DESC')))
+			{
+				$dir = 'ASC';
+			}
+
 			$query->order($order . ' ' . $dir);
 		}
 

@@ -107,6 +107,25 @@ class DataModelStub extends DataModel
     /*
      * The base object will perform a "method_exists" check, so we have to create them, otherwise they won't be invoked
      */
+    public function onBeforeBuildQuery()
+    {
+        if(isset($this->methods['onBeforeBuildQuery']))
+        {
+            $func = $this->methods['onBeforeBuildQuery'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterBuildQuery()
+    {
+        if(isset($this->methods['onAfterBuildQuery']))
+        {
+            $func = $this->methods['onAfterBuildQuery'];
+
+            return call_user_func_array($func, array());
+        }
+    }
 
     public function onBeforeArchive()
     {

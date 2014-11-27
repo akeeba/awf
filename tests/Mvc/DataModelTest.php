@@ -687,6 +687,88 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelBuildQuery
+     * @covers          DataModel::buildQuery
+     * @dataProvider    DataModelDataprovider::getTestBuildQuery
+     */
+    public function testBuildQuery($test, $check)
+    {
+        // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
+        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::buildQuery %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeBuildQuery' => function() use(&$before){
+                $before++;
+            },
+            'onAfterBuildQuery' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getState'), array($container, $methods));
+        $model->expects($check['filter'] ? $this->exactly(2) : $this->never())->method('getState')->willReturnCallback(
+            function($state, $default) use ($test)
+            {
+                if($state == 'filter_order')
+                {
+                    if(isset($test['mock']['order']))
+                    {
+                        return $test['mock']['order'];
+                    }
+                }
+                elseif($state == 'filter_order_Dir')
+                {
+                    if(isset($test['mock']['dir']))
+                    {
+                        return $test['mock']['dir'];
+                    }
+                }
+
+                return $default;
+            }
+        );
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly(2))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeBuildQuery')),
+            array($this->equalTo('onAfterBuildQuery'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+        ReflectionHelper::setValue($model, 'whereClauses', $test['mock']['where']);
+
+        $query = $model->buildQuery($test['override']);
+
+        $select = $query->select->getElements();
+        $table  = $query->from->getElements();
+        $where  = $query->where ? $query->where->getElements() : array();
+        $order  = $query->order ? $query->order->getElements() : array();
+
+        $this->assertInstanceOf('\\Awf\\Database\\Query', $query, sprintf($msg, 'Should return an instance of Awf\\Database\\Query'));
+
+        $this->assertEquals(array('*'), $select, sprintf($msg, 'Wrong SELECT clause'));
+        $this->assertEquals(array('#__dbtest'), $table, sprintf($msg, 'Wrong FROM clause'));
+        $this->assertEquals($check['where'], $where, sprintf($msg, 'Wrong WHERE clause'));
+        $this->assertEquals($check['order'], $order, sprintf($msg, 'Wrong ORDER BY clause'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelGetId
      * @covers          DataModel::getId
      */
