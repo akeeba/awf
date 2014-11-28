@@ -723,6 +723,59 @@ class DataControllerDataprovider
         return $data;
     }
 
+    public static function getTestTrash()
+    {
+        // Everything works fine, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'trash'     => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'trash'     => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Trash throws an error, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'trash'     => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in trash',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSaveorder()
     {
         $data[] = array(

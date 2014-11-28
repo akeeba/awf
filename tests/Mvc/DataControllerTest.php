@@ -512,6 +512,52 @@ class DataControllertest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataController
+     * @group           DataControllerTrash
+     * @covers          DataController::trash
+     * @dataProvider    DataControllerDataprovider::getTestTrash
+     */
+    public function testTrash($test, $check)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'input' => new Input(array(
+                'returnurl' => $test['mock']['returnurl'] ? base64_encode($test['mock']['returnurl']) : '',
+            )),
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('trash'), array($container));
+        $model->expects($this->any())->method('trash')->willReturnCallback(
+            function() use (&$test)
+            {
+                // Should I return a value or throw an exception?
+                $ret = array_shift($test['mock']['trash']);
+
+                if($ret === 'throw')
+                {
+                    throw new \Exception('Exception in trash');
+                }
+
+                return $ret;
+            }
+        );
+
+        $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
+        $controller->expects($this->any())->method('csrfProtection')->willReturn(null);
+        $controller->expects($this->any())->method('getModel')->willReturn($model);
+        $controller->expects($this->any())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null);
+
+        $controller->expects($this->once())->method('setRedirect')->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo($check['type']));
+
+        $controller->trash();
+    }
+
+    /**
      * The best way to test with method is to run it and check vs the database
      *
      * @group           DataController
