@@ -1070,15 +1070,15 @@ class DataModel extends Model
 		$this->behavioursDispatcher->trigger('onBeforeReorder', array(&$this, &$where));
 
 		$order_field = $this->getFieldAlias('ordering');
-		$k = $this->idFieldName;
-		$db = $this->getDbo();
+		$k           = $this->getIdFieldName();
+		$db          = $this->getDbo();
 
 		// Get the primary keys and ordering values for the selection.
 		$query = $db->getQuery(true)
-			->select($db->qn($k) . ', ' . $db->qn($order_field))
-			->from($db->qn($this->tableName))
-			->where($db->qn($order_field) . ' >= ' . $db->q(0))
-			->order($db->qn($order_field));
+					->select($db->qn($k) . ', ' . $db->qn($order_field))
+					->from($db->qn($this->getTableName()))
+					->where($db->qn($order_field) . ' >= ' . $db->q(0))
+					->order($db->qn($order_field));
 
 		// Setup the extra where and ordering clause data.
 		if ($where)
@@ -1092,18 +1092,16 @@ class DataModel extends Model
 		foreach ($rows as $i => $row)
 		{
 			// Make sure the ordering is a positive integer.
-
 			if ($row->$order_field >= 0)
 			{
 				// Only update rows that are necessary.
-
 				if ($row->$order_field != $i + 1)
 				{
 					// Update the row ordering field.
 					$query = $db->getQuery(true)
-						->update($db->qn($this->tableName))
-						->set($db->qn($order_field) . ' = ' . $db->q($i + 1))
-						->where($db->qn($k) . ' = ' . $db->q($row->$k));
+								->update($db->qn($this->getTableName()))
+								->set($db->qn($order_field) . ' = ' . $db->q($i + 1))
+								->where($db->qn($k) . ' = ' . $db->q($row->$k));
 					$db->setQuery($query)->execute();
 				}
 			}

@@ -687,6 +687,78 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelReorder
+     * @covers          DataModel::reorder
+     * @dataProvider    DataModelDataprovider::getTestReorder
+     */
+    public function testReorder($test, $check)
+    {
+        // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
+        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $before = 0;
+        $after  = 0;
+        $db     = self::$driver;
+        $msg    = 'DataModel::reorder %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest_extended'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeReorder' => function() use(&$before){
+                $before++;
+            },
+            'onAfterReorder' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        // Let's mess up the records a little
+        foreach($test['mock']['ordering'] as $id => $order)
+        {
+            $query = $db->getQuery(true)
+                        ->update($db->qn('#__dbtest_extended'))
+                        ->set($db->qn('ordering').' = '.$db->q($order))
+                        ->where($db->qn('id').' = '.$db->q($id));
+
+            $db->setQuery($query)->execute();
+        }
+
+        $model = new DataModelStub($container, $methods);
+
+        // Let's mock the dispatcher, too. So I can check if events are really triggered
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('trigger'), array($container));
+        $dispatcher->expects($this->exactly(2))->method('trigger')->withConsecutive(
+            array($this->equalTo('onBeforeReorder')),
+            array($this->equalTo('onAfterReorder'))
+        );
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->reorder($test['where']);
+
+        // Now let's take a look at the updated records
+        $query = $db->getQuery(true)
+                    ->select('ordering')
+                    ->from($db->qn('#__dbtest_extended'))
+                    ->order($db->qn($model->getIdFieldName()).' ASC');
+        $ordering = $db->setQuery($query)->loadColumn();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals(1, $before, sprintf($msg, 'Failed to invoke the onBefore method'));
+        $this->assertEquals(1, $after, sprintf($msg, 'Failed to invoke the onAfter method'));
+        $this->assertEquals($check['order'], $ordering, sprintf($msg, 'Failed to save the correct order'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelChunk
      * @covers          DataModel::chunk
      * @dataProvider    DataModelDataprovider::getTestChunk
@@ -1419,7 +1491,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -1451,7 +1522,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => $test['table']
             )

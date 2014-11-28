@@ -298,6 +298,26 @@ class DataModelStub extends DataModel
         }
     }
 
+    public function onBeforeReorder()
+    {
+        if(isset($this->methods['onBeforeReorder']))
+        {
+            $func = $this->methods['onBeforeReorder'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterReorder()
+    {
+        if(isset($this->methods['onAfterReorder']))
+        {
+            $func = $this->methods['onAfterReorder'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
     /**
      * Method invoked by setFieldValue to set the value of an attribute
      *

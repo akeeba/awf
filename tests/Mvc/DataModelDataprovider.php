@@ -1720,6 +1720,89 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestReorder()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 1, 2 => 2, 3 => 3, 4 => 4)
+                ),
+                'where' => ''
+            ),
+            array(
+                'case' => 'Records are have the same ordering as the id',
+                'order' => array(1, 2, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 4, 2 => 3, 3 => 2, 4 => 1)
+                ),
+                'where' => ''
+            ),
+            array(
+                'case' => 'Records in "reversed" order',
+                'order' => array(4, 3, 2, 1)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 1, 2 => 3, 3 => 2, 4 => 1)
+                ),
+                'where' => ''
+            ),
+            array(
+                'case' => 'Records with same order value',
+                'order' => array(1, 4, 3, 2)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 0, 2 => 0, 3 => 0, 4 => 0)
+                ),
+                'where' => ''
+            ),
+            array(
+                'case' => 'Records with no ordering',
+                'order' => array(1, 2, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 0, 2 => 3, 3 => 8, 4 => 7)
+                ),
+                'where' => ''
+            ),
+            array(
+                'case' => 'Records with non sequential order',
+                'order' => array(1, 2, 4, 3)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ordering' => array(1 => 1, 2 => 2, 3 => 3, 4 => 4)
+                ),
+                'where' => 'id IN(2, 3)'
+            ),
+            array(
+                'case' => 'Applying a reorder where',
+                'order' => array(1, 1, 2, 4)
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestChunk()
     {
         $data[] = array(
