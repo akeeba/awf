@@ -444,7 +444,42 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$this->setstate(1);
+		$model = $this->getModel();
+		$ids   = $this->getIDsFromRequest($model, false);
+
+		try
+		{
+			$status = true;
+
+			foreach ($ids as $id)
+			{
+				$model->find($id);
+				$model->publish();
+			}
+		}
+		catch (\Exception $e)
+		{
+			$status = false;
+			$error  = $e->getMessage();
+		}
+
+		// Redirect
+		if ($customURL = $this->input->getBase64('returnurl', ''))
+		{
+			$customURL = base64_decode($customURL);
+		}
+
+		$router = $this->container->router;
+		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
+
+		if (!$status)
+		{
+			$this->setRedirect($url, $error, 'error');
+		}
+		else
+		{
+			$this->setRedirect($url);
+		}
 	}
 
 	/**
@@ -457,7 +492,42 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$this->setstate(0);
+		$model = $this->getModel();
+		$ids   = $this->getIDsFromRequest($model, false);
+
+		try
+		{
+			$status = true;
+
+			foreach ($ids as $id)
+			{
+				$model->find($id);
+				$model->unpublish();
+			}
+		}
+		catch (\Exception $e)
+		{
+			$status = false;
+			$error  = $e->getMessage();
+		}
+
+		// Redirect
+		if ($customURL = $this->input->getBase64('returnurl', ''))
+		{
+			$customURL = base64_decode($customURL);
+		}
+
+		$router = $this->container->router;
+		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
+
+		if (!$status)
+		{
+			$this->setRedirect($url, $error, 'error');
+		}
+		else
+		{
+			$this->setRedirect($url);
+		}
 	}
 
 	/**
@@ -470,7 +540,42 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$this->setstate(2);
+		$model = $this->getModel();
+		$ids   = $this->getIDsFromRequest($model, false);
+
+		try
+		{
+			$status = true;
+
+			foreach ($ids as $id)
+			{
+				$model->find($id);
+				$model->archive();
+			}
+		}
+		catch (\Exception $e)
+		{
+			$status = false;
+			$error  = $e->getMessage();
+		}
+
+		// Redirect
+		if ($customURL = $this->input->getBase64('returnurl', ''))
+		{
+			$customURL = base64_decode($customURL);
+		}
+
+		$router = $this->container->router;
+		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
+
+		if (!$status)
+		{
+			$this->setRedirect($url, $error, 'error');
+		}
+		else
+		{
+			$this->setRedirect($url);
+		}
 	}
 
 	/**
@@ -483,7 +588,42 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$this->setstate(-2);
+		$model = $this->getModel();
+		$ids   = $this->getIDsFromRequest($model, false);
+
+		try
+		{
+			$status = true;
+
+			foreach ($ids as $id)
+			{
+				$model->find($id);
+				$model->trash();
+			}
+		}
+		catch (\Exception $e)
+		{
+			$status = false;
+			$error  = $e->getMessage();
+		}
+
+		// Redirect
+		if ($customURL = $this->input->getBase64('returnurl', ''))
+		{
+			$customURL = base64_decode($customURL);
+		}
+
+		$router = $this->container->router;
+		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
+
+		if (!$status)
+		{
+			$this->setRedirect($url, $error, 'error');
+		}
+		else
+		{
+			$this->setRedirect($url);
+		}
 	}
 
 	/**
@@ -676,57 +816,6 @@ class DataController extends Controller
 		{
 			$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_DELETED';
 			$this->setRedirect($url, Text::_($textKey));
-		}
-	}
-
-	/**
-	 * Sets the published state (the enabled field) of the selected item(s)
-	 *
-	 * @param   integer $state The desired state. 0 is unpublished, 1 is published.
-	 *
-	 * @return  void
-	 */
-	final protected function setstate($state = 0)
-	{
-		// CSRF prevention
-		$this->csrfProtection();
-
-		$model = $this->getModel();
-
-		$ids = $this->getIDsFromRequest($model, false);
-
-		try
-		{
-			$status = true;
-
-			foreach ($ids as $id)
-			{
-				$model->find($id);
-				$model->publish($state);
-			}
-		}
-		catch (\Exception $e)
-		{
-			$status = false;
-			$error = $e->getMessage();
-		}
-
-		// Redirect
-		if ($customURL = $this->input->getBase64('returnurl', ''))
-		{
-			$customURL = base64_decode($customURL);
-		}
-
-		$router = $this->container->router;
-		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
-
-		if (!$status)
-		{
-			$this->setRedirect($url, $error, 'error');
-		}
-		else
-		{
-			$this->setRedirect($url);
 		}
 	}
 
