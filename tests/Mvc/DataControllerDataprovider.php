@@ -514,7 +514,7 @@ class DataControllerDataprovider
         return $data;
     }
 
-    public function getTestCancel()
+    public static function getTestCancel()
     {
         // Getting the id from the model, no custom redirect set
         $data[] = array(
@@ -564,7 +564,7 @@ class DataControllerDataprovider
         return $data;
     }
 
-    public function getTestPublish()
+    public static function getTestPublish()
     {
         // Everything works fine, no custom redirect set, getting the id from the request
         $data[] = array(
@@ -617,6 +617,59 @@ class DataControllerDataprovider
         return $data;
     }
 
+    public static function getTestUnpublish()
+    {
+        // Everything works fine, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'unpublish'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'unpublish'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Unpublish throws an error, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'unpublish'   => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in unpublish',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSaveorder()
     {
         $data[] = array(
@@ -652,7 +705,7 @@ class DataControllerDataprovider
         return $data;
     }
 
-    public function getTestOrderdown()
+    public static function getTestOrderdown()
     {
         // Everything works fine, no custom redirect set, getting the id from the model
         $data[] = array(
@@ -729,7 +782,7 @@ class DataControllerDataprovider
         return $data;
     }
 
-    public function getTestOrderup()
+    public static function getTestOrderup()
     {
         // Everything works fine, no custom redirect set, getting the id from the model
         $data[] = array(
