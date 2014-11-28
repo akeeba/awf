@@ -782,6 +782,7 @@ class DataControllerDataprovider
             array(
                 'ordering'  => array(3,1,2,4),
                 'returnurl' => '',
+                'table'     => '#__dbtest_extended',
                 'mock' => array(
                     'ids' => array(1,2,3,4)
                 )
@@ -789,6 +790,8 @@ class DataControllerDataprovider
             array(
                 'case' => 'No custom redirect set',
                 'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => null,
+                'type' => null,
                 'rows' => array(2,3,1,4)
             )
         );
@@ -797,6 +800,7 @@ class DataControllerDataprovider
             array(
                 'ordering'  => array(3,1,2,4),
                 'returnurl' => 'http://www.example.com/index.php?view=custom',
+                'table'     => '#__dbtest_extended',
                 'mock' => array(
                     'ids' => array(1,2,3,4)
                 )
@@ -804,7 +808,27 @@ class DataControllerDataprovider
             array(
                 'case' => 'Custom redirect set',
                 'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => null,
+                'type' => null,
                 'rows' => array(2,3,1,4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'ordering'  => array(3,1,2,4),
+                'returnurl' => '',
+                'table'     => '#__dbtest',
+                'mock' => array(
+                    'ids' => array(1,2,3,4)
+                )
+            ),
+            array(
+                'case' => 'Table with no ordering support',
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => '#__dbtest does not support ordering.',
+                'type' => 'error',
+                'rows' => array(1,2,3,4)
             )
         );
 

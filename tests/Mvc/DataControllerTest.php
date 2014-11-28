@@ -576,9 +576,8 @@ class DataControllertest extends DatabaseMysqliCase
                 'returnurl' => $test['returnurl'] ? base64_encode($test['returnurl']) : '',
             )),
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
-                'tableName'   => '#__dbtest_extended'
+                'tableName'   => $test['table']
             )
         ));
 
@@ -586,7 +585,8 @@ class DataControllertest extends DatabaseMysqliCase
         $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('csrfProtection', 'getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
         $controller->expects($this->any())->method('getModel')->willReturn($model);
         $controller->expects($this->any())->method('getIDsFromRequest')->willReturn($test['mock']['ids']);
-        $controller->expects($this->any())->method('setRedirect')->willReturn(null)->with($this->equalTo($check['url']));
+        $controller->expects($this->once())->method('setRedirect')->willReturn(null)
+            ->with($this->equalTo($check['url']), $this->equalTo($check['msg']), $this->equalTo($check['type']));
 
         $controller->saveorder();
 
