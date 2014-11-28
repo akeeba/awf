@@ -670,6 +670,59 @@ class DataControllerDataprovider
         return $data;
     }
 
+    public static function getTestArchive()
+    {
+        // Everything works fine, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'archive'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'archive'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Archive throws an error, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'archive'   => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in archive',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSaveorder()
     {
         $data[] = array(
