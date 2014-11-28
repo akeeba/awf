@@ -564,6 +564,59 @@ class DataControllerDataprovider
         return $data;
     }
 
+    public function getTestPublish()
+    {
+        // Everything works fine, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'publish'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Everything works fine, custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => 'http://www.example.com/index.php?view=custom',
+                    'publish'   => array(true),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=custom',
+                'msg'  => null,
+                'type' => null
+            )
+        );
+
+        // Publish throws an error, no custom redirect set, getting the id from the request
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'returnurl' => '',
+                    'publish'   => array('throw'),
+                    'ids'       => array(3)
+                )
+            ),
+            array(
+                'url'  => 'http://www.example.com/index.php?view=dummycontrollers',
+                'msg'  => 'Exception in publish',
+                'type' => 'error'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSaveorder()
     {
         $data[] = array(
