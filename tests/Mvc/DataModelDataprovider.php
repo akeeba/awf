@@ -1983,22 +1983,6 @@ class DataModelDataprovider
     {
         $data[] = array(
             array(
-                'table' => '#__dbtest',
-                'id' => ''
-            ),
-            array(
-                'case'   => 'Table with no publish support',
-                'before' => 0,
-                'after'  => 0,
-                'find'   => false,
-                'dispatcher' => 0,
-                'enabled' => null
-            )
-        );
-
-        $data[] = array(
-            array(
-                'table' => '#__dbtest_extended',
                 'id' => null
             ),
             array(
@@ -2013,7 +1997,6 @@ class DataModelDataprovider
 
         $data[] = array(
             array(
-                'table' => '#__dbtest_extended',
                 'id' => 1
             ),
             array(
@@ -2023,6 +2006,33 @@ class DataModelDataprovider
                 'find'   => true,
                 'dispatcher' => 2,
                 'enabled' => -2
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestTrashException()
+    {
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+                'id' => 1
+            ),
+            array(
+                'case'      => 'Table with no publish support',
+                'exception' => '\\Awf\\Mvc\\DataModel\\Exception\\SpecialColumnMissing'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'table' => '#__dbtest',
+                'id' => null
+            ),
+            array(
+                'case'      => 'Table not loaded',
+                'exception' => 'RuntimeException'
             )
         );
 

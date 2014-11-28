@@ -985,7 +985,7 @@ class DataModeltest extends DatabaseMysqliCase
             'db' => self::$driver,
             'mvc_config' => array(
                 'idFieldName' => 'id',
-                'tableName'   => $test['table']
+                'tableName'   => '#__dbtest_extended'
             )
         ));
 
@@ -1027,21 +1027,22 @@ class DataModeltest extends DatabaseMysqliCase
      * @group           DataModel
      * @group           DataModelTrash
      * @covers          DataModel::trash
+     * @dataProvider    DataModelDataprovider::getTestTrashException
      */
-    public function testTrashException()
+    public function testTrashException($test, $check)
     {
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
                 'idFieldName' => 'id',
-                'tableName'   => '#__dbtest'
+                'tableName'   => $test['table']
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException($check['exception']);
 
         $model = new DataModelStub($container);
-        $model->trash();
+        $model->trash($test['id']);
     }
 
     /**

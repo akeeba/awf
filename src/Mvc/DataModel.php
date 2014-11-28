@@ -18,6 +18,7 @@ use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
+use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
@@ -1542,7 +1543,7 @@ class DataModel extends Model
 
 		if (!$this->hasField('enabled'))
 		{
-			return $this;
+			throw new SpecialColumnMissing("DataModel::trash method needs an 'enabled' field");
 		}
 
 		if (method_exists($this, 'onBeforeTrash'))
