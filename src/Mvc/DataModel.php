@@ -1056,9 +1056,10 @@ class DataModel extends Model
 	 */
 	public function reorder($where = '')
 	{
+		// If there is no ordering field set an error and return false.
 		if (!$this->hasField('ordering'))
 		{
-			return $this;
+			throw new SpecialColumnMissing(sprintf('%s does not support ordering.', $this->tableName));
 		}
 
 		if (method_exists($this, 'onBeforeReorder'))
@@ -1067,12 +1068,6 @@ class DataModel extends Model
 		}
 
 		$this->behavioursDispatcher->trigger('onBeforeReorder', array(&$this, &$where));
-
-		// If there is no ordering field set an error and return false.
-		if (!$this->hasField('ordering'))
-		{
-			throw new \UnexpectedValueException(sprintf('%s does not support ordering.', $this->tableName));
-		}
 
 		$order_field = $this->getFieldAlias('ordering');
 		$k = $this->idFieldName;

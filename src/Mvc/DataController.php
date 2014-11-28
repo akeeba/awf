@@ -636,33 +636,53 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$model = $this->getModel();
+		$type   = null;
+		$msg    = null;
+		$model  = $this->getModel();
+		$ids    = $this->getIDsFromRequest($model, false);
+		$orders = $this->input->get('order', array(), 'array');
 
-		$ids      = $this->getIDsFromRequest($model, false);
-		$orders   = $this->input->get('order', array(), 'array');
-		$ordering = $model->getFieldAlias('ordering');
-
-		if ($n = count($ids))
+		// Before saving the order, I have to check I the table really supports the ordering feature
+		if(!$model->hasField('ordering'))
 		{
-			for ($i = 0; $i < $n; $i++)
+			$msg  = sprintf('%s does not support ordering.', $model->getTableName());
+			$type = 'error';
+		}
+		else
+		{
+			$ordering = $model->getFieldAlias('ordering');
+
+			// Several methods could throw exceptions, so let's wrap everything in a try-catch
+			try
 			{
-				$item = $model->find($ids[$i]);
-				$neworder = (int)$orders[$i];
-
-				if (!($item instanceof DataModel))
+				if ($n = count($ids))
 				{
-					continue;
+					for ($i = 0; $i < $n; $i++)
+					{
+						$item     = $model->find($ids[$i]);
+						$neworder = (int)$orders[$i];
+
+						if (!($item instanceof DataModel))
+						{
+							continue;
+						}
+
+						if ($item->getId() == $ids[$i])
+						{
+							$item->$ordering = $neworder;
+							$model->save($item);
+						}
+					}
 				}
 
-				if ($item->getId() == $ids[$i])
-				{
-					$item->$ordering = $neworder;
-					$model->save($item);
-				}
+				$model->reorder();
+			}
+			catch(\Exception $e)
+			{
+				$msg  = $e->getMessage();
+				$type = 'error';
 			}
 		}
-
-		$model->reorder();
 
 		// Redirect
 		if ($customURL = $this->input->getBase64('returnurl', ''))
@@ -671,8 +691,9 @@ class DataController extends Controller
 		}
 
 		$router = $this->container->router;
-		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
-		$this->setRedirect($url);
+		$url    = !empty($customURL) ? $customURL : $router->route('index.php?view=' . Inflector::pluralize($this->view));
+
+		$this->setRedirect($url, $msg, $type);
 	}
 
 	/**
