@@ -759,6 +759,27 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelReorder
+     * @covers          DataModel::reorder
+     */
+    public function testReorderException()
+    {
+        $this->setExpectedException('\\Awf\\Mvc\\DataModel\\Exception\\SpecialColumnMissing');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->reorder();
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelChunk
      * @covers          DataModel::chunk
      * @dataProvider    DataModelDataprovider::getTestChunk
