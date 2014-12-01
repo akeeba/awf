@@ -1803,6 +1803,164 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestMove()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 1,
+                'delta' => -1,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Move the first record up, no where',
+                'order' => array(1, 2, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 1,
+                'delta' => 0,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Empty delta',
+                'order' => array(1, 2, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => -1,
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => '',
+                'where' => ''
+            ),
+            array(
+                'case' => 'Move the second record up, no where, delta changed by the event',
+                'order' => array(2, 1, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => -1,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Move the second record up, no where',
+                'order' => array(2, 1, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => 1,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Move the second record down, no where',
+                'order' => array(1, 3, 2, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => 1,
+                'where' => 'description = "one"'
+            ),
+            array(
+                'case' => 'Move the second record down, with where matching nothing',
+                'order' => array(1, 2, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => -1,
+                'where' => 'description = "one"'
+            ),
+            array(
+                'case' => 'Move the second record up, with where matching one record',
+                'order' => array(2, 1, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => null,
+                    'delta'    => 'description = "one"',
+                    'where'    => null
+                ),
+                'id'    => 2,
+                'delta' => -1,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Move the second record up, where matching one record (changed by the dispatcher)',
+                'order' => array(2, 1, 3, 4)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'find'     => 2,
+                    'delta'    => null,
+                    'where'    => null
+                ),
+                'id'    => null,
+                'delta' => 1,
+                'where' => ''
+            ),
+            array(
+                'case' => 'Record loaded by the dispatcher, move the second record down, no where',
+                'order' => array(1, 3, 2, 4)
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestChunk()
     {
         $data[] = array(

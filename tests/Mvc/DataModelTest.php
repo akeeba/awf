@@ -3,10 +3,12 @@
 namespace Awf\Tests\DataModel;
 
 use Awf\Date\Date;
+use Awf\Event\Observer;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\DataModelStub;
+use Awf\Tests\Stubs\Utils\ObserverClosure;
 use Awf\Tests\Stubs\Utils\TestClosure;
 
 require_once 'DataModelDataprovider.php';
@@ -776,6 +778,112 @@ class DataModeltest extends DatabaseMysqliCase
 
         $model = new DataModelStub($container);
         $model->reorder();
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelMove
+     * @covers          DataModel::move
+     * @dataProvider    DataModelDataprovider::getTestMove
+     */
+    public function testMove($test, $check)
+    {
+        // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
+        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $before     = 0;
+        $beforeDisp = 0;
+        $after      = 0;
+        $afterDisp  = 0;
+        $db         = self::$driver;
+        $msg        = 'DataModel::move %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest_extended'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeMove' => function() use(&$before){
+                $before++;
+            },
+            'onAfterMove' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model      = new DataModelStub($container, $methods);
+        $dispatcher = $model->getBehavioursDispatcher();
+
+        // Let's attach a custom observer, so I can mock and check all the calls performed by the dispatcher
+        // P.A. The object is immediatly attached to the dispatcher, so I don't need to manually do that
+        new ObserverClosure($dispatcher, array(
+            'onBeforeMove' => function(&$subject, &$delta, &$where) use ($test, &$beforeDisp){
+                if(!is_null($test['mock']['find'])){
+                    $subject->find($test['mock']['find']);
+                }
+
+                if(!is_null($test['mock']['delta'])){
+                    $delta = $test['mock']['delta'];
+                }
+
+                if(!is_null($test['mock']['where'])){
+                    $where = $test['mock']['where'];
+                }
+
+                $beforeDisp++;
+            },
+            'onAfterMove' => function() use(&$afterDisp){
+                $afterDisp++;
+            }
+        ));
+
+        if($test['id'])
+        {
+            $model->find($test['id']);
+        }
+
+        $result = $model->move($test['delta'], $test['where']);
+
+        // Now let's take a look at the updated records
+        $query = $db->getQuery(true)
+                    ->select('ordering')
+                    ->from($db->qn('#__dbtest_extended'))
+                    ->order($db->qn($model->getIdFieldName()).' ASC');
+        $ordering = $db->setQuery($query)->loadColumn();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals(1, $before, sprintf($msg, 'Failed to invoke the onBefore method'));
+        $this->assertEquals(1, $beforeDisp, sprintf($msg, 'Failed to invoke the onBeforeMove event'));
+        $this->assertEquals(1, $after, sprintf($msg, 'Failed to invoke the onAfter method'));
+        $this->assertEquals(1, $afterDisp, sprintf($msg, 'Failed to invoke the onAfterMove event'));
+        $this->assertEquals($check['order'], $ordering, sprintf($msg, 'Failed to save the correct order'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelMove
+     * @covers          DataModel::move
+     */
+    public function testMoveException()
+    {
+        $this->setExpectedException('RuntimeException');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->move(-1);
     }
 
     /**

@@ -1134,7 +1134,7 @@ class DataModel extends Model
 	{
 		if (!$this->hasField('ordering'))
 		{
-			return $this;
+			throw new SpecialColumnMissing(sprintf('%s does not support ordering.', $this->tableName));
 		}
 
 		if (method_exists($this, 'onBeforeMove'))
@@ -1143,12 +1143,6 @@ class DataModel extends Model
 		}
 
 		$this->behavioursDispatcher->trigger('onBeforeMove', array(&$this, &$delta, &$where));
-
-		// If there is no ordering field set an error and return false.
-		if (!$this->hasField('ordering'))
-		{
-			throw new \UnexpectedValueException(sprintf('%s does not support ordering.', $this->tableName));
-		}
 
 		$ordering_field = $this->getFieldAlias('ordering');
 
@@ -1202,7 +1196,7 @@ class DataModel extends Model
 		}
 
 		// Select the first row with the criteria.
-		$db->setQuery($query, 0, 1)->loadObject();
+		$row = $db->setQuery($query, 0, 1)->loadObject();
 
 		// If a row is found, move the item.
 		if (!empty($row))
@@ -1223,15 +1217,6 @@ class DataModel extends Model
 
 			// Update the instance value.
 			$this->$ordering_field = $row->$ordering_field;
-		}
-		else
-		{
-			// Update the ordering field for this instance.
-			$query = $db->getQuery(true)
-				->update($db->qn($this->tableName))
-				->set($db->qn($ordering_field) . ' = ' . $db->q((int)$this->$ordering_field))
-				->where($db->qn($k) . ' = ' . $db->q($this->$k));
-			$db->setQuery($query)->execute();
 		}
 
 		if (method_exists($this, 'onAfterMove'))
