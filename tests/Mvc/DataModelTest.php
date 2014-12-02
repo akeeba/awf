@@ -1115,6 +1115,48 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelGetIdFieldName
+     * @covers          DataModel::getIdFieldName
+     */
+    public function testGetIdFieldName()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $id = $model->getIdFieldName();
+
+        $this->assertEquals('id', $id, 'DataModel::getIdFieldName Failed to return the table column id');
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetTableName
+     * @covers          DataModel::getTableName
+     */
+    public function testGetTableName()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $table = $model->getTableName();
+
+        $this->assertEquals('#__dbtest', $table, 'DataModel::getTableName Failed to return the table name');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelCopy
      * @covers          DataModel::copy
      */
