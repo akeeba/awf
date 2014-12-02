@@ -1581,6 +1581,29 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelGetBehavioursDispatcher
+     * @covers          DataModel::getBehavioursDispatcher
+     */
+    public function testGetBehavioursDispatcher()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $reflDisp = ReflectionHelper::getValue($model, 'behavioursDispatcher');
+        $disp     = $model->getBehavioursDispatcher();
+
+        $this->assertSame($reflDisp, $disp, 'DataModel::getBehavioursDispatcher did not return the same object');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelLock
      * @covers          DataModel::lock
      * @dataProvider    DataModelDataprovider::getTestLock
