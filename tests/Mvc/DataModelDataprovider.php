@@ -2466,6 +2466,55 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestAddBehaviour()
+    {
+        $data[] = array(
+            array(
+                'class' => 'Foofilters'
+            ),
+            array(
+                'case'     => 'Adding behaviour from Fakeapp\\Model\\DataModel\\Behaviour',
+                'class'    => 'Fakeapp\\Model\\DataModel\\Behaviour\\Foofilters',
+                'attached' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'class' => 'NamedBehaviour'
+            ),
+            array(
+                'case'     => 'Adding behaviour from Fakeapp\\Model\\Nestedset\\Behaviour\\NamedBehaviour',
+                'class'    => 'Fakeapp\Model\Nestedset\Behaviour\NamedBehaviour',
+                'attached' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'class' => 'Filters'
+            ),
+            array(
+                'case'     => 'Adding behaviour from Awf\\Mvc\\DataModel\\Behaviour',
+                'class'    => 'Awf\\Mvc\\DataModel\\Behaviour\\Filters',
+                'attached' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'class' => 'Wrong'
+            ),
+            array(
+                'case'     => 'Trying to add non-existant behaviour',
+                'class'    => 'Awf\\Mvc\\DataModel\\Behaviour\\Wrong',
+                'attached' => false
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestLock()
     {
         $data[] = array(

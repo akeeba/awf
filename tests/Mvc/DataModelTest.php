@@ -1523,7 +1523,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -1549,6 +1548,35 @@ class DataModeltest extends DatabaseMysqliCase
         {
             $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong value'));
         }
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelAddBehaviour
+     * @covers          DataModel::addBehaviour
+     * @dataProvider    DataModelDataprovider::getTestAddBehaviour
+     */
+    public function testAddBehaviour($test, $check)
+    {
+        $msg = 'DataModel::addBehaviour %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $result = $model->addBehaviour($test['class']);
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $attached   = $dispatcher->hasObserverClass($check['class']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return and instance of itself'));
+        $this->assertEquals($check['attached'], $attached, sprintf($msg, 'Failed to properly attach the behaviour'));
     }
 
     /**
