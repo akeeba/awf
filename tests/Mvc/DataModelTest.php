@@ -2229,4 +2229,27 @@ class DataModeltest extends DatabaseMysqliCase
         $model = new DataModelStub($container);
         $model->unpublish();
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetRelations
+     * @covers          Awf\Mvc\DataModel::getRelations
+     */
+    public function testGetRelations()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $refl = ReflectionHelper::getValue($model, 'relationManager');
+        $obj  = $model->getRelations();
+
+        $this->assertSame($refl, $obj, 'DataModel::getRelations failed to return the internal object');
+    }
 }
