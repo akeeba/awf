@@ -2099,6 +2099,60 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelWhere
+     * @covers          DataModel::where
+     * @dataProvider    DataModelDataprovider::getTestWhere
+     */
+    public function testWhere($test, $check)
+    {
+        $msg = 'DataModel::where %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getIdFieldName', 'setState', 'addBehaviour'), array($container));
+        $model->expects($check['add'] ? $this->once() : $this->never())->method('addBehaviour')->willReturn(null);
+        $model->expects($this->any())->method('getIdFieldName')->willReturn($test['mock']['id_field']);
+        $model->expects($this->once())->method('setState')->with($this->equalTo($check['field']), $this->equalTo($check['options']));
+
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('hasObserverClass'), array($container));
+        $dispatcher->expects($this->any())->method('hasObserverClass')->willReturn($test['mock']['hasClass']);
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+
+        $result = $model->where($test['field'], $test['method'], $test['values']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelWhere
+     * @covers          DataModel::where
+     */
+    public function testWhereException()
+    {
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\InvalidSearchMethod');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->where('id', 'wrong', null);
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelUnpublish
      * @covers          DataModel::unpublish
      * @dataProvider    DataModelDataprovider::getTestUnpublish

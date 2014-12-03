@@ -18,6 +18,7 @@ use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
+use Awf\Mvc\DataModel\Exception\InvalidSearchMethod;
 use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
@@ -2332,6 +2333,8 @@ class DataModel extends Model
 			$this->addBehaviour('filters');
 		}
 
+		// If we are dealing with the primary key, let's set the field name to "id". This is a convention and it will
+		// be used inside the Filters behaviour
 		if ($fieldName == $this->getIdFieldName())
 		{
 			$fieldName = 'id';
@@ -2367,7 +2370,7 @@ class DataModel extends Model
 
 			case 'ge':
 				$options['method'] = 'search';
-				$options['operator'] = '<=';
+				$options['operator'] = '>=';
 				break;
 
 			case 'eq':
@@ -2412,7 +2415,7 @@ class DataModel extends Model
 			case '[]':
 			case '[)':
 			case '(]':
-				$options['method'] = 'inside';
+				$options['method'] = 'between';
 				break;
 
 			case ')(':
@@ -2429,6 +2432,12 @@ class DataModel extends Model
 
 			case '?=':
 				$options['method'] = 'search';
+				break;
+
+			default:
+
+				throw new InvalidSearchMethod('Method '.$method.' is unsupported');
+
 				break;
 		}
 
@@ -2461,9 +2470,9 @@ class DataModel extends Model
 						$values = array_shift($values);
 					}
 
-					$options['value'] = $values;
-					$options['method'] = 'search';
 					$options['operator'] = ($options['method'] == 'between') ? '=' : '!=';
+					$options['value']    = $values;
+					$options['method']   = 'search';
 				}
 
 				break;

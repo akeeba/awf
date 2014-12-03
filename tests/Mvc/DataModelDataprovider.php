@@ -3063,4 +3063,1276 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestWhere()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'foobar',
+                    'hasClass' => false
+                ),
+                'field'  => 'foobar',
+                'method' => '=',
+                'values' => null
+            ),
+            array(
+                'case'    => 'Behaviors not loaded, field is the primary key',
+                'add'     => true,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => null,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'dummy',
+                    'hasClass' => true
+                ),
+                'field'  => 'foobar',
+                'method' => '=',
+                'values' => null
+            ),
+            array(
+                'case'    => 'Behaviors loaded, field is not the primary key',
+                'add'     => false,
+                'field'   => 'foobar',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => null,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '<>',
+                'values' => 12
+            ),
+            array(
+                'case'    => '<> method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'lt',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'lt method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '<'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'le',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'le method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '<='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'gt',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'gt method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '>'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'ge',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'ge method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '>='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'eq',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'eq method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'neq',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'neq method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'ne',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'ne method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '<',
+                'values' => 12
+            ),
+            array(
+                'case'    => '< method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '<'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '!<',
+                'values' => 12
+            ),
+            array(
+                'case'    => '!< method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!<'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '<=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '<= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '<='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '!<=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '!<= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!<='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '>',
+                'values' => 12
+            ),
+            array(
+                'case'    => '> method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '>'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '!>',
+                'values' => 12
+            ),
+            array(
+                'case'    => '!> method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!>'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '>=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '>= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '>='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '!>=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '!>= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!>='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '!=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '!= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '= method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'like',
+                'values' => 'foobar'
+            ),
+            array(
+                'case'    => 'like method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'partial',
+                    'value'    => 'foobar'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '~',
+                'values' => 'foobar'
+            ),
+            array(
+                'case'    => '~ method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'partial',
+                    'value'    => 'foobar'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '%',
+                'values' => 'foobar'
+            ),
+            array(
+                'case'    => '%% method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'partial',
+                    'value'    => 'foobar'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '==',
+                'values' => 12
+            ),
+            array(
+                'case'    => '== method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'exact',
+                    'value'    => 12
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '=[]',
+                'values' => 12
+            ),
+            array(
+                'case'    => '=[] method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'exact',
+                    'value'    => 12
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '=()',
+                'values' => 12
+            ),
+            array(
+                'case'    => '=() method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'exact',
+                    'value'    => 12
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'in',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'in method, values passed',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'exact',
+                    'value'    => 12
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'between method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '[]',
+                'values' => 12
+            ),
+            array(
+                'case'    => '[] method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '[)',
+                'values' => 12
+            ),
+            array(
+                'case'    => '[) method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '(]',
+                'values' => 12
+            ),
+            array(
+                'case'    => '(] method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => array(12)
+            ),
+            array(
+                'case'    => 'between method, values is an array with a single element',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => array(12, 22)
+            ),
+            array(
+                'case'    => 'between method, values is an array, but no from/to keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'between',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => array(12, 22, 'from' => 5)
+            ),
+            array(
+                'case'    => 'between method, values is an array, but no "from" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'between',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => array(12, 22, 'to' => 5)
+            ),
+            array(
+                'case'    => 'between method, values is an array, but no "to" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'between',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '()',
+                'values' => array(12, 22, 'from' => 5, 'to' => 7)
+            ),
+            array(
+                'case'    => 'between method, values is an array, with "from/to" keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'between',
+                    'from'     => 5,
+                    'to'       => 7
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'outside method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')[',
+                'values' => 12
+            ),
+            array(
+                'case'    => ')[ method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '](',
+                'values' => 12
+            ),
+            array(
+                'case'    => ']( method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '][',
+                'values' => 12
+            ),
+            array(
+                'case'    => '][ method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => array(12)
+            ),
+            array(
+                'case'    => 'outside method, values is an array with a single element',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '!='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => array(12, 22)
+            ),
+            array(
+                'case'    => 'outside method, values is an array, but no from/to keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'outside',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => array(12, 22, 'from' => 5)
+            ),
+            array(
+                'case'    => 'outside method, values is an array, but no "from" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'outside',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => array(12, 22, 'to' => 5)
+            ),
+            array(
+                'case'    => 'outside method, values is an array, but no "to" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'outside',
+                    'from'     => 12,
+                    'to'       => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => ')(',
+                'values' => array(12, 22, 'from' => 5, 'to' => 7)
+            ),
+            array(
+                'case'    => 'outside method, values is an array, with "from/to" keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'outside',
+                    'from'     => 5,
+                    'to'       => 7
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => 'every',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'every (interval) method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => 12
+            ),
+            array(
+                'case'    => 'interval method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => array(12)
+            ),
+            array(
+                'case'    => 'interval method, values is an array with a single item',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12,
+                    'operator' => '='
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => array(12, 22)
+            ),
+            array(
+                'case'    => 'interval method, values is an array, but no value/interval keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'interval',
+                    'value'    => 12,
+                    'interval' => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => array(12, 22, 'value' => 5)
+            ),
+            array(
+                'case'    => 'interval method, values is an array, but no "value" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'interval',
+                    'value'    => 12,
+                    'interval' => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => array(12, 22, 'interval' => 5)
+            ),
+            array(
+                'case'    => 'interval method, values is an array, but no "interval" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'interval',
+                    'value'    => 12,
+                    'interval' => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '*=',
+                'values' => array(12, 22, 'value' => 5, 'interval' => 7)
+            ),
+            array(
+                'case'    => 'interval method, values is an array, with "value/interval" keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'interval',
+                    'value'    => 5,
+                    'interval' => 7
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => 12
+            ),
+            array(
+                'case'    => '?= method, values is not an array',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => 12
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => array(12)
+            ),
+            array(
+                'case'    => '?= method, values is an array with a single item',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'value'    => array(12)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => array(12, 22)
+            ),
+            array(
+                'case'    => '?= method, values is an array with no "operator/value" keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'operator' => 12,
+                    'value'    => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => array(12, 22, 'operator' => 'XX')
+            ),
+            array(
+                'case'    => '?= method, values is an array with no "value" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'operator' => 12,
+                    'value'    => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => array(12, 22, 'value' => 'XX')
+            ),
+            array(
+                'case'    => '?= method, values is an array with no "operator" key',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'operator' => 12,
+                    'value'    => 22
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id_field' => 'id',
+                    'hasClass' => true
+                ),
+                'field'  => 'id',
+                'method' => '?=',
+                'values' => array(12, 22, 'value' => 5, 'operator' => 'XX')
+            ),
+            array(
+                'case'    => '?= method, values is an array with "operator/value" keys',
+                'add'     => false,
+                'field'   => 'id',
+                'options' => array(
+                    'method'   => 'search',
+                    'operator' => 'XX',
+                    'value'    => 5
+                )
+            )
+        );
+
+        return $data;
+    }
 }
