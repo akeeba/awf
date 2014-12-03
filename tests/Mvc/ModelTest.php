@@ -15,12 +15,17 @@ use Awf\Tests\Stubs\Mvc\ModelStub;
 
 require_once 'ModelDataprovider.php';
 
+/**
+ * @covers      Awf\Mvc\Model::<protected>
+ * @covers      Awf\Mvc\Model::<private>
+ * @package     Awf\Tests\Model
+ */
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           Model
      * @group           ModelGetInstance
-     * @covers          Model::getInstance
+     * @covers          Awf\Mvc\Model::getInstance
      * @dataProvider    ModelDataprovider::getTestGetInstance
      */
     public function testGetInstance($test, $check)
@@ -78,7 +83,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelGetTmpInstance
-     * @covers          Model::getTmpInstance
+     * @covers          Awf\Mvc\Model::getTmpInstance
      */
     public function testGetTmpInstance()
     {
@@ -99,7 +104,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           Model__construct
-     * @covers          Model::__construct
+     * @covers          Awf\Mvc\Model::__construct
      * @dataProvider    ModelDataprovider::getTest__construct()
      */
     public function test__construct($test, $check)
@@ -160,7 +165,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelGetHash
-     * @covers          Model::getHash
+     * @covers          Awf\Mvc\Model::getHash
      */
     public function testGetHash()
     {
@@ -175,7 +180,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelSetState
-     * @covers          Model::setState
+     * @covers          Awf\Mvc\Model::setState
      * @dataProvider    ModelDataprovider::getTestSetState
      */
     public function testSetState($test, $check)
@@ -197,7 +202,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelClearState
-     * @covers          Model::clearState
+     * @covers          Awf\Mvc\Model::clearState
      */
     public function testClearState()
     {
@@ -216,7 +221,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelClearInput
-     * @covers          Model::clearInput
+     * @covers          Awf\Mvc\Model::clearInput
      */
     public function testClearInput()
     {
@@ -241,7 +246,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelGetClone
-     * @covers          Model::getClone
+     * @covers          Awf\Mvc\Model::getClone
      */
     public function testGetClone()
     {
@@ -254,7 +259,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           Model__get
-     * @covers          Model::__get
+     * @covers          Awf\Mvc\Model::__get
      */
     public function test__get()
     {
@@ -269,7 +274,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           Model__set
-     * @covers          Model::__set
+     * @covers          Awf\Mvc\Model::__set
      */
     public function test__set()
     {
@@ -284,7 +289,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           Model__call
-     * @covers          Model::__call
+     * @covers          Awf\Mvc\Model::__call
      */
     public function test__call()
     {
@@ -299,7 +304,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelSavestate
-     * @covers          Model::savestate
+     * @covers          Awf\Mvc\Model::savestate
      * @dataProvider    ModelDataprovider::getTestSavestate
      */
     public function testSaveState($test, $check)
@@ -317,7 +322,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Model
      * @group           ModelPopulateSavestate
-     * @covers          Model::populateSavestate
+     * @covers          Awf\Mvc\Model::populateSavestate
      * @dataProvider    ModelDataprovider::getTestPopulatesavestate
      */
     public function testPopulateSavestate($test, $check)
@@ -347,7 +352,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group       Model
      * @group       ModelSetIgnoreRequest
-     * @covers      Model::setIgnoreRequest
+     * @covers      Awf\Mvc\Model::setIgnoreRequest
      */
     public function testSetIgnoreRequest()
     {
@@ -364,7 +369,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @group       Model
      * @group       ModelGetIgnoreRequest
-     * @covers      Model::getIgnoreRequest
+     * @covers      Awf\Mvc\Model::getIgnoreRequest
      */
     public function testGetIgnoreRequest()
     {

@@ -11,12 +11,17 @@ use Awf\Tests\Stubs\Mvc\DataModelStub;
 
 require_once 'DataControllerDataprovider.php';
 
+/**
+ * @covers      Awf\Mvc\DataController::<protected>
+ * @covers      Awf\Mvc\DataController::<private>
+ * @package     Awf\Tests\DataController
+ */
 class DataControllertest extends DatabaseMysqliCase
 {
     /**
      * @group           DataController
      * @group           DataControllerConstruct
-     * @covers          DataController::__construct
+     * @covers          Awf\Mvc\DataController::__construct
      * @dataProvider    DataControllerDataprovider::getTest__construct
      */
     public function test__construct($test, $check)
@@ -48,7 +53,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerBrowse
-     * @covers          DataController::browse
+     * @covers          Awf\Mvc\DataController::browse
      * @dataProvider    DataControllerDataprovider::getTestBrowse
      */
     public function testBrowse($test, $check)
@@ -69,7 +74,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerRead
-     * @covers          DataController::read
+     * @covers          Awf\Mvc\DataController::read
      * @dataProvider    DataControllerDataprovider::getTestRead
      */
     public function testRead($test, $check)
@@ -108,7 +113,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerAdd
-     * @covers          DataController::add
+     * @covers          Awf\Mvc\DataController::add
      * @dataProvider    DataControllerDataprovider::getTestAdd
      */
     public function testAdd($test, $check)
@@ -139,7 +144,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerEdit
-     * @covers          DataController::edit
+     * @covers          Awf\Mvc\DataController::edit
      * @dataProvider    DataControllerDataprovider::getTestEdit
      */
     public function testEdit($test, $check)
@@ -195,7 +200,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerApply
-     * @covers          DataController::apply
+     * @covers          Awf\Mvc\DataController::apply
      * @dataProvider    DataControllerDataprovider::getTestApply
      */
     public function testApply($test, $check)
@@ -220,7 +225,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerCopy
-     * @covers          DataController::copy
+     * @covers          Awf\Mvc\DataController::copy
      * @dataProvider    DataControllerDataprovider::getTestCopy
      */
     public function testCopy($test, $check)
@@ -282,7 +287,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerSave
-     * @covers          DataController::save
+     * @covers          Awf\Mvc\DataController::save
      * @dataProvider    DataControllerDataprovider::getTestSave
      */
     public function testSave($test, $check)
@@ -312,7 +317,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerSavenew
-     * @covers          DataController::savenew
+     * @covers          Awf\Mvc\DataController::savenew
      * @dataProvider    DataControllerDataprovider::getTestSavenew
      */
     public function testSavenew($test, $check)
@@ -342,7 +347,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerCancel
-     * @covers          DataController::cancel
+     * @covers          Awf\Mvc\DataController::cancel
      * @dataProvider    DataControllerDataprovider::getTestCancel
      */
     public function testCancel($test, $check)
@@ -376,7 +381,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerPublish
-     * @covers          DataController::publish
+     * @covers          Awf\Mvc\DataController::publish
      * @dataProvider    DataControllerDataprovider::getTestPublish
      */
     public function testPublish($test, $check)
@@ -422,7 +427,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerUnpublish
-     * @covers          DataController::unpublish
+     * @covers          Awf\Mvc\DataController::unpublish
      * @dataProvider    DataControllerDataprovider::getTestUnpublish
      */
     public function testUnpublish($test, $check)
@@ -468,7 +473,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerArchive
-     * @covers          DataController::archive
+     * @covers          Awf\Mvc\DataController::archive
      * @dataProvider    DataControllerDataprovider::getTestArchive
      */
     public function testArchive($test, $check)
@@ -514,7 +519,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerTrash
-     * @covers          DataController::trash
+     * @covers          Awf\Mvc\DataController::trash
      * @dataProvider    DataControllerDataprovider::getTestTrash
      */
     public function testTrash($test, $check)
@@ -562,7 +567,7 @@ class DataControllertest extends DatabaseMysqliCase
      *
      * @group           DataController
      * @group           DataControllerSaveorder
-     * @covers          DataController::saveorder
+     * @covers          Awf\Mvc\DataController::saveorder
      * @dataProvider    DataControllerDataprovider::getTestsaveorder
      */
     public function testSaveorder($test, $check)
@@ -604,7 +609,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerOrderdown
-     * @covers          DataController::orderdown
+     * @covers          Awf\Mvc\DataController::orderdown
      * @dataProvider    DataControllerDataprovider::getTestOrderdown
      */
     public function testOrderdown($test, $check)
@@ -652,7 +657,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerOrderup
-     * @covers          DataController::orderup
+     * @covers          Awf\Mvc\DataController::orderup
      * @dataProvider    DataControllerDataprovider::getTestOrderup
      */
     public function testOrderup($test, $check)
@@ -700,7 +705,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerRemove
-     * @covers          DataController::remove
+     * @covers          Awf\Mvc\DataController::remove
      * @dataProvider    DataControllerDataprovider::getTestRemove
      */
     public function testRemove($test, $check)
@@ -762,7 +767,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerGetModel
-     * @covers          DataController::getModel
+     * @covers          Awf\Mvc\DataController::getModel
      * @dataProvider    DataControllerDataprovider::getTestGetModel
      */
     public function testGetModel($test, $check)
@@ -791,7 +796,7 @@ class DataControllertest extends DatabaseMysqliCase
     /**
      * @group           DataController
      * @group           DataControllerGetIDsFromRequest
-     * @covers          DataController::getIDsFromRequest
+     * @covers          Awf\Mvc\DataController::getIDsFromRequest
      * @dataProvider    DataControllerDataprovider::getTestGetIDsFromRequest
      */
     public function testGetIDsFromRequest($test, $check)

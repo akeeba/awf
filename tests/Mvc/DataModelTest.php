@@ -13,12 +13,17 @@ use Awf\Tests\Stubs\Utils\TestClosure;
 
 require_once 'DataModelDataprovider.php';
 
+/**
+ * @covers      Awf\Mvc\DataModel::<protected>
+ * @covers      Awf\Mvc\DataModel::<private>
+ * @package     Awf\Tests\DataModel
+ */
 class DataModeltest extends DatabaseMysqliCase
 {
     /**
      * @group           DataModel
      * @group           DataModelGetTableFields
-     * @covers          DataModel::getTableFields
+     * @covers          Awf\Mvc\DataModel::getTableFields
      * @dataProvider    DataModelDataprovider::getTestGetTableFields
      */
     public function testGetTableFields($test, $check)
@@ -76,7 +81,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetDbo
-     * @covers          DataModel::getDbo
+     * @covers          Awf\Mvc\DataModel::getDbo
      * @dataProvider    DataModelDataprovider::getTestGetDbo
      */
     public function testGetDbo($test, $check)
@@ -123,7 +128,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelSetFieldValue
-     * @covers          DataModel::setFieldValue
+     * @covers          Awf\Mvc\DataModel::setFieldValue
      * @dataProvider    DataModelDataprovider::getTestSetFieldValue
      */
     public function testSetFieldValue($test, $check)
@@ -164,7 +169,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelReset
-     * @covers          DataModel::reset
+     * @covers          Awf\Mvc\DataModel::reset
      * @dataProvider    DataModelDataprovider::getTestReset
      */
     public function testReset($test, $check)
@@ -205,7 +210,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelCall
-     * @covers          DataModel::__call
+     * @covers          Awf\Mvc\DataModel::__call
      * @dataProvider    DataModelDataprovider::getTest__call
      */
     public function test__call($test, $check)
@@ -262,7 +267,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModel__isset
-     * @covers          DataModel::__isset
+     * @covers          Awf\Mvc\DataModel::__isset
      * @dataProvider    DataModelDataprovider::getTest__isset
      */
     public function test__isset($test, $check)
@@ -301,7 +306,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModel__get
-     * @covers          DataModel::__get
+     * @covers          Awf\Mvc\DataModel::__get
      * @dataProvider    DataModelDataprovider::getTest__get
      */
     public function test__get($test, $check)
@@ -343,7 +348,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModel__set
-     * @covers          DataModel::__set
+     * @covers          Awf\Mvc\DataModel::__set
      * @dataProvider    DataModelDataprovider::getTest__set
      */
     public function test__set($test, $check)
@@ -378,7 +383,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetFieldValue
-     * @covers          DataModel::getFieldValue
+     * @covers          Awf\Mvc\DataModel::getFieldValue
      * @dataProvider    DataModelDataprovider::getTestGetFieldValue
      */
     public function testGetFieldValue($test, $check)
@@ -414,7 +419,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelArchive
-     * @covers          DataModel::archive
+     * @covers          Awf\Mvc\DataModel::archive
      * @dataProvider    DataModelDataprovider::getTestArchive
      */
     public function testArchive($test, $check)
@@ -475,7 +480,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelArchive
-     * @covers          DataModel::archive
+     * @covers          Awf\Mvc\DataModel::archive
      */
     public function testArchiveException()
     {
@@ -497,7 +502,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelHasField
-     * @covers          DataModel::hasField
+     * @covers          Awf\Mvc\DataModel::hasField
      * @dataProvider    DataModelDataprovider::getTestHasField
      */
     public function testHasField($test, $check)
@@ -526,7 +531,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetFieldAlias
-     * @covers          DataModel::getFieldAlias
+     * @covers          Awf\Mvc\DataModel::getFieldAlias
      * @dataProvider    DataModelDataprovider::getTestGetFieldAlias
      */
     public function testGetFieldAlias($test, $check)
@@ -554,7 +559,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelBind
-     * @covers          DataModel::bind
+     * @covers          Awf\Mvc\DataModel::bind
      * @dataProvider    DataModelDataprovider::getTestBind
      */
     public function testBind($test, $check)
@@ -602,7 +607,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelBind
-     * @covers          DataModel::bind
+     * @covers          Awf\Mvc\DataModel::bind
      * @dataProvider    DataModelDataprovider::getTestBindException
      */
     public function testBindException($test)
@@ -626,7 +631,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetData
-     * @covers          DataModel::getData
+     * @covers          Awf\Mvc\DataModel::getData
      */
     public function testGetData()
     {
@@ -652,7 +657,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelCheck
-     * @covers          DataModel::check
+     * @covers          Awf\Mvc\DataModel::check
      * @dataProvider    DataModelDataprovider::getTestCheck
      */
     public function testCheck($test, $check)
@@ -690,7 +695,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelReorder
-     * @covers          DataModel::reorder
+     * @covers          Awf\Mvc\DataModel::reorder
      * @dataProvider    DataModelDataprovider::getTestReorder
      */
     public function testReorder($test, $check)
@@ -762,7 +767,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelReorder
-     * @covers          DataModel::reorder
+     * @covers          Awf\Mvc\DataModel::reorder
      */
     public function testReorderException()
     {
@@ -783,7 +788,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelMove
-     * @covers          DataModel::move
+     * @covers          Awf\Mvc\DataModel::move
      * @dataProvider    DataModelDataprovider::getTestMove
      */
     public function testMove($test, $check)
@@ -868,7 +873,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelMove
-     * @covers          DataModel::move
+     * @covers          Awf\Mvc\DataModel::move
      */
     public function testMoveException()
     {
@@ -889,7 +894,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelChunk
-     * @covers          DataModel::chunk
+     * @covers          Awf\Mvc\DataModel::chunk
      * @dataProvider    DataModelDataprovider::getTestChunk
      */
     public function testChunk($test, $check)
@@ -920,7 +925,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelCount
-     * @covers          DataModel::count
+     * @covers          Awf\Mvc\DataModel::count
      */
     public function testCount()
     {
@@ -965,7 +970,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelBuildQuery
-     * @covers          DataModel::buildQuery
+     * @covers          Awf\Mvc\DataModel::buildQuery
      * @dataProvider    DataModelDataprovider::getTestBuildQuery
      */
     public function testBuildQuery($test, $check)
@@ -1047,7 +1052,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGet
-     * @covers          DataModel::get
+     * @covers          Awf\Mvc\DataModel::get
      * @dataProvider    DataModelDataprovider::getTestGet
      */
     public function testGet($test, $check)
@@ -1093,7 +1098,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetId
-     * @covers          DataModel::getId
+     * @covers          Awf\Mvc\DataModel::getId
      */
     public function testGetId()
     {
@@ -1116,7 +1121,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetIdFieldName
-     * @covers          DataModel::getIdFieldName
+     * @covers          Awf\Mvc\DataModel::getIdFieldName
      */
     public function testGetIdFieldName()
     {
@@ -1137,7 +1142,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetTableName
-     * @covers          DataModel::getTableName
+     * @covers          Awf\Mvc\DataModel::getTableName
      */
     public function testGetTableName()
     {
@@ -1158,7 +1163,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelCopy
-     * @covers          DataModel::copy
+     * @covers          Awf\Mvc\DataModel::copy
      */
     public function testCopy()
     {
@@ -1185,7 +1190,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelDelete
-     * @covers          DataModel::delete
+     * @covers          Awf\Mvc\DataModel::delete
      * @dataProvider    DataModelDataprovider::getTestDelete
      */
     public function testDelete($test, $check)
@@ -1215,7 +1220,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelTrash
-     * @covers          DataModel::trash
+     * @covers          Awf\Mvc\DataModel::trash
      * @dataProvider    DataModelDataprovider::getTestTrash
      */
     public function testTrash($test, $check)
@@ -1269,7 +1274,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelTrash
-     * @covers          DataModel::trash
+     * @covers          Awf\Mvc\DataModel::trash
      * @dataProvider    DataModelDataprovider::getTestTrashException
      */
     public function testTrashException($test, $check)
@@ -1291,7 +1296,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelFindOrFail
-     * @covers          DataModel::findOrFail
+     * @covers          Awf\Mvc\DataModel::findOrFail
      * @dataProvider    DataModelDataprovider::getTestFindOrFail
      */
     public function testFindOrFail($test, $check)
@@ -1324,7 +1329,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelForceDelete
-     * @covers          DataModel::forceDelete
+     * @covers          Awf\Mvc\DataModel::forceDelete
      * @dataProvider    DataModelDataprovider::getTestForceDelete
      */
     public function testForceDelete($test, $check)
@@ -1387,7 +1392,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelForceDelete
-     * @covers          DataModel::forceDelete
+     * @covers          Awf\Mvc\DataModel::forceDelete
      */
     public function testForceDeleteException()
     {
@@ -1410,7 +1415,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelFirstOrCreate
-     * @covers          DataModel::firstOrCreate
+     * @covers          Awf\Mvc\DataModel::firstOrCreate
      * @dataProvider    DataModelDataprovider::getTestFirstOrCreate
      */
     public function testFirstOrCreate($test, $check)
@@ -1451,7 +1456,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelCreate
-     * @covers          DataModel::create
+     * @covers          Awf\Mvc\DataModel::create
      */
     public function testCreate()
     {
@@ -1475,7 +1480,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelFirstOrFail
-     * @covers          DataModel::firstOrFail
+     * @covers          Awf\Mvc\DataModel::firstOrFail
      * @dataProvider    DataModelDataprovider::getTestFirstOrFail
      */
     public function testFirstOrFail($test, $check)
@@ -1513,7 +1518,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelFirstOrNew
-     * @covers          DataModel::firstOrNew
+     * @covers          Awf\Mvc\DataModel::firstOrNew
      * @dataProvider    DataModelDataprovider::getTestFirstOrNew
      */
     public function testFirstOrNew($test, $check)
@@ -1553,7 +1558,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelAddBehaviour
-     * @covers          DataModel::addBehaviour
+     * @covers          Awf\Mvc\DataModel::addBehaviour
      * @dataProvider    DataModelDataprovider::getTestAddBehaviour
      */
     public function testAddBehaviour($test, $check)
@@ -1582,7 +1587,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelGetBehavioursDispatcher
-     * @covers          DataModel::getBehavioursDispatcher
+     * @covers          Awf\Mvc\DataModel::getBehavioursDispatcher
      */
     public function testGetBehavioursDispatcher()
     {
@@ -1605,7 +1610,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelLock
-     * @covers          DataModel::lock
+     * @covers          Awf\Mvc\DataModel::lock
      * @dataProvider    DataModelDataprovider::getTestLock
      */
     public function testLock($test, $check)
@@ -1681,7 +1686,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelLock
-     * @covers          DataModel::lock
+     * @covers          Awf\Mvc\DataModel::lock
      */
     public function testLockException()
     {
@@ -1703,7 +1708,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelOrderBy
-     * @covers          DataModel::orderBy
+     * @covers          Awf\Mvc\DataModel::orderBy
      * @dataProvider    DataModelDataprovider::getTestOrderBy
      */
     public function testOrderBy($test, $check)
@@ -1732,7 +1737,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelPublish
-     * @covers          DataModel::publish
+     * @covers          Awf\Mvc\DataModel::publish
      * @dataProvider    DataModelDataprovider::getTestPublish
      */
     public function testPublish($test, $check)
@@ -1785,7 +1790,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelPublish
-     * @covers          DataModel::publish
+     * @covers          Awf\Mvc\DataModel::publish
      */
     public function testPublishException()
     {
@@ -1807,7 +1812,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelRestore
-     * @covers          DataModel::restore
+     * @covers          Awf\Mvc\DataModel::restore
      * @dataProvider    DataModelDataprovider::getTestrestore
      */
     public function testRestore($test, $check)
@@ -1862,7 +1867,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelRestore
-     * @covers          DataModel::restore
+     * @covers          Awf\Mvc\DataModel::restore
      */
     public function testRestoreException()
     {
@@ -1884,7 +1889,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelSkip
-     * @covers          DataModel::skip
+     * @covers          Awf\Mvc\DataModel::skip
      * @dataProvider    DataModelDataprovider::getTestSkip
      */
     public function testSkip($test, $check)
@@ -1910,7 +1915,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelTake
-     * @covers          DataModel::take
+     * @covers          Awf\Mvc\DataModel::take
      * @dataProvider    DataModelDataprovider::getTestTake
      */
     public function testTake($test, $check)
@@ -1936,7 +1941,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelTouch
-     * @covers          DataModel::touch
+     * @covers          Awf\Mvc\DataModel::touch
      * @dataProvider    DataModelDataprovider::getTestTouch
      */
     public function testTouch($test, $check)
@@ -1988,7 +1993,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelTouch
-     * @covers          DataModel::touch
+     * @covers          Awf\Mvc\DataModel::touch
      */
     public function testTouchException()
     {
@@ -2009,7 +2014,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelUnlock
-     * @covers          DataModel::unlock
+     * @covers          Awf\Mvc\DataModel::unlock
      * @dataProvider    DataModelDataprovider::getTestUnlock
      */
     public function testUnlock($test, $check)
@@ -2079,7 +2084,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelUnlock
-     * @covers          DataModel::unlock
+     * @covers          Awf\Mvc\DataModel::unlock
      */
     public function testUnlockException()
     {
@@ -2100,7 +2105,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelWhere
-     * @covers          DataModel::where
+     * @covers          Awf\Mvc\DataModel::where
      * @dataProvider    DataModelDataprovider::getTestWhere
      */
     public function testWhere($test, $check)
@@ -2133,7 +2138,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelWhere
-     * @covers          DataModel::where
+     * @covers          Awf\Mvc\DataModel::where
      */
     public function testWhereException()
     {
@@ -2154,7 +2159,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelUnpublish
-     * @covers          DataModel::unpublish
+     * @covers          Awf\Mvc\DataModel::unpublish
      * @dataProvider    DataModelDataprovider::getTestUnpublish
      */
     public function testUnpublish($test, $check)
@@ -2207,7 +2212,7 @@ class DataModeltest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           DataModelUnpublish
-     * @covers          DataModel::unpublish
+     * @covers          Awf\Mvc\DataModel::unpublish
      */
     public function testUnpublishException()
     {

@@ -14,12 +14,17 @@ use Awf\Tests\Stubs\Mvc\ViewStub;
 
 require_once 'ViewDataprovider.php';
 
+/**
+ * @covers      Awf\Mvc\View::<protected>
+ * @covers      Awf\Mvc\View::<private>
+ * @package     Awf\Tests\View
+ */
 class ViewTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @group           View
      * @group           ViewEscape
-     * @covers          View::escape
+     * @covers          Awf\Mvc\View::escape
      */
     public function testEscape()
     {
@@ -32,7 +37,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewGet
-     * @covers          View::get
+     * @covers          Awf\Mvc\View::get
      * @dataProvider    ViewDataprovider::getTestGet
      */
     public function testGet($test, $check)
@@ -64,7 +69,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewGetModel
-     * @covers          View::getModel
+     * @covers          Awf\Mvc\View::getModel
      * @dataProvider    ViewDataprovider::getTestGetModel
      */
     public function testGetModel($test, $check)
@@ -88,7 +93,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewSetDefaultModel
-     * @covers          View::setDefaultModel
+     * @covers          Awf\Mvc\View::setDefaultModel
      */
     public function testSetDefaultModel()
     {
@@ -105,7 +110,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewSetDefaultModelName
-     * @covers          View::setDefaultModelName
+     * @covers          Awf\Mvc\View::setDefaultModelName
      */
     public function testDefaultModelName()
     {
@@ -120,7 +125,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewSetModel
-     * @covers          View::setModel
+     * @covers          Awf\Mvc\View::setModel
      */
     public function testSetModel()
     {
@@ -137,7 +142,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewDisplay
-     * @covers          View::display
+     * @covers          Awf\Mvc\View::display
      * @dataProvider    ViewDataprovider::getTestDisplay
      */
     public function testDisplay($test, $check)
@@ -208,7 +213,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
      *
      * @group           View
      * @group           ViewLoadTemplate
-     * @covers          View::loadTemplate
+     * @covers          Awf\Mvc\View::loadTemplate
      * @dataProvider    ViewDataprovider::getTestLoadTemplate
      */
     public function testLoadTemplate($test, $check)
@@ -238,7 +243,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewGetLayout
-     * @covers          View::getLayout
+     * @covers          Awf\Mvc\View::getLayout
      */
     public function testGetLayout()
     {
@@ -252,7 +257,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewSetLayout
-     * @covers          View::setLayout
+     * @covers          Awf\Mvc\View::setLayout
      * @dataProvider    ViewDataprovider::getTestSetLayout
      */
     public function testSetLayout($test, $check)
@@ -275,7 +280,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewGetLayoutTemplate
-     * @covers          View::getLayoutTemplate
+     * @covers          Awf\Mvc\View::getLayoutTemplate
      */
     public function testGetLayoutTemplate()
     {
@@ -289,7 +294,7 @@ class ViewTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           View
      * @group           ViewGetContainer
-     * @covers          View::getContainer
+     * @covers          Awf\Mvc\View::getContainer
      */
     public function testGetContainer()
     {
