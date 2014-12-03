@@ -2158,6 +2158,30 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelWhereRaw
+     * @covers          Awf\Mvc\DataModel::whereRaw
+     */
+    public function testWhereRaw()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $result = $model->whereRaw('foo = bar');
+        $where  = ReflectionHelper::getValue($model, 'whereClauses');
+
+        $this->assertEquals(array('foo = bar'), $where, 'DataModel::whereRaw failed to save custom where clause');
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, 'DataModel::whereRaw should return an instance of itself');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelUnpublish
      * @covers          Awf\Mvc\DataModel::unpublish
      * @dataProvider    DataModelDataprovider::getTestUnpublish
