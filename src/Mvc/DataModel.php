@@ -2661,7 +2661,7 @@ class DataModel extends Model
 
 			case 'ge':
 				$filter['method'] = 'search';
-				$filter['operator'] = '<=';
+				$filter['operator'] = '>=';
 				break;
 
 			case 'eq':
@@ -2706,7 +2706,7 @@ class DataModel extends Model
 			case '[]':
 			case '[)':
 			case '(]':
-				$filter['method'] = 'inside';
+				$filter['method'] = 'between';
 				break;
 
 			case ')(':
@@ -2728,6 +2728,10 @@ class DataModel extends Model
 			case 'callback':
 				$filter['method'] = 'callback';
 				$filter['operator'] = 'callback';
+				break;
+
+			default:
+				throw new InvalidSearchMethod('Operator '.$operator.' is unsupported');
 				break;
 		}
 
@@ -2760,9 +2764,9 @@ class DataModel extends Model
 						$value = array_shift($value);
 					}
 
+					$filter['operator'] = ($filter['method'] == 'between') ? '=' : '!=';
 					$filter['value'] = $value;
 					$filter['method'] = 'search';
-					$filter['operator'] = ($filter['method'] == 'between') ? '=' : '!=';
 				}
 
 				break;

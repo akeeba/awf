@@ -1333,7 +1333,7 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function testFind($test, $check)
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $beforeDisp = 0;
         $afterDisp  = 0;
@@ -2246,6 +2246,62 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertEquals(array('foo = bar'), $where, 'DataModel::whereRaw failed to save custom where clause');
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, 'DataModel::whereRaw should return an instance of itself');
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelHas
+     * @covers          Awf\Mvc\DataModel::has
+     * @dataProvider    DataModelDataprovider::getTestHas
+     */
+    public function testHas($test, $check)
+    {
+        $msg = 'DataModel::has %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('addBehaviour'), array($container));
+        $model->expects($check['add'] ? $this->once() : $this->never())->method('addBehaviour')->willReturn(null);
+
+        $dispatcher = $this->getMock('\\Awf\\Event\\Dispatcher', array('hasObserverClass'), array($container));
+        $dispatcher->expects($this->any())->method('hasObserverClass')->willReturn($test['mock']['hasClass']);
+
+        ReflectionHelper::setValue($model, 'behavioursDispatcher', $dispatcher);
+        ReflectionHelper::setValue($model, 'relationFilters', $test['mock']['filters']);
+
+
+        $result  = $model->has($test['relation'], $test['method'], $test['values'], $test['replace']);
+        $filters = $model->getRelationFilters();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['filters'], $filters, sprintf($msg, 'Failed to correctly add the filter'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelHas
+     * @covers          Awf\Mvc\DataModel::has
+     */
+    public function testHasException()
+    {
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\InvalidSearchMethod');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->has('posts', 'wrong', true);
     }
 
     /**
