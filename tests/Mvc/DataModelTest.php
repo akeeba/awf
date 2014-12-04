@@ -572,7 +572,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->archive();
@@ -1550,7 +1550,7 @@ class DataModeltest extends DatabaseMysqliCase
 
         $model = new DataModelStub($container);
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model->forceDelete();
     }
@@ -1946,7 +1946,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->publish();
@@ -2023,7 +2023,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->restore();
@@ -2148,7 +2148,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->touch();
@@ -2239,7 +2239,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->unlock();
@@ -2447,7 +2447,7 @@ class DataModeltest extends DatabaseMysqliCase
             )
         ));
 
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\RecordNotLoaded');
 
         $model = new DataModelStub($container);
         $model->unpublish();

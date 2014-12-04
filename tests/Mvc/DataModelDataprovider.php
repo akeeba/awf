@@ -2694,7 +2694,7 @@ class DataModelDataprovider
             ),
             array(
                 'case'      => 'Table not loaded',
-                'exception' => 'RuntimeException'
+                'exception' => 'Awf\Mvc\DataModel\Exception\RecordNotLoaded'
             )
         );
 

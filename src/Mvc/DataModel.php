@@ -1491,7 +1491,7 @@ class DataModel extends Model
 	{
 		if(!$this->getId())
 		{
-			throw new \RuntimeException("Can't archive a not loaded DataModel");
+			throw new RecordNotLoaded("Can't archive a not loaded DataModel");
 		}
 
 		if (!$this->hasField('enabled'))
@@ -1541,7 +1541,7 @@ class DataModel extends Model
 
 		if(!$id)
 		{
-			throw new \RuntimeException("Can't trash a not loaded DataModel");
+			throw new RecordNotLoaded("Can't trash a not loaded DataModel");
 		}
 
 		if (!$this->hasField('enabled'))
@@ -1582,7 +1582,7 @@ class DataModel extends Model
 	{
 		if(!$this->getId())
 		{
-			throw new \RuntimeException("Can't change the state of a not loaded DataModel");
+			throw new RecordNotLoaded("Can't change the state of a not loaded DataModel");
 		}
 
 		if (!$this->hasField('enabled'))
@@ -1621,7 +1621,7 @@ class DataModel extends Model
 	{
 		if(!$this->getId())
 		{
-			throw new \RuntimeException("Can't unlock a not loaded DataModel");
+			throw new RecordNotLoaded("Can't unlock a not loaded DataModel");
 		}
 
 		if (!$this->hasField('enabled'))
@@ -1676,7 +1676,7 @@ class DataModel extends Model
 
 		if(!$id)
 		{
-			throw new \RuntimeException("Can't change the state of a not loaded DataModel");
+			throw new RecordNotLoaded("Can't change the state of a not loaded DataModel");
 		}
 
 		if (method_exists($this, 'onBeforeRestore'))
@@ -1789,7 +1789,7 @@ class DataModel extends Model
 
 		if(!$id)
 		{
-			throw new \RuntimeException("Can't delete a not loaded DataModel object");
+			throw new RecordNotLoaded("Can't delete a not loaded DataModel object");
 		}
 
 		if (method_exists($this, 'onBeforeDelete'))
@@ -2195,7 +2195,7 @@ class DataModel extends Model
 	{
 		if(!$this->getId())
 		{
-			throw new \RuntimeException("Can't touch a not loaded DataModel");
+			throw new RecordNotLoaded("Can't touch a not loaded DataModel");
 		}
 
 		if (!$this->hasField('modified_on') && !$this->hasField('modified_by'))
@@ -2299,7 +2299,7 @@ class DataModel extends Model
 	{
 		if(!$this->getId())
 		{
-			throw new \RuntimeException("Can't unlock a not loaded DataModel");
+			throw new RecordNotLoaded("Can't unlock a not loaded DataModel");
 		}
 
 		if (!$this->hasField('locked_on') && !$this->hasField('locked_by'))
