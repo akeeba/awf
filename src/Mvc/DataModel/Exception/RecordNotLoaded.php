@@ -8,7 +8,7 @@
 namespace Awf\Mvc\DataModel\Exception;
 
 
-class NoTableColumns extends BaseException
+class RecordNotLoaded extends BaseException
 {
 
 }

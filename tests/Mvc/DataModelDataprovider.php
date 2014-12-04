@@ -2357,6 +2357,31 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestMoveException()
+    {
+        // Table with no ordering support
+        $data[] = array(
+            array(
+                'table' => '#__dbtest'
+            ),
+            array(
+                'exception' => 'Awf\Mvc\DataModel\Exception\SpecialColumnMissing'
+            )
+        );
+
+        // Table with no ordering support
+        $data[] = array(
+            array(
+                'table' => '#__dbtest_extended'
+            ),
+            array(
+                'exception' => 'Awf\Mvc\DataModel\Exception\RecordNotLoaded'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestChunk()
     {
         $data[] = array(

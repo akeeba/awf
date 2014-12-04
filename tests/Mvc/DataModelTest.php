@@ -947,16 +947,17 @@ class DataModeltest extends DatabaseMysqliCase
      * @group           DataModel
      * @group           DataModelMove
      * @covers          Awf\Mvc\DataModel::move
+     * @dataProvider    DataModelDataprovider::getTestMoveException
      */
-    public function testMoveException()
+    public function testMoveException($test, $check)
     {
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException($check['exception']);
 
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
                 'idFieldName' => 'id',
-                'tableName'   => '#__dbtest'
+                'tableName'   => $test['table']
             )
         ));
 

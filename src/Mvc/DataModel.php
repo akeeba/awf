@@ -20,6 +20,7 @@ use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
 use Awf\Mvc\DataModel\Exception\InvalidSearchMethod;
 use Awf\Mvc\DataModel\Exception\NoTableColumns;
+use Awf\Mvc\DataModel\Exception\RecordNotLoaded;
 use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
@@ -1191,7 +1192,7 @@ class DataModel extends Model
 		// If the table is not loaded, return false
 		if (empty($this->$k))
 		{
-			throw new \RuntimeException('No record loaded');
+			throw new RecordNotLoaded(sprintf("Model %s does not have a loaded record", $this->getName()));
 		}
 
 		// Select the primary key and ordering values from the table.
