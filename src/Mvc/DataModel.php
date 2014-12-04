@@ -1846,7 +1846,7 @@ class DataModel extends Model
 
 			if (empty($id))
 			{
-				$id = $this->{$this->idFieldName};
+				$id = $this->getId();
 			}
 
 			if (empty($id))

@@ -3,7 +3,6 @@
 namespace Awf\Tests\DataModel;
 
 use Awf\Date\Date;
-use Awf\Event\Observer;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -1328,6 +1327,76 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelFind
+     * @covers          Awf\Mvc\DataModel::find
+     * @dataProvider    DataModelDataprovider::getTestFind
+     */
+    public function testFind($test, $check)
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $beforeDisp = 0;
+        $afterDisp  = 0;
+        $before = 0;
+        $after  = 0;
+        $msg    = 'DataModel::find %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        // I am passing those methods so I can double check if the method is really called
+        $methods = array(
+            'onBeforeLoad' => function() use(&$before){
+                $before++;
+            },
+            'onAfterLoad' => function() use(&$after){
+                $after++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('reset', 'getId', 'bind'), array($container, $methods));
+        $model->expects($this->any())->method('reset')->willReturn(null);
+        $model->expects($this->any())->method('getId')->willReturn($test['mock']['id']);
+        $model->expects($check['bind'] ? $this->once() : $this->never())->method('bind')->willReturn(null);
+
+        $dispatcher = $model->getBehavioursDispatcher();
+
+        // Let's attach a custom observer, so I can mock and check all the calls performed by the dispatcher
+        // P.A. The object is immediatly attached to the dispatcher, so I don't need to manually do that
+        new ObserverClosure($dispatcher, array(
+            'onBeforeLoad' => function(&$subject, &$keys) use ($test, &$beforeDisp){
+                if(!is_null($test['mock']['keys'])){
+                    $keys = $test['mock']['keys'];
+                }
+
+                $beforeDisp++;
+            },
+            'onAfterLoad' => function(&$subject, $success, $keys) use(&$afterDisp){
+                $afterDisp++;
+            }
+        ));
+
+        if(!is_null($test['mock']['state_id']))
+        {
+            $model->setState('id', $test['mock']['state_id']);
+        }
+
+        $result = $model->find($test['keys']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals(1, $before, sprintf($msg, 'Failed to invoke the onBefore method'));
+        $this->assertEquals(1, $beforeDisp, sprintf($msg, 'Failed to invoke the onBefore event'));
+        $this->assertEquals(1, $after, sprintf($msg, 'Failed to invoke the onAfter method'));
+        $this->assertEquals(1, $afterDisp, sprintf($msg, 'Failed to invoke the onAfter event'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelForceDelete
      * @covers          Awf\Mvc\DataModel::forceDelete
      * @dataProvider    DataModelDataprovider::getTestForceDelete
@@ -1341,7 +1410,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )

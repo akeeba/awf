@@ -2337,6 +2337,121 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestFind()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => '',
+                    'state_id' => null,
+                    'keys'     => null
+                ),
+                'keys' => 1
+            ),
+            array(
+                'case' => 'Passing the record id',
+                'bind' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => 0,
+                    'state_id' => 1,
+                    'keys'     => null
+                ),
+                'keys' => ''
+            ),
+            array(
+                'case' => 'No argument, no object id, getting it from the state',
+                'bind' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => 1,
+                    'state_id' => null,
+                    'keys'     => null
+                ),
+                'keys' => ''
+            ),
+            array(
+                'case' => 'No argument, getting the id from the object',
+                'bind' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => null,
+                    'state_id' => null,
+                    'keys'     => 1
+                ),
+                'keys' => ''
+            ),
+            array(
+                'case' => 'No argument, getting the id from the event dispatcher',
+                'bind' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => null,
+                    'state_id' => null,
+                    'keys'     => null
+                ),
+                'keys' => null
+            ),
+            array(
+                'case' => 'No key set anywhere',
+                'bind' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => null,
+                    'state_id' => null,
+                    'keys'     => null
+                ),
+                'keys' => array(
+                    'title' => 'Testing'
+                )
+            ),
+            array(
+                'case' => 'Passing an indexed array',
+                'bind' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'id'       => null,
+                    'state_id' => null,
+                    'keys'     => null
+                ),
+                'keys' => array(
+                    'title' => 'Testing',
+                    'description' => 'one'
+                )
+            ),
+            array(
+                'case' => 'Passing an indexed array',
+                'bind' => true
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestForceDelete()
     {
         $data[] = array(

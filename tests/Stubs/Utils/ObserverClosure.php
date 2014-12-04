@@ -57,4 +57,24 @@ class ObserverClosure extends Observer
             return call_user_func_array($func, array());
         }
     }
+
+    public function onBeforeLoad(&$subject, &$keys)
+    {
+        if(isset($this->methods['onBeforeLoad']))
+        {
+            $func = $this->methods['onBeforeLoad'];
+
+            return call_user_func_array($func, array(&$subject, &$keys));
+        }
+    }
+
+    public function onAfterLoad(&$subject, $success, $keys)
+    {
+        if(isset($this->methods['onAfterLoad']))
+        {
+            $func = $this->methods['onAfterLoad'];
+
+            return call_user_func_array($func, array(&$subject, $success, $keys));
+        }
+    }
 }
