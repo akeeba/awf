@@ -357,7 +357,41 @@ class DataModelDataprovider
                 'fillable' => array('title', 'description'),
                 'autofill' => true,
                 'guarded' => array('description'),
-                'values'  => array('title' => 'test', 'description' => null)
+                'values'  => array('title' => 'test', 'description' => null, 'start_date' => null)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array(
+                        'title'       => 'test',
+                        'description' => 'test'
+                    )
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest_defaults',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => array('title', 'description'),
+                'guarded'     => array('description'),
+            ),
+            array(
+                'case' => 'Setting up guarded fields AND fillable ones, data in the request, table with defaults values',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest_defaults',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array('title', 'description'),
+                'autofill' => true,
+                'guarded' => array('description'),
+                'values'  => array('title' => 'test', 'description' => null, 'start_date' => '0000-00-00 00:00:00')
             )
         );
 
