@@ -2,6 +2,368 @@
 
 class DataModelDataprovider
 {
+    public static function getTest__construct()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => true,
+                'skipChecks'  => array('title'),
+                'aliasFields' => array('foobar' => 'title'),
+                'behaviours'  => array('foo', 'bar'),
+                'fillable'    => '',
+                'guarded'     => '',
+            ),
+            array(
+                'case' => 'Passing id, tablename, autochecks are on, skipchecks fields, alias field and behaviours',
+                'addBehaviour' => 2,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                ),
+                'autochecks' => true,
+                'skipchecks' => array('title'),
+                'alias' => array('foobar' => 'title'),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'id'          => null,
+                'table'       => null,
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+            ),
+            array(
+                'case' => 'Not passing anything',
+                'addBehaviour' => 0,
+                'id' => 'fakeapp_test_id',
+                'table' => '#__fakeapp_tests',
+                'fields' => array(
+                    'fakeapp_test_id' => (object) array(
+                        'Field' => 'fakeapp_test_id',
+                        'Type' => 'int(10) unsigned',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => 'PRI',
+                        'Default' => null,
+                        'Extra' => 'auto_increment',
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' =>null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Collation' => null,
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Collation' => 'utf8_general_ci',
+                        'Null' => 'NO',
+                        'Key' => null,
+                        'Default' => null,
+                        'Extra' => null,
+                        'Privileges' => 'select,insert,update,references',
+                        'Comment' => null
+                    )
+                ),
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Default' => null,
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Default' =>null,
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Default' => null,
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Default' => null,
+                    )
+                ),
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => '',
+                'guarded'     => '',
+            ),
+            array(
+                'case' => 'Passing id, tablename and known fields',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => array(
+                    'id' => (object) array(
+                        'Field' => 'id',
+                        'Type' => 'int(10) unsigned',
+                        'Default' => null,
+                    ),
+                    'title' => (object) array(
+                        'Field' => 'title',
+                        'Type' => 'varchar(50)',
+                        'Default' =>null,
+                    ),
+                    'start_date' => (object) array(
+                        'Field' => 'start_date',
+                        'Type' => 'datetime',
+                        'Default' => null,
+                    ),
+                    'description' => (object) array(
+                        'Field' => 'description',
+                        'Type' => 'text',
+                        'Default' => null,
+                    )
+                ),
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => array('foobar' => 'description'),
+                'behaviours'  => null,
+                'fillable'    => array('title', 'wrong', 'foobar'),
+                'guarded'     => '',
+            ),
+            array(
+                'case' => 'Setting up fillable fields, no guarded ones',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array('foobar' => 'description'),
+                'fillable' => array('title', 'description'),
+                'autofill' => true,
+                'guarded' => array(),
+                'values'  => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array(
+                        'title' => 'test'
+                    )
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => array('foobar' => 'description'),
+                'behaviours'  => null,
+                'fillable'    => array('title', 'wrong', 'foobar'),
+                'guarded'     => '',
+            ),
+            array(
+                'case' => 'Setting up fillable fields, no guarded ones, data in the request',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array('foobar' => 'description'),
+                'fillable' => array('title', 'description'),
+                'autofill' => true,
+                'guarded' => array(),
+                'values'  => array('title' => 'test', 'description' => null)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array(
+                        'title' => 'test',
+                        'description' => 'test'
+                    )
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => array('foobar' => 'description'),
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => array('foobar'),
+            ),
+            array(
+                'case' => 'Setting up guarded fields, no fillable ones, data in the request',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array('foobar' => 'description'),
+                'fillable' => array(),
+                'autofill' => true,
+                'guarded' => array('description'),
+                'values'  => array('title' => 'test', 'description' => null)
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array(
+                        'title'       => 'test',
+                        'description' => 'test'
+                    )
+                ),
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => array('title', 'description'),
+                'guarded'     => array('description'),
+            ),
+            array(
+                'case' => 'Setting up guarded fields AND fillable ones, data in the request',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array('title', 'description'),
+                'autofill' => true,
+                'guarded' => array('description'),
+                'values'  => array('title' => 'test', 'description' => null)
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestGetTableFields()
     {
         $data[] = array(

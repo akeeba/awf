@@ -19,6 +19,7 @@ use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
 use Awf\Mvc\DataModel\Exception\InvalidSearchMethod;
+use Awf\Mvc\DataModel\Exception\NoTableColumns;
 use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
@@ -172,6 +173,11 @@ class DataModel extends Model
 			$this->knownFields = $this->getTableFields();
 		}
 
+		if(empty($this->knownFields))
+		{
+			throw new NoTableColumns(sprintf('Model %s could not fetch column list for the table %s', $this->getName(), $this->tableName));
+		}
+
 		// Should I turn on autoChecks?
 		if (isset($this->config['autoChecks']))
 		{
@@ -260,12 +266,14 @@ class DataModel extends Model
 		// Do I have to auto-fill the fields?
 		if ($this->autoFill)
 		{
+			// If I have guarded fields, I'll try to fill everything, using such fields as a "blacklist"
 			if (!empty($this->guarded))
 			{
 				$fields = array_keys($this->knownFields);
 			}
 			else
 			{
+				// Otherwise I'll fill only the fillable ones (act like having a "whitelist")
 				$fields = $this->fillable;
 			}
 
@@ -318,7 +326,14 @@ class DataModel extends Model
 		}
 
 		// Initialise the data model
-		$this->reset();
+		foreach ($this->knownFields as $fieldName => $information)
+		{
+			// Initialize only the null or not yet set records
+			if(!isset($this->recordData[$fieldName]))
+			{
+				$this->recordData[$fieldName] = $information->Default;
+			}
+		}
 	}
 
 	/**

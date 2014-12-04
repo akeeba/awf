@@ -21,6 +21,97 @@ class DataModeltest extends DatabaseMysqliCase
 {
     /**
      * @group           DataModel
+     * @group           DataModelConstruct
+     * @covers          Awf\Mvc\DataModel::__construct
+     * @dataProvider    DataModelDataprovider::getTest__construct
+     */
+    public function test__construct($test, $check)
+    {
+        $msg = 'DataModel::__construct %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName'           => $test['id'],
+                'tableName'             => $test['table'],
+                'knownFields'           => $test['knownFields'],
+                'autoChecks'            => $test['autoChecks'],
+                'fieldsSkipChecks'      => $test['skipChecks'],
+                'aliasFields'           => $test['aliasFields'],
+                'behaviours'            => $test['behaviours'],
+                'fillable_fields'       => $test['fillable'],
+                'guarded_fields'        => $test['guarded'],
+            )
+        ));
+
+        // Setup the class but do not instantiate it, so we an mock the methods
+        $model = $this->getMock('Awf\\Mvc\\DataModel', array('getName', 'addBehaviour', 'getState'), array(), '', false);
+        $model->expects($this->any())->method('getName')->willReturn('test');
+        $model->expects($this->exactly($check['addBehaviour']))->method('addBehaviour')->willReturn(null);
+        $model->expects($this->any())->method('getState')->willReturnCallback(function($field) use ($test){
+            if(isset($test['mock']['state'][$field])){
+                return $test['mock']['state'][$field];
+            }
+
+            return null;
+        });
+
+        //Finally, let's invoke our crafted mock
+        $model->__construct($container);
+
+        $id             = ReflectionHelper::getValue($model, 'idFieldName');
+        $tableName      = ReflectionHelper::getValue($model, 'tableName');
+        $knownFields    = ReflectionHelper::getValue($model, 'knownFields');
+        $autoChecks     = ReflectionHelper::getValue($model, 'autoChecks');
+        $skipChecks     = ReflectionHelper::getValue($model, 'fieldsSkipChecks');
+        $aliasFields    = ReflectionHelper::getValue($model, 'aliasFields');
+        $fillable       = ReflectionHelper::getValue($model, 'fillable');
+        $autoFill       = ReflectionHelper::getValue($model, 'autoFill');
+        $guarded        = ReflectionHelper::getValue($model, 'guarded');
+
+        $this->assertEquals($check['id'], $id, sprintf($msg, 'Failed to set the id'));
+        $this->assertEquals($check['table'], $tableName, sprintf($msg, 'Failed to set the table name'));
+        $this->assertEquals($check['autochecks'], $autoChecks, sprintf($msg, 'Failed to set the autochecks'));
+        $this->assertEquals($check['skipchecks'], $skipChecks, sprintf($msg, 'Failed to set the field to skip in auto checks'));
+        $this->assertEquals($check['alias'], $aliasFields, sprintf($msg, 'Failed to set the alias field'));
+        $this->assertEquals($check['fillable'], $fillable, sprintf($msg, 'Failed to set the fillable fields'));
+        $this->assertEquals($check['autofill'], $autoFill, sprintf($msg, 'Failed to set the autofill flag'));
+        $this->assertEquals($check['guarded'], $guarded, sprintf($msg, 'Failed to set the guarded fields'));
+
+        if(!is_null($check['fields']))
+        {
+            $this->assertEquals($check['fields'], $knownFields, sprintf($msg, 'Failed to set the known fields'));
+        }
+
+        foreach ($check['values'] as $field => $value)
+        {
+            $actual = $model->getFieldValue($field);
+            $this->assertEquals($value, $actual, sprintf($msg, 'Failed to set the value of an autofill field'));
+        }
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelConstruct
+     * @covers          Awf\Mvc\DataModel::__construct
+     */
+    public function test__constructException()
+    {
+        $this->setExpectedException('Awf\Mvc\DataModel\Exception\NoTableColumns');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__wrongtable'
+            )
+        ));
+
+        new DataModelStub($container);
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelGetTableFields
      * @covers          Awf\Mvc\DataModel::getTableFields
      * @dataProvider    DataModelDataprovider::getTestGetTableFields
@@ -32,7 +123,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -96,7 +186,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -137,7 +226,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -178,7 +266,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => $test['table']
             )
@@ -219,7 +306,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -276,7 +362,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -315,7 +400,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -357,7 +441,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -392,7 +475,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -429,7 +511,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => $test['table']
             )
@@ -486,7 +567,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -511,7 +591,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -540,7 +619,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -569,7 +647,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -616,7 +693,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -637,7 +713,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => '#__dbtest'
             )
@@ -666,7 +741,6 @@ class DataModeltest extends DatabaseMysqliCase
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
-                'autoChecks'  => false,
                 'idFieldName' => 'id',
                 'tableName'   => $test['table']
             )
