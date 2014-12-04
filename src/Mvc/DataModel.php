@@ -735,7 +735,7 @@ class DataModel extends Model
 	public function save($data = null, $orderingFilter = '', $ignore = null)
 	{
 		// Stash the primary key
-		$oldPKValue = $this->{$this->idFieldName};
+		$oldPKValue = $this->getId();
 
 		// Call the onBeforeSave event
 		if (method_exists($this, 'onBeforeSave'))
@@ -758,7 +758,7 @@ class DataModel extends Model
 		}
 		else
 		{
-			$isNewRecord = $oldPKValue != $this->{$this->idFieldName};
+			$isNewRecord = $oldPKValue != $this->getId();
 		}
 
 		// Check the validity of the data
@@ -772,14 +772,17 @@ class DataModel extends Model
 		// Update the created_on / modified_on
 		if ($isNewRecord && $this->hasField('created_on'))
 		{
-			if (empty($this->created_on) || ($this->created_on == $nullDate))
+			$created_on = $this->getFieldAlias('created_on');
+
+			if (empty($this->$created_on) || ($this->$created_on == $nullDate))
 			{
-				$this->created_on = $date->toSql(false, $db);
+				$this->$created_on = $date->toSql(false, $db);
 			}
 		}
 		elseif (!$isNewRecord && $this->hasField('modified_on'))
 		{
-			$this->modified_on = $date->toSql(false, $db);
+			$modified_on        = $this->getFieldAlias('modified_on');
+			$this->$modified_on = $date->toSql(false, $db);
 		}
 
 		// Get the user manager for this application and retrieve the user
@@ -789,25 +792,30 @@ class DataModel extends Model
 		// Update the created_by / modified_by values if necessary
 		if ($isNewRecord && $this->hasField('created_by'))
 		{
-			if (empty($this->created_by))
+			$created_by = $this->getFieldAlias('created_by');
+
+			if (empty($this->$created_by))
 			{
-				$this->created_by = $userId;
+				$this->$created_by = $userId;
 			}
 		}
 		elseif (!$isNewRecord && $this->hasField('modified_by'))
 		{
-			$this->modified_by = $userId;
+			$modified_by        = $this->getFieldAlias('modified_by');
+			$this->$modified_by = $userId;
 		}
 
 		// Unlock the record if necessary
 		if ($this->hasField('locked_by'))
 		{
-			$this->locked_by = 0;
+			$locked_by        = $this->getFieldAlias('locked_by');
+			$this->$locked_by = 0;
 		}
 
 		if ($this->hasField('locked_on'))
 		{
-			$this->locked_on = $nullDate;
+			$locked_on        = $this->getFieldAlias('locked_on');
+			$this->$locked_on = $nullDate;
 		}
 
 		// Insert or update the record
