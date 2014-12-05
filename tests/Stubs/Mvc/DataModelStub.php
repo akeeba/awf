@@ -358,6 +358,66 @@ class DataModelStub extends DataModel
         }
     }
 
+    public function onBeforeSave()
+    {
+        if(isset($this->methods['onBeforeSave']))
+        {
+            $func = $this->methods['onBeforeSave'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterSave()
+    {
+        if(isset($this->methods['onAfterSave']))
+        {
+            $func = $this->methods['onAfterSave'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onBeforeCreate()
+    {
+        if(isset($this->methods['onBeforeCreate']))
+        {
+            $func = $this->methods['onBeforeCreate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterCreate()
+    {
+        if(isset($this->methods['onAfterCreate']))
+        {
+            $func = $this->methods['onAfterCreate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onBeforeUpdate()
+    {
+        if(isset($this->methods['onBeforeUpdate']))
+        {
+            $func = $this->methods['onBeforeUpdate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onAfterUpdate()
+    {
+        if(isset($this->methods['onAfterUpdate']))
+        {
+            $func = $this->methods['onAfterUpdate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
     /**
      * Method invoked by setFieldValue to set the value of an attribute
      *

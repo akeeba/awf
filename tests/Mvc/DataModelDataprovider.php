@@ -2157,6 +2157,260 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestSave()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => array('title' => 'foobar'),
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Updating object without any "special" field',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'id'          => 1,
+                'row'         => (object) array('id' => 1, 'title' => 'foobar', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one'),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => array('title' => 'foobar'),
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => null,
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Updating the record, change the data in the onBeforeSave dispatcher event',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'id'          => 1,
+                'row'         => (object) array('id' => 1, 'title' => 'foobar', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one'),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => array('title' => 'foobar'),
+                    'blankId'    => false
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => null,
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Updating the record, change the data in the dispatcher event',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'id'          => 1,
+                'row'         => (object) array('id' => 1, 'title' => 'foobar', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one'),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => true
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => null,
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Blank out the id before saving the record (dispatcher event)',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'id'          => 'max',
+                'row'         => (object) array('title' => 'Testing', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one'),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => null,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => array('title' => 'foobar'),
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Inserting a new record without any "special" field',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'id'          => 'max',
+                'row'         => (object) array('title' => 'foobar', 'start_date' => '0000-00-00 00:00:00', 'description' => ''),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => array('title' => 'foobar'),
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => null,
+                'table'     => '#__dbtest',
+                'relations' => null,
+                'data'      => null,
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Inserting a new record, changing the data in the onBeforeCreate dispatcher event',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'id'          => 'max',
+                'row'         => (object) array('title' => 'foobar', 'start_date' => '0000-00-00 00:00:00', 'description' => ''),
+                'created_on'  => false,
+                'modified_on' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest_extended',
+                'relations' => null,
+                'data'      => array('title' => 'foobar'),
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Updating object with special field',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'id'          => 1,
+                'row'         => (object) array('id' => 1, 'title' => 'foobar', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one',
+                                                    'ordering' => 1, 'enabled' => 0, 'locked_on' => '0000-00-00 00:00:00', 'locked_by' => 0,
+                                                    'created_by' => 0, 'modified_by' => 99, 'created_on' => '0000-00-00 00:00:00'),
+                'created_on'  => false,
+                'modified_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => 1,
+                'table'     => '#__dbtest_extended',
+                'relations' => null,
+                'data'      => array('title' => 'foobar'),
+                'ordering'  => 'ordering',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Updating object with special field, passing an ordering field',
+                'reorder'     => "`ordering` = '1'",
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeUpdate' => 1, 'onAfterUpdate' => 1, 'onAfterSave' => 1),
+                'id'          => 1,
+                'row'         => (object) array('id' => 1, 'title' => 'foobar', 'start_date' => '1980-04-18 00:00:00', 'description' => 'one',
+                    'ordering' => 1, 'enabled' => 0, 'locked_on' => '0000-00-00 00:00:00', 'locked_by' => 0,
+                    'created_by' => 0, 'modified_by' => 99, 'created_on' => '0000-00-00 00:00:00'),
+                'created_on'  => false,
+                'modified_on' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'dataSave'   => null,
+                    'dataCreate' => null,
+                    'dataUpdate' => null,
+                    'blankId'    => false
+                ),
+                'id'        => null,
+                'table'     => '#__dbtest_extended',
+                'relations' => null,
+                'data'      => array('title' => 'foobar'),
+                'ordering'  => '',
+                'ignore'    => null
+            ),
+            array(
+                'case'        => 'Inserting a new record with special field',
+                'reorder'     => false,
+                'modelEvents' => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'dispEvents'  => array('onBeforeSave' => 1, 'onBeforeCreate' => 1, 'onAfterCreate' => 1, 'onAfterSave' => 1),
+                'id'          => 'max',
+                'row'         => (object) array('title' => 'foobar', 'start_date' => '0000-00-00 00:00:00', 'description' => '',
+                    'ordering' => 0, 'enabled' => 0, 'locked_on' => '0000-00-00 00:00:00', 'locked_by' => 0,
+                    'created_by' => 99, 'modified_by' => 0, 'modified_on' => '0000-00-00 00:00:00'),
+                'created_on'  => true,
+                'modified_on' => false
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestBind()
     {
         $data[] = array(

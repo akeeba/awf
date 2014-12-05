@@ -666,6 +666,168 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelSave
+     * @covers          Awf\Mvc\DataModel::save
+     * @dataProvider    DataModelDataprovider::getTestSave
+     */
+    public function testSave($test, $check)
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $db          = self::$driver;
+        $msg         = 'DataModel::save %s - Case: '.$check['case'];
+        $events      = array('onBeforeSave'  => 0, 'onAfterSave'  => 0, 'onBeforeCreate'  => 0, 'onAfterCreate'  => 0, 'onBeforeUpdate'  => 0, 'onAfterUpdate'  => 0);
+        $dispEvents  = $events;
+        $modelEvents = $events;
+
+        // I need to fake the user id, since in CLI I don't have one
+        $fakeUserManager = new TestClosure(array(
+            'getUser' => function() use ($test){
+                return new TestClosure(array(
+                    'getId' => function() use ($test){
+                        return 99;
+                    }
+                ));
+            }
+        ));
+
+        $container = new Container(array(
+            'db'          => self::$driver,
+            'userManager' => $fakeUserManager,
+            'mvc_config'  => array(
+                'idFieldName' => 'id',
+                'tableName'   => $test['table']
+            )
+        ));
+
+        $methods = array(
+            'onBeforeSave' => function() use (&$modelEvents){
+                $modelEvents['onBeforeSave']++;
+            },
+            'onAfterSave' => function() use (&$modelEvents){
+                $modelEvents['onAfterSave']++;
+            },
+            'onBeforeCreate' => function() use (&$modelEvents){
+                $modelEvents['onBeforeCreate']++;
+            },
+            'onAfterCreate' => function() use (&$modelEvents){
+                $modelEvents['onAfterCreate']++;
+            },
+            'onBeforeUpdate' => function() use (&$modelEvents){
+                $modelEvents['onBeforeUpdate']++;
+            },
+            'onAfterUpdate' => function() use (&$modelEvents){
+                $modelEvents['onAfterUpdate']++;
+            }
+        );
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('check', 'reorder'), array($container, $methods));
+        $model->expects($this->any())->method('check')->willReturn(null);
+        $model->expects($check['reorder'] ? $this->once() : $this->never())->method('reorder')->with($this->equalTo($check['reorder']))
+            ->willReturn(null);
+
+        $dispatcher = $model->getBehavioursDispatcher();
+
+        // Let's attach a custom observer, so I can mock and check all the calls performed by the dispatcher
+        // P.A. The object is immediatly attached to the dispatcher, so I don't need to manually do that
+        new ObserverClosure($dispatcher, array(
+            'onBeforeSave' => function(&$subject, &$data) use ($test, &$dispEvents){
+                if($test['mock']['blankId']){
+                    $subject->id = null;
+                }
+
+                if(!is_null($test['mock']['dataSave'])){
+                    $data = $test['mock']['dataSave'];
+                }
+
+                $dispEvents['onBeforeSave']++;
+            },
+            'onBeforeCreate' => function(&$subject, &$dataObject) use($test, &$dispEvents){
+                if(!is_null($test['mock']['dataCreate'])){
+                    foreach($test['mock']['dataCreate'] as $prop => $value){
+                        $dataObject->$prop = $value;
+                    }
+                }
+
+                $dispEvents['onBeforeCreate']++;
+            },
+            'onAfterCreate' => function() use(&$dispEvents){
+                $dispEvents['onAfterCreate']++;
+            },
+            'onBeforeUpdate' => function(&$subject, &$dataObject) use($test, &$dispEvents){
+                if(!is_null($test['mock']['dataUpdate'])) {
+                    foreach ($test['mock']['dataUpdate'] as $prop => $value) {
+                        $dataObject->$prop = $value;
+                    }
+                }
+
+                $dispEvents['onBeforeUpdate']++;
+            },
+            'onAfterUpdate' => function() use(&$dispEvents){
+                $dispEvents['onAfterUpdate']++;
+            },
+            'onAfterSave' => function() use(&$dispEvents){
+                $dispEvents['onAfterSave']++;
+            }
+        ));
+
+        if($test['id'])
+        {
+            $model->find($test['id']);
+        }
+
+        $result = $model->save($test['data'], $test['ordering'], $test['ignore']);
+
+        // Did I add a new record or update an old one? Let's get the correct id
+        if($check['id'] == 'max')
+        {
+            $query = $db->getQuery(true)
+                        ->select('MAX(id)')
+                        ->from($test['table']);
+            $checkid = $db->setQuery($query)->loadResult();
+        }
+        else
+        {
+            $checkid = $check['id'];
+        }
+
+        $query = $db->getQuery(true)->select('*')->from($test['table'])->where('id = '.$checkid);
+        $row   = $db->setQuery($query)->loadObject();
+
+        // If the model has "time columns" I can only check if they are not null
+        if($check['created_on'])
+        {
+            $created_on = $model->getFieldAlias('created_on');
+            $this->assertNotNull($row->$created_on, sprintf($msg, 'Failed to set the creation time'));
+            unset($row->$created_on);
+        }
+
+        if($check['modified_on'])
+        {
+            $modified_on = $model->getFieldAlias('modified_on');
+            $this->assertNotNull($row->$modified_on, sprintf($msg, 'Failed to set the modification time'));
+            unset($row->$modified_on);
+        }
+
+        // If I am inserting a new record I can't know its id, so let's remove it from the object
+        if($check['id'] == 'max')
+        {
+            $id = $model->getIdFieldName();
+            unset($row->$id);
+        }
+
+        // Let's merge the arrays, otherwise I'll have to write the whole list inside the dataprovider
+        $check['modelEvents'] = array_merge($events, $check['modelEvents']);
+        $check['dispEvents']  = array_merge($events, $check['dispEvents']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['modelEvents'], $modelEvents, sprintf($msg, 'Failed to invoke model events'));
+        $this->assertEquals($check['dispEvents'], $dispEvents, sprintf($msg, 'Failed to invoke dispatcher events'));
+        $this->assertEquals($check['row'], $row, sprintf($msg, 'Failed to correctly save the data into the db'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelBind
      * @covers          Awf\Mvc\DataModel::bind
      * @dataProvider    DataModelDataprovider::getTestBind
@@ -899,7 +1061,7 @@ class DataModeltest extends DatabaseMysqliCase
     {
         // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
         // That's harmless and appears in debug only, you might want to suppress exception thowing
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $before     = 0;
         $beforeDisp = 0;

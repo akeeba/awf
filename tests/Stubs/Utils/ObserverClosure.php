@@ -77,4 +77,64 @@ class ObserverClosure extends Observer
             return call_user_func_array($func, array(&$subject, $success, $keys));
         }
     }
+
+    public function onBeforeSave(&$subject, &$data)
+    {
+        if(isset($this->methods['onBeforeSave']))
+        {
+            $func = $this->methods['onBeforeSave'];
+
+            return call_user_func_array($func, array(&$subject, &$data));
+        }
+    }
+
+    public function onAfterSave()
+    {
+        if(isset($this->methods['onAfterSave']))
+        {
+            $func = $this->methods['onAfterSave'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onBeforeCreate(&$subject, &$dataObject)
+    {
+        if(isset($this->methods['onBeforeCreate']))
+        {
+            $func = $this->methods['onBeforeCreate'];
+
+            return call_user_func_array($func, array(&$subject, &$dataObject));
+        }
+    }
+
+    public function onAfterCreate()
+    {
+        if(isset($this->methods['onAfterCreate']))
+        {
+            $func = $this->methods['onAfterCreate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
+
+    public function onBeforeUpdate(&$subject, &$dataObject)
+    {
+        if(isset($this->methods['onBeforeUpdate']))
+        {
+            $func = $this->methods['onBeforeUpdate'];
+
+            return call_user_func_array($func, array(&$subject, &$dataObject));
+        }
+    }
+
+    public function onAfterUpdate()
+    {
+        if(isset($this->methods['onAfterUpdate']))
+        {
+            $func = $this->methods['onAfterUpdate'];
+
+            return call_user_func_array($func, array());
+        }
+    }
 }
