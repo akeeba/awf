@@ -218,7 +218,112 @@
       <value>29</value>
       <value>1928f95c598b9e69462fcb512625cf8e28923044</value>
     </row>
-
-
   </table>
+
+  <table name="awf_fakeapp_parents">
+    <column>fakeapp_parent_id</column>
+    <column>dummy</column>
+
+    <row>
+      <value>1</value>
+      <value>First parent row</value>
+    </row>
+
+    <row>
+      <value>2</value>
+      <value>Second parent row</value>
+    </row>
+
+    <row>
+      <value>3</value>
+      <value>Parent with no children</value>
+    </row>
+  </table>
+
+  <table name="awf_fakeapp_children">
+    <column>fakeapp_child_id</column>
+    <column>dummy</column>
+    <column>fakeapp_parent_id</column>
+
+    <row>
+      <value>1</value>
+      <value>Parent 1 - First children</value>
+      <value>1</value>
+    </row>
+
+    <row>
+      <value>2</value>
+      <value>Parent 1 - Second children</value>
+      <value>1</value>
+    </row>
+
+    <row>
+      <value>3</value>
+      <value>Parent 2 - First children</value>
+      <value>2</value>
+    </row>
+  </table>
+
+  <table name="awf_fakeapp_parts">
+    <column>fakeapp_part_id</column>
+    <column>dummy</column>
+
+    <row>
+      <value>1</value>
+      <value>Part number 1</value>
+    </row>
+    <row>
+      <value>2</value>
+      <value>Part number 2</value>
+    </row>
+    <row>
+      <value>3</value>
+      <value>Part number 3</value>
+    </row>
+  </table>
+
+  <table name="awf_fakeapp_groups">
+    <column>fakeapp_group_id</column>
+    <column>dummy</column>
+
+    <row>
+      <value>1</value>
+      <value>Group number 1</value>
+    </row>
+    <row>
+      <value>2</value>
+      <value>Group number 2</value>
+    </row>
+    <row>
+      <value>3</value>
+      <value>Group number 3</value>
+    </row>
+  </table>
+
+  <table name="awf_fakeapp_parts_groups">
+    <column>fakeapp_group_id</column>
+    <column>fakeapp_part_id</column>
+
+    <row>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>1</value>
+      <value>2</value>
+    </row>
+    <row>
+      <value>1</value>
+      <value>3</value>
+    </row>
+    <row>
+      <value>2</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>2</value>
+      <value>2</value>
+    </row>
+  </table>
+
 </dataset>
