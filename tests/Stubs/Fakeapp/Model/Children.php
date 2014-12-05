@@ -6,11 +6,11 @@
  * @license        GNU GPL version 3 or later
  */
 
-namespace Awf\Tests\Stubs\Mvc;
+namespace Fakeapp\Model;
 
 use Awf\Mvc\DataModel;
 
-class DataModelChildren extends DataModel
+class Children extends DataModel
 {
 
 }

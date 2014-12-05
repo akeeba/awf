@@ -222,7 +222,7 @@
 
   <table name="awf_fakeapp_parents">
     <column>fakeapp_parent_id</column>
-    <column>dummy</column>
+    <column>description</column>
 
     <row>
       <value>1</value>
@@ -242,7 +242,7 @@
 
   <table name="awf_fakeapp_children">
     <column>fakeapp_child_id</column>
-    <column>dummy</column>
+    <column>description</column>
     <column>fakeapp_parent_id</column>
 
     <row>
@@ -266,7 +266,7 @@
 
   <table name="awf_fakeapp_parts">
     <column>fakeapp_part_id</column>
-    <column>dummy</column>
+    <column>description</column>
 
     <row>
       <value>1</value>
@@ -284,7 +284,7 @@
 
   <table name="awf_fakeapp_groups">
     <column>fakeapp_group_id</column>
-    <column>dummy</column>
+    <column>description</column>
 
     <row>
       <value>1</value>

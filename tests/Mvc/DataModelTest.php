@@ -10,6 +10,7 @@ use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\DataModelStub;
 use Awf\Tests\Stubs\Utils\ObserverClosure;
 use Awf\Tests\Stubs\Utils\TestClosure;
+use Fakeapp\Application;
 
 require_once 'DataModelDataprovider.php';
 
@@ -672,7 +673,7 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function testSave($test, $check)
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $db          = self::$driver;
         $msg         = 'DataModel::save %s - Case: '.$check['case'];
@@ -682,9 +683,9 @@ class DataModeltest extends DatabaseMysqliCase
 
         // I need to fake the user id, since in CLI I don't have one
         $fakeUserManager = new TestClosure(array(
-            'getUser' => function() use ($test){
+            'getUser' => function() {
                 return new TestClosure(array(
-                    'getId' => function() use ($test){
+                    'getId' => function(){
                         return 99;
                     }
                 ));
@@ -824,6 +825,76 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['modelEvents'], $modelEvents, sprintf($msg, 'Failed to invoke model events'));
         $this->assertEquals($check['dispEvents'], $dispEvents, sprintf($msg, 'Failed to invoke dispatcher events'));
         $this->assertEquals($check['row'], $row, sprintf($msg, 'Failed to correctly save the data into the db'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelSaveTouches
+     * @covers          Awf\Mvc\DataModel::save
+     */
+    public function testSaveTouches()
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        // I need to fake the user id, since in CLI I don't have one
+        $fakeUserManager = new TestClosure(array(
+            'getUser' => function(){
+                return new TestClosure(array(
+                    'getId' => function(){
+                        return 99;
+                    }
+                ));
+            }
+        ));
+
+        $container = new Container(array(
+            'db'          => self::$driver,
+            'userManager' => $fakeUserManager,
+            'mvc_config'  => array(
+                'autoChecks'  => false,
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents',
+                'relations'   => array(
+                    'children' => array(
+                        'type' => 'hasMany',
+                        'foreignModelClass' => 'Fakeapp\Model\Children',
+                        'localKey' => 'fakeapp_parent_id',
+                        'foreignKey' => 'fakeapp_parent_id'
+                    )
+                )
+            )
+        ));
+
+        $app = Application::getInstance('fakeapp');
+        $fakeAppContainer = $app->getContainer();
+        $oldContainer = clone $fakeAppContainer;
+
+        $fakeAppContainer->userManager = $fakeUserManager;
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('check', 'reorder'), array($container));
+        $model->expects($this->any())->method('check')->willReturn(null);
+        $model->expects($this->any())->method('reorder')->willReturn(null);
+
+        ReflectionHelper::setValue($model, 'touches', array('children'));
+
+        $model->find(1);
+        $model->save(null, null, null);
+
+        // Revert to old container
+        ReflectionHelper::setValue($app, 'container', $oldContainer);
+
+        $db = self::$driver;
+        $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from($db->qn('#__fakeapp_children'))
+                    ->where($db->qn('fakeapp_parent_id').' = '.$db->q(1));
+        $children = $db->setQuery($query)->loadObjectList();
+
+        foreach($children as $child)
+        {
+            $this->assertEquals(99, $child->modified_by, 'DataModel::save Failed to touch "modified_by" field in children record');
+            $this->assertNotEquals('0000-00-00 00:00:00', $child->modified_on, 'DataModel::save Failed to touch "modified_on" field in children record');
+        }
     }
 
     /**
