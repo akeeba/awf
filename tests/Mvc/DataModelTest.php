@@ -4,6 +4,7 @@ namespace Awf\Tests\DataModel;
 
 use Awf\Date\Date;
 use Awf\Tests\Database\DatabaseMysqliCase;
+use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\DataModelStub;
@@ -27,9 +28,11 @@ class DataModeltest extends DatabaseMysqliCase
      */
     public function test__construct($test, $check)
     {
-        $msg = 'DataModel::__construct %s - Case: '.$check['case'];
+        $msg        = 'DataModel::__construct %s - Case: '.$check['case'];
+        $container  = null;
+        $counterApp = 0;
 
-        $container = new Container(array(
+        $containerSetup = array(
             'db' => self::$driver,
             'mvc_config' => array(
                 'idFieldName'           => $test['id'],
@@ -41,8 +44,28 @@ class DataModeltest extends DatabaseMysqliCase
                 'behaviours'            => $test['behaviours'],
                 'fillable_fields'       => $test['fillable'],
                 'guarded_fields'        => $test['guarded'],
+                'relations'             => $test['relations']
             )
-        ));
+        );
+
+        if($test['container'])
+        {
+            $container = new Container($containerSetup);
+        }
+        else
+        {
+            $fakeapp    = new ClosureHelper(array(
+                'getContainer' => function () use(&$counterApp, &$containerSetup){
+                    $counterApp++;
+
+                    return new Container($containerSetup);
+                }
+            ));
+
+            // Let's save current app istances, I'll have to restore them later
+            $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
+        }
 
         // Setup the class but do not instantiate it, so we an mock the methods
         $model = $this->getMock('Awf\\Mvc\\DataModel', array('getName', 'addBehaviour', 'getState'), array(), '', false);
@@ -59,6 +82,11 @@ class DataModeltest extends DatabaseMysqliCase
         //Finally, let's invoke our crafted mock
         $model->__construct($container);
 
+        if(!$test['container'])
+        {
+            ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', $oldinstances);
+        }
+
         $id             = ReflectionHelper::getValue($model, 'idFieldName');
         $tableName      = ReflectionHelper::getValue($model, 'tableName');
         $knownFields    = ReflectionHelper::getValue($model, 'knownFields');
@@ -68,6 +96,7 @@ class DataModeltest extends DatabaseMysqliCase
         $fillable       = ReflectionHelper::getValue($model, 'fillable');
         $autoFill       = ReflectionHelper::getValue($model, 'autoFill');
         $guarded        = ReflectionHelper::getValue($model, 'guarded');
+        $relations      = $model->getRelations()->getRelationNames();
 
         $this->assertEquals($check['id'], $id, sprintf($msg, 'Failed to set the id'));
         $this->assertEquals($check['table'], $tableName, sprintf($msg, 'Failed to set the table name'));
@@ -77,6 +106,8 @@ class DataModeltest extends DatabaseMysqliCase
         $this->assertEquals($check['fillable'], $fillable, sprintf($msg, 'Failed to set the fillable fields'));
         $this->assertEquals($check['autofill'], $autoFill, sprintf($msg, 'Failed to set the autofill flag'));
         $this->assertEquals($check['guarded'], $guarded, sprintf($msg, 'Failed to set the guarded fields'));
+        $this->assertEquals($check['relations'], $relations, sprintf($msg, 'Failed to set the relations'));
+        $this->assertEquals($check['counterApp'], $counterApp, sprintf($msg, 'Failed to correctly get the container from the Application'));
 
         if(!is_null($check['fields']))
         {

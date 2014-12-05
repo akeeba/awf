@@ -9,6 +9,42 @@ class DataModelDataprovider
                 'mock' => array(
                     'state' => array()
                 ),
+                'container'   => false,
+                'id'          => 'id',
+                'table'       => '#__dbtest',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+                'relations'   => null
+            ),
+            array(
+                'case' => 'Not passing a container',
+                'addBehaviour' => 0,
+                'id' => 'id',
+                'table' => '#__dbtest',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 1,
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => null,
@@ -18,6 +54,7 @@ class DataModelDataprovider
                 'behaviours'  => array('foo', 'bar'),
                 'fillable'    => '',
                 'guarded'     => '',
+                'relations'   => null
             ),
             array(
                 'case' => 'Passing id, tablename, autochecks are on, skipchecks fields, alias field and behaviours',
@@ -76,7 +113,9 @@ class DataModelDataprovider
                 'fillable' => array(),
                 'autofill' => false,
                 'guarded' => array(),
-                'values'  => array()
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -85,6 +124,7 @@ class DataModelDataprovider
                 'mock' => array(
                     'state' => array()
                 ),
+                'container'   => true,
                 'id'          => null,
                 'table'       => null,
                 'knownFields' => null,
@@ -94,6 +134,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => null,
                 'guarded'     => null,
+                'relations'   => null
             ),
             array(
                 'case' => 'Not passing anything',
@@ -152,7 +193,9 @@ class DataModelDataprovider
                 'fillable' => array(),
                 'autofill' => false,
                 'guarded' => array(),
-                'values'  => array()
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -161,6 +204,7 @@ class DataModelDataprovider
                 'mock' => array(
                     'state' => array()
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => array(
@@ -191,6 +235,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => '',
                 'guarded'     => '',
+                'relations'   => null
             ),
             array(
                 'case' => 'Passing id, tablename and known fields',
@@ -225,7 +270,9 @@ class DataModelDataprovider
                 'fillable' => array(),
                 'autofill' => false,
                 'guarded' => array(),
-                'values'  => array()
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -234,6 +281,7 @@ class DataModelDataprovider
                 'mock' => array(
                     'state' => array()
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => null,
@@ -243,6 +291,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => array('title', 'wrong', 'foobar'),
                 'guarded'     => '',
+                'relations'   => null
             ),
             array(
                 'case' => 'Setting up fillable fields, no guarded ones',
@@ -256,7 +305,9 @@ class DataModelDataprovider
                 'fillable' => array('title', 'description'),
                 'autofill' => true,
                 'guarded' => array(),
-                'values'  => array()
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -267,6 +318,7 @@ class DataModelDataprovider
                         'title' => 'test'
                     )
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => null,
@@ -276,6 +328,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => array('title', 'wrong', 'foobar'),
                 'guarded'     => '',
+                'relations'   => null
             ),
             array(
                 'case' => 'Setting up fillable fields, no guarded ones, data in the request',
@@ -289,7 +342,9 @@ class DataModelDataprovider
                 'fillable' => array('title', 'description'),
                 'autofill' => true,
                 'guarded' => array(),
-                'values'  => array('title' => 'test', 'description' => null)
+                'values'  => array('title' => 'test', 'description' => null),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -301,6 +356,7 @@ class DataModelDataprovider
                         'description' => 'test'
                     )
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => null,
@@ -310,6 +366,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => null,
                 'guarded'     => array('foobar'),
+                'relations'   => null
             ),
             array(
                 'case' => 'Setting up guarded fields, no fillable ones, data in the request',
@@ -323,7 +380,9 @@ class DataModelDataprovider
                 'fillable' => array(),
                 'autofill' => true,
                 'guarded' => array('description'),
-                'values'  => array('title' => 'test', 'description' => null)
+                'values'  => array('title' => 'test', 'description' => null),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -335,6 +394,7 @@ class DataModelDataprovider
                         'description' => 'test'
                     )
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest',
                 'knownFields' => null,
@@ -344,6 +404,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => array('title', 'description'),
                 'guarded'     => array('description'),
+                'relations'   => null
             ),
             array(
                 'case' => 'Setting up guarded fields AND fillable ones, data in the request',
@@ -357,7 +418,9 @@ class DataModelDataprovider
                 'fillable' => array('title', 'description'),
                 'autofill' => true,
                 'guarded' => array('description'),
-                'values'  => array('title' => 'test', 'description' => null, 'start_date' => null)
+                'values'  => array('title' => 'test', 'description' => null, 'start_date' => null),
+                'relations' => array(),
+                'counterApp' => 0,
             )
         );
 
@@ -369,6 +432,7 @@ class DataModelDataprovider
                         'description' => 'test'
                     )
                 ),
+                'container'   => true,
                 'id'          => 'id',
                 'table'       => '#__dbtest_defaults',
                 'knownFields' => null,
@@ -378,6 +442,7 @@ class DataModelDataprovider
                 'behaviours'  => null,
                 'fillable'    => array('title', 'description'),
                 'guarded'     => array('description'),
+                'relations'   => null
             ),
             array(
                 'case' => 'Setting up guarded fields AND fillable ones, data in the request, table with defaults values',
@@ -391,7 +456,156 @@ class DataModelDataprovider
                 'fillable' => array('title', 'description'),
                 'autofill' => true,
                 'guarded' => array('description'),
-                'values'  => array('title' => 'test', 'description' => null, 'start_date' => '0000-00-00 00:00:00')
+                'values'  => array('title' => 'test', 'description' => null, 'start_date' => '0000-00-00 00:00:00'),
+                'relations' => array(),
+                'counterApp' => 0,
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'container'   => true,
+                'id'          => 'fakeapp_parent_id',
+                'table'       => '#__fakeapp_parents',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+                'relations'   => ''
+            ),
+            array(
+                'case' => 'Passing a relation - Wrong format',
+                'addBehaviour' => 0,
+                'id' => 'fakeapp_parent_id',
+                'table' => '#__fakeapp_parents',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'container'   => true,
+                'id'          => 'fakeapp_parent_id',
+                'table'       => '#__fakeapp_parents',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+                'relations'   => array()
+            ),
+            array(
+                'case' => 'Passing a relation - Wrong format',
+                'addBehaviour' => 0,
+                'id' => 'fakeapp_parent_id',
+                'table' => '#__fakeapp_parents',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'container'   => true,
+                'id'          => 'fakeapp_parent_id',
+                'table'       => '#__fakeapp_parents',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+                'relations'   => array('dummy' => '')
+            ),
+            array(
+                'case' => 'Passing a relation - Wrong format',
+                'addBehaviour' => 0,
+                'id' => 'fakeapp_parent_id',
+                'table' => '#__fakeapp_parents',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array(),
+                'relations' => array(),
+                'counterApp' => 0,
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'state' => array()
+                ),
+                'container'   => true,
+                'id'          => 'fakeapp_parent_id',
+                'table'       => '#__fakeapp_parents',
+                'knownFields' => null,
+                'autoChecks'  => null,
+                'skipChecks'  => null,
+                'aliasFields' => null,
+                'behaviours'  => null,
+                'fillable'    => null,
+                'guarded'     => null,
+                'relations'   => array(
+                    'children' => array(
+                        'type' => 'hasMany',
+                        'foreignModelClass' => 'Awf\Tests\Stubs\Mvc\DataModelChildren',
+                        'localKey' => 'fakeapp_parent_id',
+                        'foreignKey' => 'fakeapp_parent_id'
+                    )
+                )
+            ),
+            array(
+                'case' => 'Passing a relation - Correct format',
+                'addBehaviour' => 0,
+                'id' => 'fakeapp_parent_id',
+                'table' => '#__fakeapp_parents',
+                'fields' => null,
+                'autochecks' => true,
+                'skipchecks' => array(),
+                'alias' => array(),
+                'fillable' => array(),
+                'autofill' => false,
+                'guarded' => array(),
+                'values'  => array(),
+                'relations' => array('children'),
+                'counterApp' => 0,
             )
         );
 
