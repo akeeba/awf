@@ -2843,4 +2843,54 @@ class DataModeltest extends DatabaseMysqliCase
 
         $this->assertSame($refl, $obj, 'DataModel::getRelations failed to return the internal object');
     }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetRelationFilters
+     * @covers          Awf\Mvc\DataModel::getRelationFilters
+     */
+    public function testGetRelationFilters()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $filters = array('foo', 'bar');
+
+        ReflectionHelper::setValue($model, 'relationFilters', $filters);
+        $obj  = $model->getRelationFilters();
+
+        $this->assertSame($filters, $obj, 'DataModel::relationFilters failed to return the internal array');
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelGetTouches
+     * @covers          Awf\Mvc\DataModel::getTouches
+     */
+    public function testGetTouches()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $touches = array('foo', 'bar');
+
+        ReflectionHelper::setValue($model, 'touches', $touches);
+        $obj  = $model->getTouches();
+
+        $this->assertSame($touches, $obj, 'DataModel::getTouches failed to return the internal array');
+    }
 }
