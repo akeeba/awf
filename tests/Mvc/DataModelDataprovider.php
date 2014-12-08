@@ -4025,6 +4025,23 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestToJson()
+    {
+        $data[] = array(
+            array(
+                'pretty' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'pretty' => true
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestTouch()
     {
         $data[] = array(

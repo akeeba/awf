@@ -2481,6 +2481,48 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelToJson
+     * @covers          Awf\Mvc\DataModel::toJson
+     * @dataProvider    DataModelDataprovider::getTestToJson
+     */
+    public function testToJson($test)
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->find(1);
+
+        $result = $model->toJSon($test['pretty']);
+
+        $check = array(
+            'id' => '1',
+            'title' => 'Testing',
+            'start_date' => '1980-04-18 00:00:00',
+            'description' => 'one'
+        );
+
+        if (defined('JSON_PRETTY_PRINT'))
+        {
+            $options = $test['pretty'] ? JSON_PRETTY_PRINT : 0;
+        }
+        else
+        {
+            $options = 0;
+        }
+
+        $check = json_encode($check, $options);
+
+        $this->assertEquals($check, $result, 'DataModel::toJson Failed to return the correct result');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelTouch
      * @covers          Awf\Mvc\DataModel::touch
      * @dataProvider    DataModelDataprovider::getTestTouch
