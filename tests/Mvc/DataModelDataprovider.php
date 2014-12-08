@@ -585,7 +585,7 @@ class DataModelDataprovider
                 'relations'   => array(
                     'children' => array(
                         'type' => 'hasMany',
-                        'foreignModelClass' => 'Awf\Tests\Stubs\Mvc\FakeappModelChildren',
+                        'foreignModelClass' => 'Fakeapp\Model\Children',
                         'localKey' => 'fakeapp_parent_id',
                         'foreignKey' => 'fakeapp_parent_id'
                     )
