@@ -2451,6 +2451,36 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelToArray
+     * @covers          Awf\Mvc\DataModel::toArray
+     */
+    public function testToarray()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $model->find(1);
+
+        $result = $model->toArray();
+
+        $check = array(
+            'id' => 1,
+            'title' => 'Testing',
+            'start_date' => '1980-04-18 00:00:00',
+            'description' => 'one'
+        );
+
+        $this->assertEquals($check, $result, 'DataModel::toArray Failed to return the array format');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelTouch
      * @covers          Awf\Mvc\DataModel::touch
      * @dataProvider    DataModelDataprovider::getTestTouch
