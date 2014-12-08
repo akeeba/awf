@@ -899,6 +899,44 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelPush
+     * @covers          Awf\Mvc\DataModel::push
+     * @dataProvider    DataModelDataprovider::getTestPush
+     */
+    public function testPush($test, $check)
+    {
+        $msg       = 'DataModel::push %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('save'), array($container));
+        $model->expects($this->any())->method('save')->willReturn(null);
+
+        $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('getRelationNames', 'save'), array($model));
+        $relation->expects($this->any())->method('getRelationNames')->willReturn($test['mock']['names']);
+        $relation->expects($this->any())->method('save')->with($this->callback(function($name) use (&$check){
+            $current = array_shift($check['save']);
+            return ($name == $current) && $current;
+        }));
+
+        ReflectionHelper::setValue($model, 'relationManager', $relation);
+        ReflectionHelper::setValue($model, 'touches', $test['mock']['touches']);
+
+        $result  = $model->push(null, '', null, $test['relations']);
+        $touches = ReflectionHelper::getValue($model, 'touches');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['touches'], $touches, sprintf($msg, 'Failed to handle touches array'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelBind
      * @covers          Awf\Mvc\DataModel::bind
      * @dataProvider    DataModelDataprovider::getTestBind

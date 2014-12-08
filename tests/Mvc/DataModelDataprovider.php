@@ -2411,6 +2411,71 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestPush()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'names' => array('test1', 'test2'),
+                    'touches' => array()
+                ),
+                'relations' => null
+            ),
+            array(
+                'case' => 'No touches, saving all relations',
+                'save' => array('test1', 'test2'),
+                'touches' => array(),
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'names' => array('test1', 'test2'),
+                    'touches' => array()
+                ),
+                'relations' => array('test1')
+            ),
+            array(
+                'case' => 'No touches, saving some relations',
+                'save' => array('test1'),
+                'touches' => array(),
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'names' => array('test1', 'test2', 'children'),
+                    'touches' => array('children')
+                ),
+                'relations' => null
+            ),
+            array(
+                'case' => 'With touches, saving all relations',
+                'save' => array('test1', 'test2', 'children'),
+                'touches' => array('children'),
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'names' => array('test1', 'test2', 'children'),
+                    'touches' => array('children')
+                ),
+                'relations' => array('test1')
+            ),
+            array(
+                'case' => 'With touches, saving some relations',
+                'save' => array('test1'),
+                'touches' => array('children'),
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestBind()
     {
         $data[] = array(

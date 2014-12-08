@@ -931,7 +931,7 @@ class DataModel extends Model
 	 *
 	 * @return $this Self, for chaining
 	 */
-	public function push($data = null, $orderingFilter = '', $ignore = null, $relations = null)
+	public function push($data = null, $orderingFilter = '', $ignore = null, array $relations = null)
 	{
 		// Store the model's $touches definition
 		$touches = $this->touches;
@@ -952,18 +952,19 @@ class DataModel extends Model
 		$this->save($data, $orderingFilter, $ignore);
 
 		// Push all relations specified (or all relations if $relations is null)
-		$allRelations = $this->getRelations()->getRelationNames();
+		$relManager   = $this->getRelations();
+		$allRelations = $relManager->getRelationNames();
 
 		if (!empty($allRelations))
 		{
 			foreach ($allRelations as $relationName)
 			{
-				if (!is_null($relations) && !in_array($relationName, $allRelations))
+				if (!is_null($relations) && !in_array($relationName, $relations))
 				{
 					continue;
 				}
 
-				$this->getRelations()->save($relationName);
+				$relManager->save($relationName);
 			}
 		}
 
