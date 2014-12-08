@@ -2693,6 +2693,42 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelWith
+     * @covers          Awf\Mvc\DataModel::with
+     * @dataProvider    DataModelDataprovider::getTestWith
+     */
+    public function testWith($test, $check)
+    {
+        $msg = 'DataModel::has %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $fakeRelationManager = new TestClosure(array(
+            'getRelationNames' => function() use ($test){
+                return $test['mock']['relNames'];
+            }
+        ));
+
+        $model = new DataModelStub($container);
+
+        ReflectionHelper::setValue($model, 'relationManager', $fakeRelationManager);
+
+        $result = $model->with($test['relations']);
+
+        $eager = ReflectionHelper::getValue($model, 'eagerRelations');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEquals($check['eager'], $eager, sprintf($msg, 'Failed to set the eagerLoad relationships'));
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelHas
      * @covers          Awf\Mvc\DataModel::has
      * @dataProvider    DataModelDataprovider::getTestHas

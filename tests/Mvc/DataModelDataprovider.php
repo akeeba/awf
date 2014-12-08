@@ -6853,4 +6853,65 @@ class DataModelDataprovider
 
         return $data;
     }
+
+    public static function getTestWith()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'relNames' => array('foobar')
+                ),
+                'relations' => array('foobar' => function(){})
+            ),
+            array(
+                'case' => 'Relation known, callback applied',
+                'eager' => array(
+                    'foobar' => function(){}
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'relNames' => array('foobar')
+                ),
+                'relations' => array('foobar')
+            ),
+            array(
+                'case' => 'Relation known, no callback',
+                'eager' => array(
+                    'foobar' => null
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'relNames' => array('foobar')
+                ),
+                'relations' => array('dummy')
+            ),
+            array(
+                'case' => 'Relation not known',
+                'eager' => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'relNames' => array('foobar')
+                ),
+                'relations' => array()
+            ),
+            array(
+                'case' => 'Reset the eager relations array',
+                'eager' => array()
+            )
+        );
+
+        return $data;
+    }
 }
