@@ -3121,6 +3121,84 @@ class DataModelDataprovider
         return $data;
     }
 
+    public static function getTestEagerLoad()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'eager' => array()
+                ),
+                'items'     => true,
+                'relations' => array(
+                    'test' => function(){}
+                )
+            ),
+            array(
+                'case' => 'Passing a relation with callable callback, collection is not empty',
+                'getData' => array(
+                    'relation' => 'test',
+                    'callback' => 'function'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'eager' => array()
+                ),
+                'items'     => true,
+                'relations' => array(
+                    'test' => 'dummy'
+                )
+            ),
+            array(
+                'case' => 'Passing a relation without a callable callback, collection is not empty',
+                'getData' => array(
+                    'relation' => 'dummy',
+                    'callback' => null
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'eager' => array(
+                        'test' => function(){}
+                    )
+                ),
+                'items'     => true,
+                'relations' => null
+            ),
+            array(
+                'case' => 'Using the relation defined inside the object, collection is not empty',
+                'getData' => array(
+                    'relation' => 'test',
+                    'callback' => 'function'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'eager' => array(
+                        'test' => function(){}
+                    )
+                ),
+                'items'     => false,
+                'relations' => null
+            ),
+            array(
+                'case' => 'Collection is empty',
+                'getData' => array()
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestDelete()
     {
         $data[] = array(

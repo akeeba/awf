@@ -1450,7 +1450,7 @@ class DataModel extends Model
 	 *
 	 * @return $this for chaining
 	 */
-	public function eagerLoad(Collection &$dataCollection, $relations = null)
+	public function eagerLoad(Collection &$dataCollection, array $relations = null)
 	{
 		if (empty($relations))
 		{
@@ -1460,6 +1460,8 @@ class DataModel extends Model
 		// Apply eager loaded relations
 		if ($dataCollection->count() && !empty($relations))
 		{
+			$relationManager = $this->getRelations();
+
 			foreach ($relations as $relation => $callback)
 			{
 				// Did they give us a relation name without a callback?
@@ -1469,12 +1471,12 @@ class DataModel extends Model
 					$callback = null;
 				}
 
-				$relationData = $this->relationManager->getData($relation, $callback, $dataCollection);
+				$relationData  = $relationManager->getData($relation, $callback, $dataCollection);
+				$foreignKeyMap = $relationManager->getForeignKeyMap($relation);
 
 				/** @var DataModel $item */
 				foreach ($dataCollection as $item)
 				{
-					$foreignKeyMap = $this->getRelations()->getForeignKeyMap($relation);
 					$item->getRelations()->setDataFromCollection($relation, $relationData, $foreignKeyMap);
 				}
 			}

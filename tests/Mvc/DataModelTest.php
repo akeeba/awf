@@ -3,6 +3,7 @@
 namespace Awf\Tests\DataModel;
 
 use Awf\Date\Date;
+use Awf\Mvc\DataModel\Collection;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -1469,6 +1470,71 @@ class DataModeltest extends DatabaseMysqliCase
         $result = $model->get($test['override'], $test['limitstart'], $test['limit']);
 
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $result, sprintf($msg, 'Returned the wrong object'));
+    }
+
+    /**
+     * @group           DataModel
+     * @group           DataModelEagerLoad
+     * @covers          Awf\Mvc\DataModel::eagerLoad
+     * @dataProvider    DataModelDataprovider::getTestEagerLoad
+     */
+    public function testEagerLoad($test, $check)
+    {
+        $globRelation = null;
+        $items = array();
+        $msg   = 'DataModel::eagerLoad %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        // The collection should contain items?
+        if($test['items'])
+        {
+            $fakeRelationManager = new TestClosure(array(
+                'setDataFromCollection' => function(){}
+            ));
+
+            $mockedItem = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getRelations'), array($container));
+            $mockedItem->expects($this->any())->method('getRelations')->willReturn($fakeRelationManager);
+
+            $item = clone $mockedItem;
+            $items[] = $item;
+        }
+
+        $collection = Collection::make($items);
+
+        $model    = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getRelations'), array($container));
+        $relation = $this->getMock('\\Awf\\Mvc\\DataModel\\RelationManager', array('getData', 'getForeignKeyMap'), array($model));
+        $relation->expects($this->any())->method('getForeignKeyMap')->willReturn(null);
+
+        // Let's check if the logic of swapping the callback function when it's not callable works
+        $relation->expects($check['getData'] ? $this->atLeastOnce() : $this->never())->method('getData')->with(
+            $this->equalTo(isset($check['getData']['relation']) ? $check['getData']['relation'] : null),
+            $this->callback(function($callback = '') use (&$check)
+            {
+                if($check['getData']['callback'] == 'function'){
+                    $checkCallback = is_callable($callback);
+                }
+                else{
+                    $checkCallback = ($callback == $check['getData']['callback']);
+                }
+
+                return $checkCallback;
+            })
+        );
+
+        $model->expects($this->any())->method('getRelations')->willReturn($relation);
+
+        ReflectionHelper::setValue($model, 'eagerRelations', $test['mock']['eager']);
+
+        $result = $model->eagerLoad($collection, $test['relations']);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, sprintf($msg, 'Should return an instance of itself'));
     }
 
     /**
