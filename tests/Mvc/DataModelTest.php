@@ -2846,6 +2846,36 @@ class DataModeltest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           DataModelWhereHas
+     * @covers          Awf\Mvc\DataModel::whereHas
+     */
+    public function testWhereHas()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('has'), array($container));
+        $model->expects($this->any())->method('has')->with(
+            $this->equalTo('dummy'),
+            $this->equalTo('callback'),
+            $this->callback(function($callback){
+                return is_callable($callback);
+            }),
+            $this->equalTo(true)
+        );
+
+        $result = $model->whereHas('dummy', function(){}, true);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, 'DataModel::whereHas Should return an instance of itself');
+    }
+
+    /**
+     * @group           DataModel
      * @group           DataModelGetRelationFilters
      * @covers          Awf\Mvc\DataModel::getRelationFilters
      */

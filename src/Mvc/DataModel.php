@@ -2893,7 +2893,7 @@ class DataModel extends Model
 	 */
 	public function whereHas($relation, callable $callBack, $replace = true)
 	{
-		$this->has($relation, 'callback', $callBack);
+		$this->has($relation, 'callback', $callBack, $replace);
 
 		return $this;
 	}
