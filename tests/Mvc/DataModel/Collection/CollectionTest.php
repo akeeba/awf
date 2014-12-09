@@ -100,14 +100,16 @@ class CollectionTest extends DatabaseMysqliCase
      * @group           CollectionFetch
      * @covers          Awf\Mvc\DataModel\Collection::fetch
      */
-    /*public function testFetch()
+    public function testFetch()
     {
-        $items = $this->buildCollection();
+        $this->markTestSkipped('Skipped test until we decide what Collection::fetch should do');
+
+        /*$items = $this->buildCollection();
 
         $collection = new Collection($items);
 
-        $result = $collection->fetch(2);
-    }*/
+        $result = $collection->fetch(2);*/
+    }
 
     /**
      * @group           DataModel
@@ -128,7 +130,29 @@ class CollectionTest extends DatabaseMysqliCase
         $query = $db->getQuery(true)->select('MAX(id)')->from('#__dbtest');
         $max   = $db->setQuery($query)->loadResult();
 
-        $this->assertEquals($max, $result, 'Collection::max Failed to return higher value');
+        $this->assertEquals($max, $result, 'Collection::max Failed to return highest value');
+    }
+
+    /**
+     * @group           DataModel
+     * @group           CollectionMin
+     * @covers          Awf\Mvc\DataModel\Collection::min
+     */
+    public function testMin()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->min('id');
+
+        // Let's get the maximum value directly from the db
+        $db = self::$driver;
+
+        $query = $db->getQuery(true)->select('MIN(id)')->from('#__dbtest');
+        $min   = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals($min, $result, 'Collection::min Failed to return lowest value');
     }
 
     /**
