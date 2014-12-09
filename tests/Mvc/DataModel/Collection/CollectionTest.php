@@ -60,6 +60,24 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionAdd
+     * @covers          Collection::add
+     */
+    public function testAdd()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->add('foobar');
+        $last   = $collection->pop();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $result, 'Collection::add Should return an instance of itself');
+        $this->assertEquals('foobar', $last, 'Collection::add Failed to add an element');
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]
