@@ -199,6 +199,32 @@ class CollectionTest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           CollectionDiff
+     * @covers          Awf\Mvc\DataModel\Collection::diff
+     */
+    public function testDiff()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $collection1 = new Collection($model->getItemsArray());
+        $collection2 = new Collection($model->getItemsArray(2, 2));
+
+        $merge = $collection1->diff($collection2);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $merge, 'Collection::diff Should return an instance of Collection');
+        $this->assertCount(2, $merge, 'Collection::diff Failed to diff two arrays');
+    }
+
+    /**
+     * @group           DataModel
      * @group           CollectionModelUnique
      * @covers          Awf\Mvc\DataModel\Collection::unique
      */
