@@ -78,6 +78,24 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionContains
+     * @covers          Collection::contains
+     * @dataProvider    CollectionDataprovider::getTestContains
+     */
+    public function testContains($test, $check)
+    {
+        $msg   = 'Collection::contains %s - Case: '.$check['case'];
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->contains($test['key']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct value'));
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]

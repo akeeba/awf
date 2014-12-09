@@ -67,4 +67,29 @@ class CollectionDataprovider
 
         return $data;
     }
+
+    public static function getTestContains()
+    {
+        $data[] = array(
+            array(
+                'key' => 1
+            ),
+            array(
+                'case'   => 'Key is contained',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'key' => 100
+            ),
+            array(
+                'case'   => 'Key is not contained',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }
