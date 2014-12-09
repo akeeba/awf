@@ -173,6 +173,32 @@ class CollectionTest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           CollectionMerge
+     * @covers          Awf\Mvc\DataModel\Collection::merge
+     */
+    public function testMerge()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $collection1 = new Collection($model->getItemsArray(0, 2));
+        $collection2 = new Collection($model->getItemsArray(2, 2));
+
+        $merge = $collection1->merge($collection2);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $merge, 'Collection::merge Should return an instance of Collection');
+        $this->assertCount(4, $merge, 'Collection::merge Failed to merge two arrays');
+    }
+
+    /**
+     * @group           DataModel
      * @group           CollectionModelUnique
      * @covers          Awf\Mvc\DataModel\Collection::unique
      */
