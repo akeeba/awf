@@ -14,7 +14,7 @@ class CollectionTest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           CollectionFind
-     * @covers          Collection::find
+     * @covers          Awf\Mvc\DataModel\Collection::find
      * @dataProvider    CollectionDataprovider::getTestFind
      */
     public function testFind($test, $check)
@@ -42,7 +42,7 @@ class CollectionTest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           CollectionRemoveById
-     * @covers          Collection::removeById
+     * @covers          Awf\Mvc\DataModel\Collection::removeById
      * @dataProvider    CollectionDataprovider::getTestRemoveById
      */
     public function testRemoveById($test, $check)
@@ -62,7 +62,7 @@ class CollectionTest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           CollectionAdd
-     * @covers          Collection::add
+     * @covers          Awf\Mvc\DataModel\Collection::add
      */
     public function testAdd()
     {
@@ -80,7 +80,7 @@ class CollectionTest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           CollectionContains
-     * @covers          Collection::contains
+     * @covers          Awf\Mvc\DataModel\Collection::contains
      * @dataProvider    CollectionDataprovider::getTestContains
      */
     public function testContains($test, $check)
@@ -98,15 +98,37 @@ class CollectionTest extends DatabaseMysqliCase
     /**
      * @group           DataModel
      * @group           CollectionFetch
-     * @covers          Collection::fetch
+     * @covers          Awf\Mvc\DataModel\Collection::fetch
      */
-    public function testFetch()
+    /*public function testFetch()
     {
         $items = $this->buildCollection();
 
         $collection = new Collection($items);
 
         $result = $collection->fetch(2);
+    }*/
+
+    /**
+     * @group           DataModel
+     * @group           CollectionMax
+     * @covers          Awf\Mvc\DataModel\Collection::max
+     */
+    public function testMax()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->max('id');
+
+        // Let's get the maximum value directly from the db
+        $db = self::$driver;
+
+        $query = $db->getQuery(true)->select('MAX(id)')->from('#__dbtest');
+        $max   = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals($max, $result, 'Collection::max Failed to return higher value');
     }
 
     /**
