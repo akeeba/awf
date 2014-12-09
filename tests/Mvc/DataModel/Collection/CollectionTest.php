@@ -172,6 +172,22 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionModelToBase
+     * @covers          Awf\Mvc\DataModel\Collection::toBase
+     */
+    public function testToBase()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $base = $collection->toBase();
+
+        $this->assertEquals('Awf\\Utils\\Collection', get_class($base), 'Collection::toBase Should return a BaseCollection object');
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]
