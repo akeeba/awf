@@ -227,7 +227,7 @@ class Collection extends BaseCollection
 		{
 			if (isset($dictionary[$item->getId()]))
 			{
-				$intersect->getId($item);
+				$intersect->add($item);
 			}
 		}
 

@@ -225,6 +225,32 @@ class CollectionTest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           CollectionIntersect
+     * @covers          Awf\Mvc\DataModel\Collection::intersect
+     */
+    public function testIntersect()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+
+        $collection1 = new Collection($model->getItemsArray(1,2));
+        $collection2 = new Collection($model->getItemsArray(0, 2));
+
+        $merge = $collection1->intersect($collection2);
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $merge, 'Collection::intersect Should return an instance of Collection');
+        $this->assertCount(1, $merge, 'Collection::intersect Failed to intersect two arrays');
+    }
+
+    /**
+     * @group           DataModel
      * @group           CollectionModelUnique
      * @covers          Awf\Mvc\DataModel\Collection::unique
      */
