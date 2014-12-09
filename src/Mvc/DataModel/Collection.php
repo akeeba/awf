@@ -282,7 +282,7 @@ class Collection extends BaseCollection
 	 * @param string $name       The method to call
 	 * @param array  $arguments  The arguments to the method
 	 */
-	function __call($name, $arguments)
+	public function __call($name, $arguments)
 	{
 		if (empty($this))
 		{

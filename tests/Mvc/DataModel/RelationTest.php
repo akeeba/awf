@@ -9,7 +9,7 @@ use Awf\Tests\Stubs\Mvc\DataModelStub;
 use Awf\Tests\Stubs\Utils\TestClosure;
 use Fakeapp\Application;
 
-require_once 'DataModelRelationDataprovider.php';
+require_once 'RelationDataprovider.php';
 
 /**
  * @covers      Awf\Mvc\DataModel::<protected>
