@@ -288,7 +288,7 @@ class Collection extends BaseCollection
 	 */
 	public function __call($name, $arguments)
 	{
-		if (empty($this))
+		if (!count($this))
 		{
 			return;
 		}

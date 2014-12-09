@@ -292,8 +292,9 @@ class CollectionTest extends DatabaseMysqliCase
      */
     public function test__call($test, $check)
     {
-        $checkCall = array();
-        $msg = 'Collection::__call %s - Case: '.$check['case'];
+        $checkCall = null;
+        $items     = array();
+        $msg       = 'Collection::__call %s - Case: '.$check['case'];
 
         $container = new Container(array(
             'db' => self::$driver,
@@ -303,8 +304,11 @@ class CollectionTest extends DatabaseMysqliCase
             )
         ));
 
-        $model = new DataModelStub($container);
-        $items = $model->getItemsArray(0, 1);
+        if($test['load'])
+        {
+            $model = new DataModelStub($container);
+            $items = $model->getItemsArray(0, 1);
+        }
 
         $collection = new Collection($items);
 
@@ -343,9 +347,12 @@ class CollectionTest extends DatabaseMysqliCase
                 break;
         }
 
-        $item = $collection->first();
+        if($item = $collection->first())
+        {
+            $checkCall = $item->dynamicCall;
+        }
 
-        $this->assertEquals($check['call'], $item->dynamicCall, sprintf($msg, 'Failed to correctly invoke DataModel methods'));
+        $this->assertEquals($check['call'], $checkCall, sprintf($msg, 'Failed to correctly invoke DataModel methods'));
     }
 
     /**

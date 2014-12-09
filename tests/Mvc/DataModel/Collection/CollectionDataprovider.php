@@ -97,7 +97,19 @@ class CollectionDataprovider
     {
         $data[] = array(
             array(
-                'arguments' => 0
+                'arguments' => 0,
+                'load'      => 0
+            ),
+            array(
+                'case' => 'Empty collection',
+                'call' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 0,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing no arguments',
@@ -109,7 +121,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 1
+                'arguments' => 1,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 1 argument',
@@ -121,7 +134,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 2
+                'arguments' => 2,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 2 arguments',
@@ -133,7 +147,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 3
+                'arguments' => 3,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 3 arguments',
@@ -145,7 +160,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 4
+                'arguments' => 4,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 4 arguments',
@@ -157,7 +173,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 5
+                'arguments' => 5,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 5 arguments',
@@ -169,7 +186,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 6
+                'arguments' => 6,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing no arguments',
@@ -181,7 +199,8 @@ class CollectionDataprovider
 
         $data[] = array(
             array(
-                'arguments' => 7
+                'arguments' => 7,
+                'load'      => 1
             ),
             array(
                 'case' => 'Passing 7 arguments',
