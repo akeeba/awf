@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * Based on Laravel 4's Illuminate\Database\Eloquent\Collection
@@ -63,6 +63,13 @@ class Collection extends BaseCollection
 		}, $default);
 	}
 
+	/**
+	 * Remove an item in the collection by key
+	 *
+	 * @param  mixed  $key
+	 *
+	 * @return void
+	 */
 	public function removeById($key)
 	{
 		if ($key instanceof DataModel)
@@ -159,7 +166,7 @@ class Collection extends BaseCollection
 	/**
 	 * Merge the collection with the given items.
 	 *
-	 * @param  BaseCollection|array  $items
+	 * @param  BaseCollection|array  $collection
 	 *
 	 * @return BaseCollection
 	 */
@@ -178,7 +185,7 @@ class Collection extends BaseCollection
 	/**
 	 * Diff the collection with the given items.
 	 *
-	 * @param   BaseCollection|array  $items
+	 * @param   BaseCollection|array  $collection
 	 *
 	 * @return  BaseCollection
 	 */
@@ -202,7 +209,7 @@ class Collection extends BaseCollection
 	/**
 	 * Intersect the collection with the given items.
 	 *
-	 * @param   BaseCollection|array  $items
+	 * @param   BaseCollection|array  $collection
 	 *
 	 * @return  Collection
 	 */
