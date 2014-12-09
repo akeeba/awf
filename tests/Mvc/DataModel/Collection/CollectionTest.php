@@ -96,6 +96,20 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionFetch
+     * @covers          Collection::fetch
+     */
+    public function testFetch()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->fetch(2);
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]
