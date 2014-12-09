@@ -42,4 +42,29 @@ class CollectionDataprovider
 
         return $data;
     }
+
+    public static function getTestRemoveById()
+    {
+        $data[] = array(
+            array(
+                'key'     => 1
+            ),
+            array(
+                'case' => 'Removed using a key',
+                'key'  => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'key'     => 'object'
+            ),
+            array(
+                'case' => 'Removed using a model',
+                'key'  => 2
+            )
+        );
+
+        return $data;
+    }
 }

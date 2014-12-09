@@ -40,6 +40,26 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionRemoveById
+     * @covers          Collection::removeById
+     * @dataProvider    CollectionDataprovider::getTestRemoveById
+     */
+    public function testRemoveById($test, $check)
+    {
+        $msg   = 'Collection::removeById %s - Case: '.$check['case'];
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $key = $test['key'] == 'object' ? $items[2] : $test['key'];
+
+        $collection->removeById($key);
+
+        $this->assertArrayNotHasKey($check['key'], $collection, sprintf($msg, 'Failed to remove the item'));
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]
