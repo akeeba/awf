@@ -173,6 +173,25 @@ class CollectionTest extends DatabaseMysqliCase
 
     /**
      * @group           DataModel
+     * @group           CollectionModelUnique
+     * @covers          Awf\Mvc\DataModel\Collection::unique
+     */
+    public function testUnique()
+    {
+        $items = $this->buildCollection();
+
+        // Let's duplicate an item
+        $items["1"] = $items[1];
+        $collection = new Collection($items);
+        $newCollection = $collection->unique();
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\Collection', $newCollection, 'Collection::unique should return an instance of Collection');
+        $this->assertCount(4, $newCollection);
+        $this->assertEquals(array(1 => 1, 2 => 2, 3 => 3, 4 => 4), $collection->modelKeys());
+    }
+
+    /**
+     * @group           DataModel
      * @group           CollectionModelToBase
      * @covers          Awf\Mvc\DataModel\Collection::toBase
      */
