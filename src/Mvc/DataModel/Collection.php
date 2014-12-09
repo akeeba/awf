@@ -293,7 +293,9 @@ class Collection extends BaseCollection
 			return;
 		}
 
-		if (method_exists('Awf\Mvc\DataModel', $name))
+		$class = get_class($this->first());
+
+		if (method_exists($class, $name))
 		{
 			foreach ($this as $item)
 			{

@@ -285,6 +285,70 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionCall
+     * @covers          Awf\Mvc\DataModel\Collection::__call
+     * @dataProvider    CollectionDataprovider::getTest__call
+     */
+    public function test__call($test, $check)
+    {
+        $checkCall = array();
+        $msg = 'Collection::__call %s - Case: '.$check['case'];
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $model = new DataModelStub($container);
+        $items = $model->getItemsArray(0, 1);
+
+        $collection = new Collection($items);
+
+        switch ($test['arguments'])
+        {
+            case 0:
+                $collection->dynamicCall();
+                break;
+
+            case 1:
+                $collection->dynamicCall(1);
+                break;
+
+            case 2:
+                $collection->dynamicCall(1, 1);
+                break;
+
+            case 3:
+                $collection->dynamicCall(1, 1, 1);
+                break;
+
+            case 4:
+                $collection->dynamicCall(1, 1, 1, 1);
+                break;
+
+            case 5:
+                $collection->dynamicCall(1, 1, 1, 1, 1);
+                break;
+
+            case 6:
+                $collection->dynamicCall(1, 1, 1, 1, 1, 1);
+                break;
+
+            case 7:
+                $collection->dynamicCall(1, 1, 1, 1, 1, 1, 1);
+                break;
+        }
+
+        $item = $collection->first();
+
+        $this->assertEquals($check['call'], $item->dynamicCall, sprintf($msg, 'Failed to correctly invoke DataModel methods'));
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]

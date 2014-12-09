@@ -29,6 +29,7 @@ class DataModelStub extends DataModel
         'scopeDummyNoProperty' => 0
     );
 
+    public $dynamicCall   = array();
     public $dummyProperty = 'default';
     public $dummyPropertyNoFunction = 'default';
 
@@ -416,6 +417,11 @@ class DataModelStub extends DataModel
 
             return call_user_func_array($func, array());
         }
+    }
+
+    public function dynamicCall()
+    {
+        $this->dynamicCall[] = func_get_args();
     }
 
     /**

@@ -92,4 +92,105 @@ class CollectionDataprovider
 
         return $data;
     }
+
+    public static function getTest__call()
+    {
+        $data[] = array(
+            array(
+                'arguments' => 0
+            ),
+            array(
+                'case' => 'Passing no arguments',
+                'call' => array(
+                    array()
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 1
+            ),
+            array(
+                'case' => 'Passing 1 argument',
+                'call' => array(
+                    array(1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 2
+            ),
+            array(
+                'case' => 'Passing 2 arguments',
+                'call' => array(
+                    array(1,1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 3
+            ),
+            array(
+                'case' => 'Passing 3 arguments',
+                'call' => array(
+                    array(1,1,1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 4
+            ),
+            array(
+                'case' => 'Passing 4 arguments',
+                'call' => array(
+                    array(1,1,1,1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 5
+            ),
+            array(
+                'case' => 'Passing 5 arguments',
+                'call' => array(
+                    array(1,1,1,1,1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 6
+            ),
+            array(
+                'case' => 'Passing no arguments',
+                'call' => array(
+                    array(1,1,1,1,1,1)
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'arguments' => 7
+            ),
+            array(
+                'case' => 'Passing 7 arguments',
+                'call' => array(
+                    array(1,1,1,1,1,1,1)
+                )
+            )
+        );
+
+        return $data;
+    }
 }
