@@ -156,6 +156,22 @@ class CollectionTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           DataModel
+     * @group           CollectionModelKeys
+     * @covers          Awf\Mvc\DataModel\Collection::modelKeys
+     */
+    public function testModelKeys()
+    {
+        $items = $this->buildCollection();
+
+        $collection = new Collection($items);
+
+        $result = $collection->modelKeys();
+
+        $this->assertEquals(array(1 => 1, 2 => 2, 3 => 3, 4 => 4), $result, 'Collection::modelKeys Failed to get the array of primary keys');
+    }
+
+    /**
      * Build a collection of DataModels, used inside the tests
      *
      * return   DataModel[]
