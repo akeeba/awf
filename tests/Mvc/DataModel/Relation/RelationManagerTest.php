@@ -293,6 +293,43 @@ class RelationManagerTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group       RelationManager
+     * @group       RelationManagerGetCountSubquery
+     * @covers      RelationManager::getCountSubquery
+     */
+    public function testGetCountSubquery()
+    {
+        $result       = false;
+        $fakeRelation = new TestClosure(array(
+            'getCountSubquery' => function() use (&$result){ $result = true;}
+        ));
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        $relation->getCountSubquery('test');
+
+        $this->assertTrue($result, 'RelationManager::getCountSubquery Failed to invoke the correct method');
+    }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetCountSubquery
+     * @covers      RelationManager::getCountSubquery
+     */
+    public function testGetCountSubqueryException()
+    {
+        $this->setExpectedException('\Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        $relation->getCountSubquery('test');
+    }
+
+    /**
      * @group           RelationManager
      * @group           RelationManagerIsMagicMethod
      * @covers          RelationManager::isMagicMethod
