@@ -383,23 +383,33 @@ class RelationManager
 
 		if (isset(static::$relationTypes[$name]))
 		{
-			if ($numberOfArguments == 1) {
+			if ($numberOfArguments == 1)
+			{
 				return $this->addRelation($arguments[0], $name);
-			} elseif ($numberOfArguments == 2) {
+			}
+			elseif ($numberOfArguments == 2)
+			{
 				return $this->addRelation($arguments[0], $name, $arguments[1]);
-			} elseif ($numberOfArguments == 3) {
+			}
+			elseif ($numberOfArguments == 3)
+			{
 				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2]);
-			} elseif ($numberOfArguments == 4) {
+			}
+			elseif ($numberOfArguments == 4)
+			{
 				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3]);
-			} elseif ($numberOfArguments == 5) {
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3],
-					$arguments[4]);
-			} elseif ($numberOfArguments == 6) {
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3],
-					$arguments[4], $arguments[5]);
-			} elseif ($numberOfArguments >= 7) {
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3],
-					$arguments[4], $arguments[5], $arguments[6]);
+			}
+			elseif ($numberOfArguments == 5)
+			{
+				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4]);
+			}
+			elseif ($numberOfArguments == 6)
+			{
+				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5]);
+			}
+			elseif ($numberOfArguments >= 7)
+			{
+				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5], $arguments[6]);
 			}
 			else
 			{
@@ -411,13 +421,20 @@ class RelationManager
 			$relationName = substr($name, 3);
 			$relationName = strtolower($relationName[0]) . substr($relationName, 1);
 
-			if ($numberOfArguments == 0) {
+			if ($numberOfArguments == 0)
+			{
 				return $this->getData($relationName);
-			} elseif ($numberOfArguments == 1) {
+			}
+			elseif ($numberOfArguments == 1)
+			{
 				return $this->getData($relationName, $arguments[0]);
-			} elseif ($numberOfArguments == 2) {
+			}
+			elseif ($numberOfArguments == 2)
+			{
 				return $this->getData($relationName, $arguments[0], $arguments[1]);
-			} else {
+			}
+			else
+			{
 				throw new \InvalidArgumentException("Invalid number of arguments getting data for the '$relationName' relation");
 			}
 		}
