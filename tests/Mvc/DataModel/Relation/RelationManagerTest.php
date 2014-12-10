@@ -260,6 +260,39 @@ class RelationManagerTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group       RelationManager
+     * @group       RelationManagerGetForeignKeyMap
+     * @covers      RelationManager::getForeignKeyMap
+     */
+    public function testGetForeignKeyMap()
+    {
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        $hasMany = $this->getMock('Awf\Mvc\DataModel\Relation\HasMany', array('getForeignKeyMap'), array($model, 'Fakeapp\Model\Children', ));
+        $hasMany->expects($this->once())->method('getForeignKeyMap')->willReturn(null);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $hasMany));
+
+        $relation->getForeignKeyMap('test');
+    }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetForeignKeyMap
+     * @covers      RelationManager::getForeignKeyMap
+     */
+    public function testGetForeignKeyMapException()
+    {
+        $this->setExpectedException('\Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        $relation->getForeignKeyMap('test');
+    }
+
+    /**
      * @group           RelationManager
      * @group           RelationManagerIsMagicMethod
      * @covers          RelationManager::isMagicMethod
