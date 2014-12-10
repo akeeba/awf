@@ -20,6 +20,48 @@ class RelationManagerTest extends DatabaseMysqliCase
 {
     /**
      * @group       RelationManager
+     * @group       RelationManagerRebase
+     * @covers      RelationManager::rebase
+     */
+    public function testRebase()
+    {
+        $passedModel  = null;
+        $fakeRelation = new TestClosure(array(
+            'rebase' => function($closure, $model) use (&$passedModel){ $passedModel = $model;}
+        ));
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'id',
+                'tableName'   => '#__dbtest'
+            )
+        ));
+
+        $container2 = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $newModel   = new DataModelStub($container2);
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        $relation->rebase($newModel);
+
+        $newParent = ReflectionHelper::getValue($relation, 'parentModel');
+
+        $this->assertSame($newModel, $passedModel, 'RelationManager::rebase Failed to pass the new model to the relations');
+        $this->assertSame($newModel, $newParent, 'RelationManager::rebase Failed to save the new parent model');
+    }
+
+    /**
+     * @group       RelationManager
      * @group       RelationManagerSetDataFromCollection
      * @covers      RelationManager::setDataFromCollection
      */
