@@ -175,4 +175,29 @@ class RelationManagerTest extends DatabaseMysqliCase
 
         $this->assertEmpty($relations, 'RelationManager::resetRelations Failed to reset the whole relations');
     }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetRelationNames
+     * @covers      RelationManager::getRelationNames
+     */
+    public function testGetRelationNames()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => '', 'foobar' => ''));
+
+        $names = $relation->getRelationNames();
+
+        $this->assertEquals(array('test', 'foobar'), $names, 'RelationManager::getRelationNames Failed to return the name of the relations');
+    }
 }
