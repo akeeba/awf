@@ -114,4 +114,35 @@ class RelationManagerTest extends DatabaseMysqliCase
 
         $relation->setDataFromCollection('test', $collection);
     }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerRemoveRelation
+     * @covers      RelationManager::removeRelation
+     */
+    public function testRemoveRelation()
+    {
+        $fakeRelation = new TestClosure(array(
+            'setDataFromCollection' => function(){ }
+        ));
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        $result    = $relation->removeRelation('test');
+        $relations = ReflectionHelper::getValue($relation, 'relations');
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, 'RelationManager::removeRelation Should return the parent model');
+        $this->assertArrayNotHasKey('test', $relations, 'RelationManager::removeRelation Failed to remove the relation');
+    }
 }
