@@ -46,4 +46,29 @@ class RelationManagerDataprovider
 
         return $data;
     }
+
+    public static function getTestIsMagicProperty()
+    {
+        $data[] = array(
+            array(
+                'name' => 'foobar'
+            ),
+            array(
+                'case'   => 'Property is magic',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'wrong'
+            ),
+            array(
+                'case'   => 'Property is not magic',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }
