@@ -185,6 +185,43 @@ class RelationManagerTest extends DatabaseMysqliCase
         $relation->getRelation('test');
     }
 
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetNew
+     * @covers      RelationManager::getNew
+     */
+    public function testGetNew()
+    {
+        $result       = false;
+        $fakeRelation = new TestClosure(array(
+            'getNew' => function() use (&$result){ $result = true;}
+        ));
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        $relation->getNew('test');
+
+        $this->assertTrue($result, 'RelationManager::getNew Failed to invoke the correct method');
+    }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetNew
+     * @covers      RelationManager::getNew
+     */
+    public function testGetNewException()
+    {
+        $this->setExpectedException('\Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        $relation->getNew('test');
+    }
+
     protected function buildModel()
     {
         $container = new Container(array(
