@@ -30,14 +30,6 @@ class RelationManagerTest extends DatabaseMysqliCase
             'rebase' => function($closure, $model) use (&$passedModel){ $passedModel = $model;}
         ));
 
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'id',
-                'tableName'   => '#__dbtest'
-            )
-        ));
-
         $container2 = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
@@ -46,7 +38,7 @@ class RelationManagerTest extends DatabaseMysqliCase
             )
         ));
 
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $newModel   = new DataModelStub($container2);
         $relation   = new RelationManager($model);
 
@@ -72,16 +64,8 @@ class RelationManagerTest extends DatabaseMysqliCase
             'setDataFromCollection' => function() use (&$result){ $result = true;}
         ));
 
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
         $collection = new Collection();
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
@@ -100,16 +84,8 @@ class RelationManagerTest extends DatabaseMysqliCase
     {
         $this->setExpectedException('Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
 
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
         $collection = new Collection();
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         $relation->setDataFromCollection('test', $collection);
@@ -126,15 +102,7 @@ class RelationManagerTest extends DatabaseMysqliCase
             'setDataFromCollection' => function(){ }
         ));
 
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
@@ -157,15 +125,7 @@ class RelationManagerTest extends DatabaseMysqliCase
             'setDataFromCollection' => function(){ }
         ));
 
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
@@ -183,15 +143,7 @@ class RelationManagerTest extends DatabaseMysqliCase
      */
     public function testGetRelationNames()
     {
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         ReflectionHelper::setValue($relation, 'relations', array('test' => '', 'foobar' => ''));
@@ -208,15 +160,7 @@ class RelationManagerTest extends DatabaseMysqliCase
      */
     public function testGetRelation()
     {
-        $container = new Container(array(
-            'db' => self::$driver,
-            'mvc_config' => array(
-                'idFieldName' => 'fakeapp_parent_id',
-                'tableName'   => '#__fakeapp_parents'
-            )
-        ));
-
-        $model      = new DataModelStub($container);
+        $model      = $this->buildModel();
         $relation   = new RelationManager($model);
 
         ReflectionHelper::setValue($relation, 'relations', array('test' => 'test'));
@@ -235,6 +179,14 @@ class RelationManagerTest extends DatabaseMysqliCase
     {
         $this->setExpectedException('\Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
 
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        $relation->getRelation('test');
+    }
+
+    protected function buildModel()
+    {
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
@@ -243,9 +195,6 @@ class RelationManagerTest extends DatabaseMysqliCase
             )
         ));
 
-        $model      = new DataModelStub($container);
-        $relation   = new RelationManager($model);
-
-        $relation->getRelation('test');
+        return new DataModelStub($container);
     }
 }
