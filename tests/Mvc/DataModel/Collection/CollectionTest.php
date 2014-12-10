@@ -1,6 +1,6 @@
 <?php
 
-namespace Awf\Tests\DataModel;
+namespace Awf\Tests\DataModel\Collection;
 
 use Awf\Mvc\DataModel\Collection;
 use Awf\Tests\Database\DatabaseMysqliCase;
