@@ -200,4 +200,52 @@ class RelationManagerTest extends DatabaseMysqliCase
 
         $this->assertEquals(array('test', 'foobar'), $names, 'RelationManager::getRelationNames Failed to return the name of the relations');
     }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetRelation
+     * @covers      RelationManager::getRelation
+     */
+    public function testGetRelation()
+    {
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => 'test'));
+
+        $result = $relation->getRelation('test');
+
+        $this->assertEquals('test', $result, 'RelationManager::getRelation Failed to return the relation');
+    }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerGetRelation
+     * @covers      RelationManager::getRelation
+     */
+    public function testGetRelationException()
+    {
+        $this->setExpectedException('\Awf\Mvc\DataModel\Relation\Exception\RelationNotFound');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $relation   = new RelationManager($model);
+
+        $relation->getRelation('test');
+    }
 }
