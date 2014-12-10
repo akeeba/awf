@@ -259,6 +259,26 @@ class RelationManagerTest extends DatabaseMysqliCase
         $relation->getData('test');
     }
 
+    /**
+     * @group           RelationManager
+     * @group           RelationManagerIsMagicMethod
+     * @covers          RelationManager::isMagicMethod
+     * @dataProvider    RelationManagerDataprovider::getTestIsMagicMethod
+     */
+    public function testIsMagicMethod($test, $check)
+    {
+        $msg = 'RelationManager::isMagicMethod %s - Case: '.$check['case'];
+
+        $model    = $this->buildModel();
+        $relation = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('foobar' => ''));
+
+        $result = $relation->isMagicMethod($test['method']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the corret result'));
+    }
+
     protected function buildModel()
     {
         $container = new Container(array(
