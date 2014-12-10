@@ -145,4 +145,34 @@ class RelationManagerTest extends DatabaseMysqliCase
         $this->assertInstanceOf('\\Awf\\Mvc\\DataModel', $result, 'RelationManager::removeRelation Should return the parent model');
         $this->assertArrayNotHasKey('test', $relations, 'RelationManager::removeRelation Failed to remove the relation');
     }
+
+    /**
+     * @group       RelationManager
+     * @group       RelationManagerResetRelations
+     * @covers      RelationManager::resetRelations
+     */
+    public function testResetRelations()
+    {
+        $fakeRelation = new TestClosure(array(
+            'setDataFromCollection' => function(){ }
+        ));
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $model      = new DataModelStub($container);
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        $relation->resetRelations();
+        $relations = ReflectionHelper::getValue($relation, 'relations');
+
+        $this->assertEmpty($relations, 'RelationManager::resetRelations Failed to reset the whole relations');
+    }
 }
