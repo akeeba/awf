@@ -92,6 +92,33 @@ class RelationManagerTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           RelationManager
+     * @group           RelationManagerAddRelation
+     * @covers          Awf\Mvc\DataModel\RelationManager::addRelation
+     * @dataProvider    RelationManagerDataprovider::getTestAddRelation
+     */
+    public function testAddRelation($test, $check)
+    {
+        $msg = 'RelationManager::addRelation %s - Case: '.$check['case'];
+
+        $model    = $this->buildModel($test['parentModel']);
+        $relation = new RelationManager($model);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException($check['exception']);
+        }
+
+        $result = $relation->addRelation($test['name'], $test['type'], $test['model']);
+
+        $relations = ReflectionHelper::getValue($relation, 'relations');
+
+        $this->assertInstanceOf('Awf\Mvc\DataModel', $result, sprintf($msg, 'Should return an instance of the parent model'));
+        $this->assertArrayHasKey($check['relation'], $relations, sprintf($msg, 'Failed to set the relation name'));
+        $this->assertNotEmpty($relations[$check['relation']], $relations, sprintf($msg, 'The new relation should not be empty'));
+    }
+
+    /**
      * @group       RelationManager
      * @group       RelationManagerRemoveRelation
      * @covers      Awf\Mvc\DataModel\RelationManager::removeRelation
@@ -486,8 +513,13 @@ class RelationManagerTest extends DatabaseMysqliCase
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the corret result'));
     }
 
-    protected function buildModel()
+    protected function buildModel($class = null)
     {
+        if(!$class)
+        {
+            $class = '\Awf\Tests\Stubs\Mvc\DataModelStub';
+        }
+
         $container = new Container(array(
             'db' => self::$driver,
             'mvc_config' => array(
@@ -496,6 +528,6 @@ class RelationManagerTest extends DatabaseMysqliCase
             )
         ));
 
-        return new DataModelStub($container);
+        return new $class($container);
     }
 }

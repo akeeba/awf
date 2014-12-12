@@ -2,6 +2,67 @@
 
 class RelationManagerDataprovider
 {
+    public static function getTestAddRelation()
+    {
+        $data[] = array(
+            array(
+                'name'        => 'wrong',
+                'type'        => 'wrong',
+                'parentModel' => null,
+                'model'       => ''
+            ),
+            array(
+                'case'      => 'Unknown relation type',
+                'exception' => '\Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound',
+                'relation'  => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name'        => 'test',
+                'type'        => 'hasMany',
+                'parentModel' => null,
+                'model'       => ''
+            ),
+            array(
+                'case'      => 'Model not found',
+                'exception' => '\Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound',
+                'relation'  => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name'        => 'children',
+                'type'        => 'hasMany',
+                'parentModel' => '\Fakeapp\Model\Datafoobars',
+                'model'       => ''
+            ),
+            array(
+                'case'      => 'Guessing the model name from the parent one (plural)',
+                'exception' => '',
+                'relation'  => 'children'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name'        => 'child',
+                'type'        => 'hasMany',
+                'parentModel' => '\Fakeapp\Model\Datafoobars',
+                'model'       => ''
+            ),
+            array(
+                'case'      => 'Guessing the model name from the parent one (singular)',
+                'exception' => '',
+                'relation'  => 'child'
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestSave()
     {
         $data[] = array(
