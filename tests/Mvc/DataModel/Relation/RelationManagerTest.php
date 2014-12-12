@@ -21,7 +21,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerRebase
-     * @covers      RelationManager::rebase
+     * @covers      Awf\Mvc\DataModel\RelationManager::rebase
      */
     public function testRebase()
     {
@@ -55,7 +55,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerSetDataFromCollection
-     * @covers      RelationManager::setDataFromCollection
+     * @covers      Awf\Mvc\DataModel\RelationManager::setDataFromCollection
      */
     public function testSetDataFromCollection()
     {
@@ -78,7 +78,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerSetDataFromCollection
-     * @covers      RelationManager::setDataFromCollection
+     * @covers      Awf\Mvc\DataModel\RelationManager::setDataFromCollection
      */
     public function testSetDataFromCollectionException()
     {
@@ -94,7 +94,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerRemoveRelation
-     * @covers      RelationManager::removeRelation
+     * @covers      Awf\Mvc\DataModel\RelationManager::removeRelation
      */
     public function testRemoveRelation()
     {
@@ -117,7 +117,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerResetRelations
-     * @covers      RelationManager::resetRelations
+     * @covers      Awf\Mvc\DataModel\RelationManager::resetRelations
      */
     public function testResetRelations()
     {
@@ -139,7 +139,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetRelationNames
-     * @covers      RelationManager::getRelationNames
+     * @covers      Awf\Mvc\DataModel\RelationManager::getRelationNames
      */
     public function testGetRelationNames()
     {
@@ -156,7 +156,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetRelation
-     * @covers      RelationManager::getRelation
+     * @covers      Awf\Mvc\DataModel\RelationManager::getRelation
      */
     public function testGetRelation()
     {
@@ -173,7 +173,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetRelation
-     * @covers      RelationManager::getRelation
+     * @covers      Awf\Mvc\DataModel\RelationManager::getRelation
      */
     public function testGetRelationException()
     {
@@ -188,7 +188,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetNew
-     * @covers      RelationManager::getNew
+     * @covers      Awf\Mvc\DataModel\RelationManager::getNew
      */
     public function testGetNew()
     {
@@ -210,7 +210,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetNew
-     * @covers      RelationManager::getNew
+     * @covers      Awf\Mvc\DataModel\RelationManager::getNew
      */
     public function testGetNewException()
     {
@@ -225,7 +225,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group           RelationManager
      * @group           RelationManagerSave
-     * @covers          RelationManager::save
+     * @covers          Awf\Mvc\DataModel\RelationManager::save
      * @dataProvider    RelationManagerDataprovider::getTestSave
      */
     public function testSave($test, $check)
@@ -265,7 +265,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetData
-     * @covers      RelationManager::getData
+     * @covers      Awf\Mvc\DataModel\RelationManager::getData
      */
     public function testGetData()
     {
@@ -287,7 +287,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetData
-     * @covers      RelationManager::getData
+     * @covers      Awf\Mvc\DataModel\RelationManager::getData
      */
     public function testGetDataException()
     {
@@ -302,7 +302,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetForeignKeyMap
-     * @covers      RelationManager::getForeignKeyMap
+     * @covers      Awf\Mvc\DataModel\RelationManager::getForeignKeyMap
      */
     public function testGetForeignKeyMap()
     {
@@ -320,7 +320,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetForeignKeyMap
-     * @covers      RelationManager::getForeignKeyMap
+     * @covers      Awf\Mvc\DataModel\RelationManager::getForeignKeyMap
      */
     public function testGetForeignKeyMapException()
     {
@@ -335,7 +335,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetCountSubquery
-     * @covers      RelationManager::getCountSubquery
+     * @covers      Awf\Mvc\DataModel\RelationManager::getCountSubquery
      */
     public function testGetCountSubquery()
     {
@@ -357,7 +357,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group       RelationManager
      * @group       RelationManagerGetCountSubquery
-     * @covers      RelationManager::getCountSubquery
+     * @covers      Awf\Mvc\DataModel\RelationManager::getCountSubquery
      */
     public function testGetCountSubqueryException()
     {
@@ -372,7 +372,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group           RelationManager
      * @group           RelationManagerCall
-     * @covers          RelationManager::__call
+     * @covers          Awf\Mvc\DataModel\RelationManager::__call
      * @dataProvider    RelationManagerDataprovider::getTest__call
      */
     public function test__call($test, $check)
@@ -449,7 +449,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group           RelationManager
      * @group           RelationManagerIsMagicMethod
-     * @covers          RelationManager::isMagicMethod
+     * @covers          Awf\Mvc\DataModel\RelationManager::isMagicMethod
      * @dataProvider    RelationManagerDataprovider::getTestIsMagicMethod
      */
     public function testIsMagicMethod($test, $check)
@@ -469,7 +469,7 @@ class RelationManagerTest extends DatabaseMysqliCase
     /**
      * @group           RelationManager
      * @group           RelationManagerIsMagicProperty
-     * @covers          RelationManager::isMagicProperty
+     * @covers          Awf\Mvc\DataModel\RelationManager::isMagicProperty
      * @dataProvider    RelationManagerDataprovider::getTestIsMagicProperty
      */
     public function testIsMagicProperty($test, $check)
