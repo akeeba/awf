@@ -331,6 +331,83 @@ class RelationManagerTest extends DatabaseMysqliCase
 
     /**
      * @group           RelationManager
+     * @group           RelationManagerCall
+     * @covers          RelationManager::__call
+     * @dataProvider    RelationManagerDataprovider::getTest__call
+     */
+    public function test__call($test, $check)
+    {
+        $msg    = 'RelationManager::__call %s - Case: '.$check['case'];
+        $result = '';
+
+        $model = $this->buildModel();
+        $relation = $this->getMock('Awf\\Mvc\\DataModel\\RelationManager', array('addRelation', 'getData'), array($model));
+
+        $getData     = $relation->expects($check['get'] ? $this->once() : $this->never())->method('getData')->willReturnSelf();
+        $addRelation = $relation->expects($check['add'] ? $this->once() : $this->never())->method('addRelation')->willReturnSelf();
+
+        if($check['exception'])
+        {
+            $this->setExpectedException($check['exception']);
+        }
+
+        $method = $test['method'];
+
+        switch ($test['arguments'])
+        {
+            case 0:
+                $getData->with($this->equalTo($check['name']));
+                $result = $relation->$method();
+                break;
+
+            case 1:
+                $getData->with($this->equalTo($check['name']), $this->equalTo(null));
+                $addRelation->with($this->equalTo(null), $this->equalTo($check['name']));
+                $result = $relation->$method(null);
+                break;
+
+            case 2:
+                $getData->with($this->equalTo($check['name']), $this->equalTo(null), $this->equalTo(null));
+                $addRelation->with($this->equalTo(null), $this->equalTo($check['name']), $this->equalTo(null));
+                $result = $relation->$method(null, null);
+                break;
+
+            case 3:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1);
+                break;
+
+            case 4:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1, 1);
+                break;
+
+            case 5:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1, 1, 1);
+                break;
+
+            case 6:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1, 1, 1, 1);
+                break;
+
+            case 7:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1, 1, 1, 1, 1);
+                break;
+
+            case 8:
+                $addRelation->with($this->equalTo(1), $this->equalTo($check['name']), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1), $this->equalTo(1));
+                $result = $relation->$method(1, 1, 1, 1, 1, 1, 1, 1);
+                break;
+        }
+
+        $this->assertInstanceOf('\\Awf\\Mvc\\DataModel\\RelationManager', $result, sprintf($msg, 'Should return an instance of itself'));
+    }
+
+    /**
+     * @group           RelationManager
      * @group           RelationManagerIsMagicMethod
      * @covers          RelationManager::isMagicMethod
      * @dataProvider    RelationManagerDataprovider::getTestIsMagicMethod
