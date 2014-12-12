@@ -2,6 +2,71 @@
 
 class RelationManagerDataprovider
 {
+    public static function getTestSave()
+    {
+        $data[] = array(
+            array(
+                'name' => 'wrong',
+                'exception' => ''
+            ),
+            array(
+                'case' => 'Relation is not known',
+                'exception' => 'Awf\Mvc\DataModel\Relation\Exception\RelationNotFound',
+                'save' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => 'test',
+                'exception' => ''
+            ),
+            array(
+                'case' => 'Relation is known, saving just one',
+                'exception' => '',
+                'save' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => null,
+                'exception' => ''
+            ),
+            array(
+                'case' => 'Relation is known, saving all of them',
+                'exception' => '',
+                'save' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => null,
+                'exception' => 'notSupport'
+            ),
+            array(
+                'case' => 'Relation is known, saving all of them, but the relation does not support saving',
+                'exception' => '',
+                'save' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'name' => null,
+                'exception' => 'exception'
+            ),
+            array(
+                'case' => 'Relation is known, saving all of them, but the relation throws an exception',
+                'exception' => 'exception',
+                'save' => false
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTest__call()
     {
         $data[] = array(

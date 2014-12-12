@@ -223,6 +223,46 @@ class RelationManagerTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           RelationManager
+     * @group           RelationManagerSave
+     * @covers          RelationManager::save
+     * @dataProvider    RelationManagerDataprovider::getTestSave
+     */
+    public function testSave($test, $check)
+    {
+        $msg = 'RelationManager::save %s - Case: '.$check['case'];
+
+        $save = false;
+        $fakeRelation = new TestClosure(array(
+            'saveAll' => function() use (&$save, $test){
+                if($test['exception'] == 'notSupport'){
+                    throw new \Awf\Mvc\DataModel\Relation\Exception\SaveNotSupported();
+                }
+                elseif($test['exception'] == 'exception'){
+                    throw new \Exception();
+                }
+
+                $save = true;
+            }
+        ));
+
+        $model      = $this->buildModel();
+        $relation   = new RelationManager($model);
+
+        ReflectionHelper::setValue($relation, 'relations', array('test' => $fakeRelation));
+
+        if($check['exception'])
+        {
+            $this->setExpectedException($check['exception']);
+        }
+
+        $result = $relation->save($test['name']);
+
+        $this->assertInstanceOf('Awf\Mvc\DataModel', $result, sprintf($msg, 'Should return an instance of the parent model'));
+        $this->assertEquals($check['save'], $save, sprintf($msg, 'Failed to correctly invoke save on the relation'));
+    }
+
+    /**
      * @group       RelationManager
      * @group       RelationManagerGetData
      * @covers      RelationManager::getData
