@@ -58,6 +58,25 @@ class RelationTest extends DatabaseMysqliCase
         $this->assertEmpty(ReflectionHelper::getValue($relation, 'foreignKeyMap'), sprintf($msg, 'Should empty the foreign key map'));
     }
 
+    /**
+     * @group           Relation
+     * @group           RelationRebase
+     * @covers          Awf\Mvc\DataModel\Relation::rebase
+     */
+    public function testRebase()
+    {
+        $model    = $this->buildModel();
+        $relation = $this->getMock('Awf\Tests\Stubs\Mvc\RelationStub', array('reset'), array($model, 'Fakeapp\Model\Children'));
+        $relation->expects($this->any())->method('reset')->willReturnSelf();
+
+        $newModel = $this->buildModel('\Fakeapp\Model\Datafoobars');
+
+        $result = $relation->rebase($newModel);
+
+        $this->assertInstanceOf('Awf\Mvc\DataModel\Relation', $result, 'Relation::rebase should return an instance of itself');
+        $this->assertSame($newModel, ReflectionHelper::getValue($relation, 'parentModel'), 'Relation::rebase Failed to change the parent model');
+    }
+
     protected function buildModel($class = null)
     {
         if(!$class)
