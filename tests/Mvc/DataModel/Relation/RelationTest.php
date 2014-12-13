@@ -1,6 +1,7 @@
 <?php
 namespace Awf\Tests\DataModel\Relation;
 
+use Awf\Mvc\DataModel\Collection;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -75,6 +76,34 @@ class RelationTest extends DatabaseMysqliCase
 
         $this->assertInstanceOf('Awf\Mvc\DataModel\Relation', $result, 'Relation::rebase should return an instance of itself');
         $this->assertSame($newModel, ReflectionHelper::getValue($relation, 'parentModel'), 'Relation::rebase Failed to change the parent model');
+    }
+
+    /**
+     * @group           Relation
+     * @group           RelationSaveAll
+     * @covers          Awf\Mvc\DataModel\Relation::saveAll
+     */
+    public function testSaveAll()
+    {
+        $model    = $this->buildModel();
+        $relation = new RelationStub($model, 'Fakeapp\Model\Children');
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_parent_id',
+                'tableName'   => '#__fakeapp_parents'
+            )
+        ));
+
+        $item = $this->getMock('\Awf\Tests\Stubs\Mvc\DataModelStub', array('save'), array($container));
+        $item->expects($this->once())->method('save')->willReturn(null);
+
+        $collection = new Collection(array($item));
+
+        ReflectionHelper::setValue($relation, 'data', $collection);
+
+        $relation->saveAll();
     }
 
     /**
