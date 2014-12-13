@@ -80,6 +80,45 @@ class RelationTest extends DatabaseMysqliCase
 
     /**
      * @group           Relation
+     * @group           RelationSetDataFromCollection
+     * @covers          Awf\Mvc\DataModel\Relation::setDataFromCollection
+     */
+    public function testSetDataFromCollection()
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $container = new Container(array(
+            'db' => self::$driver,
+            'mvc_config' => array(
+                'idFieldName' => 'fakeapp_child_id',
+                'tableName'   => '#__fakeapp_children'
+            )
+        ));
+
+        $childrenModel = new \Fakeapp\Model\Children($container);
+        $model         = $this->buildModel();
+
+        $model->find(2);
+        $relation = new RelationStub($model, 'Fakeapp\Model\Children', 'fakeapp_parent_id', 'fakeapp_parent_id');
+
+        $items[0] = clone $childrenModel;
+        $items[1] = clone $childrenModel;
+
+        $items[0]->find(1); // This child record IS NOT related to the current parent
+        $items[1]->find(3); // This child record IS related to the current parent
+
+        $collection = new Collection($items);
+
+        $relation->setDataFromCollection($collection);
+
+        $data = ReflectionHelper::getValue($relation, 'data');
+
+        // I should have only one record, since the other one is not related to the current parent model
+        $this->assertCount(1, $data);
+    }
+
+    /**
+     * @group           Relation
      * @group           RelationSaveAll
      * @covers          Awf\Mvc\DataModel\Relation::saveAll
      */
@@ -125,6 +164,11 @@ class RelationTest extends DatabaseMysqliCase
         $this->assertEquals($keymap, $result, 'Relation::getForeignKeyMap Returned the wrong result');
     }
 
+    /**
+     * @param   string    $class
+     *
+     * @return \Awf\Mvc\DataModel
+     */
     protected function buildModel($class = null)
     {
         if(!$class)
