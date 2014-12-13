@@ -77,6 +77,25 @@ class RelationTest extends DatabaseMysqliCase
         $this->assertSame($newModel, ReflectionHelper::getValue($relation, 'parentModel'), 'Relation::rebase Failed to change the parent model');
     }
 
+    /**
+     * @group           Relation
+     * @group           RelationGetforeignKeyMap
+     * @covers          Awf\Mvc\DataModel\Relation::getForeignKeyMap
+     */
+    public function testGetForeignKeyMap()
+    {
+        $model    = $this->buildModel();
+        $relation = new RelationStub($model, 'Fakeapp\Model\Children');
+
+        $keymap = array(1,2,3);
+
+        ReflectionHelper::setValue($relation, 'foreignKeyMap', $keymap);
+
+        $result = $relation->getForeignKeyMap();
+
+        $this->assertEquals($keymap, $result, 'Relation::getForeignKeyMap Returned the wrong result');
+    }
+
     protected function buildModel($class = null)
     {
         if(!$class)
