@@ -36,6 +36,28 @@ class RelationTest extends DatabaseMysqliCase
         $this->assertEquals('Children', ReflectionHelper::getValue($relation, 'foreignModelName'), sprintf($msg, 'Failed to set the foreign model name'));
     }
 
+    /**
+     * @group           Relation
+     * @group           RelationReset
+     * @covers          Awf\Mvc\DataModel\Relation::reset
+     */
+    public function testReset()
+    {
+        $msg = 'Relation::reset %s';
+
+        $model    = $this->buildModel();
+        $relation = new RelationStub($model, 'Fakeapp\Model\Children');
+
+        ReflectionHelper::setValue($relation, 'data', array(1,2,3));
+        ReflectionHelper::setValue($relation, 'foreignKeyMap' ,array(1,2,3));
+
+        $result = $relation->reset();
+
+        $this->assertInstanceOf('Awf\Mvc\DataModel\Relation', $result, sprintf($msg, 'Should return an instance of itself'));
+        $this->assertEmpty(ReflectionHelper::getValue($relation, 'data'), sprintf($msg, 'Should empty the internal data'));
+        $this->assertEmpty(ReflectionHelper::getValue($relation, 'foreignKeyMap'), sprintf($msg, 'Should empty the foreign key map'));
+    }
+
     protected function buildModel($class = null)
     {
         if(!$class)
