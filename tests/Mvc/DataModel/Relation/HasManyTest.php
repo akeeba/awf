@@ -34,6 +34,28 @@ class HasManyTest extends DatabaseMysqliCase
 
     /**
      * @group           HasMany
+     * @group           HasManyGetCountSubquery
+     * @covers          Awf\Mvc\DataModel\Relation\HasMany::getCountSubquery
+     */
+    public function testGetCountSubquery()
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $model    = $this->buildModel();
+        $relation = new HasMany($model, 'Fakeapp\Model\Children');
+
+        $query = $relation->getCountSubquery();
+
+        $check = '
+SELECT COUNT(*)
+FROM `#__fakeapp_children` AS `reltbl`
+WHERE `reltbl`.`fakeapp_parent_id` = `#__fakeapp_parents`.`fakeapp_parent_id`';
+
+        $this->assertEquals($check, $query, 'HasMany::getCountSubquery Returned the wrong query');
+    }
+
+    /**
+     * @group           HasMany
      * @group           HasManyGetNew
      * @covers          Awf\Mvc\DataModel\Relation\HasMany::getNew
      */
