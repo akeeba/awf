@@ -1,6 +1,7 @@
 <?php
 namespace Awf\Tests\DataModel\Relation;
 
+use Awf\Mvc\DataModel;
 use Awf\Mvc\DataModel\Collection;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -80,12 +81,51 @@ class RelationTest extends DatabaseMysqliCase
 
     /**
      * @group           Relation
+     * @group           RelationGetData
+     * @covers          Awf\Mvc\DataModel\Relation::getData
+     * @dataProvider    RelationDataprovider::getTestGetData
+     */
+    public function testGetData($test, $check)
+    {
+        $msg = 'Relation::getData %s - Case: '.$check['case'];
+        $applyCallback = false;
+
+        $model    = $this->buildModel();
+        $relation = new RelationStub($model, 'Fakeapp\Model\Children');
+        $relation->setupMocks(array(
+            'filterForeignModel' => function() use($test){
+                return $test['mock']['filter'];
+            }
+        ));
+
+        ReflectionHelper::setValue($relation, 'data', $test['mock']['data']);
+
+        $callable = function() use(&$applyCallback){
+            $applyCallback = true;
+        };
+
+        $result = $relation->getData($callable);
+
+        $instanceok = false;
+
+        if($result instanceof Collection || $result instanceof DataModel)
+        {
+            $instanceok = true;
+        }
+
+        $this->assertTrue($instanceok, sprintf($msg, 'Should return an instance of Collection or DataModel'));
+        $this->assertEquals($check['applyCallback'], $applyCallback, sprintf($msg, 'Failed to correctly apply the callback'));
+        $this->assertCount($check['count'], $result, sprintf($msg, 'Failed to return the correct amount of data'));
+    }
+
+    /**
+     * @group           Relation
      * @group           RelationSetDataFromCollection
      * @covers          Awf\Mvc\DataModel\Relation::setDataFromCollection
      */
     public function testSetDataFromCollection()
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $container = new Container(array(
             'db' => self::$driver,

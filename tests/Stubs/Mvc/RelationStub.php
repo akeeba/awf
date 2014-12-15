@@ -15,6 +15,16 @@ use Awf\Mvc\DataModel\Relation;
 
 class RelationStub extends Relation
 {
+    private $mockedMethods = array();
+
+    public function setupMocks(array $methods = array())
+    {
+        foreach($methods as $method => $callback)
+        {
+            $this->mockedMethods[$method] = $callback;
+        }
+    }
+
     /**
      * Returns a new item of the foreignModel type, pre-initialised to fulfil this relation
      *
@@ -24,7 +34,12 @@ class RelationStub extends Relation
      */
     public function getNew()
     {
+        if(isset($this->mockedMethods['getNew']))
+        {
+            $func = $this->mockedMethods['getNew'];
 
+            return call_user_func_array($func, array());
+        }
     }
 
     /**
@@ -34,7 +49,12 @@ class RelationStub extends Relation
      */
     public function getCountSubquery()
     {
+        if(isset($this->mockedMethods['getCountSubquery']))
+        {
+            $func = $this->mockedMethods['getCountSubquery'];
 
+            return call_user_func_array($func, array());
+        }
     }
 
     /**
@@ -47,6 +67,13 @@ class RelationStub extends Relation
      */
     protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null)
     {
+        if(isset($this->mockedMethods['filterForeignModel']))
+        {
+            $func = $this->mockedMethods['filterForeignModel'];
+
+            return call_user_func_array($func, array());
+        }
+
         return false;
     }
 }
