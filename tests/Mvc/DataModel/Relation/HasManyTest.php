@@ -4,7 +4,10 @@ namespace Awf\Tests\DataModel\Relation\Relation\HasMany;
 
 use Awf\Mvc\DataModel\Relation\HasMany;
 use Awf\Tests\Database\DatabaseMysqliCase;
+use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
+
+require_once 'HasManyDataprovider.php';
 
 /**
  * @covers      Awf\Mvc\DataModel\Relation\HasMany::<protected>
@@ -13,6 +16,22 @@ use Awf\Tests\Stubs\Fakeapp\Container;
  */
 class HasManyTest extends DatabaseMysqliCase
 {
+    /**
+     * @group           HasMany
+     * @group           HasManyConstruct
+     * @covers          Awf\Mvc\DataModel\Relation\HasMany::__construct
+     * @dataProvider    HasManyDataprovider::getTestConstruct
+     */
+    public function testConstruct($test, $check)
+    {
+        $msg = 'HasMany::__construct %s - Case: '.$check['case'];
+        $model    = $this->buildModel();
+        $relation = new HasMany($model, 'Fakeapp\Model\Children', $test['local'], $test['foreign']);
+
+        $this->assertEquals($check['local'], ReflectionHelper::getValue($relation, 'localKey'), sprintf($msg, 'Failed to set the local key'));
+        $this->assertEquals($check['foreign'], ReflectionHelper::getValue($relation, 'foreignKey'), sprintf($msg, 'Failed to set the foreign key'));
+    }
+
     /**
      * @group           HasMany
      * @group           HasManyGetNew
