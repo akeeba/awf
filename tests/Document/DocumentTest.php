@@ -19,6 +19,14 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp();
+
+		// Reset the instances
+		ReflectionHelper::setValue('\Awf\Document\Document', 'instances', array());
+	}
+
 	/**
 	 * @group   Document
 	 * @covers  Awf\Document\Document::__construct

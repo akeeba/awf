@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -20,6 +20,14 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  */
 class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp();
+
+		// Reset the instances
+		ReflectionHelper::setValue('\Awf\Document\Document', 'instances', array());
+	}
+
 	public function testRenderHtml()
 	{
 		$document = Document::getInstance('html', static::$container);
@@ -32,8 +40,6 @@ class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 		$contentDisposition = $document->getHTTPHeader('Content-Disposition');
 		$this->assertNull($contentDisposition);
-
-		return $document;
 	}
 
 	public function testRenderAttachment()
@@ -52,4 +58,3 @@ class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('attachment; filename="foobar.pdf.html"', $contentDisposition);
 	}
 }
- 

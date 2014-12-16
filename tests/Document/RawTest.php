@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -19,6 +19,14 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  */
 class RawTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp();
+
+		// Reset the instances
+		ReflectionHelper::setValue('\Awf\Document\Document', 'instances', array());
+	}
+	
 	public function testRenderRaw()
 	{
 		$document = Document::getInstance('raw', static::$container);
@@ -54,4 +62,3 @@ class RawTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 }
- 
