@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -9,7 +9,6 @@ namespace Awf\Tests\Document;
 
 use Awf\Document\Document;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * Class DocumentTest
@@ -21,10 +20,11 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 {
 	/**
-	 * @covers Awf\Document\Document::__construct
-	 * @covers Awf\Document\Document::getInstance
+	 * @group   Document
+	 * @covers  Awf\Document\Document::__construct
+	 * @covers  Awf\Document\Document::getInstance
 	 *
-	 * @throws \Awf\Exception\App
+	 * @throws  \Awf\Exception\App
 	 */
 	public function testGetInstance()
 	{
@@ -35,6 +35,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals(static::$container, $docApp);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testSetBuffer()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -46,6 +49,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals($myBuffer, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetBuffer()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -57,6 +63,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals($myBuffer, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testAddScriptPlain()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -74,21 +83,18 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertCount(1, $scripts);
 		$this->assertEquals('text/javascript', $scripts[$url]['mime']);
 		$this->assertFalse($scripts[$url]['before']);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testAddScriptPlain
-	 *
-	 * @param Document $doc
-	 *
-	 * @return Document
+	 * @group   Document
 	 */
-	public function testAddScriptReplaceExisting(Document $doc)
+	public function testAddScriptReplaceExisting()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
 		$url = 'http://www.example.com/foo.js';
 
+		$doc->addScript($url);
 		$doc->addScript($url, true, 'text/ecmascript');
 		$scripts = ReflectionHelper::getValue($doc, 'scripts');
 
@@ -96,35 +102,28 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertCount(1, $scripts);
 		$this->assertEquals('text/ecmascript', $scripts[$url]['mime']);
 		$this->assertTrue($scripts[$url]['before']);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testAddScriptReplaceExisting
-	 *
-	 * @param Document $doc
-	 *
-	 * @return Document
+	 * @group   Document
 	 */
-	public function testAddScriptAppend(Document $doc)
+	public function testAddScriptAppend()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
 		$url = 'http://www.example.com/bar.js';
 
+		$doc->addScript('http://www.example.com/foo.js');
 		$doc->addScript($url);
 		$scripts = ReflectionHelper::getValue($doc, 'scripts');
 
 		$this->assertInternalType('array', $scripts);
 		$this->assertCount(2, $scripts);
 		$this->assertArrayHasKey($url, $scripts);
-
-		return $doc;
 	}
 
 	/**
-	 * @throws \Awf\Exception\App
-	 *
-	 * @return  Document
+	 * @group   Document
 	 */
 	public function testAddScriptDeclaration()
 	{
@@ -144,10 +143,11 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$doc->addScriptDeclaration($line2);
 		$scriptDeclarations = ReflectionHelper::getValue($doc, 'scriptDeclarations');
 		$this->assertEquals($line1 . chr(13) . $line2, $scriptDeclarations['text/javascript']);
-
-		return $doc;
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testAddStyleSheetPlain()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -166,21 +166,17 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('text/css', $styles[$url]['mime']);
 		$this->assertNull($styles[$url]['media']);
 		$this->assertFalse($styles[$url]['before']);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testAddStyleSheetPlain
-	 *
-	 * @param Document $doc
-	 *
-	 * @return Document
+	 * @group   Document
 	 */
-	public function testAddStyleSheetReplaceExisting(Document $doc)
+	public function testAddStyleSheetReplaceExisting()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 		$url = 'http://www.example.com/foo.css';
 
+		$doc->addStyleSheet('http://www.example.com/foo.css');
 		$doc->addStyleSheet($url, true, 'css3', 'screen');
 		$styles = ReflectionHelper::getValue($doc, 'styles');
 
@@ -189,31 +185,28 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('css3', $styles[$url]['mime']);
 		$this->assertEquals('screen', $styles[$url]['media']);
 		$this->assertTrue($styles[$url]['before']);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testAddStyleSheetReplaceExisting
-	 *
-	 * @param Document $doc
-	 *
-	 * @return Document
+	 * @group   Document
 	 */
-	public function testAddStyleSheetAppend(Document $doc)
+	public function testAddStyleSheetAppend()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
 		$url = 'http://www.example.com/bar.css';
 
+		$doc->addStyleSheet('http://www.example.com/foo.css');
 		$doc->addStyleSheet($url);
 		$styles = ReflectionHelper::getValue($doc, 'styles');
 
 		$this->assertInternalType('array', $styles);
 		$this->assertCount(2, $styles);
 		$this->assertArrayHasKey($url, $styles);
-
-		return $doc;
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testAddStyleDeclaration()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -232,15 +225,18 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$doc->addStyleDeclaration($line2);
 		$styleDeclarations = ReflectionHelper::getValue($doc, 'styleDeclarations');
 		$this->assertEquals($line1 . chr(13) . $line2, $styleDeclarations['text/css']);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testAddScriptAppend
+	 * @group   Document
 	 */
-	public function testGetScripts(Document $doc)
+	public function testGetScripts()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$doc->addScript('http://www.example.com/foo.js');
+		$doc->addScript('http://www.example.com/bar.js');
+
 		$expected = ReflectionHelper::getValue($doc, 'scripts');
 		$actual = $doc->getScripts();
 
@@ -248,12 +244,15 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddScriptDeclaration
-	 *
-	 * @param Document $doc
+	 * @group   Document
 	 */
-	public function testGetScriptDeclarations(Document $doc)
+	public function testGetScriptDeclarations()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$doc->addScriptDeclaration('foo');
+		$doc->addScriptDeclaration('bar');
+
 		$expected = ReflectionHelper::getValue($doc, 'scriptDeclarations');
 		$actual = $doc->getScriptDeclarations();
 
@@ -261,10 +260,15 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddStyleSheetAppend
+	 * @group   Document
 	 */
-	public function testGetStyles(Document $doc)
+	public function testGetStyles()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$doc->addStyleSheet('http://www.example.com/foo.css');
+		$doc->addStyleSheet('http://www.example.com/bar.css');
+
 		$expected = ReflectionHelper::getValue($doc, 'styles');
 		$actual = $doc->getStyles();
 
@@ -272,18 +276,24 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddStyleDeclaration
-	 *
-	 * @param Document $doc
+	 * @group   Document
 	 */
-	public function testGetStyleDeclarations(Document $doc)
+	public function testGetStyleDeclarations()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$doc->addStyleDeclaration('foo');
+		$doc->addStyleDeclaration('bar');
+
 		$expected = ReflectionHelper::getValue($doc, 'styleDeclarations');
 		$actual = $doc->getStyleDeclarations();
 
 		$this->assertEquals($expected, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetMenu()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -295,6 +305,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertInstanceOf('\\Awf\\Document\\Menu\\MenuManager', $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetToolbar()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -306,6 +319,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertInstanceOf('\\Awf\\Document\\Toolbar\\Toolbar', $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetApplication()
 	{
 		$app = \Awf\Application\Application::getInstance('Fakeapp', static::$container);
@@ -316,6 +332,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals($app, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetContainer()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -325,6 +344,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals(static::$container, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testSetMimeType()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -335,6 +357,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals($mime, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetMimeType()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -346,6 +371,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals($mime, $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testAddHTTPHeader()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -386,14 +414,17 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddHTTPHeader
-	 *
-	 * @param Document $doc
-	 *
-	 * @return Document
+	 * @group   Document
 	 */
-	public function testRemoveHTTPHeader(Document $doc)
+	public function testRemoveHTTPHeader()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		ReflectionHelper::setValue($doc, 'HTTPHeaders', array());
+
+		$doc->addHTTPHeader('Foo', 'Bar');
+		$doc->addHTTPHeader('Kot', 'Lol');
+
 		$headers = ReflectionHelper::getValue($doc, 'HTTPHeaders');
 		$this->assertCount(2, $headers);
 		$this->assertArrayHasKey('Kot', $headers);
@@ -403,20 +434,20 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$headers = ReflectionHelper::getValue($doc, 'HTTPHeaders');
 		$this->assertCount(1, $headers);
 		$this->assertArrayNotHasKey('Kot', $headers);
-
-		return $doc;
 	}
 
 	/**
-	 * @depends testRemoveHTTPHeader
-	 *
-	 * @param Document $doc
+	 * @group   Document
 	 */
-	public function testGetHTTPHeader(Document $doc)
+	public function testGetHTTPHeader()
 	{
+		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
+
+		$doc->addHTTPHeader('Foo', 'Bar');
+
 		// Get a header which exists
 		$actual = $doc->getHTTPHeader('Foo');
-		$this->assertEquals('Bad', $actual);
+		$this->assertEquals('Bar', $actual);
 
 		// Get the default value of a header which doesn't exist
 		$actual = $doc->getHTTPHeader('Kot', 'Not');
@@ -428,6 +459,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertArrayNotHasKey('Kot', $headers);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testSetName()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -437,6 +471,9 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('foobar', $actual);
 	}
 
+	/**
+	 * @group   Document
+	 */
 	public function testGetName()
 	{
 		$doc = Document::getInstance('fake', static::$container, '\\Awf\\Tests\\Stubs');
@@ -447,4 +484,3 @@ class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('foobar', $actual);
 	}
 }
- 
