@@ -1,2 +1,2 @@
 #!/bin/sh
-php `pwd`/../phpunit.phar -c ../phpunit.xml "$@" .
+../vendor/bin/phpunit-randomizer -c ../phpunit.xml ../tests/
