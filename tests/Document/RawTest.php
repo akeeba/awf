@@ -26,7 +26,7 @@ class RawTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		// Reset the instances
 		ReflectionHelper::setValue('\Awf\Document\Document', 'instances', array());
 	}
-	
+
 	public function testRenderRaw()
 	{
 		$document = Document::getInstance('raw', static::$container);

@@ -73,6 +73,10 @@ class DispatcherTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$container->input->setData(array('task'		=> 'yessir',));
 
 		$dispatcher = $container->dispatcher;
+
+		\Fakeapp\Dispatcher::$onBeforeDispatchResult = true;
+		\Fakeapp\Dispatcher::$onAfterDispatchResult  = true;
+
 		$dispatcher->dispatch();
 
 		$this->assertEquals('jasager', ReflectionHelper::getValue($dispatcher, 'view'));
