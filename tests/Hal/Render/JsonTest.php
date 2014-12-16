@@ -96,14 +96,12 @@ class JsonTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testConstruct
-	 *
-	 * @param Json $renderer
-	 *
 	 * @covers Awf\Hal\Render\Json::render
 	 */
-	public function testRender(Json $renderer)
+	public function testRender()
 	{
+		$renderer = new Json($this->document);
+
 		// Full render
 		$expected = '{"_links":{"prev":{"href":"http:\/\/www.example.com\/test.json?page=1"},"next":{"href":"http:\/\/www.example.com\/test.json?page=3"}},"_embedded":{"detail":["{\"_links\":{},\"_list\":{\"detail1_1\":\"val1_1\",\"detail1_2\":\"val1_2\"}}","{\"_links\":{},\"_list\":{\"detail2_1\":\"val2_1\",\"detail2_2\":\"val2_2\"}}"]},"_list":{"key1":"val1","key2":"val2"}}';
 		$rendered = $renderer->render();
