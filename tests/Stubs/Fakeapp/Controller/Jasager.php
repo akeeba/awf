@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -17,6 +17,19 @@ class Jasager extends Controller
 		'return'	=> null,
 		'exception'	=> null,
 	);
+
+	/**
+	 * Resets the mocked results.
+	 * We MUST call this method between tests, otherwise the previous state will corrupt other tests
+	 */
+	public static function resetResults()
+	{
+		static::$myResult = array(
+			'echo'		=> null,
+			'return'	=> null,
+			'exception'	=> null,
+		);
+	}
 
 	public static function setUpResult($echo = null, $return = null, $exception = null)
 	{
