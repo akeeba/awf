@@ -25,7 +25,7 @@ class DataModelRealtionTest extends DatabaseMysqliCase
      */
     public function testSaveTouches()
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         // I need to fake the user id, since in CLI I don't have one
         $fakeUserManager = new TestClosure(array(
@@ -58,8 +58,6 @@ class DataModelRealtionTest extends DatabaseMysqliCase
 
         $app = Application::getInstance('fakeapp');
         $fakeAppContainer = $app->getContainer();
-        $oldContainer = clone $fakeAppContainer;
-
         $fakeAppContainer->userManager = $fakeUserManager;
 
         $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('check', 'reorder'), array($container));
@@ -70,9 +68,6 @@ class DataModelRealtionTest extends DatabaseMysqliCase
 
         $model->find(1);
         $model->save(null, null, null);
-
-        // Revert to old container
-        ReflectionHelper::setValue($app, 'container', $oldContainer);
 
         $db = self::$driver;
         $query = $db->getQuery(true)
