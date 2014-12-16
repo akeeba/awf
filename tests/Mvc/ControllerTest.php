@@ -9,6 +9,7 @@ namespace Awf\Tests\Controller;
 
 use Awf\Input\Input;
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -23,7 +24,7 @@ require_once 'ControllerDataprovider.php';
  * @covers      Awf\Mvc\Controller::<private>
  * @package Awf\Tests\Controller
  */
-class ControllerTest extends \PHPUnit_Framework_TestCase
+class ControllerTest extends AwfTestCase
 {
     /**
      * @group           Controller

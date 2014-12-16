@@ -8,6 +8,7 @@
 namespace Awf\Tests\Model;
 
 use Awf\Input\Input;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -20,7 +21,7 @@ require_once 'ModelDataprovider.php';
  * @covers      Awf\Mvc\Model::<private>
  * @package     Awf\Tests\Model
  */
-class ModelTest extends \PHPUnit_Framework_TestCase
+class ModelTest extends AwfTestCase
 {
     /**
      * @group           Model
