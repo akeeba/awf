@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -32,6 +32,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->manager = new MenuManager(static::$container);
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testConstruct()
 	{
 		$manager = new MenuManager(static::$container);
@@ -42,6 +45,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals(static::$container, ReflectionHelper::getValue($manager, 'container'));
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testInitialiseFromDirectory()
 	{
 		$app = Application::getInstance('Fakeapp');
@@ -71,6 +77,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('FAKEAPP_MENUINCLUDE_TITLE', $items['include']->getTitle());
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testDisableMenuUsingFlashVariable()
 	{
 		ReflectionHelper::setValue($this->manager, 'menuEnabledStatus', array());
@@ -87,6 +96,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertFalse($isEnabled);
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testDisableMenuViaMethod()
 	{
 		ReflectionHelper::setValue($this->manager, 'menuEnabledStatus', array());
@@ -102,6 +114,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertFalse($isEnabled);
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testEnableMenuAfterItWasDisabled()
 	{
 		ReflectionHelper::setValue($this->manager, 'menuEnabledStatus', array('main' => false));
@@ -116,6 +131,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertTrue($isEnabled);
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testAddItem()
 	{
 		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
@@ -149,10 +167,11 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertCount(3, $items);
 		$this->assertArrayHasKey('item3', $items);
 		$this->assertEquals($item3, $items['item3']);
-
-		return $this->manager;
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testAddItemFromDefinition()
 	{
 		$items = ReflectionHelper::getValue($this->manager, 'items');
@@ -175,19 +194,24 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertCount(2, $items);
 		$this->assertArrayHasKey('item2', $items);
 		$this->assertEquals('Item 2', $items['item2']->getTitle());
-
-		return $this->manager;
 	}
 
 	/**
-	 * @depends testAddItem
-	 *
-	 * @param $manager
+	 * @group   MenuManager
 	 */
-	public function testRemoveItem($manager)
+	public function testRemoveItem()
 	{
+		$manager = $this->manager;
+
+		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
 		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), static::$container);
 		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), static::$container);
+		$item1b = new Item(array('name' => 'item1', 'title' => 'Replacement'), static::$container);
+
+		$manager->addItem($item1);
+		$manager->addItem($item1b);
+		$manager->addItem($item2);
+		$manager->addItem($item3);
 
 		$items = ReflectionHelper::getValue($manager, 'items');
 		$this->assertCount(3, $items);
@@ -210,12 +234,16 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddItemFromDefinition
-	 *
-	 * @param $manager
+	 * @group   MenuManager
 	 */
-	public function testRemoveItemByName($manager)
+	public function testRemoveItemByName()
 	{
+		$manager = $this->manager;
+
+		$manager->addItemFromDefinition(array('name' => 'item1', 'title' => 'Item 1'));
+		$manager->addItemFromDefinition(array('name' => 'item1', 'title' => 'Item 1 new'));
+		$manager->addItemFromDefinition(array('name' => 'item2', 'title' => 'Item 2'));
+
 		$items = ReflectionHelper::getValue($manager, 'items');
 		$this->assertCount(2, $items);
 
@@ -237,10 +265,22 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddItem
+	 * @group   MenuManager
 	 */
-	public function testFindItem(MenuManager $manager)
+	public function testFindItem()
 	{
+		$manager = $this->manager;
+
+		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
+		$item2 = new Item(array('name' => 'item2', 'title' => 'Item 2'), static::$container);
+		$item3 = new Item(array('name' => 'item3', 'title' => 'Item 3'), static::$container);
+		$item1b = new Item(array('name' => 'item1', 'title' => 'Replacement'), static::$container);
+
+		$manager->addItem($item1);
+		$manager->addItem($item1b);
+		$manager->addItem($item2);
+		$manager->addItem($item3);
+
 		$item = $manager->findItem('item1');
 		$this->assertEquals('item1', $item->getName());
 
@@ -248,6 +288,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$item = $manager->findItem('iamnotthere');
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testClear()
 	{
 		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1'), static::$container);
@@ -266,6 +309,9 @@ class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEmpty($items);
 	}
 
+	/**
+	 * @group   MenuManager
+	 */
 	public function testGetMenuItems()
 	{
 		$item1 = new Item(array('name' => 'item1', 'title' => 'Item 1', 'show' => array('main', 'other'), 'group' => 'foo'), static::$container);
