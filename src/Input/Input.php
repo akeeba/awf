@@ -47,6 +47,9 @@ class Input implements \Serializable, \Countable
 	/** @var   array  Input options */
 	protected $options = array();
 
+	/** @var bool Flag to detect if I already imported all the inputs */
+	private static $inputsLoaded = false;
+
 	/**
 	 * Constructor
 	 *
@@ -335,9 +338,7 @@ class Input implements \Serializable, \Countable
 	 */
 	protected function loadAllInputs()
 	{
-		static $loaded = false;
-
-		if (!$loaded)
+		if (!self::$inputsLoaded)
 		{
 			// Load up all the globals.
 			foreach ($GLOBALS as $global => $data)
@@ -354,7 +355,7 @@ class Input implements \Serializable, \Countable
 				}
 			}
 
-			$loaded = true;
+			self::$inputsLoaded = true;
 		}
 	}
 

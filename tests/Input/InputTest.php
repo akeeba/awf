@@ -445,6 +445,9 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	{
 		$input = new Input(null, array('filter' => new FilterMock()));
 
+		// Force the object to always load all the inputs
+		ReflectionHelper::setValue($input, 'inputsLoaded', false);
+
 		$GLOBALS['_TEST'] = array(
 			'foo'	=> 'bar',
 			'baz'	=> 'zaz',
