@@ -127,7 +127,7 @@ class DataControllertest extends DatabaseMysqliCase
             )
         ));
 
-        $container->segment->setFlash('Fakeapp_dummycontrollers', $test['mock']['flash']);
+        $container->segment->setFlash('fakeapp_dummycontrollers', $test['mock']['flash']);
 
         $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('reset', 'bind'), array($container));
         $model->expects($this->any())->method('reset')->willReturn(null);
@@ -161,7 +161,7 @@ class DataControllertest extends DatabaseMysqliCase
             )
         ));
 
-        $container->segment->setFlash('Fakeapp_dummycontrollers', $test['mock']['flash']);
+        $container->segment->setFlash('fakeapp_dummycontrollers', $test['mock']['flash']);
 
         $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('getId', 'lock', 'bind'), array($container));
         $model->expects($this->any())->method('getId')->willReturn($test['mock']['getId']);

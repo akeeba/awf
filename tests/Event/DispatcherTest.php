@@ -9,7 +9,7 @@ namespace Awf\Tests\Event;
 
 
 use Awf\Event\Dispatcher;
-use Awf\Tests\Helpers\AwfTestCase;
+use Awf\Tests\Helpers\ApplicationTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Event\FirstObserver;
 use Awf\Tests\Stubs\Event\SecondObserver;
@@ -22,7 +22,8 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  *
  * @coversDefaultClass Awf\Event\Dispatcher
  */
-class DispatcherTest extends AwfTestCase
+// I don't know why, but if I extend AwfTestCase, these methods are not executed... !!!
+class DispatcherTest extends ApplicationTestCase
 {
 	/** @var  Dispatcher */
 	protected $object;

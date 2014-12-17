@@ -487,7 +487,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertThat(
 			$this->instance->serialize(),
-			$this->equalTo('a:3:{i:0;s:7:"options";i:1;s:4:"data";i:2;a:1:{s:7:"request";s:4:"keep";}}'),
+			$this->equalTo('a:3:{i:0;s:7:"options";i:1;a:1:{i:0;s:4:"data";}i:2;a:1:{s:7:"request";s:4:"keep";}}'),
 			'Line: ' . __LINE__ . '.'
 		);
 	}
