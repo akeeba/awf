@@ -60,7 +60,6 @@ class Input implements \Serializable, \Countable
 	 */
 	public function __construct($source = null, $options = array())
 	{
-		$byReference   = false;
 		$this->options = $options;
 
 		if (isset($options['filter']))
@@ -72,6 +71,9 @@ class Input implements \Serializable, \Countable
 			$this->filter = \Awf\Input\Filter::getInstance();
 		}
 
+		// Should I reference the superglobal variable $_REQUEST?
+		$referenceSuperglobal = is_null($source);
+
 		// Do I need to work around magic_quotes_gpc?
 		if (isset($options['magicQuotesWorkaround']))
 		{
@@ -80,29 +82,26 @@ class Input implements \Serializable, \Countable
 		else
 		{
 			// If there was no source specified, always try working around magic_quotes_gpc on PHP 5.3
-			$magicQuotesWorkaround = is_null($source);
-		}
-
-		// When no source is defined use the $_REQUEST superglobal
-		if (is_null($source))
-		{
-			$byReference = true;
-			$source = & $_REQUEST;
+			$magicQuotesWorkaround = $referenceSuperglobal;
 		}
 
 		// On PHP 5.3 we have the plague of magic_quotes_gpc. Let's try working around it, if we are told so.
-		if (version_compare(PHP_VERSION, '5.4.0', 'lt') && $magicQuotesWorkaround)
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt') && $magicQuotesWorkaround && function_exists('ini_get') && ini_get('magic_quotes_gpc'))
 		{
-			if (function_exists('ini_get') && ini_get('magic_quotes_gpc'))
+			if ($referenceSuperglobal)
 			{
-				$byReference = false;
-				$source      = self::cleanMagicQuotes($source);
+				$source               = self::cleanMagicQuotes($_REQUEST);
+				$referenceSuperglobal = false;
+			}
+			else
+			{
+				$source = self::cleanMagicQuotes($source);
 			}
 		}
 
-		if($byReference)
+		if ($referenceSuperglobal)
 		{
-			$this->data = &$source;
+			$this->data = &$_REQUEST;
 		}
 		else
 		{
@@ -348,7 +347,7 @@ class Input implements \Serializable, \Countable
 	 */
 	protected function loadAllInputs()
 	{
-		if (!self::$inputsLoaded)
+		if ( !self::$inputsLoaded)
 		{
 			// Load up all the globals.
 			foreach ($GLOBALS as $global => $data)
