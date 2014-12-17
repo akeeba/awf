@@ -8,6 +8,7 @@
 namespace Awf\Tests\Document;
 
 use Awf\Document\Document;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -17,7 +18,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @coversDefaultClass \Awf\Document\Document
  */
-class DocumentTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class DocumentTest extends AwfTestCase
 {
 	protected function setUp()
 	{

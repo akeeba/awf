@@ -12,13 +12,14 @@ namespace Awf\Tests\Database;
 
 use Awf\Database\Driver;
 use Awf\Database\QueryElement;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Test class for Awf\Database\QueryElement.
  *
  * @since  1.0
  */
-class DatabaseQueryElementTest extends \PHPUnit_Framework_TestCase
+class DatabaseQueryElementTest extends AwfTestCase
 {
 	/**
 	 * Test cases for append and __toString

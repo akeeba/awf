@@ -9,18 +9,19 @@
 namespace Awf\Tests\Date;
 
 use Awf\Date\Date;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Tests for Date class.
  *
  * @since  1.0
  */
-class DateTest extends \PHPUnit_Framework_TestCase
+class DateTest extends AwfTestCase
 {
 	/**
 	 * An instance of the class to test.
 	 *
-	 * @var    Awf\Date\Date
+	 * @var    \Awf\Date\Date
 	 * @since  1.0
 	 */
 	private $instance;
@@ -698,9 +699,8 @@ class DateTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
-		// Note: do not extend parent setUp method
+		parent::setUp();
 
 		$this->instance = new Date('12/20/2007 11:44:56', 'America/New_York');
 	}
 }
- 

@@ -10,7 +10,7 @@
 
 namespace Awf\Tests\Database\Query;
 
-use Awf\Database\Driver\Mysqli;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\TestHelper;
 
 /**
@@ -18,7 +18,7 @@ use Awf\Tests\Helpers\TestHelper;
  *
  * @since  1.1
  */
-class MysqliTest extends \PHPUnit_Framework_TestCase
+class MysqliTest extends AwfTestCase
 {
 	/**
 	 * @var    \Awf\Database\Driver  A mock of the DatabaseDriver object for testing purposes.
