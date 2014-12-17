@@ -60,6 +60,7 @@ class Input implements \Serializable, \Countable
 	 */
 	public function __construct($source = null, $options = array())
 	{
+		$byReference   = false;
 		$this->options = $options;
 
 		if (isset($options['filter']))
@@ -85,6 +86,7 @@ class Input implements \Serializable, \Countable
 		// When no source is defined use the $_REQUEST superglobal
 		if (is_null($source))
 		{
+			$byReference = true;
 			$source = & $_REQUEST;
 		}
 
@@ -93,11 +95,19 @@ class Input implements \Serializable, \Countable
 		{
 			if (function_exists('ini_get') && ini_get('magic_quotes_gpc'))
 			{
-				$source = self::cleanMagicQuotes($source);
+				$byReference = false;
+				$source      = self::cleanMagicQuotes($source);
 			}
 		}
 
-		$this->data = $source;
+		if($byReference)
+		{
+			$this->data = &$source;
+		}
+		else
+		{
+			$this->data = $source;
+		}
 	}
 
 	public static function cleanMagicQuotes(array $source)
