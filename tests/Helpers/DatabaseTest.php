@@ -1,14 +1,14 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Helpers;
 
+use Awf\Application\Application;
 use Awf\Database\Driver;
-use Awf\Tests\Helpers\TestHelper;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
@@ -22,19 +22,8 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected static $driver;
 
-	public function __construct($name = null, array $data = array(), $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-
-		// We can't use setUpBeforeClass or setUp because PHPUnit will not run these methods before
-		// getting the data from the data provider of each test :(
-
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-
-		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer();
-		\Awf\Application\Application::getInstance('Fakeapp', static::$container);
-	}
+	private $whiteListTests = array();
+	private $blackLisTests  = array();
 
 	/**
 	 * This method is called before the first test of this test class is run.
@@ -170,7 +159,7 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected function getDataSet()
 	{
-		return $this->createXMLDataSet(__DIR__ . '/Stubs/empty.xml');
+		return new \PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
 	}
 
 	/**
@@ -215,6 +204,25 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected function setUp()
 	{
+		$class       = get_class($this);
+		$parts       = explode('\\', $class);
+		$currentTest = array_pop($parts);
+
+		if($this->whiteListTests && !in_array($currentTest, $this->whiteListTests))
+		{
+			$this->markTestSkipped('Skipped due whitelist settings');
+		}
+
+		if(in_array($currentTest, $this->blackLisTests))
+		{
+			$this->markTestSkipped('Skipped due blacklist settings');
+		}
+
+		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
+		static::$container = new FakeContainer();
+
+		Application::getInstance('Fakeapp', static::$container);
+
 		if (empty(static::$driver))
 		{
 			$this->markTestSkipped('There is no database driver.');
@@ -222,5 +230,4 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 
 		parent::setUp();
 	}
-
-} 
+}

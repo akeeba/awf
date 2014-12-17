@@ -13,7 +13,8 @@ namespace Awf\Tests\Database;
 use Awf\Tests\Helpers\DatabaseTest;
 use Awf\Database\Driver;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Fakeapp\Application;
+use Awf\Application\Application;
+use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * Abstract test case class for MySQLi database testing.
@@ -22,33 +23,11 @@ use Fakeapp\Application;
  */
 abstract class DatabaseMysqliCase extends DatabaseTest
 {
-	private $savedContainer;
-
 	/**
 	 * @var    array  The database driver options for the connection.
 	 * @since  1.0
 	 */
 	protected static $options = array('driver' => 'mysqli', 'prefix' => 'awf_');
-
-	protected function setUp()
-	{
-		// I have to save the current container, since in several tests the Controller/Model/View will inject new
-		// params, polluting following tests
-		$app = Application::getInstance('fakeapp');
-		$fakeAppContainer = $app->getContainer();
-		$this->savedContainer = clone $fakeAppContainer;
-
-		parent::setUp();
-	}
-
-	protected function tearDown()
-	{
-		// Let's revert back to the old container
-		$app = Application::getInstance('fakeapp');
-		ReflectionHelper::setValue($app, 'container', $this->savedContainer);
-
-		parent::tearDown();
-	}
 
 	/**
 	 * This method is called before the first test of this test class is run.
@@ -61,6 +40,12 @@ abstract class DatabaseMysqliCase extends DatabaseTest
 	 */
 	public static function setUpBeforeClass()
 	{
+		// First of all let's create the container, it will be useful later
+		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
+		static::$container = new FakeContainer();
+
+		Application::getInstance('Fakeapp', static::$container);
+
 		// First let's look to see if we have a DSN defined or in the environment variables.
 		if (defined('AWFTEST_DATABASE_MYSQLI_DSN') || getenv('AWFTEST_DATABASE_MYSQLI_DSN'))
 		{

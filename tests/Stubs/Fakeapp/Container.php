@@ -15,8 +15,8 @@ class Container extends \Awf\Container\Container
 		$basePath = realpath(__DIR__ . '/../../..') . '/tests';
 
 		$defaults = array(
-			'application_name'     => 'Fakeapp',
-			'session_segment_name' => 'fakeapp',
+			'application_name'     => 'fakeapp',
+			'session_segment_name' => 'fakeapp_segment',
 			'basePath'             => $basePath . '/Stubs/Fakeapp',
 			'languagePath'         => $basePath . '/Stubs/Fakeapp/language',
 			'filesystemBase'       => $basePath . '/Stubs/Fakeapp',
@@ -25,6 +25,11 @@ class Container extends \Awf\Container\Container
 		);
 
 		$values = array_merge($defaults, $values);
+
+		if (!defined('APATH_BASE'))
+		{
+			define('APATH_BASE', $basePath . '/Stubs/Fakeapp');
+		}
 
 		parent::__construct($values);
 
