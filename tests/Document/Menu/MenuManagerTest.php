@@ -10,8 +10,8 @@ namespace Awf\Tests\Document\Menu;
 use Awf\Application\Application;
 use Awf\Document\Menu\Item;
 use Awf\Document\Menu\MenuManager;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Text\Text;
 
 /**
  * Class MenuManagerTest
@@ -20,7 +20,7 @@ use Awf\Text\Text;
  *
  * @coversDefaultClass \Awf\Document\Menu\MenuManager
  */
-class MenuManagerTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class MenuManagerTest extends AwfTestCase
 {
 	/** @var  \Awf\Document\Menu\MenuManager */
 	protected $manager;

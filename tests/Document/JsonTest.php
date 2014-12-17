@@ -8,6 +8,7 @@
 namespace Awf\Tests\Document;
 
 use Awf\Document\Document;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -15,7 +16,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @coversDefaultClass \Awf\Document\Json
  */
-class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class JsonTest extends AwfTestCase
 {
 	protected function setUp()
 	{

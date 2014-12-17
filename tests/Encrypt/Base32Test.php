@@ -1,14 +1,14 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Encrypt;
 
-
 use Awf\Encrypt\Base32;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -16,7 +16,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @package Awf\Tests\Encrypt
  */
-class Base32Test extends \PHPUnit_Framework_TestCase
+class Base32Test extends AwfTestCase
 {
 	/** @var  Base32 */
 	protected $base32;
@@ -26,6 +26,7 @@ class Base32Test extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
+		parent::setUp();
 
 		$this->base32 = new Base32();
 	}
@@ -85,4 +86,3 @@ class Base32Test extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

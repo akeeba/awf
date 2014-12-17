@@ -7,18 +7,16 @@
 
 namespace Awf\Tests\Document;
 
-use Awf\Application\Application;
 use Awf\Document\Document;
-use Awf\Document\Html;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * @package Awf\Tests\Document
  *
  * @coversDefaultClass \Awf\Document\Html
  */
-class HtmlTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class HtmlTest extends AwfTestCase
 {
 	protected function setUp()
 	{

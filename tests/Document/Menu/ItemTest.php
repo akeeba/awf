@@ -7,12 +7,9 @@
 
 namespace Awf\Tests\Document\Menu;
 
-use Awf\Application\Application;
-use Awf\Document\Document;
 use Awf\Document\Menu\Item;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
-use Awf\Uri\Uri;
 
 /**
  * Class ItemTest
@@ -21,7 +18,7 @@ use Awf\Uri\Uri;
  *
  * @coversDefaultClass \Awf\Document\Menu\Item
  */
-class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class ItemTest extends AwfTestCase
 {
 	/**
 	 * @group   MenuItem

@@ -8,6 +8,7 @@
 namespace Awf\Tests\Document\Toolbar;
 
 use Awf\Document\Toolbar\Button;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -17,7 +18,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @coversDefaultClass \Awf\Document\Toolbar
  */
-class ButtonTest extends \PHPUnit_Framework_TestCase
+class ButtonTest extends AwfTestCase
 {
 
 	/**
