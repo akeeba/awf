@@ -9,8 +9,9 @@ namespace Awf\Tests\Hal;
 
 use Awf\Hal\Links;
 use Awf\Hal\Link;
+use Awf\Tests\Helpers\AwfTestCase;
 
-class LinksTest extends \PHPUnit_Framework_TestCase
+class LinksTest extends AwfTestCase
 {
 	/**
 	 * @covers Awf\Hal\Links::addLink
@@ -150,4 +151,3 @@ class LinksTest extends \PHPUnit_Framework_TestCase
 		$this->assertEmpty($links);
 	}
 }
- 

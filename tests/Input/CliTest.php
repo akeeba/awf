@@ -1,20 +1,21 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Input;
 
 use Awf\Input\Cli;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Test class for Awf\Input\Cli.
  *
  * @since  1.0
  */
-class CliTest extends \PHPUnit_Framework_TestCase
+class CliTest extends AwfTestCase
 {
 	/**
 	 * Test the Awf\Input\Cli::get method.
@@ -170,4 +171,3 @@ class CliTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

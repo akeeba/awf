@@ -8,13 +8,14 @@
 namespace Awf\Tests\Input;
 
 use Awf\Input\Filter;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Test class for Awf\Input\Filter
  *
  * @since  1.0
  */
-class FilterTest extends \PHPUnit_Framework_TestCase
+class FilterTest extends AwfTestCase
 {
 	/**
 	 * Produces the array of test cases common to all test runs.
@@ -1304,4 +1305,3 @@ class FilterTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

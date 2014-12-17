@@ -10,9 +10,10 @@ namespace Awf\Tests\Hal\Render;
 use Awf\Hal\Document;
 use Awf\Hal\Link;
 use Awf\Hal\Render\Json;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
-class JsonTest extends \PHPUnit_Framework_TestCase
+class JsonTest extends AwfTestCase
 {
 	/** @var  Document  The document used in the renderer tests */
 	protected $document;
@@ -22,6 +23,8 @@ class JsonTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$data = array(
 			'key1' => 'val1',
 			'key2' => 'val2',

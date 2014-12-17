@@ -10,9 +10,10 @@ namespace Awf\Tests\Hal;
 use Awf\Hal\Document;
 use Awf\Hal\Link;
 use Awf\Hal\Links;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
-class DocumentTest extends \PHPUnit_Framework_TestCase
+class DocumentTest extends AwfTestCase
 {
 	/** @var Document */
 	protected $document = null;
