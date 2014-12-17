@@ -479,9 +479,11 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		ReflectionHelper::invoke($this->instance, 'loadAllInputs');
 
 		// Adjust the values so they are easier to handle.
+		// WARNING!!! The source is passed by REFERENCE: this means that editing it here will edit the $_REQUEST superglobal array
+		// At least we have to use the same type, otherwise it will screw up everything else
 		ReflectionHelper::setValue($this->instance, 'inputs', array('server' => 'remove', 'env' => 'remove', 'request' => 'keep'));
 		ReflectionHelper::setValue($this->instance, 'options', 'options');
-		ReflectionHelper::setValue($this->instance, 'data', 'data');
+		ReflectionHelper::setValue($this->instance, 'data', array('data'));
 
 		$this->assertThat(
 			$this->instance->serialize(),
