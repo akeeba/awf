@@ -14,7 +14,6 @@ use Awf\Database\Driver;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Helpers\TestHelper;
 use Awf\Tests\Helpers\DatabaseTest;
-use Awf\Tests\Stubs\Pimple\NonInvokable;
 
 require_once __DIR__ . '/../Stubs/database/NosqlDriver.php';
 
@@ -362,6 +361,8 @@ class DriverTest extends DatabaseTest
 	 */
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$this->instance = Driver::getInstance(
 			array(
 				'driver' => 'nosql',

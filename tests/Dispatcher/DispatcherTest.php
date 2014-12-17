@@ -10,19 +10,15 @@ namespace Awf\Tests\Dispatcher;
 use Awf\Application\Application;
 use Awf\Dispatcher\Dispatcher;
 use Awf\Input\Input;
+use Awf\Tests\Helpers\AwfTestCase;
 use Fakeapp\Controller\Jasager;
 use Awf\Tests\Helpers\ReflectionHelper;
 
-class DispatcherTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class DispatcherTest extends AwfTestCase
 {
 	protected function tearDown()
 	{
 		parent::tearDown();
-
-		// Since we are manipulating the input, we have to revert it back to empty, otherwise other tests could fail.
-		// To be honest that should not happen, since we are cloning it... however, it IS happening!
-		$container = clone self::$container;
-		$container->input->setData(new Input(array()));
 
 		Jasager::resetResults();
 	}

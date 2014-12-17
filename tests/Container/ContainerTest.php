@@ -9,6 +9,7 @@ namespace Awf\Tests\Container;
 
 
 use Awf\Container\Container;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Class ContainerTest
@@ -17,7 +18,7 @@ use Awf\Container\Container;
  *
  * @coversDefaultClass \Awf\Container\Container
  */
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends AwfTestCase
 {
 	/**
 	 * Make sure we can get a customised container
