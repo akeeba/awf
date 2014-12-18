@@ -52,6 +52,28 @@ class BelongsToManyTest extends DatabaseMysqliCase
     }
 
     /**
+     * @group           BelongsToMany
+     * @group           BelongsToManyGetCountSubquery
+     * @covers          Awf\Mvc\DataModel\Relation\BelongsToMany::getCountSubquery
+     */
+    public function testGetCountSubquery()
+    {
+        $model    = new Groups();
+        $relation = new BelongsToMany($model, 'Fakeapp\Model\Parts');
+
+        $result = $relation->getCountSubquery();
+
+        $check = '
+SELECT COUNT(*)
+FROM `#__fakeapp_parts` AS `reltbl`
+INNER JOIN `#__fakeapp_parts_groups` AS `pivotTable` ON(`pivotTable`.`fakeapp_part_id` = `reltbl`.`fakeapp_part_id`)
+WHERE `pivotTable`.`fakeapp_group_id` =`#__fakeapp_groups`.`fakeapp_group_id`';
+
+        $this->assertInstanceOf('Awf\Database\Query', $result, 'BelongsToMany::getCountSubquery Should return an instance of Query');
+        $this->assertEquals($check, (string) $result, 'BelongsToMany::getCountSubquery Failed to return the correct query');
+    }
+
+    /**
      * @group       BelongsToMany
      * @group       BelongsToManyGetNew
      * @covers      Awf\Mvc\DataModel\Relation\BelongsToMany::getNew
