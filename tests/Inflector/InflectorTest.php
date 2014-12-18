@@ -850,4 +850,9 @@ class InflectorTest extends AwfTestCase
 			$message
 		);
 	}
+
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
 }

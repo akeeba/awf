@@ -361,7 +361,7 @@ class DriverTest extends DatabaseTest
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$this->instance = Driver::getInstance(
 			array(

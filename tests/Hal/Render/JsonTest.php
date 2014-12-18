@@ -23,7 +23,7 @@ class JsonTest extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$data = array(
 			'key1' => 'val1',

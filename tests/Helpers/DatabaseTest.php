@@ -22,7 +22,9 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected static $driver;
 
+	/** @var array If not empty, only tests inside this array would be executed, skipping the rest */
 	private $whiteListTests = array();
+	/** @var array Tests that should be skipped */
 	private $blackLisTests  = array();
 
 	/**
@@ -198,16 +200,21 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 *
 	 * This method is called before a test is executed.
 	 *
+	 * @param bool $resetContainer  Should I reset the Container?
+	 *
 	 * @return  void
 	 *
 	 * @since   1.0
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		$class       = get_class($this);
 		$parts       = explode('\\', $class);
 		$currentTest = array_pop($parts);
 
+		// Do I have to skip any tests? This is our latest resort when we have entangled tests: Test A is failing when the
+		// whole suite is executed in a precise order, however we don't know WHICH tests is corrupting the environment.
+		// We can't exclude any test since we would have a whole different suite, so the only solution is to SKIP them
 		if($this->whiteListTests && !in_array($currentTest, $this->whiteListTests))
 		{
 			$this->markTestSkipped('Skipped due whitelist settings');
@@ -218,10 +225,14 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 			$this->markTestSkipped('Skipped due blacklist settings');
 		}
 
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-		static::$container = new FakeContainer();
+		// Am I asked to reset the Application Container?
+		if($resetContainer)
+		{
+			ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
+			static::$container = new FakeContainer();
 
-		Application::getInstance('Fakeapp', static::$container);
+			Application::getInstance('Fakeapp', static::$container);
+		}
 
 		if (empty(static::$driver))
 		{

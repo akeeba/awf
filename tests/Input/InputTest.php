@@ -525,9 +525,6 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 
-	/*
-	 * Protected methods.
-	 */
 	/**
 	 * Setup for testing.
 	 *
@@ -537,7 +534,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$array = null;
 		$this->instance = new Input($array, array('filter' => new \Awf\Tests\Stubs\Input\FilterMock));

@@ -26,7 +26,7 @@ class Base32Test extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$this->base32 = new Base32();
 	}

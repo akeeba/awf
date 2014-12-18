@@ -49,7 +49,7 @@ class QueryTest extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$this->dbo = \Awf\Tests\Stubs\Database\Driver::create($this);
 

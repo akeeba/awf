@@ -699,7 +699,7 @@ class DateTest extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$this->instance = new Date('12/20/2007 11:44:56', 'America/New_York');
 	}

@@ -19,6 +19,11 @@ use Awf\Tests\Database\DatabaseMysqliCase;
  */
 class MysqliTest extends DatabaseMysqliCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * Data for the testEscape test.
 	 *

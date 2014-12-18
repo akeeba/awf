@@ -21,6 +21,11 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class MysqlTest extends DatabaseMysqlCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * Data for the testEscape test.
 	 *

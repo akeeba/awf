@@ -12,6 +12,11 @@ use Awf\Tests\Helpers\AwfTestCase;
 
 class LinkTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * Provides the data for testCreateNoException
 	 *

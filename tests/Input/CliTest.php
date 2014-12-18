@@ -17,6 +17,11 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class CliTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+	
 	/**
 	 * Test the Awf\Input\Cli::get method.
 	 *

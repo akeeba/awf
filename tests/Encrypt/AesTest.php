@@ -26,7 +26,7 @@ class AesTest extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		// Check if PHP has mcrypt installed
 		if (function_exists('mcrypt_module_open'))

@@ -25,7 +25,7 @@ class TotpTest extends AwfTestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		// VARS: $timeStep = 30, $passCodeLength = 6, $secretLength = 10, $base32=null
 		$timeStep 				= 30;

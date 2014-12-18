@@ -18,6 +18,11 @@ class DocumentTest extends AwfTestCase
 	/** @var Document */
 	protected $document = null;
 
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * @group   Hal
 	 * @covers  Awf\Hal\Document::__construct

@@ -20,6 +20,10 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class ButtonTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
 
 	/**
 	 * @group   Button

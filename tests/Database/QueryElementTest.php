@@ -21,6 +21,11 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class DatabaseQueryElementTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * Test cases for append and __toString
 	 *

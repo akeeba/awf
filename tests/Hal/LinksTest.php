@@ -13,6 +13,11 @@ use Awf\Tests\Helpers\AwfTestCase;
 
 class LinksTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * @covers Awf\Hal\Links::addLink
 	 */

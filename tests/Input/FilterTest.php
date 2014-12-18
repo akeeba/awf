@@ -17,6 +17,11 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class FilterTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
 	 * Produces the array of test cases common to all test runs.
 	 *
