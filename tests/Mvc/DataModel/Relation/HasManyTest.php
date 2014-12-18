@@ -37,7 +37,7 @@ class HasManyTest extends DatabaseMysqliCase
      * @group           HasManyGetCountSubquery
      * @covers          Awf\Mvc\DataModel\Relation\HasMany::getCountSubquery
      */
-    /*public function testGetCountSubquery()
+    public function testGetCountSubquery()
     {
         //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
@@ -56,14 +56,14 @@ FROM `#__fakeapp_children` AS `reltbl`
 WHERE `reltbl`.`fakeapp_parent_id` = `#__fakeapp_parents`.`fakeapp_parent_id`';
 
         $this->assertEquals($check, $query, 'HasMany::getCountSubquery Returned the wrong query');
-    }*/
+    }
 
     /**
      * @group           HasMany
      * @group           HasManyGetNew
      * @covers          Awf\Mvc\DataModel\Relation\HasMany::getNew
      */
-    /*public function testGetNew()
+    public function testGetNew()
     {
         $savedInstances = ReflectionHelper::getValue('Awf\Application\Application', 'instances');
 
@@ -77,7 +77,7 @@ WHERE `reltbl`.`fakeapp_parent_id` = `#__fakeapp_parents`.`fakeapp_parent_id`';
 
         $this->assertInstanceOf('Fakeapp\Model\Children', $new);
         $this->assertEquals(2, $new->getFieldValue('fakeapp_parent_id'), 'HasMany::getNew Failed to prime the new record');
-    }*/
+    }
 
     /**
      * @param   string    $class
