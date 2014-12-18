@@ -107,6 +107,56 @@ WHERE `pivotTable`.`fakeapp_group_id` =`#__fakeapp_groups`.`fakeapp_group_id`';
     }
 
     /**
+     * @group           BelongsToMany
+     * @group           BelongsToManySaveAll
+     * @covers          Awf\Mvc\DataModel\Relation\BelongsToMany::saveAll
+     */
+    public function testSaveAll()
+    {
+        $model    = new Groups();
+        $model->find(1);
+        $relation = new BelongsToMany($model, 'Fakeapp\Model\Parts');
+
+        $items = array();
+
+        // Let's mix datamodels with integers
+        $items[0] = new Parts();
+        $items[0]->find(1);
+        $items[0]->description = 'Modified';
+
+        for($i = 1; $i <= 55; $i++)
+        {
+            $items[] = $i;
+        }
+
+        $data = new Collection($items);
+
+        ReflectionHelper::setValue($relation, 'data', $data);
+
+        $relation->saveAll();
+
+        $db = self::$driver;
+
+        // First of all double check if the part was updated
+        $query = $db->getQuery(true)
+                    ->select($db->qn('description'))
+                    ->from($db->qn('#__fakeapp_parts'))
+                    ->where($db->qn('fakeapp_part_id').' = '.$db->q(1));
+        $descr = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals('Modified', $descr, 'BelongsToMany::saveAll Failed to save item in the relationship');
+
+        // Then let's check if all the items were saved in the glue table
+        $query = $db->getQuery(true)
+                    ->select('COUNT(*)')
+                    ->from($db->qn('#__fakeapp_parts_groups'))
+                    ->where($db->qn('fakeapp_group_id'). ' = '.$db->q(1));
+        $count = $db->setQuery($query)->loadResult();
+
+        $this->assertEquals(55, $count, 'BelongsToMany::saveAll Failed to save data inside the glue table');
+    }
+
+    /**
      * @group       BelongsToMany
      * @group       BelongsToManyGetNew
      * @covers      Awf\Mvc\DataModel\Relation\BelongsToMany::getNew

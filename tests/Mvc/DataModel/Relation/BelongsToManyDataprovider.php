@@ -152,4 +152,18 @@ class BelongsToManyDataprovider
 
         return $data;
     }
+
+    public function getTestSaveAll()
+    {
+        $data[] = array(
+            array(
+
+            ),
+            array(
+                'case' => ''
+            )
+        );
+
+        return $data;
+    }
 }
