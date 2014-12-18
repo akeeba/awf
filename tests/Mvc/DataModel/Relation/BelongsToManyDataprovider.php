@@ -114,4 +114,42 @@ class BelongsToManyDataprovider
 
         return $data;
     }
+
+    public function getTestSetDataFromCollection()
+    {
+        $data[] = array(
+            array(
+                'keymap' => null
+            ),
+            array(
+                'case'  => 'Keymap is not an array',
+                'count' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'keymap' => array()
+            ),
+            array(
+                'case'  => "Keymap is an array but it doesn't contain any correct value",
+                'count' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'keymap' => array(
+                    1 => array(1, 2, 3),
+                    2 => array(1, 2)
+                )
+            ),
+            array(
+                'case'  => "Keymap is an array and it's correct",
+                'count' => 2
+            )
+        );
+
+        return $data;
+    }
 }

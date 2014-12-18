@@ -1,11 +1,13 @@
 <?php
 namespace Awf\Tests\DataModel\Relation\Relation\BelongsToMany;
 
+use Awf\Mvc\DataModel\Collection;
 use Awf\Mvc\DataModel\Relation\BelongsToMany;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Fakeapp\Model\Groups;
+use Fakeapp\Model\Parts;
 
 require_once 'BelongsToManyDataprovider.php';
 
@@ -49,6 +51,37 @@ class BelongsToManyTest extends DatabaseMysqliCase
 
         $model    = new Groups();
         $relation = new BelongsToMany($model, 'Fakeapp\Model\Children');
+    }
+
+    /**
+     * @group           BelongsToMany
+     * @group           BelongsToManySetDataFromCollection
+     * @covers          Awf\Mvc\DataModel\Relation\BelongsToMany::setDataFromCollection
+     * @dataProvider    BelongsToManyDataprovider::getTestSetDataFromCollection
+     */
+    public function testSetDataFromCollection($test, $check)
+    {
+        $msg = 'BelongsToMany::setDataFromCollection %s - Case: '.$check['case'];
+
+        $parts    = new Parts();
+        $model    = new Groups();
+        $model->find(2);
+        $relation = new BelongsToMany($model, 'Fakeapp\Model\Parts');
+
+        $items[0] = clone $parts;
+        $items[0]->find(1);
+
+        $items[1] = clone $parts;
+        $items[1]->find(2);
+
+        $items[2] = clone $parts;
+        $items[2]->find(3);
+
+        $data = new Collection($items);
+
+        $relation->setDataFromCollection($data, $test['keymap']);
+
+        $this->assertCount($check['count'], ReflectionHelper::getValue($relation, 'data'), sprintf($msg, ''));
     }
 
     /**
