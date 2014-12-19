@@ -117,6 +117,10 @@ class Application extends \Awf\Application\Application
 		$languageTag = \JFactory::getLanguage()->getTag();
 		Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', false, $this->container->languagePath);
 		Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
+
+		// Load the framework's language file
+		Text::loadLanguage('en-GB', 'lib_awf', '.ini', false, $this->container->languagePath);
+		Text::loadLanguage($languageTag, 'lib_awf', '.ini', false, $this->container->languagePath);
 	}
 
 	/**

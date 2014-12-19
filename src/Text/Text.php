@@ -69,10 +69,14 @@ abstract class Text
 			$languagePath . '/' . strtolower($appName) . '/' . $langCode . $suffix,
 			// langPath/MyApp/en-GB/en-GB.ini
 			$languagePath . '/' . strtolower($appName) . '/' . $langCode . '/' . $langCode . $suffix,
+			// langPath/en-GB.MyApp.ini
+			$languagePath . '/' . $langCode . '.' . strtolower($appName) . $suffix,
 			// langPath/en-GB.ini
 			$languagePath . '/' . $langCode . $suffix,
 			// langPath/en-GB/en-GB.ini
 			$languagePath . '/' . $langCode . '/' . $langCode . $suffix,
+			// langPath/en-GB/en-GB.MyApp.ini
+			$languagePath . '/' . $langCode . '/' . $langCode . '.' . strtolower($appName) . $suffix,
 		);
 
 		$filename = null;
