@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -83,7 +83,7 @@ abstract class AbstractFilter
 	 */
 	public function getSearchMethods()
 	{
-		$ignore = array('isEmpty', 'getField', 'getFieldType', '__construct', 'getDefaultSearchMethod', 'getSearchMethods');
+		$ignore = array('isEmpty', 'getField', 'getFieldType', '__construct', 'getDefaultSearchMethod', 'getSearchMethods', 'getFieldName');
 
 		$class = new \ReflectionClass(__CLASS__);
 		$methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
@@ -307,4 +307,4 @@ abstract class AbstractFilter
 
 		return $type;
 	}
-} 
+}
