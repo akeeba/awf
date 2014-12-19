@@ -34,6 +34,13 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+		$appNameForPaths = $values['application_name'];
+
+		if (Helper::isBackend() && (substr($appNameForPaths, -5) == 'Admin'))
+		{
+			$appNameForPaths = substr($appNameForPaths, 0, -5);
+		}
+
 		// Set up the filesystem path
 		if (empty($values['filesystemBase']))
 		{
@@ -43,7 +50,7 @@ class Container extends \Awf\Container\Container
 		// Set up the base path
 		if (empty($values['basePath']))
 		{
-			$basePath = '/components/com_' . strtolower($values['application_name']) . '/' . $values['application_name'];
+			$basePath = '/components/com_' . $appNameForPaths . '/' . $values['application_name'];
 			$values['basePath'] = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_ROOT) . $basePath;
 		}
 
@@ -68,7 +75,7 @@ class Container extends \Awf\Container\Container
 		// Set up the SQL files path
 		if (empty($values['sqlPath']))
 		{
-			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($values['application_name'])
+			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . $appNameForPaths
 				. '/sql/xml';
 		}
 
