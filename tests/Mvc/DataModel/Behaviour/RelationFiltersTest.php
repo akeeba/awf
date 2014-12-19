@@ -16,7 +16,7 @@ require_once 'RelationFiltersDataprovider.php';
 class RelationFiltersTest extends DatabaseMysqliCase
 {
     /**
-     * @group           RelationFilters
+     * @group           Behaviour
      * @group           RelationFiltersOnAfterBuildQuery
      * @covers          Awf\Mvc\DataModel\Behaviour\RelationFilters::onAfterBuildQuery
      * @dataProvider    RelationFiltersDataprovider::getTestOnAfterBuildQuery

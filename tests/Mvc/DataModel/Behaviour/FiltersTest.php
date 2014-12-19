@@ -15,7 +15,7 @@ require_once 'FiltersDataprovider.php';
 class FiltersTest extends DatabaseMysqliCase
 {
     /**
-     * @group           Filters
+     * @group           Behaviour
      * @group           FiltersOnAfterBuildQuery
      * @covers          Awf\Mvc\DataModel\Behaviour\Filters::onAfterBuildQuery
      * @dataProvider    FiltersDataprovider::getTestOnAfterBuildQuery
