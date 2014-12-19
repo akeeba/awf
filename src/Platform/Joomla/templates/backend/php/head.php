@@ -6,7 +6,6 @@
  */
 
 use Awf\Document\Document;
-use Awf\Uri\Uri;
 
 $headers = $this->getHTTPHeaders();
 

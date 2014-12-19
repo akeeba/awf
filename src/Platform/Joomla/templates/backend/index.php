@@ -5,5 +5,5 @@
  * @license		GNU GPL version 3 or later
  */
 
-	include __DIR__ . '/php/head.php';
-	echo $this->getBuffer();
+include __DIR__ . '/php/head.php';
+echo $this->getBuffer();
