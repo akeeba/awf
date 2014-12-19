@@ -38,13 +38,13 @@ class Manager extends \Awf\User\Manager
 			// We don't have a current user yet? Let's load it!
 			if (!is_object($this->currentUser))
 			{
-				$this->currentUser = new User(\JFactory::getUser($id));
+				$this->currentUser = new User($id);
 			}
 
 			return $this->currentUser;
 		}
 
-		return new User(\JFactory::getUser($id));
+		return new User($id);
 	}
 
 	/**

@@ -15,14 +15,27 @@ use JArrayHelper;
 use JFactory;
 use JText;
 use JUserHelper;
+use JUser;
 
-class User extends \JUser implements UserInterface
+class User implements UserInterface
 {
-	public function bind($array)
+	/**
+	 * The internal Joomla! user object
+	 *
+	 * @var JUser
+	 */
+	private $user = null;
+
+	public function __construct($identifier = 0)
 	{
-		return parent::bind($array);
+		$this->user = new JUser($identifier);
 	}
 
+
+	public function bind($array)
+	{
+		return $this->user->bind($array);
+	}
 
 	/**
 	 * Returns the ID of the user
@@ -31,7 +44,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getId()
 	{
-		return $this->id;
+		return $this->user->id;
 	}
 
 	/**
@@ -41,7 +54,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getUsername()
 	{
-		return $this->username;
+		return $this->user->username;
 	}
 
 	/**
@@ -53,7 +66,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function setUsername($username)
 	{
-		$this->username = $username;
+		$this->user->username = $username;
 	}
 
 	/**
@@ -63,7 +76,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getName()
 	{
-		return $this->name;
+		return $this->user->name;
 	}
 
 	/**
@@ -75,7 +88,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function setName($name)
 	{
-		$this->name = $name;
+		$this->user->name = $name;
 	}
 
 	/**
@@ -85,7 +98,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getEmail()
 	{
-		return $this->email;
+		return $this->user->email;
 	}
 
 	/**
@@ -97,7 +110,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function setEmail($email)
 	{
-		$this->email = $email;
+		$this->user->email = $email;
 	}
 
 	/**
@@ -107,7 +120,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getPassword()
 	{
-		return $this->password;
+		return $this->user->password;
 	}
 
 	/**
@@ -123,7 +136,7 @@ class User extends \JUser implements UserInterface
 			'password'		=> $password,
 			'password2'		=> $password,
 		);
-		$this->bind($data);
+		$this->user->bind($data);
 	}
 
 	/**
@@ -145,11 +158,11 @@ class User extends \JUser implements UserInterface
 	 * Gets the user's parameters. The parameters are stored in JSON format in the user record automatically. If you
 	 * need to write to them you can use the returned Registry object instance.
 	 *
-	 * @return  \JRegistry
+	 * @return  \Joomla\Registry\Registry
 	 */
 	public function &getParameters()
 	{
-		return $this->params;
+		return $this->user->params;
 	}
 
 	/**
@@ -214,7 +227,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getPrivilege($privilege, $default = false)
 	{
-		return $this->authorise($privilege);
+		return $this->user->authorise($privilege);
 	}
 
 	/**
