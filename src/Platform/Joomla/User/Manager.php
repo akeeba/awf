@@ -7,7 +7,6 @@
 
 namespace Awf\Platform\Joomla\User;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\User\UserInterface;
 

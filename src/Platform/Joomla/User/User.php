@@ -7,14 +7,9 @@
 
 namespace Awf\Platform\Joomla\User;
 
-use Awf\Registry\Registry;
 use Awf\User\AuthenticationInterface;
 use Awf\User\PrivilegeInterface;
 use Awf\User\UserInterface;
-use JArrayHelper;
-use JFactory;
-use JText;
-use JUserHelper;
 use JUser;
 
 class User implements UserInterface
