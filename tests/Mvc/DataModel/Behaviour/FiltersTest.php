@@ -8,9 +8,9 @@ use Awf\Tests\Stubs\Fakeapp\Container;
 require_once 'FiltersDataprovider.php';
 
 /**
- * @covers      Awf\Mvc\DataModel::<protected>
- * @covers      Awf\Mvc\DataModel::<private>
- * @package     Awf\Tests\DataModel
+ * @covers      Awf\Mvc\DataModel\Behaviour\Filters::<protected>
+ * @covers      Awf\Mvc\DataModel\Behaviour\Filters::<private>
+ * @package     Awf\Tests\DataModel\Behaviour\Filters
  */
 class FiltersTest extends DatabaseMysqliCase
 {
