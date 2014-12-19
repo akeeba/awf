@@ -85,7 +85,6 @@ abstract class Text
 		{
 			if (@file_exists($file))
 			{
-				echo "<pre>$file</pre>";
 				$filename = $file;
 				break;
 			}
