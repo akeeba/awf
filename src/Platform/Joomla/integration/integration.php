@@ -37,13 +37,14 @@ if (false == include_once JPATH_LIBRARIES . '/awf/Autoloader/Autoloader.php')
 // Add our app to the autoloader, if it's not already set
 $componentName = 'com_' . strtolower($appName);
 $prefixes = Awf\Autoloader\Autoloader::getInstance()->getPrefixes();
+
 if (!array_key_exists($appName . '\\', $prefixes))
 {
 	\Awf\Autoloader\Autoloader::getInstance()
 		->addMap($appName . '\\', JPATH_SITE . '/components/' . $componentName)
 		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/' . $componentName)
 		->addMap($appName . '\\', JPATH_SITE . '/components/' . $componentName . '/' . $appName)
-		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/' . $componentName . '/' . $appName);
+		->addMap($appName . 'Admin\\', JPATH_ADMINISTRATOR . '/components/' . $componentName . '/' . $appName . 'Admin');
 }
 
 // Load Joomla!-specific translation files
@@ -71,6 +72,7 @@ if (!isset($containerOverrides['application_name']))
 // Try to create a new DI container
 try
 {
+	/** @var \Awf\Platform\Joomla\Container\Container $container */
 	$container = new $containerClass($containerOverrides);
 }
 catch (Exception $exc)

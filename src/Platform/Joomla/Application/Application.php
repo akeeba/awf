@@ -38,13 +38,27 @@ class Application extends \Awf\Application\Application
 			$name = $container->input->get('option', null);
 		}
 
+		$classNames = array(
+			'\\' . ucfirst($name) . '\\Application',
+			'\\' . ucfirst(strtolower($name)) . '\\Application',
+		);
+
 		$name = strtolower($name);
 
 		if (!array_key_exists($name, self::$instances))
 		{
-			$className = '\\' . ucfirst($name) . '\\Application';
+			$className = null;
 
-			if (!class_exists($className))
+			foreach ($classNames as $possibleClassName)
+			{
+				if (class_exists($possibleClassName))
+				{
+					$className = $possibleClassName;
+					break;
+				}
+			}
+
+			if (empty($className))
 			{
 				$filePath = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_SITE) . '/components/com_'
 					. strtolower($name) . '/' . $name . '/application.php';
