@@ -164,4 +164,54 @@ class AbstractFilterDataprovider
 
         return $data;
     }
+
+    public function getTestExact()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => true
+                ),
+                'value' => ''
+            ),
+            array(
+                'case'   => 'Passed value is empty',
+                'name'   => false,
+                'search' => false,
+                'result' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => false
+                ),
+                'value' => 'test'
+            ),
+            array(
+                'case'   => 'Passed value is not empty',
+                'name'   => false,
+                'search' => true,
+                'result' => 'search'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => false
+                ),
+                'value' => array('foo', 'bar')
+            ),
+            array(
+                'case'   => 'Passed value is an array',
+                'name'   => true,
+                'search' => false,
+                'result' => "(`test` IN ('foo','bar'))"
+            )
+        );
+
+        return $data;
+    }
 }

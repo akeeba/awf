@@ -25,14 +25,4 @@ class FilterStub extends AbstractFilter
     {
         return '';
     }
-
-    protected function additionalSearchHidden()
-    {
-
-    }
-
-    public function additionalSearchVisible()
-    {
-
-    }
 }

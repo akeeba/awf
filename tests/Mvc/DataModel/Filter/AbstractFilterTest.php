@@ -2,7 +2,6 @@
 
 namespace Awf\Tests\DataModel\AbstracFilter;
 
-use Awf\Mvc\DataModel\Behaviour\Filters;
 use Awf\Tests\Stubs\Mvc\DataModel\Filter\FilterStub;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -79,11 +78,33 @@ class AbstractFilterTest extends DatabaseMysqliCase
         $result = $filter->getSearchMethods();
         $result = array_values($result);
 
-        $check = array('exact', 'partial', 'between', 'outside', 'interval', 'search', 'additionalSearchVisible');
+        $check = array('exact', 'partial', 'between', 'outside', 'interval', 'search');
 
         sort($result);
         sort($check);
 
         $this->assertEquals($check, $result, 'AbstractFilter::getSearchMethods Failed to detect the correct methods');
+    }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterExact
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::exact
+     * @dataProvider    AbstractFilterDataprovider::getTestExact
+     */
+    public function testExact($test, $check)
+    {
+        $msg = 'AbstractFilter::exact %s - Case: '.$check['case'];
+
+        $field  = (object)array('name' => 'test', 'type' => 'varchar');
+        $filter = $this->getMock('\Awf\Tests\Stubs\Mvc\DataModel\Filter\FilterStub', array('isEmpty', 'getFieldName', 'search'), array(self::$driver, $field));
+
+        $filter->expects($this->any())->method('isEmpty')->willReturn($test['mock']['isEmpty']);
+        $filter->expects($check['name'] ? $this->once() : $this->never())->method('getFieldName')->willReturn('`test`');
+        $filter->expects($check['search'] ? $this->once() : $this->never())->method('search')->willReturn('search');
+
+        $result = $filter->exact($test['value']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Return the wrong value'));
     }
 }
