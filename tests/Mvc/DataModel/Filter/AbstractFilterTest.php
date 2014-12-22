@@ -66,4 +66,24 @@ class AbstractFilterTest extends DatabaseMysqliCase
 
         $this->assertSame($check['result'], $result, sprintf($msg, 'Failed to return the correct value'));
     }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterSearchMethods
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getSearchMethods
+     */
+    public function testGetSearchMethod()
+    {
+        $filter = new FilterStub(self::$driver, (object)array('name' => 'test', 'type' => 'test'));
+
+        $result = $filter->getSearchMethods();
+        $result = array_values($result);
+
+        $check = array('exact', 'partial', 'between', 'outside', 'interval', 'search', 'additionalSearchVisible');
+
+        sort($result);
+        sort($check);
+
+        $this->assertEquals($check, $result, 'AbstractFilter::getSearchMethods Failed to detect the correct methods');
+    }
 }

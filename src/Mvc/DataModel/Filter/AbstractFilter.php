@@ -90,7 +90,7 @@ abstract class AbstractFilter
 	{
 		$ignore = array('isEmpty', 'getField', 'getFieldType', '__construct', 'getDefaultSearchMethod', 'getSearchMethods', 'getFieldName');
 
-		$class = new \ReflectionClass(__CLASS__);
+		$class = new \ReflectionClass($this);
 		$methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
 
 		$tmp = array();
