@@ -107,4 +107,18 @@ class AbstractFilterTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Return the wrong value'));
     }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterGetFieldName
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getFieldName
+     */
+    public function testGetFieldName()
+    {
+        $filter = new FilterStub(self::$driver, (object)array('name' => 'test', 'type' => 'test'));
+
+        $result = $filter->getFieldName();
+
+        $this->assertEquals('`test`', $result, 'AbstractFilter::getFieldName Failed to return the correct field name');
+    }
 }
