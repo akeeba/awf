@@ -270,10 +270,13 @@ abstract class AbstractFilter
 	 */
 	public static function getFieldType($type)
 	{
+		// Remove parentheses, indicating field options / size (they don't matter in type detection)
 		if (!empty($type))
 		{
 			list($type, ) = explode('(', $type);
 		}
+
+		$detectedType = null;
 
 		switch (trim($type))
 		{
@@ -286,7 +289,7 @@ abstract class AbstractFilter
 			case 'character varying':
 			case 'nvarchar':
 			case 'nchar':
-				$type = 'Text';
+				$detectedType = 'Text';
 				break;
 
 			case 'date':
@@ -296,19 +299,58 @@ abstract class AbstractFilter
 			case 'timestamp':
 			case 'timestamp without time zone':
 			case 'timestamp with time zone':
-				$type = 'Date';
+				$detectedType = 'Date';
 				break;
 
 			case 'tinyint':
 			case 'smallint':
-				$type = 'Boolean';
-				break;
-
-			default:
-				$type = 'Number';
+				$detectedType = 'Boolean';
 				break;
 		}
 
-		return $type;
+		// Sometimes we have character types followed by a space and some cruft. Let's handle them.
+		if (is_null($detectedType) && !empty($type))
+		{
+			list ($type, ) = explode(' ', $type);
+
+			switch (trim($type))
+			{
+				case 'varchar':
+				case 'text':
+				case 'smalltext':
+				case 'longtext':
+				case 'char':
+				case 'mediumtext':
+				case 'nvarchar':
+				case 'nchar':
+					$detectedType = 'Text';
+					break;
+
+				case 'date':
+				case 'datetime':
+				case 'time':
+				case 'year':
+				case 'timestamp':
+					$detectedType = 'Date';
+					break;
+
+				case 'tinyint':
+				case 'smallint':
+					$detectedType = 'Boolean';
+					break;
+
+				default:
+					$detectedType = 'Number';
+					break;
+			}
+		}
+
+		// If all else fails assume it's a Number and hope for the best
+		if (empty($detectedType))
+		{
+			$detectedType = 'Number';
+		}
+
+		return $detectedType;
 	}
 }
