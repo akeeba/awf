@@ -214,4 +214,51 @@ class AbstractFilterDataprovider
 
         return $data;
     }
+
+    public static function getTestSearch()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => true
+                ),
+                'value'    => '',
+                'operator' => '='
+            ),
+            array(
+                'case'   => 'Value is empty',
+                'result' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => false
+                ),
+                'value'    => 'dummy',
+                'operator' => '='
+            ),
+            array(
+                'case'   => 'Value is set',
+                'result' => "(`test` = 'dummy')"
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'isEmpty' => false
+                ),
+                'value'    => 'dummy',
+                'operator' => '!='
+            ),
+            array(
+                'case'   => 'Value is set and should be different',
+                'result' => "NOT (`test` = 'dummy')"
+            )
+        );
+
+        return $data;
+    }
 }

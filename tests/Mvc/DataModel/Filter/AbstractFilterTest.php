@@ -110,6 +110,27 @@ class AbstractFilterTest extends DatabaseMysqliCase
 
     /**
      * @group           AbstractFilter
+     * @group           AbstractFilterSearch
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::search
+     * @dataProvider    AbstractFilterDataprovider::getTestSearch
+     */
+    public function testSearch($test, $check)
+    {
+        $msg = 'AbstractFilter::search %s - Case: '.$check['case'];
+
+        $field  = (object)array('name' => 'test', 'type' => 'varchar');
+        $filter = $this->getMock('\Awf\Tests\Stubs\Mvc\DataModel\Filter\FilterStub', array('isEmpty', 'getFieldName'), array(self::$driver, $field));
+
+        $filter->expects($this->any())->method('isEmpty')->willReturn($test['mock']['isEmpty']);
+        $filter->expects($this->any())->method('getFieldName')->willReturn('`test`');
+
+        $result = $filter->search($test['value'], $test['operator']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Return the wrong value'));
+    }
+
+    /**
+     * @group           AbstractFilter
      * @group           AbstractFilterGetFieldName
      * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getFieldName
      */
