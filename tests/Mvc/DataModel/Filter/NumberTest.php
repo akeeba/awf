@@ -1,6 +1,7 @@
 <?php
 namespace Awf\Tests\DataModel\Number;
 
+use Awf\Mvc\DataModel\Filter\Number;
 use Awf\Tests\Database\DatabaseMysqliCase;
 
 require_once 'NumberDataprovider.php';
@@ -30,5 +31,21 @@ class NumberTest extends DatabaseMysqliCase
         $filter->expects($this->once())->method('exact')->willReturn(null);
 
         $filter->partial(10);
+    }
+
+    /**
+     * @group           NumberFilter
+     * @group           NumberFilterBetween
+     * @covers          Awf\Mvc\DataModel\Filter\Number::between
+     * @dataProvider    NumberDataprovider::getTestBetween
+     */
+    public function testBetween($test, $check)
+    {
+        $msg    = 'Number::between %s - Case: '.$check['case'];
+        $filter = new Number(self::$driver, (object)array('name' => 'test', 'type' => 'int (10)'));
+
+        $result = $filter->between($test['from'], $test['to'], $test['inclusive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct SQL'));
     }
 }
