@@ -238,6 +238,11 @@ abstract class AbstractFilter
 	 */
 	public static function getField($field, $config = array())
 	{
+		if(!is_object($field) || !isset($field->name) || !isset($field->type))
+		{
+			throw new \InvalidArgumentException('Invalid field object');
+		}
+
 		$type = $field->type;
 
 		$classType = self::getFieldType($type);

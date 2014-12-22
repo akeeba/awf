@@ -146,6 +146,33 @@ class AbstractFilterTest extends DatabaseMysqliCase
 
     /**
      * @group           AbstractFilter
+     * @group           AbstractFilterGetField
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getField
+     */
+    public function testGetField()
+    {
+        $field = (object)array('name' => 'test', 'type' => 'int (10)');
+
+        $result = AbstractFilter::getField($field, array('dbo' => self::$driver));
+
+        $this->assertInstanceOf('\Awf\Mvc\DataModel\Filter\AbstractFilter', $result, 'AbstractFilter::getField Failed to return the correct filter');
+    }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterGetField
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getField
+     * @dataProvider    AbstractFilterDataprovider::getTestGetFieldException
+     */
+    public function testGetFieldException($test)
+    {
+        $this->setExpectedException('InvalidArgumentException');
+
+        AbstractFilter::getField($test['field'], array());
+    }
+
+    /**
+     * @group           AbstractFilter
      * @group           AbstractFilterGetFieldType
      * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getFieldType
      * @dataProvider    AbstractFilterDataprovider::getTestGetFieldType

@@ -306,16 +306,6 @@ class AbstractFilterDataprovider
 
         $data[] = array(
             array(
-                'type' => 'date'
-            ),
-            array(
-                'case'   => 'Field: date',
-                'result' => 'Date'
-            )
-        );
-
-        $data[] = array(
-            array(
                 'type' => 'datetime'
             ),
             array(
@@ -461,6 +451,119 @@ class AbstractFilterDataprovider
             array(
                 'case'   => 'Field: nchar(10)',
                 'result' => 'Text'
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestGetFieldException()
+    {
+        // Invalid type
+        $data[] = array(
+            array(
+                'field' => null
+            )
+        );
+
+        // Invalid type
+        $data[] = array(
+            array(
+                'field' => 1
+            )
+        );
+
+        // Invalid type
+        $data[] = array(
+            array(
+                'field' => true
+            )
+        );
+
+        // Invalid type
+        $data[] = array(
+            array(
+                'field' => 'asd'
+            )
+        );
+
+        // Invalid type
+        $data[] = array(
+            array(
+                'field' => array(1)
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array()
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'name' => null
+                )
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'type' => null
+                )
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'name' => 'test'
+                )
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'field' => 'test'
+                )
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'name' => 'test',
+                    'field' => null
+                )
+            )
+        );
+
+        // Missing fields
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'name' => null,
+                    'field' => 'test'
+                )
+            )
+        );
+
+        // Field ok, missing db object
+        $data[] = array(
+            array(
+                'field' => (object)array(
+                    'name'  => 'test',
+                    'field' => 'int(10)'
+                )
             )
         );
 
