@@ -1,6 +1,6 @@
 <?php
 
-namespace Awf\Stubs\Mvc\DataModel\Filter;
+namespace Awf\Tests\Stubs\Mvc\DataModel\Filter;
 
 use Awf\Mvc\DataModel\Filter\AbstractFilter;
 

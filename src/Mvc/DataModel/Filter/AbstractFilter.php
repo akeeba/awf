@@ -45,6 +45,11 @@ abstract class AbstractFilter
 	{
 		$this->db = $db;
 
+		if(!is_object($field) || !isset($field->name) || !isset($field->type))
+		{
+			throw new \InvalidArgumentException('Invalid field object');
+		}
+
 		$this->name = $field->name;
 		$this->type = $field->type;
 	}
