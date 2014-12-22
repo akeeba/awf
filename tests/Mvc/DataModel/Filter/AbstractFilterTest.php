@@ -15,6 +15,11 @@ require_once 'AbstractFilterDataprovider.php';
  */
 class AbstractFilterTest extends DatabaseMysqliCase
 {
+    protected function setUp()
+    {
+        parent::setUp(false);
+    }
+
     /**
      * @group       AbstractFilter
      * @group       AbstractFilterConstruct
