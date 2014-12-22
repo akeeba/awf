@@ -104,4 +104,64 @@ class AbstractFilterDataprovider
 
         return $data;
     }
+
+    public static function getTestIsEmpty()
+    {
+        $data[] = array(
+            array(
+                'null'  => null,
+                'value' => null
+            ),
+            array(
+                'case'   => 'Value: NULL, Null_value: NULL',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'null'  => null,
+                'value' => 55
+            ),
+            array(
+                'case'   => 'Value: 55, Null_value: NULL',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'null'  => -1,
+                'value' => null
+            ),
+            array(
+                'case'   => 'Value: NULL, Null_value: -1',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'null'  => -1,
+                'value' => 'test'
+            ),
+            array(
+                'case'   => 'Value: test, Null_value: -1',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'null'  => 'test',
+                'value' => 'test'
+            ),
+            array(
+                'case'   => 'Value: test, Null_value: test',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }

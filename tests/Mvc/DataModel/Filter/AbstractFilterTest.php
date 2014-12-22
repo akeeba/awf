@@ -2,6 +2,7 @@
 
 namespace Awf\Tests\DataModel\AbstracFilter;
 
+use Awf\Mvc\DataModel\Behaviour\Filters;
 use Awf\Tests\Stubs\Mvc\DataModel\Filter\FilterStub;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -34,9 +35,9 @@ class AbstractFilterTest extends DatabaseMysqliCase
     }
 
     /**
-     * @group       AbstractFilter
-     * @group       AbstractFilterConstruct
-     * @covers      Awf\Mvc\DataModel\Filter\AbstractFilter::__construct
+     * @group           AbstractFilter
+     * @group           AbstractFilterConstruct
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::__construct
      * @dataProvider    AbstractFilterDataprovider::getTest__constructException
      */
     public function test__constructException($test)
@@ -46,5 +47,23 @@ class AbstractFilterTest extends DatabaseMysqliCase
         $db = self::$driver;
 
         new FilterStub($db, $test['field']);
+    }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterIsEmpty
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::isEmpty
+     * @dataProvider    AbstractFilterDataprovider::getTestIsEmpty
+     */
+    public function testIsEmpty($test, $check)
+    {
+        $msg = 'AbstractFilter::isEmpty %s - Case: '.$check['case'];
+
+        $filter = new FilterStub(self::$driver, (object)array('name' => 'test', 'type' => 'test'));
+        $filter->null_value = $test['null'];
+
+        $result = $filter->isEmpty($test['value']);
+
+        $this->assertSame($check['result'], $result, sprintf($msg, 'Failed to return the correct value'));
     }
 }
