@@ -70,6 +70,9 @@ class Number extends AbstractFilter
 	 */
 	public function outside($from, $to, $include = false)
 	{
+		$from = (float) $from;
+		$to   = (float) $to;
+
 		if ($this->isEmpty($from) || $this->isEmpty($to))
 		{
 			return '';
