@@ -272,11 +272,10 @@ abstract class AbstractFilter
 	{
 		if (!empty($type))
 		{
-			list($type, ) = explode(' ', $type);
 			list($type, ) = explode('(', $type);
 		}
 
-		switch ($type)
+		switch (trim($type))
 		{
 			case 'varchar':
 			case 'text':

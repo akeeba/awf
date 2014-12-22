@@ -2,6 +2,7 @@
 
 namespace Awf\Tests\DataModel\AbstracFilter;
 
+use Awf\Mvc\DataModel\Filter\AbstractFilter;
 use Awf\Tests\Stubs\Mvc\DataModel\Filter\FilterStub;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
@@ -141,5 +142,20 @@ class AbstractFilterTest extends DatabaseMysqliCase
         $result = $filter->getFieldName();
 
         $this->assertEquals('`test`', $result, 'AbstractFilter::getFieldName Failed to return the correct field name');
+    }
+
+    /**
+     * @group           AbstractFilter
+     * @group           AbstractFilterGetFieldType
+     * @covers          Awf\Mvc\DataModel\Filter\AbstractFilter::getFieldType
+     * @dataProvider    AbstractFilterDataprovider::getTestGetFieldType
+     */
+    public function testGetFieldType($test, $check)
+    {
+        $msg = 'AbstractFilter::getFieldType %s - Case: '.$check['case'];
+
+        $result = AbstractFilter::getFieldType($test['type']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to get the correct field type'));
     }
 }
