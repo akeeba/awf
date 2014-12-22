@@ -64,4 +64,20 @@ class NumberTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct SQL'));
     }
+
+    /**
+     * @group           NumberFilter
+     * @group           NumberFilterInterval
+     * @covers          Awf\Mvc\DataModel\Filter\Number::interval
+     * @dataProvider    NumberDataprovider::getTestInterval
+     */
+    public function testInterval($test, $check)
+    {
+        $msg    = 'Number::interval %s - Case: '.$check['case'];
+        $filter = new Number(self::$driver, (object)array('name' => 'test', 'type' => 'int (10)'));
+
+        $result = $filter->interval($test['value'], $test['interval'], $test['inclusive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct SQL'));
+    }
 }

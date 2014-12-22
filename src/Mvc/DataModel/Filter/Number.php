@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		kaas
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -106,6 +106,10 @@ class Number extends AbstractFilter
 			return '';
 		}
 
+		// Convert them to float, just to be sure
+		$value    = (float) $value;
+		$interval = (float) $interval;
+
 		$from = $value - $interval;
 		$to = $value + $interval;
 
@@ -121,4 +125,4 @@ class Number extends AbstractFilter
 
 		return $sql;
 	}
-} 
+}
