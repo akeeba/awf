@@ -37,6 +37,9 @@ class Number extends AbstractFilter
 	 */
 	public function between($from, $to, $include = true)
 	{
+		$from = (float) $from;
+		$to   = (float) $to;
+
 		if ($this->isEmpty($from) || $this->isEmpty($to))
 		{
 			return '';

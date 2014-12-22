@@ -88,6 +88,42 @@ class NumberDataprovider
             )
         );
 
+        $data[] = array(
+            array(
+                'from' => 4.2,
+                'to'   => 6.6,
+                'inclusive' => true
+            ),
+            array(
+                'case'   => 'Floats provided',
+                'result' => '((`test` >= 4.2) AND (`test` <= 6.6))'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'from' => 4.2,
+                'to'   => 'test',
+                'inclusive' => true
+            ),
+            array(
+                'case'   => 'Wrong $to argument',
+                'result' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'from' => 'test',
+                'to'   => 4.2,
+                'inclusive' => true
+            ),
+            array(
+                'case'   => 'Wrong $from argument',
+                'result' => ''
+            )
+        );
+
         return $data;
     }
 
