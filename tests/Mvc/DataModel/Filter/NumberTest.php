@@ -48,4 +48,20 @@ class NumberTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct SQL'));
     }
+
+    /**
+     * @group           NumberFilter
+     * @group           NumberFilterOutside
+     * @covers          Awf\Mvc\DataModel\Filter\Number::outside
+     * @dataProvider    NumberDataprovider::getTestOutside
+     */
+    public function testOutside($test, $check)
+    {
+        $msg    = 'Number::outside %s - Case: '.$check['case'];
+        $filter = new Number(self::$driver, (object)array('name' => 'test', 'type' => 'int (10)'));
+
+        $result = $filter->outside($test['from'], $test['to'], $test['inclusive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct SQL'));
+    }
 }
