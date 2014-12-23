@@ -1,5 +1,5 @@
 <?php
-namespace Awf\Tests\DataModel\Text;
+namespace Awf\Tests\DataModel\Filter\Boolean;
 
 use Awf\Mvc\DataModel\Filter\Boolean;
 use Awf\Tests\Database\DatabaseMysqliCase;
@@ -13,6 +13,11 @@ require_once 'BooleanDataprovider.php';
  */
 class BooleanTest extends DatabaseMysqliCase
 {
+    protected function setUp()
+    {
+        parent::setUp(false);
+    }
+
     /**
      * @group           BooleanFilter
      * @group           BooleanFilterIsEmpty
