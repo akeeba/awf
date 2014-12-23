@@ -7,12 +7,10 @@
 
 namespace Awf\Mvc\DataView;
 
-
-use Awf\Document\Document;
+use Awf\Container\Container;
 use Awf\Hal\Link;
 use Awf\Mvc\DataModel;
 use Awf\Pagination\Pagination;
-use Awf\Router\Router;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 
@@ -37,9 +35,9 @@ class Json extends Raw
 	/**
 	 * Public constructor
 	 *
-	 * @param   array  $config  The component's configuration array
+	 * @param   Container  $config  The component's configuration array
 	 */
-	public function __construct($config = array())
+	public function __construct($config = null)
 	{
 		parent::__construct($config);
 

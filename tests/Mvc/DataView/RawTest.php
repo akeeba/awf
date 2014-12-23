@@ -4,7 +4,6 @@ namespace Awf\Tests\DataView\Raw;
 
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\DataView\RawStub;
 use Fakeapp\Model\Children;
 
