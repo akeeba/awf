@@ -104,6 +104,12 @@ class Date extends Text
 
 		$interval = $this->getInterval($interval);
 
+		// Sanity check on $interval array
+		if(!isset($interval['sign']) || !isset($interval['value']) || !isset($interval['unit']))
+		{
+			return '';
+		}
+
 		if ($interval['sign'] == '+')
 		{
 			$function = 'DATE_ADD';

@@ -58,4 +58,20 @@ class DateTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
     }
+
+    /**
+     * @group           DateFilter
+     * @group           DateFilterInterval
+     * @covers          Awf\Mvc\DataModel\Filter\Date::interval
+     * @dataProvider    DateDataprovider::getTestInterval
+     */
+    public function testInterval($test, $check)
+    {
+        $msg = 'Date::interval %s - Case: '.$check['case'];
+        $filter = new Date(self::$driver, (object)array('name' => 'test', 'type' => 'datetime'));
+
+        $result = $filter->interval($test['value'], $test['interval'], $test['include']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
+    }
 }
