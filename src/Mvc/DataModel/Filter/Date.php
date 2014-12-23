@@ -80,8 +80,8 @@ class Date extends Text
 			$extra = '=';
 		}
 
-		$sql = '((' . $this->getFieldName() . ' <' . $extra . ' ' . $from . ') AND ';
-		$sql .= '(' . $this->getFieldName() . ' >' . $extra . ' ' . $to . '))';
+		$sql = '((' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($from) . ') AND ';
+		$sql .= '(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($to) . '))';
 
 		return $sql;
 	}

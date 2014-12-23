@@ -42,4 +42,20 @@ class DateTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
     }
+
+    /**
+     * @group           DateFilter
+     * @group           DateFilterOutside
+     * @covers          Awf\Mvc\DataModel\Filter\Date::outside
+     * @dataProvider    DateDataprovider::getTestOutside
+     */
+    public function testOutside($test, $check)
+    {
+        $msg    = 'Date::outside %s - Case: '.$check['case'];
+        $filter = new Date(self::$driver, (object)array('name' => 'test', 'type' => 'datetime'));
+
+        $result = $filter->outside($test['from'], $test['to'], $test['include']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
+    }
 }
