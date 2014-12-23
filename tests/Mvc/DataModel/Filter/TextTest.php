@@ -62,4 +62,40 @@ class TextTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
     }
+
+    /**
+     * @group           TextFilter
+     * @group           TextFilterBetween
+     * @covers          Awf\Mvc\DataModel\Filter\Text::between
+     */
+    public function testBetween()
+    {
+        $filter = new Text(self::$driver, (object)array('name' => 'test', 'type' => 'varchar(10)'));
+
+        $this->assertSame('', $filter->between('', ''), 'Text::between Should return an empty string');
+    }
+
+    /**
+     * @group           TextFilter
+     * @group           TextFilterOutside
+     * @covers          Awf\Mvc\DataModel\Filter\Text::outside
+     */
+    public function testOutside()
+    {
+        $filter = new Text(self::$driver, (object)array('name' => 'test', 'type' => 'varchar(10)'));
+
+        $this->assertSame('', $filter->outside('', ''), 'Text::outside Should return an empty string');
+    }
+
+    /**
+     * @group           TextFilter
+     * @group           TextFilterInterval
+     * @covers          Awf\Mvc\DataModel\Filter\Text::interval
+     */
+    public function testInterval()
+    {
+        $filter = new Text(self::$driver, (object)array('name' => 'test', 'type' => 'varchar(10)'));
+
+        $this->assertSame('', $filter->interval('', ''), 'Text::interval Should return an empty string');
+    }
 }
