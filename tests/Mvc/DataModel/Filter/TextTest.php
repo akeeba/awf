@@ -46,4 +46,20 @@ class TextTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
     }
+
+    /**
+     * @group           TextFilter
+     * @group           TextFilterExact
+     * @covers          Awf\Mvc\DataModel\Filter\Text::exact
+     * @dataProvider    TextDataprovider::getTestExact
+     */
+    public function testExact($test, $check)
+    {
+        $msg    = 'Text::exact %s - Case: '.$check['case'];
+        $filter = new Text(self::$driver, (object)array('name' => 'test', 'type' => 'varchar(10)'));
+
+        $result = $filter->exact($test['value']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to build the correct SQL query'));
+    }
 }
