@@ -88,7 +88,7 @@ FROM test"
                 'case'  => 'Searching using an array, passing the method in the state - 1',
                 'query' => "SELECT *
 FROM test
-WHERE ((`start_date` >= 1979-01-01) AND (`start_date` <= 1981-12-31))"
+WHERE ((`start_date` >= '1979-01-01') AND (`start_date` <= '1981-12-31'))"
             )
         );
 
@@ -144,7 +144,7 @@ FROM test"
                 'case'  => 'Searching using an array, passing the method in the state - 4',
                 'query' => "SELECT *
 FROM test
-WHERE ((`start_date` < 1979-01-01) AND (`start_date` > 1981-12-31))"
+WHERE ((`start_date` < '1979-01-01') AND (`start_date` > '1981-12-31'))"
             )
         );
 
