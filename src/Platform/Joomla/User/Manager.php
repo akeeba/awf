@@ -149,7 +149,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function registerPrivilegePlugin($name, $privilege)
 	{
-		throw new \RuntimeException('registerPrivilegePlugin is not availabe under Joomla!');
+		throw new \RuntimeException('registerPrivilegePlugin is not available under Joomla!');
 	}
 
 	/**
@@ -163,7 +163,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function unregisterPrivilegePlugin($name)
 	{
-		throw new \RuntimeException('unregisterPrivilegePlugin is not availabe under Joomla!');
+		throw new \RuntimeException('unregisterPrivilegePlugin is not available under Joomla!');
 	}
 
 	/**
@@ -178,7 +178,7 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function registerAuthenticationPlugin($name, $authentication)
 	{
-		throw new \RuntimeException('registerAuthenticationPlugin is not availabe under Joomla!');
+		throw new \RuntimeException('registerAuthenticationPlugin is not available under Joomla!');
 	}
 
 	/**
@@ -192,6 +192,6 @@ class Manager extends \Awf\User\Manager
 	 */
 	public function unregisterAuthenticationPlugin($name)
 	{
-		throw new \RuntimeException('unregisterAuthenticationPlugin is not availabe under Joomla!');
+		throw new \RuntimeException('unregisterAuthenticationPlugin is not available under Joomla!');
 	}
 } 
