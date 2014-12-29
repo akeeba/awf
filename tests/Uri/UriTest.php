@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -55,8 +55,6 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::getInstance
-	 *
-	 * @backupGlobals
 	 */
 	public function testGetInstance()
 	{
@@ -93,8 +91,6 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::isInternal
-	 *
-	 * @backupGlobals
 	 */
 	public function testIsInternal()
 	{
@@ -112,8 +108,6 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::root
-	 *
-	 * @backupGlobals
 	 */
 	public function testRoot()
 	{
@@ -138,8 +132,6 @@ class UriTest extends ApplicationTestCase
 	/**
 	 * @covers  Awf\Uri\Uri::current
 	 * @covers  Awf\Uri\Uri::reset
-	 *
-	 * @backupGlobals
 	 */
 	public function testCurrent()
 	{
@@ -636,4 +628,3 @@ class UriTest extends ApplicationTestCase
 		);
 	}
 }
- 

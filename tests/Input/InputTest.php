@@ -415,7 +415,6 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @group   Input
 	 * @covers  Awf\Input\Input::getMethod
-	 * @backupGlobals 1
 	 * @since   1.0
 	 */
 	public function testGetMethod()
@@ -438,7 +437,6 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @group   Input
 	 * @covers  Awf\Input\Input::loadAllInputs
-	 * @backupGlobals 1
 	 * @since   1.0
 	 */
 	public function testLoadAllInputs()

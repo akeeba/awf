@@ -90,8 +90,6 @@ class TransparentAuthenticationTest extends AwfTestCase
 
 	/**
 	 * @dataProvider GetTestGetTransparentAuthenticationCredentials
-	 *
-	 * @backupGlobals
 	 */
 	public function testGetTransparentAuthenticationCredentials($inputData, $serverGlobals, $shouldSucceed)
 	{

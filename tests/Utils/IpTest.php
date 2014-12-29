@@ -27,8 +27,6 @@ class IpTest extends \PHPUnit_Framework_TestCase
 	 * @param string $expected
 	 * @param string $message
 	 *
-	 * @backupGlobals
-	 *
 	 * @covers ::getUserIP
 	 * @covers ::_real_getUserIP
 	 *
@@ -84,8 +82,6 @@ class IpTest extends \PHPUnit_Framework_TestCase
 	 * @param string $expected
 	 * @param string $message
 	 *
-	 * @backupGlobals
-	 *
 	 * @covers ::getUserIP
 	 * @covers ::_real_getUserIP
 	 *
@@ -138,4 +134,3 @@ class IpTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 
