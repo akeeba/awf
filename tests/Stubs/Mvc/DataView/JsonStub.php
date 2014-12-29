@@ -62,4 +62,28 @@ class JsonStub extends Json
 
         return $this->name;
     }
+
+    public function onBeforeFoobar()
+    {
+        if(isset($this->methods['onBeforeFoobar']))
+        {
+            $func = $this->methods['onBeforeFoobar'];
+
+            return call_user_func_array($func, array());
+        }
+
+        return true;
+    }
+
+    public function onAfterFoobar()
+    {
+        if(isset($this->methods['onAfterFoobar']))
+        {
+            $func = $this->methods['onAfterFoobar'];
+
+            return call_user_func_array($func, array());
+        }
+
+        return true;
+    }
 }

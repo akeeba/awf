@@ -36,4 +36,33 @@ class JsonTest extends DatabaseMysqliCase
 
         $this->assertEquals($check['hyper'], $view->useHypermedia, sprintf($msg, 'Failed to set the hypermedia flag'));
     }
+
+    /**
+     * @group           DataViewJson
+     * @group           DataViewJsonDisplay
+     * @covers          Awf\Mvc\DataView\Json::display
+     * @dataProvider    JsonDataprovider::getTestDisplay
+     */
+    public function testDisplay($test, $check)
+    {
+        $msg  = 'DataView\Json::display %s - Case: '.$check['case'];
+
+        $methods = array(
+            'onBeforeFoobar' => function() use ($test) { return $test['mock']['before'];},
+            'onAfterFoobar'  => function() use ($test) { return $test['mock']['after'];}
+        );
+
+        $view = new JsonStub(null, $methods);
+
+        $view->setDoTask($test['task']);
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('Exception');
+        }
+
+        $result = $view->display();
+
+        $this->assertTrue($result, sprintf($msg, 'Should return true'));
+    }
 }
