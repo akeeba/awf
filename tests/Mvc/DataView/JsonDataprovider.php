@@ -97,4 +97,61 @@ class JsonDataprovider
 
         return $data;
     }
+
+    public static function getTestDisplayRead()
+    {
+        $data[] = array(
+            array(
+                'callback' => null,
+                'loaded'   => false,
+                'hyper'    => false,
+                'item'     => false
+            ),
+            array(
+                'case'   => 'Item not loaded, no hyperlinks, no callback',
+                'output' => '{"fakeapp_parent_id":"2","description":"Second parent row"}'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'callback' => null,
+                'loaded'   => true,
+                'hyper'    => false,
+                'item'     => true
+            ),
+            array(
+                'case'   => 'Item loaded, no hyperlinks, no callback',
+                'output' => '{"fakeapp_parent_id":"3","description":"Parent with no children"}'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'callback' => null,
+                'loaded'   => true,
+                'hyper'    => true,
+                'item'     => true
+            ),
+            array(
+                'case'   => 'Item loaded, with hyperlinks, no callback',
+                'output' => '{"_links":{"self":{"href":"http:\/\/www.example.com\/"}},"fakeapp_parent_id":"3","description":"Parent with no children"}'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'callback' => 'foobar',
+                'loaded'   => true,
+                'hyper'    => false,
+                'item'     => true
+            ),
+            array(
+                'case'   => 'Item loaded, no hyperlinks, with callback',
+                'output' => 'foobar({"fakeapp_parent_id":"3","description":"Parent with no children"})'
+            )
+        );
+
+        return $data;
+    }
 }

@@ -2,9 +2,11 @@
 
 namespace Awf\Tests\DataView\Raw;
 
+use Awf\Input\Input;
 use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Stubs\Mvc\DataView\JsonStub;
 use Awf\Application\Application;
+use Fakeapp\Model\Parents;
 
 
 require_once 'JsonDataprovider.php';
@@ -62,6 +64,57 @@ class JsonTest extends DatabaseMysqliCase
         }
 
         $result = $view->display();
+
+        $this->assertTrue($result, sprintf($msg, 'Should return true'));
+    }
+
+    /**
+     * @group           DataViewJson
+     * @group           DataViewJsonDisplayRead
+     * @covers          Awf\Mvc\DataView\Json::display
+     * @dataProvider    JsonDataprovider::getTestDisplayRead
+     */
+    public function testDisplayRead($test, $check)
+    {
+        $msg  = 'DataView\Json::display (read task) %s - Case: '.$check['case'];
+
+        $input     = new Input();
+        $container = Application::getInstance()->getContainer();
+
+        $input->set('id', 2);
+        $input->set('callback', $test['callback']);
+
+        $container['mvc_config'] = array('input' => $input);
+
+        $view = new JsonStub($container);
+
+        if($test['item'])
+        {
+            $model = new Parents();
+            $model->find(3);
+            $view->item = $model;
+        }
+
+        // I have to setup some variables that are not present inside CLI environment
+        if($test['hyper'])
+        {
+            $_SERVER['REQUEST_URI'] = '/';
+            $_SERVER['HTTP_HOST']   = 'localhost';
+        }
+
+        $view->useHypermedia = $test['hyper'];
+        $view->alreadyLoaded = $test['loaded'];
+        $view->setDoTask('read');
+
+        $this->expectOutputString($check['output']);
+
+        $result = $view->display();
+
+        if($test['hyper'])
+        {
+            unset($_SERVER['HTTP_HOST']);
+            unset($_SERVER['REQUEST_URI']);
+        }
 
         $this->assertTrue($result, sprintf($msg, 'Should return true'));
     }

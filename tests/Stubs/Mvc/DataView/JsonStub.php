@@ -9,7 +9,7 @@ class JsonStub extends Json
 {
     private   $methods = array();
 
-    protected $name   = 'nestedset';
+    protected $name   = 'parent';
 
     /**
      * Assigns callback functions to the class, the $methods array should be an associative one, where

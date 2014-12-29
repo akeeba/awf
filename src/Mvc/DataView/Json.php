@@ -198,7 +198,7 @@ class Json extends Raw
 
 		if (!$this->alreadyLoaded)
 		{
-			$this->item = $model;
+			$this->item = $model->find();
 		}
 
 
@@ -250,7 +250,15 @@ class Json extends Raw
 			}
 			else
 			{
-				$json = json_encode($this->item);
+                if(is_object($this->item) && method_exists($this->item, 'toArray'))
+                {
+                    $json = json_encode($this->item->toArray());
+                }
+                else
+                {
+                    $json = json_encode($this->item);
+                }
+
 			}
 
 			// JSONP support
@@ -265,16 +273,13 @@ class Json extends Raw
 				$defaultName = $this->input->get('view', 'main', 'cmd');
 				$filename = $this->input->get('basename', $defaultName, 'cmd');
 				$document->setName($filename);
+
 				echo $json;
 			}
-
-			return false;
 		}
 		else
 		{
 			echo $result;
-
-			return true;
 		}
 
 		return true;
