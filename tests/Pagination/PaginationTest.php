@@ -35,7 +35,6 @@ class PaginationTest extends AwfTestCase
         $pagination = $this->getMock('Awf\Pagination\Pagination', array('setAdditionalUrlParamsFromInput'), array(), '', false);
         $pagination->expects($this->any())->method('setAdditionalUrlParamsFromInput')->willReturn(null);
 
-
         // Now call it
         $pagination->__construct($test['total'], $test['start'], $test['limit'], $test['displayed'], $test['app']);
 
@@ -67,5 +66,27 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
         $this->assertEquals($check['params'], ReflectionHelper::getValue($pagination, 'additionalUrlParams'), sprintf($msg, 'Failed to set the url param'));
+    }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationSetAdditionalUrlParams
+     * @covers          Awf\Pagination\Pagination::setAdditionalUrlParams
+     */
+    public function testSetAdditionalUrlParams()
+    {
+        $params = array(
+            'foo' => 'bar',
+            'dummy' => 'foobar'
+        );
+
+        $pagination = $this->getMock('Awf\Pagination\Pagination', array('setAdditionalUrlParam'), array(20, 0, 5), '', false);
+        $pagination->expects($this->exactly(count($params)))->method('setAdditionalUrlParam')->withConsecutive(
+            array($this->equalTo('foo'), $this->equalTo('bar')),
+            array($this->equalTo('dummy'), $this->equalTo('foobar'))
+        );
+
+        $pagination->setAdditionalUrlParams($params);
+
     }
 }
