@@ -4,6 +4,7 @@ namespace Awf\Tests\Helpers;
 
 use Awf\Application\Application;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
+use Awf\Uri\Uri;
 
 abstract class AwfTestCase extends \PHPUnit_Framework_TestCase
 {
@@ -47,6 +48,9 @@ abstract class AwfTestCase extends \PHPUnit_Framework_TestCase
 
             Application::getInstance('Fakeapp', static::$container);
         }
+
+        // Always reset the URI instances
+        Uri::reset();
 
         parent::setUp();
     }

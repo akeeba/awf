@@ -30,18 +30,7 @@ class UriTest extends AwfTestCase
         parent::setUp();
 
 		$this->object = new Uri('http://someuser:somepass@www.example.com:80/path/file.html?var=value#fragment');
-
-        // Clear instances array, so we always start with a new, fresh object
-        ReflectionHelper::setValue($this->object, 'instances', array());
 	}
-
-    protected function tearDown()
-    {
-        parent::tearDown();
-
-        // Clear instances, so we don't corrupt other tests
-        ReflectionHelper::setValue($this->object, 'instances', array());
-    }
 
 	/**
 	 * Test the __toString method.

@@ -10,6 +10,7 @@ namespace Awf\Tests\Helpers;
 use Awf\Application\Application;
 use Awf\Database\Driver;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
+use Awf\Uri\Uri;
 
 abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 {
@@ -233,6 +234,9 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 
 			Application::getInstance('Fakeapp', static::$container);
 		}
+
+        // Always reset the URI instances
+        Uri::reset();
 
 		if (empty(static::$driver))
 		{
