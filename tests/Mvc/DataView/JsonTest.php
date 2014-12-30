@@ -70,6 +70,62 @@ class JsonTest extends DatabaseMysqliCase
 
     /**
      * @group           DataViewJson
+     * @group           DataViewJsonDisplayBrowse
+     * @covers          Awf\Mvc\DataView\Json::display
+     * @dataProvider    JsonDataprovider::getTestDisplayBrowse
+     */
+    public function testDisplayBrowse($test, $check)
+    {
+        \PHPUnit_Framework_Error_Warning::$enabled = false;
+
+        $msg  = 'DataView\Json::display (browse task) %s - Case: '.$check['case'];
+
+        $input     = new Input();
+        $container = Application::getInstance()->getContainer();
+
+        $input->set('callback', $test['callback']);
+
+        $container['mvc_config'] = array('input' => $input);
+
+        $view  = new JsonStub($container);
+        $model = new Parents();
+
+        $model->setState('limitstart', $test['limitstart']);
+        $model->setState('limit', $test['limit']);
+
+        if($test['item'])
+        {
+            $view->items = $model->getItemsArray($test['limitstart'], $test['limit']);
+        }
+
+        $view->setModel('parent', $model);
+
+        // I have to setup some variables that are not present inside CLI environment
+        if($test['hyper'])
+        {
+            $_SERVER['REQUEST_URI'] = '/';
+            $_SERVER['HTTP_HOST']   = 'localhost';
+        }
+
+        $view->useHypermedia = $test['hyper'];
+        $view->alreadyLoaded = $test['loaded'];
+        $view->setDoTask('browse');
+
+        $this->expectOutputString($check['output']);
+
+        $result = $view->display();
+
+        if($test['hyper'])
+        {
+            unset($_SERVER['HTTP_HOST']);
+            unset($_SERVER['REQUEST_URI']);
+        }
+
+        $this->assertTrue($result, sprintf($msg, 'Should return true'));
+    }
+
+    /**
+     * @group           DataViewJson
      * @group           DataViewJsonDisplayRead
      * @covers          Awf\Mvc\DataView\Json::display
      * @dataProvider    JsonDataprovider::getTestDisplayRead

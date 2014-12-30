@@ -147,12 +147,40 @@ class Json extends Raw
 			// Default JSON behaviour in case the template isn't there!
 			if ($this->useHypermedia)
 			{
-				$HalDocument = $this->_createDocumentWithHypermedia($this->items, $model);
+                $data = array();
+
+                foreach($this->items as $item)
+                {
+                    if(is_object($item) && method_exists($item, 'toArray'))
+                    {
+                        $data[] = $item->toArray();
+                    }
+                    else
+                    {
+                        $data[] = $item;
+                    }
+                }
+
+				$HalDocument = $this->_createDocumentWithHypermedia($data, $model);
 				$json = $HalDocument->render('json');
 			}
 			else
 			{
-				$json = json_encode($this->items);
+                $result = array();
+
+                foreach($this->items as $item)
+                {
+                    if(is_object($item) && method_exists($item, 'toArray'))
+                    {
+                        $result[] = $item->toArray();
+                    }
+                    else
+                    {
+                        $result[] = $item;
+                    }
+                }
+
+				$json = json_encode($result);
 			}
 
 			// JSONP support
@@ -170,14 +198,10 @@ class Json extends Raw
 				$document->setName($filename);
 				echo $json;
 			}
-
-			return false;
 		}
 		else
 		{
 			echo $result;
-
-			return true;
 		}
 
 		return true;
@@ -327,6 +351,21 @@ class Json extends Raw
 		// Create relative links in a record list context
 		if (is_array($data) && ($model instanceof DataModel))
 		{
+            if(!isset($this->total))
+            {
+                $this->total = $model->count();
+            }
+
+            if(!isset($this->limitStart))
+            {
+                $this->limitStart = $model->getState('limitstart', 0);
+            }
+
+            if(!isset($this->limit))
+            {
+                $this->limit = $model->getState('limit', 0);
+            }
+
 			$pagination = new Pagination($this->total, $this->limitStart, $this->limit, 10, $this->container->application);
 
 			if ($pagination->pagesTotal > 1)
@@ -343,7 +382,6 @@ class Json extends Raw
 				$document->addLink('first', new Link($uri));
 
 				// Do we need a "prev" link?
-
 				if ($pagination->pagesCurrent > 1)
 				{
 					$prevPage = $pagination->pagesCurrent - 1;
@@ -356,7 +394,6 @@ class Json extends Raw
 				}
 
 				// Do we need a "next" link?
-
 				if ($pagination->pagesCurrent < $pagination->pagesTotal)
 				{
 					$nextPage = $pagination->pagesCurrent + 1;
