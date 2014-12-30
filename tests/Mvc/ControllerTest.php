@@ -22,7 +22,7 @@ require_once 'ControllerDataprovider.php';
 /**
  * @covers      Awf\Mvc\Controller::<protected>
  * @covers      Awf\Mvc\Controller::<private>
- * @package Awf\Tests\Controller
+ * @package     Awf\Tests\Controller
  */
 class ControllerTest extends AwfTestCase
 {
