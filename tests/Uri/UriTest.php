@@ -7,7 +7,7 @@
 
 namespace Awf\Tests\Uri;
 
-use Awf\Tests\Helpers\ApplicationTestCase;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Uri\Uri;
 
@@ -18,25 +18,30 @@ use Awf\Uri\Uri;
  *
  * @coversDefaultClass \Awf\Uri\Uri
  */
-class UriTest extends ApplicationTestCase
+class UriTest extends AwfTestCase
 {
 	/**
-	 * Object under test
-	 *
 	 * @var    Uri
 	 */
 	protected $object;
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @return  void
-	 */
 	protected function setUp()
 	{
+        parent::setUp();
+
 		$this->object = new Uri('http://someuser:somepass@www.example.com:80/path/file.html?var=value#fragment');
+
+        // Clear instances array, so we always start with a new, fresh object
+        ReflectionHelper::setValue($this->object, 'instances', array());
 	}
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        // Clear instances, so we don't corrupt other tests
+        ReflectionHelper::setValue($this->object, 'instances', array());
+    }
 
 	/**
 	 * Test the __toString method.
@@ -58,6 +63,7 @@ class UriTest extends ApplicationTestCase
 	 */
 	public function testGetInstance()
 	{
+        // TODO Rewrite this test to use a dataProvider
 		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
@@ -94,7 +100,6 @@ class UriTest extends ApplicationTestCase
 	 */
 	public function testIsInternal()
 	{
-		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
 		$_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
@@ -111,7 +116,6 @@ class UriTest extends ApplicationTestCase
 	 */
 	public function testRoot()
 	{
-		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
 		$_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
