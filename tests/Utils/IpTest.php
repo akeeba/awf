@@ -8,6 +8,7 @@
 
 namespace Awf\Tests\Utils;
 
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Utils\Ip;
 
 /**
@@ -17,8 +18,25 @@ use Awf\Utils\Ip;
  *
  * @coversDefaultClass \Awf\Utils\Ip
  */
-class IpTest extends \PHPUnit_Framework_TestCase
+class IpTest extends AwfTestCase
 {
+    /** @var  array Saves a copy of the $_SERVER variable*/
+    private $serverBCK;
+
+    protected function setUp()
+    {
+        parent::setUp(false);
+
+        $this->serverBCK = $_SERVER;
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+
+        $_SERVER = $this->serverBCK;
+    }
+
 	/**
 	 * @param bool   $useSuperGlobal
 	 * @param string $remoteAddr
