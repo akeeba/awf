@@ -8,6 +8,7 @@
 
 namespace Awf\Tests\Pagination\Pagination;
 
+use Awf\Pagination\Pagination;
 use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
@@ -47,5 +48,24 @@ class PaginationTest extends AwfTestCase
         $this->assertEquals($check['pagesStart']    , $pagination->pagesStart, sprintf($msg, 'Failed to set the starting page'));
         $this->assertEquals($check['pagesStop']     , $pagination->pagesStop, sprintf($msg, 'Failed to set the last page'));
         $this->assertEquals($check['viewAll']       , ReflectionHelper::getValue($pagination, 'viewAll'), sprintf($msg, 'Failed to set the viewAll flag'));
+    }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationSetAdditionalUrlParam
+     * @covers          Awf\Pagination\Pagination::setAdditionalUrlParam
+     * @dataProvider    PaginationDataprovider::getTestSetAdditionalUrlParam
+     */
+    public function testSetAdditionalUrlParam($test, $check)
+    {
+        $msg        = 'Pagination::setAdditionalUrlParam %s - Case: '.$check['case'];
+        $pagination = new Pagination(20, 0, 5);
+
+        ReflectionHelper::setValue($pagination, 'additionalUrlParams', $test['mock']['params']);
+
+        $result = $pagination->setAdditionalUrlParam($test['key'], $test['value']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+        $this->assertEquals($check['params'], ReflectionHelper::getValue($pagination, 'additionalUrlParams'), sprintf($msg, 'Failed to set the url param'));
     }
 }

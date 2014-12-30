@@ -226,4 +226,88 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestSetAdditionalUrlParam()
+    {
+        $data[] = array(
+            array(
+                'mock'  => array(
+                    'params' => array()
+                ),
+                'key'   => 'limit',
+                'value' => ''
+            ),
+            array(
+                'case'   => 'Trying to add limit as param',
+                'result' => false,
+                'params' => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock'  => array(
+                    'params' => array()
+                ),
+                'key'   => 'limitstart',
+                'value' => ''
+            ),
+            array(
+                'case'   => 'Trying to add limitstart as param',
+                'result' => false,
+                'params' => array()
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock'  => array(
+                    'params' => array()
+                ),
+                'key'   => 'foo',
+                'value' => 'bar'
+            ),
+            array(
+                'case'   => 'Add a param that does not exist',
+                'result' => null,
+                'params' => array('foo' => 'bar')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock'  => array(
+                    'params' => array(
+                        'foo' => 'baz'
+                    )
+                ),
+                'key'   => 'foo',
+                'value' => 'bar'
+            ),
+            array(
+                'case'   => 'Add a param that exists',
+                'result' => 'baz',
+                'params' => array('foo' => 'bar')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock'  => array(
+                    'params' => array(
+                        'foo' => 'bar'
+                    )
+                ),
+                'key'   => 'foo',
+                'value' => null
+            ),
+            array(
+                'case'   => 'Unset a param',
+                'result' => 'bar',
+                'params' => array()
+            )
+        );
+
+        return $data;
+    }
 }
