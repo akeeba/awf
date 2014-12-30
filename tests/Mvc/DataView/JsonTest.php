@@ -72,6 +72,7 @@ class JsonTest extends DatabaseMysqliCase
      * @group           DataViewJson
      * @group           DataViewJsonDisplayBrowse
      * @covers          Awf\Mvc\DataView\Json::display
+     * @covers          Awf\Mvc\DataView\Json::onBeforeBrowse
      * @dataProvider    JsonDataprovider::getTestDisplayBrowse
      */
     public function testDisplayBrowse($test, $check)
