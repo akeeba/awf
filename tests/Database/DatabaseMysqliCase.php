@@ -12,6 +12,9 @@ namespace Awf\Tests\Database;
 
 use Awf\Tests\Helpers\DatabaseTest;
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\ReflectionHelper;
+use Awf\Application\Application;
+use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * Abstract test case class for MySQLi database testing.
@@ -37,6 +40,12 @@ abstract class DatabaseMysqliCase extends DatabaseTest
 	 */
 	public static function setUpBeforeClass()
 	{
+		// First of all let's create the container, it will be useful later
+		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
+		static::$container = new FakeContainer();
+
+		Application::getInstance('Fakeapp', static::$container);
+
 		// First let's look to see if we have a DSN defined or in the environment variables.
 		if (defined('AWFTEST_DATABASE_MYSQLI_DSN') || getenv('AWFTEST_DATABASE_MYSQLI_DSN'))
 		{

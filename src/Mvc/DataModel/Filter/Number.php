@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		kaas
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -37,6 +37,9 @@ class Number extends AbstractFilter
 	 */
 	public function between($from, $to, $include = true)
 	{
+		$from = (float) $from;
+		$to   = (float) $to;
+
 		if ($this->isEmpty($from) || $this->isEmpty($to))
 		{
 			return '';
@@ -70,6 +73,9 @@ class Number extends AbstractFilter
 	 */
 	public function outside($from, $to, $include = false)
 	{
+		$from = (float) $from;
+		$to   = (float) $to;
+
 		if ($this->isEmpty($from) || $this->isEmpty($to))
 		{
 			return '';
@@ -106,6 +112,10 @@ class Number extends AbstractFilter
 			return '';
 		}
 
+		// Convert them to float, just to be sure
+		$value    = (float) $value;
+		$interval = (float) $interval;
+
 		$from = $value - $interval;
 		$to = $value + $interval;
 
@@ -121,4 +131,4 @@ class Number extends AbstractFilter
 
 		return $sql;
 	}
-} 
+}

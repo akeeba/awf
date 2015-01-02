@@ -9,6 +9,7 @@
 namespace Awf\Tests\Mailer;
 
 use Awf\Mailer\Mailer;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 
@@ -19,7 +20,7 @@ use Awf\Tests\Stubs\Fakeapp\Container;
  *
  * @package            Awf\Tests\Mailer
  */
-class MailerTest extends \PHPUnit_Framework_TestCase
+class MailerTest extends AwfTestCase
 {
 
 	/**
@@ -37,9 +38,7 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
-		$container = new Container();
-
-		$this->object = new Mailer($container);
+		$this->object = new Mailer(static::$container);
 	}
 
 	/**
@@ -446,4 +445,3 @@ class MailerTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

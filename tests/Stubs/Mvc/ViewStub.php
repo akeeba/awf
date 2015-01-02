@@ -77,5 +77,35 @@ class ViewStub extends View
 
         return $this->name;
     }
+
+    /**
+     * I have to hardcode these function since sometimes we do a method_exists check and that won't
+     * trigger __call
+     *
+     * @return mixed
+     */
+    public function onBeforeDummy($tpl = null)
+    {
+        if(isset($this->methods['onBeforeDummy']))
+        {
+            $func = $this->methods['onBeforeDummy'];
+
+            return call_user_func_array($func, array($this, $tpl));
+        }
+
+        return true;
+    }
+
+    public function onAfterDummy($tpl = null)
+    {
+        if(isset($this->methods['onAfterDummy']))
+        {
+            $func = $this->methods['onAfterDummy'];
+
+            return call_user_func_array($func, array($this, $tpl));
+        }
+
+        return true;
+    }
 }
 

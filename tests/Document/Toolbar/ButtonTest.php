@@ -1,13 +1,14 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Document\Toolbar;
 
 use Awf\Document\Toolbar\Button;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -17,9 +18,16 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @coversDefaultClass \Awf\Document\Toolbar
  */
-class ButtonTest extends \PHPUnit_Framework_TestCase
+class ButtonTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
 
+	/**
+	 * @group   Button
+	 */
 	public function testConstruct()
 	{
 		$data = array(
@@ -43,15 +51,25 @@ class ButtonTest extends \PHPUnit_Framework_TestCase
 
 			$this->assertEquals($v, ReflectionHelper::getValue($button, $k));
 		}
-
-		return $button;
 	}
 
 	/**
-	 * @depends testConstruct
+	 * @group   Button
 	 */
-	public function testGetId(Button $button)
+	public function testGetId()
 	{
+		$data = array(
+			'class'		=> 'testClass',
+			'icon'		=> 'testIcon',
+			'title'		=> 'testTitle',
+			'id'		=> 'testId',
+			'onClick'	=> 'testOnClick',
+			'url'		=> 'testURL',
+			'invalid'	=> 'testInvalid'
+		);
+
+		$button = new Button($data);
+
 		$button->setId(null);
 		$button->setTitle('Foo Bar');
 
@@ -63,4 +81,3 @@ class ButtonTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('some-string_mate', $button->getId());
 	}
 }
- 

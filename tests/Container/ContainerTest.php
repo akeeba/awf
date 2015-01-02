@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -9,6 +9,7 @@ namespace Awf\Tests\Container;
 
 
 use Awf\Container\Container;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * Class ContainerTest
@@ -17,7 +18,7 @@ use Awf\Container\Container;
  *
  * @coversDefaultClass \Awf\Container\Container
  */
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends AwfTestCase
 {
 	/**
 	 * Make sure we can get a customised container
@@ -56,148 +57,157 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetApplication(Container $c)
+	public function testGetApplication()
 	{
+		$c = $this->getContainer();
 		$object = $c->application;
 
 		$this->assertInstanceOf('\\Awf\\Application\\Application', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetAppConfig(Container $c)
+	public function testGetAppConfig()
 	{
+		$c = $this->getContainer();
 		$object = $c->appConfig;
 
 		$this->assertInstanceOf('\\Awf\\Application\\Configuration', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetDb(Container $c)
+	public function testGetDb()
 	{
+		$c = $this->getContainer();
 		$object = $c->db;
 
 		$this->assertInstanceOf('\\Awf\\Database\\Driver', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetDispatcher(Container $c)
+	public function testGetDispatcher()
 	{
+		$c = $this->getContainer();
 		$object = $c->dispatcher;
 
 		$this->assertInstanceOf('\\Awf\\Dispatcher\\Dispatcher', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetEventDispatcher(Container $c)
+	public function testGetEventDispatcher()
 	{
+		$c = $this->getContainer();
 		$object = $c->eventDispatcher;
 
 		$this->assertInstanceOf('\\Awf\\Event\\Dispatcher', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetFilesystem(Container $c)
+	public function testGetFilesystem()
 	{
+		$c = $this->getContainer();
 		$object = $c->fileSystem;
 
 		$this->assertInstanceOf('\\Awf\\Filesystem\\FilesystemInterface', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetInput(Container $c)
+	public function testGetInput()
 	{
+		$c = $this->getContainer();
 		$object = $c->input;
 
 		$this->assertInstanceOf('\\Awf\\Input\\Input', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetMailer(Container $c)
+	public function testGetMailer()
 	{
+		$c = $this->getContainer();
 		$object = $c->mailer;
 
 		$this->assertInstanceOf('\\Awf\\Mailer\\Mailer', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetRouter(Container $c)
+	public function testGetRouter()
 	{
+		$c = $this->getContainer();
 		$object = $c->router;
 
 		$this->assertInstanceOf('\\Awf\\Router\\Router', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetSession(Container $c)
+	public function testGetSession()
 	{
+		$c = $this->getContainer();
 		$object = $c->session;
 
 		$this->assertInstanceOf('\\Awf\\Session\\Manager', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetSegment(Container $c)
+	public function testGetSegment()
 	{
+		$c = $this->getContainer();
 		$object = $c->segment;
 
 		$this->assertInstanceOf('\\Awf\\Session\\Segment', $object);
 	}
 
 	/**
-	 * @depends testForcedValues
-	 *
-	 * @param Container $c
+	 * @group       Container
 	 */
-	public function testGetUserManager(Container $c)
+	public function testGetUserManager()
 	{
+		$c = $this->getContainer();
 		$object = $c->userManager;
 
 		$this->assertInstanceOf('\\Awf\\User\\ManagerInterface', $object);
 	}
 
+	protected function getContainer()
+	{
+		$values = array(
+			'application_name'		=> 'fakeapp',
+			'session_segment_name'	=> 'fakeapp_segment',
+			'basePath'				=> realpath(__DIR__ . '/../Stubs/Fakeapp'),
+			'templatePath'			=> realpath(__DIR__ . '/../Stubs/Fakeapp/template'),
+			'languagePath'			=> realpath(__DIR__ . '/../data/lang'),
+			'temporaryPath'			=> realpath(__DIR__ . '/../Stubs/Fakeapp/tmp'),
+			'filesystemBase'		=> realpath(__DIR__ . '/../Stubs/Fakeapp'),
+			'sqlPath'				=> realpath(__DIR__ . '/../Stubs/Fakeapp/sql'),
+		);
+
+		if (!defined('APATH_BASE'))
+		{
+			define('APATH_BASE', realpath(__DIR__ . '/../Stubs/Fakeapp'));
+		}
+
+		$container = new Container($values);
+
+		return $container;
+	}
 }
- 

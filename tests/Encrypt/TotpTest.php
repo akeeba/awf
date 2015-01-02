@@ -1,21 +1,21 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Encrypt;
 
-use Awf\Encrypt\Base32;
 use Awf\Encrypt\Totp;
+use Awf\Tests\Helpers\AwfTestCase;
 
 /**
  * @coversDefaultClass Awf\Encrypt\Totp
  *
  * @package Awf\Tests\Encrypt
  */
-class TotpTest extends \PHPUnit_Framework_TestCase
+class TotpTest extends AwfTestCase
 {
 	/** @var  Totp */
 	protected $totp;
@@ -25,6 +25,8 @@ class TotpTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
+		parent::setUp(false);
+
 		// VARS: $timeStep = 30, $passCodeLength = 6, $secretLength = 10, $base32=null
 		$timeStep 				= 30;
 		$passCodeLength 		= 6;
@@ -95,4 +97,3 @@ class TotpTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

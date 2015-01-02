@@ -1,26 +1,34 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Document;
 
-use Awf\Application\Application;
 use Awf\Document\Document;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
 
 /**
  * @package Awf\Tests\Document
  *
  * @coversDefaultClass \Awf\Document\Json
  */
-class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class JsonTest extends AwfTestCase
 {
+	protected function setUp()
+	{
+		parent::setUp();
+
+		// Reset the instances
+		ReflectionHelper::setValue('\Awf\Document\Document', 'instances', array());
+	}
+
 	public function testSetAndGetUseHashes()
 	{
+		/** @var \Awf\Document\Json $document */
 		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 
@@ -43,8 +51,10 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonPlain()
 	{
+		/** @var \Awf\Document\Json $document */
 		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
+		$document->setUseHashes(false);
 		$document->setBuffer("{test: true}");
 
 		$this->expectOutputString('{test: true}');
@@ -59,6 +69,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonHashes()
 	{
+		/** @var \Awf\Document\Json $document */
 		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 		$document->setUseHashes(true);
@@ -76,6 +87,7 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 
 	public function testRenderJsonAttachment()
 	{
+		/** @var \Awf\Document\Json $document */
 		$document = Document::getInstance('json', static::$container);
 		$this->assertInstanceOf('\\Awf\\Document\\Json', $document);
 		$document->setBuffer('{test: true}');
@@ -92,4 +104,3 @@ class JsonTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('attachment; filename="foobar.json"', $contentDisposition);
 	}
 }
- 

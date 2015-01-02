@@ -15,12 +15,17 @@ use Awf\Tests\Stubs\Mvc\TreeModelStub;
 
 require_once 'TreeModelDataprovider.php';
 
+/**
+ * @covers      Awf\Mvc\TreeModel::<protected>
+ * @covers      Awf\Mvc\TreeModel::<private>
+ * @package     Awf\Tests\TreeModel
+ */
 class TreeModelTest extends DatabaseMysqlCase
 {
     /**
      * @group           TreeModel
      * @group           TreeModelCheck
-     * @covers          TreeModel::check
+     * @covers          Awf\Mvc\TreeModel::check
      * @dataProvider    TreeModelDataprovider::getTestCheck
      */
     public function testCheck($test, $check)
@@ -62,7 +67,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelForceDelete
      * @group               TreeModel
-     * @covers              TreeModel::forceDelete
+     * @covers              Awf\Mvc\TreeModel::forceDelete
      * @dataProvider        TreeModelDataprovider::getTestForceDelete
      */
     public function testForceDelete($test, $check)
@@ -123,7 +128,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelReorder
      * @group               TreeModel
-     * @covers              TreeModel::reorder
+     * @covers              Awf\Mvc\TreeModel::reorder
      */
     public function testReorder()
     {
@@ -145,7 +150,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMove
      * @group               TreeModel
-     * @covers              TreeModel::move
+     * @covers              Awf\Mvc\TreeModel::move
      */
     public function testMove()
     {
@@ -167,7 +172,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelCreate
      * @group               TreeModel
-     * @covers              TreeModel::create
+     * @covers              Awf\Mvc\TreeModel::create
      * @dataProvider        TreeModelDataprovider::getTestCreate
      */
     public function testCreate($test)
@@ -204,7 +209,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsRoot
      * @group               TreeModel
-     * @covers              TreeModel::insertAsRoot
+     * @covers              Awf\Mvc\TreeModel::insertAsRoot
      */
     public function testInsertAsRoot()
     {
@@ -228,7 +233,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsRoot
      * @group               TreeModel
-     * @covers              TreeModel::insertAsRoot
+     * @covers              Awf\Mvc\TreeModel::insertAsRoot
      */
     public function testInsertAsRootException()
     {
@@ -252,7 +257,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsFirstChildOf
      * @group               TreeModel
-     * @covers              TreeModel::insertAsFirstChildOf
+     * @covers              Awf\Mvc\TreeModel::insertAsFirstChildOf
      * @dataProvider        TreeModelDataprovider::getTestInsertAsFirstChildOf
      */
     public function testInsertAsFirstChildOf($test, $check)
@@ -323,7 +328,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsFirstChildOf
      * @group               TreeModel
-     * @covers              TreeModel::insertAsFirstChildOf
+     * @covers              Awf\Mvc\TreeModel::insertAsFirstChildOf
      */
     public function testInsertAsFirstChildOfException()
     {
@@ -347,7 +352,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsLastChildOf
      * @group               TreeModel
-     * @covers              TreeModel::insertAsLastChildOf
+     * @covers              Awf\Mvc\TreeModel::insertAsLastChildOf
      * @dataProvider        TreeModelDataprovider::getTestInsertAsLastChildOf
      */
     public function testInsertAsLastChildOf($test, $check)
@@ -418,7 +423,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertAsLastChildOf
      * @group               TreeModel
-     * @covers              TreeModel::insertAsLastChildOf
+     * @covers              Awf\Mvc\TreeModel::insertAsLastChildOf
      */
     public function testInsertAsLastChildOfException()
     {
@@ -442,7 +447,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertLeftOf
      * @group               TreeModel
-     * @covers              TreeModel::insertLeftOf
+     * @covers              Awf\Mvc\TreeModel::insertLeftOf
      * @dataProvider        TreeModelDataprovider::getTestInsertLeftOf
      */
     public function testInsertLeftOf($test, $check)
@@ -512,7 +517,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertLeftOf
      * @group               TreeModel
-     * @covers              TreeModel::insertLeftOf
+     * @covers              Awf\Mvc\TreeModel::insertLeftOf
      */
     public function testInsertLeftOfException()
     {
@@ -536,7 +541,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertRightOf
      * @group               TreeModel
-     * @covers              TreeModel::insertRightOf
+     * @covers              Awf\Mvc\TreeModel::insertRightOf
      * @dataProvider        TreeModelDataprovider::getTestInsertRightOf
      */
     public function testInsertRightOf($test, $check)
@@ -606,7 +611,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInsertRightOf
      * @group               TreeModel
-     * @covers              TreeModel::insertRightOf
+     * @covers              Awf\Mvc\TreeModel::insertRightOf
      */
     public function testInsertRightOfException()
     {
@@ -630,7 +635,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveLeft
      * @group               TreeModel
-     * @covers              TreeModel::moveLeft
+     * @covers              Awf\Mvc\TreeModel::moveLeft
      * @dataProvider        TreeModelDataprovider::getTestMoveLeft
      */
     public function testMoveLeft($test, $check)
@@ -667,7 +672,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveLeft
      * @group               TreeModel
-     * @covers              TreeModel::moveLeft
+     * @covers              Awf\Mvc\TreeModel::moveLeft
      */
     public function testMoveLeftException()
     {
@@ -690,7 +695,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveRight
      * @group               TreeModel
-     * @covers              TreeModel::moveRight
+     * @covers              Awf\Mvc\TreeModel::moveRight
      * @dataProvider        TreeModelDataprovider::getTestMoveRight
      */
     public function testMoveRight($test, $check)
@@ -727,7 +732,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveRight
      * @group               TreeModel
-     * @covers              TreeModel::moveRight
+     * @covers              Awf\Mvc\TreeModel::moveRight
      */
     public function testMoveRightException()
     {
@@ -750,7 +755,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveToLeftOf
      * @group               TreeModel
-     * @covers              TreeModel::moveToLeftOf
+     * @covers              Awf\Mvc\TreeModel::moveToLeftOf
      * @dataProvider        TreeModelDataprovider::getTestMoveToLeftOf
      */
     public function testMoveToLeftOf($test, $check)
@@ -823,7 +828,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveToLeftOf
      * @group               TreeModel
-     * @covers              TreeModel::moveToLeftOf
+     * @covers              Awf\Mvc\TreeModel::moveToLeftOf
      * @dataProvider        TreeModelDataprovider::getTestMoveToLeftOfException
      */
     public function testMoveToLeftOfException($test)
@@ -858,7 +863,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveToRightOf
      * @group               TreeModel
-     * @covers              TreeModel::moveToRightOf
+     * @covers              Awf\Mvc\TreeModel::moveToRightOf
      * @dataProvider        TreeModelDataprovider::getTestMoveToRightOf
      */
     public function testMoveToRightOf($test, $check)
@@ -931,7 +936,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMoveToRightOf
      * @group               TreeModel
-     * @covers              TreeModel::moveToRightOf
+     * @covers              Awf\Mvc\TreeModel::moveToRightOf
      * @dataProvider        TreeModelDataprovider::getTestMoveToRightOfException
      */
     public function testMoveToRightOfException($test)
@@ -966,7 +971,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMakeFirstChildOf
      * @group               TreeModel
-     * @covers              TreeModel::makeFirstChildOf
+     * @covers              Awf\Mvc\TreeModel::makeFirstChildOf
      * @dataProvider        TreeModelDataprovider::getTestMakeFirstChildOf
      */
     public function testMakeFirstChildOf($test, $check)
@@ -1022,7 +1027,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMakeFirstChildOf
      * @group               TreeModel
-     * @covers              TreeModel::makeFirstChildOf
+     * @covers              Awf\Mvc\TreeModel::makeFirstChildOf
      * @dataProvider        TreeModelDataprovider::getTestMakeFirstChildOfException
      */
     public function testMakeFirstChildOfException($test)
@@ -1057,7 +1062,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMakeLastChildOf
      * @group               TreeModel
-     * @covers              TreeModel::makeLastChildOf
+     * @covers              Awf\Mvc\TreeModel::makeLastChildOf
      * @dataProvider        TreeModelDataprovider::getTestMakeLastChildOf
      */
     public function testMakeLastChildOf($test, $check)
@@ -1113,7 +1118,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMakeLastChildOf
      * @group               TreeModel
-     * @covers              TreeModel::makeLastChildOf
+     * @covers              Awf\Mvc\TreeModel::makeLastChildOf
      * @dataProvider        TreeModelDataprovider::getTestMakeLastChildOfException
      */
     public function testMakeLastChildOfException($test)
@@ -1148,7 +1153,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelMakeRoot
      * @group               TreeModel
-     * @covers              TreeModel::makeRoot
+     * @covers              Awf\Mvc\TreeModel::makeRoot
      * @dataProvider        TreeModelDataprovider::getTestMakeRoot
      */
     public function testMakeRoot($test, $check)
@@ -1185,7 +1190,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetLevel
      * @group               TreeModel
-     * @covers              TreeModel::getLevel
+     * @covers              Awf\Mvc\TreeModel::getLevel
      * @dataProvider        TreeModelDataprovider::getTestGetLevel
      */
     public function testGetLevel($test, $check)
@@ -1217,7 +1222,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetLevel
      * @group               TreeModel
-     * @covers              TreeModel::getLevel
+     * @covers              Awf\Mvc\TreeModel::getLevel
      */
     public function testGetLevelException()
     {
@@ -1239,7 +1244,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetParent
      * @group               TreeModel
-     * @covers              TreeModel::getParent
+     * @covers              Awf\Mvc\TreeModel::getParent
      * @dataProvider        TreeModelDataprovider::getTestGetParent
      */
     public function testGetParent($test, $check)
@@ -1279,7 +1284,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsRoot
      * @group               TreeModel
-     * @covers              TreeModel::isRoot
+     * @covers              Awf\Mvc\TreeModel::isRoot
      * @dataProvider        TreeModelDataprovider::getTestIsRoot
      */
     public function testIsRoot($test, $check)
@@ -1314,7 +1319,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsLeaf
      * @group               TreeModel
-     * @covers              TreeModel::isLeaf
+     * @covers              Awf\Mvc\TreeModel::isLeaf
      * @dataProvider        TreeModelDataprovider::getTestIsLeaf
      */
     public function testIsLeaf($test, $check)
@@ -1341,7 +1346,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsLeaf
      * @group               TreeModel
-     * @covers              TreeModel::isLeaf
+     * @covers              Awf\Mvc\TreeModel::isLeaf
      */
     public function testIsLeafException()
     {
@@ -1363,7 +1368,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsDescendantOf
      * @group               TreeModel
-     * @covers              TreeModel::isDescendantOf
+     * @covers              Awf\Mvc\TreeModel::isDescendantOf
      * @dataProvider        TreeModelDataprovider::getTestIsDescendantOf
      */
     public function testIsDescendantOf($test, $check)
@@ -1391,7 +1396,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsDescendantOf
      * @group               TreeModel
-     * @covers              TreeModel::isDescendantOf
+     * @covers              Awf\Mvc\TreeModel::isDescendantOf
      * @dataProvider        TreeModelDataprovider::getTestIsDescendantOfException
      */
     public function testIsDescendantOfException($test)
@@ -1426,7 +1431,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsSelfOrDescendantOf
      * @group               TreeModel
-     * @covers              TreeModel::isSelfOrDescendantOf
+     * @covers              Awf\Mvc\TreeModel::isSelfOrDescendantOf
      * @dataProvider        TreeModelDataprovider::getTestIsSelfOrDescendantOf
      */
     public function testIsSelfOrDescendantOf($test, $check)
@@ -1454,7 +1459,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelIsSelfOrDescendantOf
      * @group               TreeModel
-     * @covers              TreeModel::isSelfOrDescendantOf
+     * @covers              Awf\Mvc\TreeModel::isSelfOrDescendantOf
      * @dataProvider        TreeModelDataprovider::getTestIsSelfOrDescendantOfException
      */
     public function testIsSelfOrDescendantOfException($test)
@@ -1489,7 +1494,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelEquals
      * @group               TreeModel
-     * @covers              TreeModel::equals
+     * @covers              Awf\Mvc\TreeModel::equals
      * @dataProvider        TreeModelDataprovider::getTestEquals
      */
     public function testEquals($test, $check)
@@ -1529,7 +1534,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelEquals
      * @group               TreeModel
-     * @covers              TreeModel::equals
+     * @covers              Awf\Mvc\TreeModel::equals
      * @dataProvider        TreeModelDataprovider::getTestEqualsException
      */
     public function testEqualsException($test)
@@ -1564,7 +1569,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelInSameScope
      * @group               TreeModel
-     * @covers              TreeModel::inSameScope
+     * @covers              Awf\Mvc\TreeModel::inSameScope
      * @dataProvider        TreeModelDataprovider::getTestInSameScope
      */
     public function testInSameScope($test, $check)
@@ -1596,7 +1601,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelScopeImmediateDescendants
      * @group               TreeModel
-     * @covers              TreeModel::scopeImmediateDescendants
+     * @covers              Awf\Mvc\TreeModel::scopeImmediateDescendants
      * @dataProvider        TreeModelDataprovider::getTestScopeImmediateDescendants
      */
     public function testScopeImmediateDescendants($test, $check)
@@ -1629,7 +1634,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelScopeImmediateDescendants
      * @group               TreeModel
-     * @covers              TreeModel::scopeImmediateDescendants
+     * @covers              Awf\Mvc\TreeModel::scopeImmediateDescendants
      */
     public function testScopeImmediateDescendantsException()
     {
@@ -1652,7 +1657,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetRoot
      * @group               TreeModel
-     * @covers              TreeModel::getRoot
+     * @covers              Awf\Mvc\TreeModel::getRoot
      * @dataProvider        TreeModelDataprovider::getTestRoot
      */
     public function testGetRoot($test, $check)
@@ -1714,7 +1719,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetRoot
      * @group               TreeModel
-     * @covers              TreeModel::getRoot
+     * @covers              Awf\Mvc\TreeModel::getRoot
      * @dataProvider        TreeModelDataprovider::getTestRootException
      */
     public function testGetRootException($test)
@@ -1779,7 +1784,7 @@ class TreeModelTest extends DatabaseMysqlCase
     /**
      * @group               TreeModelGetNestedList
      * @group               TreeModel
-     * @covers              TreeModel::getNestedList
+     * @covers              Awf\Mvc\TreeModel::getNestedList
      * @dataProvider        TreeModelDataprovider::getTestGetNestedList
      */
     public function testGetNestedList($test, $check)

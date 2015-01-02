@@ -10,15 +10,22 @@ namespace Awf\Tests\Hal;
 use Awf\Hal\Document;
 use Awf\Hal\Link;
 use Awf\Hal\Links;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
-class DocumentTest extends \PHPUnit_Framework_TestCase
+class DocumentTest extends AwfTestCase
 {
 	/** @var Document */
 	protected $document = null;
 
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
+
 	/**
-	 * @covers Awf\Hal\Document::__construct
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::__construct
 	 *
 	 * @return Document
 	 */
@@ -60,22 +67,17 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 			$this->getObjectAttribute($this->document, '_links') instanceof Links,
 			'Line: ' . __LINE__ . '.'
 		);
-
-		return $this->document;
 	}
 
 	/**
-	 * @depends testConstruct
-	 *
-	 * @param Document $document The HAL document to test
-	 *
+	 * @group   Hal
 	 * @covers  Awf\Hal\Document::addLink
 	 *
 	 * @return Document
 	 */
-	public function testAddLink(Document $document)
+	public function testAddLink()
 	{
-		$myDocument = clone $document;
+		$myDocument = $this->buildDocument();
 
 		// Make sure we can add links
 		$myLink = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
@@ -92,48 +94,42 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testAddLink
-	 *
-	 * @param array $input The document and link to operate on
-	 *
+	 * @group   Hal
 	 * @covers  Awf\Hal\Document::addLink
 	 */
-	public function testAddLink_append(array $input)
+	public function testAddLink_append()
 	{
-		list($document, $myLink) = $input;
-
-		$myDocument = clone $document;
+		$myDocument = $this->buildDocument();
+		$myLink     = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$myDocument->addLink('foo', $myLink);
 
 		// Make sure trying to add links with replace=false adds, doesn't replace, links
 		$myOtherLink = new Link('http://www.example.com/otherLink.json', false, 'test', null, 'Another test link');
 		$myDocument->addLink('foo', $myOtherLink, false);
 		$links = $this->getObjectAttribute($myDocument, '_links')->getLinks();
+
 		$this->assertEquals(
 			$myLink,
 			$links['foo'][0],
 			'Line: ' . __LINE__ . '.'
 		);
+
 		$this->assertEquals(
 			$myOtherLink,
 			$links['foo'][1],
 			'Line: ' . __LINE__ . '.'
 		);
-
-		return $myDocument;
 	}
 
 	/**
-	 * @depends testAddLink
-	 *
-	 * @param array $input The document and link to operate on
-	 *
+	 * @group   Hal
 	 * @covers  Awf\Hal\Document::addLink
 	 */
-	public function testAddLink_replace(array $input)
+	public function testAddLink_replace()
 	{
-		list($document, $myLink) = $input;
-
-		$myDocument = clone $document;
+		$myDocument = $this->buildDocument();
+		$myLink     = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$myDocument->addLink('foo', $myLink);
 
 		// Make sure trying to add links with replace=false adds, doesn't replace, links
 		$myOtherLink = new Link('http://www.example.com/otherLink.json', false, 'test', null, 'Another test link');
@@ -147,17 +143,14 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testAddLink
-	 *
-	 * @param array $input The document and link returned by testAddLink
-	 *
-	 * @covers Awf\Hal\Document::addLinks
-	 *
-	 * @return Document
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::addLinks
 	 */
-	public function testAddLinks(array $input)
+	public function testAddLinks()
 	{
-		list($document, $myLink) = $input;
+		$document = $this->buildDocument();
+		$myLink   = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$document->addLink('foo', $myLink);
 
 		$myLinks = array(
 			new Link('http://www.example.com/foo.json', false, 'foobar1'),
@@ -181,17 +174,25 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 			$links['foo'],
 			'Line: ' . __LINE__ . '.'
 		);
-
-		return $document;
 	}
 
 	/**
-	 * @depends testAddLinks
-	 *
-	 * @covers Awf\Hal\Document::addData
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::addData
 	 */
-	public function testAddData_append(Document $document)
+	public function testAddData_append()
 	{
+		$document = $this->buildDocument();
+		$myLink   = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$document->addLink('foo', $myLink);
+
+		$myLinks = array(
+			new Link('http://www.example.com/foo.json', false, 'foobar1'),
+			new Link('http://www.example.com/bar.json', false, 'foobar2'),
+		);
+
+		$document->addLinks('foo', $myLinks, false);
+
 		$extraData = array('newData' => 'something');
 
 		$document->addData($extraData, false);
@@ -211,12 +212,22 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testAddLinks
-	 *
-	 * @covers Awf\Hal\Document::addData
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::addData
 	 */
-	public function testAddData_replace(Document $document)
+	public function testAddData_replace()
 	{
+		$document = $this->buildDocument();
+		$myLink   = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$document->addLink('foo', $myLink);
+
+		$myLinks = array(
+			new Link('http://www.example.com/foo.json', false, 'foobar1'),
+			new Link('http://www.example.com/bar.json', false, 'foobar2'),
+		);
+
+		$document->addLinks('foo', $myLinks, false);
+
 		$extraData = array('newData' => 'something');
 
 		$document->addData($extraData, true);
@@ -236,13 +247,22 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testAddLinks
-	 *
-	 * @covers Awf\Hal\Document::addData
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::addData
 	 */
-	public function testAddData_fromScratch(Document $myDocument)
+	public function testAddData_fromScratch()
 	{
-		$document = clone $myDocument;
+		$document = $this->buildDocument();
+		$myLink   = new Link('http://www.example.com/link1.json', false, 'test', null, 'A test link');
+		$document->addLink('foo', $myLink);
+
+		$myLinks = array(
+			new Link('http://www.example.com/foo.json', false, 'foobar1'),
+			new Link('http://www.example.com/bar.json', false, 'foobar2'),
+		);
+
+		$document->addLinks('foo', $myLinks, false);
+
 		ReflectionHelper::setValue($document, '_data', null);
 
 		$extraData = array('newData' => 'something');
@@ -264,12 +284,12 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testConstruct
-	 *
-	 * @covers Awf\Hal\Document::addEmbedded
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::addEmbedded
 	 */
-	public function testAddEmbedded(Document $document)
+	public function testAddEmbedded()
 	{
+		$document    = $this->buildDocument();
 		$newDocument = new Document(array('newDocData' => 'something something something data'));
 
 		// Add an embedded document
@@ -320,17 +340,22 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 			$embedded['childDoc'],
 			'Line: ' . __LINE__ . '.'
 		);
-
-		return $document;
 	}
 
 	/**
-	 * @depends testAddLink_append
-	 *
-	 * @covers Awf\Hal\Document::getLinks
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::getLinks
 	 */
-	public function testGetLinks(Document $myDocument)
+	public function testGetLinks()
 	{
+		$myDocument = $this->buildDocument();
+		$myLink     = new Link('http://www.example.com/foo.json', false, 'test', null, 'A test link');
+		$myDocument->addLink('foo', $myLink);
+
+		// Make sure trying to add links with replace=false adds, doesn't replace, links
+		$myOtherLink = new Link('http://www.example.com/bar.json', false, 'test', null, 'Another test link');
+		$myDocument->addLink('foo', $myOtherLink, false);
+
 		$allLinks = $myDocument->getLinks();
 
 		$this->assertInternalType(
@@ -389,12 +414,17 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testAddEmbedded
-	 *
-	 * @covers Awf\Hal\Document::getEmbedded
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::getEmbedded
 	 */
-	public function testGetEmbedded(Document $document)
+	public function testGetEmbedded()
 	{
+		$document    = $this->buildDocument();
+		$newDocument = new Document(array('newDocData' => 'something something something data'));
+
+		// Add an embedded document
+		$document->addEmbedded('childDoc', $newDocument);
+
 		$allEmbedded = $this->getObjectAttribute($document, '_embedded');
 		$testEmbedded = $document->getEmbedded();
 
@@ -414,12 +444,12 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @depends testConstruct
-	 *
-	 * @covers Awf\Hal\Document::getData
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::getData
 	 */
-	public function testGetData(Document $document)
+	public function testGetData()
 	{
+		$document = $this->buildDocument();
 		$realData = $this->getObjectAttribute($document, '_data');
 		$data = $document->getData();
 
@@ -431,7 +461,8 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Awf\Hal\Document::render
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::render
 	 *
 	 * @expectedException \RuntimeException
 	 */
@@ -452,7 +483,8 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @covers Awf\Hal\Document::render
+	 * @group   Hal
+	 * @covers  Awf\Hal\Document::render
 	 */
 	public function testRender_success()
 	{
@@ -475,5 +507,18 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
 			'Line: ' . __LINE__ . '.'
 		);
 	}
+
+	protected function buildDocument()
+	{
+		$data = array(
+			'test1'     => 'one',
+			'test2'     => 'two',
+			'testArray' => array(
+				'testUno' => 'uno',
+				'testDue' => 'Due',
+			)
+		);
+
+		return new Document($data);
+	}
 }
- 

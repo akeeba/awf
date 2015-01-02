@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -45,6 +45,11 @@ abstract class AbstractFilter
 	{
 		$this->db = $db;
 
+		if(!is_object($field) || !isset($field->name) || !isset($field->type))
+		{
+			throw new \InvalidArgumentException('Invalid field object');
+		}
+
 		$this->name = $field->name;
 		$this->type = $field->type;
 	}
@@ -83,7 +88,7 @@ abstract class AbstractFilter
 	 */
 	public function getSearchMethods()
 	{
-		$ignore = array('isEmpty', 'getField', 'getFieldType', '__construct', 'getDefaultSearchMethod', 'getSearchMethods');
+		$ignore = array('isEmpty', 'getField', 'getFieldType', '__construct', 'getDefaultSearchMethod', 'getSearchMethods', 'getFieldName');
 
 		$class = new \ReflectionClass(__CLASS__);
 		$methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
@@ -233,6 +238,11 @@ abstract class AbstractFilter
 	 */
 	public static function getField($field, $config = array())
 	{
+		if(!is_object($field) || !isset($field->name) || !isset($field->type))
+		{
+			throw new \InvalidArgumentException('Invalid field object');
+		}
+
 		$type = $field->type;
 
 		$classType = self::getFieldType($type);
@@ -265,13 +275,15 @@ abstract class AbstractFilter
 	 */
 	public static function getFieldType($type)
 	{
+		// Remove parentheses, indicating field options / size (they don't matter in type detection)
 		if (!empty($type))
 		{
-			list($type, ) = explode(' ', $type);
 			list($type, ) = explode('(', $type);
 		}
 
-		switch ($type)
+		$detectedType = null;
+
+		switch (trim($type))
 		{
 			case 'varchar':
 			case 'text':
@@ -282,7 +294,7 @@ abstract class AbstractFilter
 			case 'character varying':
 			case 'nvarchar':
 			case 'nchar':
-				$type = 'Text';
+				$detectedType = 'Text';
 				break;
 
 			case 'date':
@@ -292,19 +304,58 @@ abstract class AbstractFilter
 			case 'timestamp':
 			case 'timestamp without time zone':
 			case 'timestamp with time zone':
-				$type = 'Date';
+				$detectedType = 'Date';
 				break;
 
 			case 'tinyint':
 			case 'smallint':
-				$type = 'Boolean';
-				break;
-
-			default:
-				$type = 'Number';
+				$detectedType = 'Boolean';
 				break;
 		}
 
-		return $type;
+		// Sometimes we have character types followed by a space and some cruft. Let's handle them.
+		if (is_null($detectedType) && !empty($type))
+		{
+			list ($type, ) = explode(' ', $type);
+
+			switch (trim($type))
+			{
+				case 'varchar':
+				case 'text':
+				case 'smalltext':
+				case 'longtext':
+				case 'char':
+				case 'mediumtext':
+				case 'nvarchar':
+				case 'nchar':
+					$detectedType = 'Text';
+					break;
+
+				case 'date':
+				case 'datetime':
+				case 'time':
+				case 'year':
+				case 'timestamp':
+					$detectedType = 'Date';
+					break;
+
+				case 'tinyint':
+				case 'smallint':
+					$detectedType = 'Boolean';
+					break;
+
+				default:
+					$detectedType = 'Number';
+					break;
+			}
+		}
+
+		// If all else fails assume it's a Number and hope for the best
+		if (empty($detectedType))
+		{
+			$detectedType = 'Number';
+		}
+
+		return $detectedType;
 	}
-} 
+}

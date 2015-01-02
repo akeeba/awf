@@ -1,15 +1,16 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Helpers;
 
+use Awf\Application\Application;
 use Awf\Database\Driver;
-use Awf\Tests\Helpers\TestHelper;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
+use Awf\Uri\Uri;
 
 abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 {
@@ -22,19 +23,10 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected static $driver;
 
-	public function __construct($name = null, array $data = array(), $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-
-		// We can't use setUpBeforeClass or setUp because PHPUnit will not run these methods before
-		// getting the data from the data provider of each test :(
-
-		ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
-
-		// Convince the autoloader about our default app and its container
-		static::$container = new FakeContainer();
-		\Awf\Application\Application::getInstance('Fakeapp', static::$container);
-	}
+	/** @var array If not empty, only tests inside this array would be executed, skipping the rest */
+	private $whiteListTests = array();
+	/** @var array Tests that should be skipped */
+	private $blackLisTests  = array();
 
 	/**
 	 * This method is called before the first test of this test class is run.
@@ -170,7 +162,7 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected function getDataSet()
 	{
-		return $this->createXMLDataSet(__DIR__ . '/Stubs/empty.xml');
+		return new \PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
 	}
 
 	/**
@@ -209,12 +201,43 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 *
 	 * This method is called before a test is executed.
 	 *
+	 * @param bool $resetContainer  Should I reset the Container?
+	 *
 	 * @return  void
 	 *
 	 * @since   1.0
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
+		$class       = get_class($this);
+		$parts       = explode('\\', $class);
+		$currentTest = array_pop($parts);
+
+		// Do I have to skip any tests? This is our latest resort when we have entangled tests: Test A is failing when the
+		// whole suite is executed in a precise order, however we don't know WHICH tests is corrupting the environment.
+		// We can't exclude any test since we would have a whole different suite, so the only solution is to SKIP them
+		if($this->whiteListTests && !in_array($currentTest, $this->whiteListTests))
+		{
+			$this->markTestSkipped('Skipped due whitelist settings');
+		}
+
+		if(in_array($currentTest, $this->blackLisTests))
+		{
+			$this->markTestSkipped('Skipped due blacklist settings');
+		}
+
+		// Am I asked to reset the Application Container?
+		if($resetContainer)
+		{
+			ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array());
+			static::$container = new FakeContainer();
+
+			Application::getInstance('Fakeapp', static::$container);
+		}
+
+        // Always reset the URI instances
+        Uri::reset();
+
 		if (empty(static::$driver))
 		{
 			$this->markTestSkipped('There is no database driver.');
@@ -222,5 +245,4 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 
 		parent::setUp();
 	}
-
-} 
+}

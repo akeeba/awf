@@ -1,14 +1,14 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Application;
 
 use Awf\Application\Configuration;
-use Awf\Tests\Helpers\ApplicationTestCase;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Application\MockFilesystem;
 use Awf\Tests\Stubs\Application\MockPhpfuncConfig;
@@ -20,7 +20,7 @@ use Awf\Tests\Stubs\Application\MockPhpfuncConfig;
  *
  * @codeCoverageDefaultClass \Awf\Application\Configuration
  */
-class ConfigurationTest extends ApplicationTestCase
+class ConfigurationTest extends AwfTestCase
 {
 	/** @var Configuration */
 	protected $config;
@@ -136,6 +136,8 @@ class ConfigurationTest extends ApplicationTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$this->config = new Configuration(static::$container);
 	}
 }

@@ -9,6 +9,7 @@ namespace Awf\Tests\Controller;
 
 use Awf\Input\Input;
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ClosureHelper;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
@@ -18,12 +19,17 @@ use Awf\Tests\Stubs\Mvc\ViewStub;
 
 require_once 'ControllerDataprovider.php';
 
-class ControllerTest extends \PHPUnit_Framework_TestCase
+/**
+ * @covers      Awf\Mvc\Controller::<protected>
+ * @covers      Awf\Mvc\Controller::<private>
+ * @package     Awf\Tests\Controller
+ */
+class ControllerTest extends AwfTestCase
 {
     /**
      * @group           Controller
      * @group           ControllerGetInstance
-     * @covers          Controller::getInstance
+     * @covers          Awf\Mvc\Controller::getInstance
      * @dataProvider    ControllerDataprovider::getTestgetInstance
      */
     public function testGetInstance($test, $check)
@@ -48,7 +54,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerConstruct
-     * @covers          Controller::__construct
+     * @covers          Awf\Mvc\Controller::__construct
      * @dataProvider    ControllerDataprovider::getTest__construct
      */
     public function test__construct($test, $check)
@@ -113,7 +119,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerConstruct
-     * @covers          Controller::__construct
+     * @covers          Awf\Mvc\Controller::__construct
      */
     public function test__constructTaskMap()
     {
@@ -139,7 +145,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerExecute
-     * @covers          Controller::execute
+     * @covers          Awf\Mvc\Controller::execute
      * @dataProvider    ControllerDataprovider::getTestExecute
      */
     public function testExecute($test, $check)
@@ -180,7 +186,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerExecute
-     * @covers          Controller::execute
+     * @covers          Awf\Mvc\Controller::execute
      */
     public function testExecuteException()
     {
@@ -197,7 +203,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerDisplay
-     * @covers          Controller::display
+     * @covers          Awf\Mvc\Controller::display
      * @dataProvider    ControllerDataprovider::getTestDisplay
      */
     public function testDisplay($test, $check)
@@ -243,7 +249,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerGetModel
-     * @covers          Controller::getModel
+     * @covers          Awf\Mvc\Controller::getModel
      * @dataProvider    ControllerDataprovider::getTestGetModel
      */
     public function testGetModel($test, $check)
@@ -260,14 +266,14 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
 
         $config = $result->passedContainer['mvc_config'];
 
-        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong view'));
+        $this->assertInstanceOf($check['result'], $result, sprintf($msg, 'Created the wrong model'));
         $this->assertEquals($check['config'], $config, sprintf($msg, 'Passed configuration was not considered'));
     }
 
     /**
      * @group           Controller
      * @group           ControllerGetView
-     * @covers          Controller::getView
+     * @covers          Awf\Mvc\Controller::getView
      * @dataProvider    ControllerDataprovider::getTestGetView
      */
     public function testGetView($test, $check)
@@ -295,7 +301,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetViewName
-     * @covers          Controller::setViewName
+     * @covers          Awf\Mvc\Controller::setViewName
      */
     public function testSetViewName()
     {
@@ -310,7 +316,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetModelName
-     * @covers          Controller::setModelName
+     * @covers          Awf\Mvc\Controller::setModelName
      */
     public function testSetModelName()
     {
@@ -325,7 +331,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetModel
-     * @covers          Controller::setModel
+     * @covers          Awf\Mvc\Controller::setModel
      */
     public function testSetModel()
     {
@@ -342,7 +348,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetView
-     * @covers          Controller::setView
+     * @covers          Awf\Mvc\Controller::setView
      */
     public function testSetView()
     {
@@ -359,7 +365,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerGetTask
-     * @covers          Controller::getTask
+     * @covers          Awf\Mvc\Controller::getTask
      */
     public function testGetTask()
     {
@@ -374,7 +380,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerGetTasks
-     * @covers          Controller::getTasks
+     * @covers          Awf\Mvc\Controller::getTasks
      */
     public function testGetTasks()
     {
@@ -389,7 +395,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerRedirect
-     * @covers          Controller::redirect
+     * @covers          Awf\Mvc\Controller::redirect
      * @dataProvider    ControllerDataprovider::getTestRedirect
      */
     public function testRedirect($test, $check)
@@ -427,7 +433,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerRegisterDefaultTask
-     * @covers          Controller::registerDefaultTask
+     * @covers          Awf\Mvc\Controller::registerDefaultTask
      */
     public function testRegisterDefaultTask()
     {
@@ -442,7 +448,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerRegisterTask
-     * @covers          Controller::registerTask
+     * @covers          Awf\Mvc\Controller::registerTask
      * @dataProvider    ControllerDataprovider::getTestRegisterTask
      */
     public function testRegisterTask($test, $check)
@@ -472,7 +478,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerUnregisterTask
-     * @covers          Controller::unregisterTask
+     * @covers          Awf\Mvc\Controller::unregisterTask
      */
     public function testUnregisterTask()
     {
@@ -493,7 +499,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetMessage
-     * @covers          Controller::setMessage
+     * @covers          Awf\Mvc\Controller::setMessage
      * @dataProvider    ControllerDataprovider::getTestSetMessage
      */
     public function testSetMessage($test, $check)
@@ -523,7 +529,7 @@ class ControllerTest extends \PHPUnit_Framework_TestCase
     /**
      * @group           Controller
      * @group           ControllerSetRedirect
-     * @covers          Controller::setRedirect
+     * @covers          Awf\Mvc\Controller::setRedirect
      * @dataProvider    ControllerDataprovider::getTestSetRedirect
      */
     public function testSetRedirect($test, $check)

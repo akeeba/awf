@@ -24,8 +24,6 @@ class TextTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @dataProvider getTestDetectLanguage
 	 *
-	 * @backupGlobals
-	 *
 	 * @param string $acceptLang The mocked Accept-language HTTP header content
 	 * @param string $suffix     The translation suffix
 	 * @param string $expected   The expected language returned
@@ -60,8 +58,6 @@ class TextTest extends \PHPUnit_Framework_TestCase
 	}
 
 	/**
-	 * @backupGlobals
-	 *
 	 * @covers ::loadLanguage
 	 */
 	public function testLoadLanguage()
@@ -315,4 +311,3 @@ class TextTest extends \PHPUnit_Framework_TestCase
 		);
 	}
 }
- 

@@ -8,6 +8,7 @@
 namespace Awf\Tests\Inflector;
 
 use Awf\Inflector\Inflector;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -15,7 +16,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @since  1.0
  */
-class InflectorTest extends \PHPUnit_Framework_TestCase
+class InflectorTest extends AwfTestCase
 {
 	/**
 	 * Returns test data for pluralize()
@@ -849,5 +850,9 @@ class InflectorTest extends \PHPUnit_Framework_TestCase
 			$message
 		);
 	}
+
+	protected function setUp()
+	{
+		parent::setUp(false);
+	}
 }
- 

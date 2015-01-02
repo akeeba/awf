@@ -100,6 +100,22 @@ class View
 	protected $container;
 
 	/**
+	 * Current or most recently performed task.
+	 * Currently public, it should be reduced to protected in the future
+	 *
+	 * @var  string
+	 */
+	public $task;
+
+	/**
+	 * The mapped task that was performed.
+	 * Currently public, it should be reduced to protected in the future
+	 *
+	 * @var  string
+	 */
+	public $doTask;
+
+	/**
 	 * Returns an instance of a view class
 	 *
 	 * @param null      $appName   The application name [optional] Default: from container or default app if no container is provided
@@ -384,6 +400,8 @@ class View
 				{
 					return $default;
 				}
+
+				return $result;
 			}
 		}
 		// If the model doesn't exist, try to fetch a View property
@@ -411,7 +429,7 @@ class View
 	 *
 	 * @return  Model  The instance of the Model known to this Controller
 	 */
-	public final function getModel($name = null, $config = array())
+	public function getModel($name = null, $config = array())
 	{
 		if (!empty($name))
 		{
@@ -423,7 +441,7 @@ class View
 		}
 		else
 		{
-			$modelName = strtolower($this->view);
+			$modelName = strtolower($this->name);
 		}
 
 		if (!array_key_exists($modelName, $this->modelInstances))
@@ -763,5 +781,39 @@ class View
 	public function &getContainer()
 	{
 		return $this->container;
+	}
+
+	public function getTask()
+	{
+		return $this->task;
+	}
+
+	/**
+	 * @param   string  $task
+	 *
+	 * @return  $this   This for chaining
+	 */
+	public function setTask($task)
+	{
+		$this->task = $task;
+
+		return $this;
+	}
+
+	public function getDoTask()
+	{
+		return $this->doTask;
+	}
+
+	/**
+	 * @param   string  $task
+	 *
+	 * @return  $this   This for chaining
+	 */
+	public function setDoTask($task)
+	{
+		$this->doTask = $task;
+
+		return $this;
 	}
 }

@@ -1,13 +1,13 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Uri;
 
-use Awf\Tests\Helpers\ApplicationTestCase;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Uri\Uri;
 
@@ -18,23 +18,17 @@ use Awf\Uri\Uri;
  *
  * @coversDefaultClass \Awf\Uri\Uri
  */
-class UriTest extends ApplicationTestCase
+class UriTest extends AwfTestCase
 {
 	/**
-	 * Object under test
-	 *
 	 * @var    Uri
 	 */
 	protected $object;
 
-	/**
-	 * Sets up the fixture, for example, opens a network connection.
-	 * This method is called before a test is executed.
-	 *
-	 * @return  void
-	 */
 	protected function setUp()
 	{
+        parent::setUp();
+
 		$this->object = new Uri('http://someuser:somepass@www.example.com:80/path/file.html?var=value#fragment');
 	}
 
@@ -55,11 +49,10 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::getInstance
-	 *
-	 * @backupGlobals
 	 */
 	public function testGetInstance()
 	{
+        // TODO Rewrite this test to use a dataProvider
 		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
@@ -93,12 +86,9 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::isInternal
-	 *
-	 * @backupGlobals
 	 */
 	public function testIsInternal()
 	{
-		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
 		$_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
@@ -112,12 +102,9 @@ class UriTest extends ApplicationTestCase
 
 	/**
 	 * @covers  Awf\Uri\Uri::root
-	 *
-	 * @backupGlobals
 	 */
 	public function testRoot()
 	{
-		ReflectionHelper::setValue($this->object, 'instances', array());
 		$_SERVER['HTTPS'] = 'off';
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
 		$_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
@@ -138,8 +125,6 @@ class UriTest extends ApplicationTestCase
 	/**
 	 * @covers  Awf\Uri\Uri::current
 	 * @covers  Awf\Uri\Uri::reset
-	 *
-	 * @backupGlobals
 	 */
 	public function testCurrent()
 	{
@@ -636,4 +621,3 @@ class UriTest extends ApplicationTestCase
 		);
 	}
 }
- 

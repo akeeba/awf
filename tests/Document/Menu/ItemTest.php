@@ -7,12 +7,9 @@
 
 namespace Awf\Tests\Document\Menu;
 
-use Awf\Application\Application;
-use Awf\Document\Document;
 use Awf\Document\Menu\Item;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
-use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
-use Awf\Uri\Uri;
 
 /**
  * Class ItemTest
@@ -21,8 +18,11 @@ use Awf\Uri\Uri;
  *
  * @coversDefaultClass \Awf\Document\Menu\Item
  */
-class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
+class ItemTest extends AwfTestCase
 {
+	/**
+	 * @group   MenuItem
+	 */
 	public function testConstruct()
 	{
 		$data = array(
@@ -52,19 +52,15 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 				ReflectionHelper::getValue($item, $key)
 			);
 		}
-
-		return $item;
 	}
 
 	/**
-	 * @depends testConstruct
-	 *
-	 * @param Item $item
-	 *
-	 * @return array[Item]
+	 * @group   MenuItem
 	 */
-	public function testAddChild(Item $item)
+	public function testAddChild()
 	{
+		$item = $this->buildItem();
+
 		$this->assertEmpty(ReflectionHelper::getValue($item, 'children'));
 
 		$newItem = clone $item;
@@ -86,38 +82,38 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$thirdItem->setName('omg');
 		$item->addChild($thirdItem);
 		$this->assertCount(2, ReflectionHelper::getValue($item, 'children'));
-
-		return array($item, $newItem);
 	}
 
 	/**
-	 * @depends testAddChild
-	 *
-	 * @param array [Item] $args
-	 *
-	 * @return mixed
+	 * @group   MenuItem
 	 */
-	public function testRemoveChild(array $args)
+	public function testRemoveChild()
 	{
-		/**
-		 * @var Item $item
-		 * @var Item $newItem
-		 */
-		list($item, $newItem) = $args;
+		$item = $this->buildItem();
+
+		$newItem = clone $item;
+		$newItem->setName('yo');
+		$newItem->setTitle('yo');
+
+		$item->addChild($newItem);
 
 		$item->removeChild($newItem);
-		$this->assertCount(1, ReflectionHelper::getValue($item, 'children'));
-
-		return $item;
+		$this->assertCount(0, ReflectionHelper::getValue($item, 'children'));
 	}
 
 	/**
-	 * @depends testRemoveChild
-	 *
-	 * @param Item $item
+	 * @group   MenuItem
 	 */
-	public function resetChildren(Item $item)
+	public function resetChildren()
 	{
+		$item = $this->buildItem();
+
+		$newItem = clone $item;
+		$newItem->setName('yo');
+		$newItem->setTitle('yo');
+
+		$item->addChild($newItem);;
+
 		$this->assertCount(1, ReflectionHelper::getValue($item, 'children'));
 
 		$item->resetChildren();
@@ -126,17 +122,17 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @depends testAddChild
-	 *
-	 * @param Item $item
+	 * @group   MenuItem
 	 */
-	public function testGetChildren(array $args)
+	public function testGetChildren()
 	{
-		/**
-		 * @var Item $item
-		 * @var Item $newItem
-		 */
-		list($item, $newItem) = $args;
+		$item = $this->buildItem();
+
+		$newItem = clone $item;
+		$newItem->setName('yo');
+		$newItem->setTitle('yo');
+
+		$item->addChild($newItem);;
 
 		$this->assertCount(1, ReflectionHelper::getValue($item, 'children'));
 
@@ -147,7 +143,8 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @dataProvider getTestSetter
+	 * @group           MenuItem
+	 * @dataProvider    getTestSetter
 	 *
 	 * @param string $setterName
 	 * @param mixed  $setValue
@@ -204,7 +201,8 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 	}
 
 	/**
-	 * @dataProvider getTestGetter
+	 * @group           MenuItem
+	 * @dataProvider    getTestGetter
 	 *
 	 * @param string $getterName
 	 * @param mixed  $setValue
@@ -260,6 +258,9 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		);
 	}
 
+	/**
+	 * @group   MenuItem
+	 */
 	public function testTitleHandler()
 	{
 		$data = array(
@@ -277,6 +278,9 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$this->assertEquals('test title', $title);
 	}
 
+	/**
+	 * @group   MenuItem
+	 */
 	public function testUrlParams()
 	{
 		$data = array(
@@ -298,6 +302,9 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		);
 	}
 
+	/**
+	 * @group   MenuItem
+	 */
 	public function testSetGetUrlParams()
 	{
 		$data = array(
@@ -330,6 +337,9 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		);
 	}
 
+	/**
+	 * @group   MenuItem
+	 */
 	public function testIsActive()
 	{
 		$_SERVER['HTTP_HOST'] = 'www.example.com';
@@ -368,5 +378,26 @@ class ItemTest extends \Awf\Tests\Helpers\ApplicationTestCase
 		$item->setUrl('http://www.example.com/index.php?view=other');
 		$item->setParams(array());
 		$this->assertFalse($item->isActive());
+	}
+
+	/**
+	 * @return Item
+	 */
+	protected function buildItem()
+	{
+		$data = array(
+			'group'        => 'foobar',
+			'icon'         => 'icon-foobar',
+			'name'         => 'foobar',
+			'titleHandler' => array('Foobar', 'handleTitle'),
+			'onClick'      => 'alert("Hi")',
+			'show'         => array('foobar'),
+			'title'        => 'Foo Bar',
+			'url'          => 'http://www.example.com',
+			'order'        => 1,
+			'params'       => array('view' => 'foobar')
+		);
+
+		return new Item($data, static::$container);
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		kaas
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -47,8 +47,8 @@ class Date extends Text
 			$extra = '=';
 		}
 
-		$sql = '((' . $this->getFieldName() . ' >' . $extra . ' ' . $from . ') AND ';
-		$sql .= '(' . $this->getFieldName() . ' <' . $extra . ' ' . $to . '))';
+		$sql = '((' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($from) . ') AND ';
+		$sql .= '(' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($to) . '))';
 
 		return $sql;
 	}
@@ -80,8 +80,8 @@ class Date extends Text
 			$extra = '=';
 		}
 
-		$sql = '((' . $this->getFieldName() . ' <' . $extra . ' ' . $from . ') AND ';
-		$sql .= '(' . $this->getFieldName() . ' >' . $extra . ' ' . $to . '))';
+		$sql = '((' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($from) . ') AND ';
+		$sql .= '(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($to) . '))';
 
 		return $sql;
 	}
@@ -103,6 +103,12 @@ class Date extends Text
 		}
 
 		$interval = $this->getInterval($interval);
+
+		// Sanity check on $interval array
+		if(!isset($interval['sign']) || !isset($interval['value']) || !isset($interval['unit']))
+		{
+			return '';
+		}
 
 		if ($interval['sign'] == '+')
 		{
@@ -167,4 +173,4 @@ class Date extends Text
 		return $interval;
 	}
 
-} 
+}

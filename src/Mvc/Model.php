@@ -95,7 +95,7 @@ class Model
 	 *
 	 * @throws  \RuntimeException  If the Model is not found
 	 */
-	public static function &getInstance($appName = null, $modelName = '', $container = null)
+	public static function getInstance($appName = null, $modelName = '', $container = null)
 	{
 		if (empty($appName) && !is_object($container))
 		{
@@ -112,7 +112,7 @@ class Model
 			$container = Application::getInstance($appName)->getContainer();
 		}
 
-		$config = array_key_exists('mvc_config', $container) ? $container['mvc_config'] : array();
+		$config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 
 		if (empty($modelName))
 		{
@@ -173,7 +173,7 @@ class Model
 	 *
 	 * @throws  \RuntimeException  If the Model is not found
 	 */
-	public static function &getTmpInstance($appName, $modelName = '', $container = null)
+	public static function getTmpInstance($appName = '', $modelName = '', $container = null)
 	{
 		if (empty($appName) && !is_object($container))
 		{
@@ -190,7 +190,7 @@ class Model
 			$container = Application::getInstance($appName)->getContainer();
 		}
 
-		$config = array_key_exists('mvc_config', $container) ? $container['mvc_config'] : array();
+		$config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 
 		$config['modelTemporaryInstance'] = true;
 		$config['modelClearState'] = true;
@@ -239,6 +239,11 @@ class Model
 			elseif (is_array($this->config['state']))
 			{
 				$this->state = (object)$this->config['state'];
+			}
+			// Protect vs malformed state
+			else
+			{
+				$this->state = new \stdClass();
 			}
 		}
 		else
@@ -484,7 +489,7 @@ class Model
 	 *
 	 * @return  $this for chaining
 	 */
-	public function &getClone()
+	public function getClone()
 	{
 		$clone = clone($this);
 
@@ -592,6 +597,4 @@ class Model
 	{
 		return $this->_ignoreRequest;
 	}
-
-
 }

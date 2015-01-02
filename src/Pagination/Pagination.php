@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * This class is based on the JPagination class found in Joomla! 3
@@ -92,9 +92,9 @@ class Pagination
 		$this->application = $app;
 
 		// Value/type checking.
-		$this->total = (int) $total;
+		$this->total      = (int) $total;
 		$this->limitStart = (int) max($limitStart, 0);
-		$this->limit = (int) max($limit, 0);
+		$this->limit      = (int) max($limit, 0);
 
 		if ($this->limit > $this->total)
 		{
@@ -119,14 +119,14 @@ class Pagination
 		// Set the total pages and current page values.
 		if ($this->limit > 0)
 		{
-			$this->pagesTotal = ceil($this->total / $this->limit);
+			$this->pagesTotal   = ceil($this->total / $this->limit);
 			$this->pagesCurrent = ceil(($this->limitStart + 1) / $this->limit);
 		}
 
 		// Set the pagination iteration loop values.
 		$this->pagesDisplayed = $displayed;
-		$displayedPages = $this->pagesDisplayed;
-		$this->pagesStart = $this->pagesCurrent - ($displayedPages / 2);
+		$displayedPages       = $this->pagesDisplayed;
+		$this->pagesStart     = $this->pagesCurrent - ($displayedPages / 2);
 
 		if ($this->pagesStart < 1)
 		{

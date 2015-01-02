@@ -47,6 +47,9 @@ class Input implements \Serializable, \Countable
 	/** @var   array  Input options */
 	protected $options = array();
 
+	/** @var bool Flag to detect if I already imported all the inputs */
+	private static $inputsLoaded = false;
+
 	/**
 	 * Constructor
 	 *
@@ -68,6 +71,9 @@ class Input implements \Serializable, \Countable
 			$this->filter = \Awf\Input\Filter::getInstance();
 		}
 
+		// Should I reference the superglobal variable $_REQUEST?
+		$referenceSuperglobal = is_null($source);
+
 		// Do I need to work around magic_quotes_gpc?
 		if (isset($options['magicQuotesWorkaround']))
 		{
@@ -76,25 +82,31 @@ class Input implements \Serializable, \Countable
 		else
 		{
 			// If there was no source specified, always try working around magic_quotes_gpc on PHP 5.3
-			$magicQuotesWorkaround = is_null($source);
-		}
-
-		// When no source is defined use the $_REQUEST superglobal
-		if (is_null($source))
-		{
-			$source = & $_REQUEST;
+			$magicQuotesWorkaround = $referenceSuperglobal;
 		}
 
 		// On PHP 5.3 we have the plague of magic_quotes_gpc. Let's try working around it, if we are told so.
-		if (version_compare(PHP_VERSION, '5.4.0', 'lt') && $magicQuotesWorkaround)
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt') && $magicQuotesWorkaround && function_exists('ini_get') && ini_get('magic_quotes_gpc'))
 		{
-			if (function_exists('ini_get') && ini_get('magic_quotes_gpc'))
+			if ($referenceSuperglobal)
+			{
+				$source               = self::cleanMagicQuotes($_REQUEST);
+				$referenceSuperglobal = false;
+			}
+			else
 			{
 				$source = self::cleanMagicQuotes($source);
 			}
 		}
 
-		$this->data = $source;
+		if ($referenceSuperglobal)
+		{
+			$this->data = &$_REQUEST;
+		}
+		else
+		{
+			$this->data = $source;
+		}
 	}
 
 	public static function cleanMagicQuotes(array $source)
@@ -335,9 +347,7 @@ class Input implements \Serializable, \Countable
 	 */
 	protected function loadAllInputs()
 	{
-		static $loaded = false;
-
-		if (!$loaded)
+		if ( !self::$inputsLoaded)
 		{
 			// Load up all the globals.
 			foreach ($GLOBALS as $global => $data)
@@ -354,7 +364,7 @@ class Input implements \Serializable, \Countable
 				}
 			}
 
-			$loaded = true;
+			self::$inputsLoaded = true;
 		}
 	}
 

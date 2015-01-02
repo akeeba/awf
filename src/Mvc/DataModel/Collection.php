@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * Based on Laravel 4's Illuminate\Database\Eloquent\Collection
@@ -63,6 +63,13 @@ class Collection extends BaseCollection
 		}, $default);
 	}
 
+	/**
+	 * Remove an item in the collection by key
+	 *
+	 * @param  mixed  $key
+	 *
+	 * @return void
+	 */
 	public function removeById($key)
 	{
 		if ($key instanceof DataModel)
@@ -153,13 +160,17 @@ class Collection extends BaseCollection
 	 */
 	public function modelKeys()
 	{
-		return array_map(function($m) { return $m->getId(); }, $this->items);
+		return array_map(
+			function($m) {
+				return $m->getId();
+			},
+			$this->items);
 	}
 
 	/**
 	 * Merge the collection with the given items.
 	 *
-	 * @param  BaseCollection|array  $items
+	 * @param  BaseCollection|array  $collection
 	 *
 	 * @return BaseCollection
 	 */
@@ -178,7 +189,7 @@ class Collection extends BaseCollection
 	/**
 	 * Diff the collection with the given items.
 	 *
-	 * @param   BaseCollection|array  $items
+	 * @param   BaseCollection|array  $collection
 	 *
 	 * @return  BaseCollection
 	 */
@@ -202,7 +213,7 @@ class Collection extends BaseCollection
 	/**
 	 * Intersect the collection with the given items.
 	 *
-	 * @param   BaseCollection|array  $items
+	 * @param   BaseCollection|array  $collection
 	 *
 	 * @return  Collection
 	 */
@@ -216,7 +227,7 @@ class Collection extends BaseCollection
 		{
 			if (isset($dictionary[$item->getId()]))
 			{
-				$intersect->getId($item);
+				$intersect->add($item);
 			}
 		}
 
@@ -275,14 +286,16 @@ class Collection extends BaseCollection
 	 * @param string $name       The method to call
 	 * @param array  $arguments  The arguments to the method
 	 */
-	function __call($name, $arguments)
+	public function __call($name, $arguments)
 	{
-		if (empty($this))
+		if (!count($this))
 		{
 			return;
 		}
 
-		if (method_exists('Awf\Mvc\DataModel', $name))
+		$class = get_class($this->first());
+
+		if (method_exists($class, $name))
 		{
 			foreach ($this as $item)
 			{

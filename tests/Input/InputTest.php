@@ -415,7 +415,6 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @group   Input
 	 * @covers  Awf\Input\Input::getMethod
-	 * @backupGlobals 1
 	 * @since   1.0
 	 */
 	public function testGetMethod()
@@ -438,12 +437,14 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 *
 	 * @group   Input
 	 * @covers  Awf\Input\Input::loadAllInputs
-	 * @backupGlobals 1
 	 * @since   1.0
 	 */
 	public function testLoadAllInputs()
 	{
 		$input = new Input(null, array('filter' => new FilterMock()));
+
+		// Force the object to always load all the inputs
+		ReflectionHelper::setValue($input, 'inputsLoaded', false);
 
 		$GLOBALS['_TEST'] = array(
 			'foo'	=> 'bar',
@@ -476,13 +477,15 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		ReflectionHelper::invoke($this->instance, 'loadAllInputs');
 
 		// Adjust the values so they are easier to handle.
+		// WARNING!!! The source is passed by REFERENCE: this means that editing it here will edit the $_REQUEST superglobal array
+		// At least we have to use the same type, otherwise it will screw up everything else
 		ReflectionHelper::setValue($this->instance, 'inputs', array('server' => 'remove', 'env' => 'remove', 'request' => 'keep'));
 		ReflectionHelper::setValue($this->instance, 'options', 'options');
-		ReflectionHelper::setValue($this->instance, 'data', 'data');
+		ReflectionHelper::setValue($this->instance, 'data', array('data'));
 
 		$this->assertThat(
 			$this->instance->serialize(),
-			$this->equalTo('a:3:{i:0;s:7:"options";i:1;s:4:"data";i:2;a:1:{s:7:"request";s:4:"keep";}}'),
+			$this->equalTo('a:3:{i:0;s:7:"options";i:1;a:1:{i:0;s:4:"data";}i:2;a:1:{s:7:"request";s:4:"keep";}}'),
 			'Line: ' . __LINE__ . '.'
 		);
 	}
@@ -502,9 +505,11 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		ReflectionHelper::invoke($this->instance, 'loadAllInputs');
 
 		// Adjust the values so they are easier to handle.
+		// WARNING!!! The source is passed by REFERENCE: this means that editing it here will edit the $_REQUEST superglobal array
+		// At least we have to use the same type, otherwise it will screw up everything else
 		ReflectionHelper::setValue($this->instance, 'inputs', array('server' => 'remove', 'env' => 'remove', 'request' => 'keep'));
 		ReflectionHelper::setValue($this->instance, 'options', 'options');
-		ReflectionHelper::setValue($this->instance, 'data', 'data');
+		ReflectionHelper::setValue($this->instance, 'data', array('data'));
 
 		$serialised = $this->instance->serialize();
 
@@ -512,15 +517,12 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		$newInput->unserialize($serialised);
 
 		$this->assertEquals(
-			'data',
+			array('data'),
 			ReflectionHelper::getValue($newInput, 'data'),
 			'Line: ' . __LINE__ . '.'
 		);
 	}
 
-	/*
-	 * Protected methods.
-	 */
 	/**
 	 * Setup for testing.
 	 *
@@ -530,7 +532,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$array = null;
 		$this->instance = new Input($array, array('filter' => new \Awf\Tests\Stubs\Input\FilterMock));

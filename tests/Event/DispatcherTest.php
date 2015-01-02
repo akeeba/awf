@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -22,6 +22,7 @@ use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
  *
  * @coversDefaultClass Awf\Event\Dispatcher
  */
+// I don't know why, but if I extend AwfTestCase, these methods are not executed... !!!
 class DispatcherTest extends ApplicationTestCase
 {
 	/** @var  Dispatcher */
@@ -252,6 +253,8 @@ class DispatcherTest extends ApplicationTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$this->object = new Dispatcher(static::$container);
 		ReflectionHelper::setValue($this->object, 'instances', array(
 			static::$container->application->getName() => $this->object
@@ -260,9 +263,8 @@ class DispatcherTest extends ApplicationTestCase
 
 	protected function tearDown()
 	{
+		parent::tearDown();
+
 		ReflectionHelper::setValue($this->object, 'instances', array());
 	}
-
-
 }
- 

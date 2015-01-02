@@ -362,7 +362,7 @@ class BelongsToMany extends DataModel\Relation
 
 			if (is_null($query))
 			{
-				$query = $protoQuery;
+				$query = clone $protoQuery;
 			}
 
 			$query->values($db->q($localKeyValue) . ', ' . $db->q($key));

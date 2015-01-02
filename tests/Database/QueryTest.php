@@ -11,8 +11,8 @@
 namespace Awf\Tests\Database;
 
 use Awf\Database\Driver;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\TestHelper;
-use Awf\Tests\Helpers\DatabaseTest;
 use Awf\Tests\Stubs\Database\Query;
 
 /**
@@ -20,7 +20,7 @@ use Awf\Tests\Stubs\Database\Query;
  *
  * @since  1.0
  */
-class QueryTest extends \PHPUnit_Framework_TestCase
+class QueryTest extends AwfTestCase
 {
 	/**
 	 * A mock of the Driver object for testing purposes.
@@ -49,7 +49,7 @@ class QueryTest extends \PHPUnit_Framework_TestCase
 	 */
 	protected function setUp()
 	{
-		parent::setUp();
+		parent::setUp(false);
 
 		$this->dbo = \Awf\Tests\Stubs\Database\Driver::create($this);
 

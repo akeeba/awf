@@ -1,19 +1,18 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Event;
 
-
 use Awf\Event\Observable;
-use Awf\Tests\Helpers\ApplicationTestCase;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Event\FirstObserver;
 
-class ObserverTest extends ApplicationTestCase
+class ObserverTest extends AwfTestCase
 {
 	/** @var Observable */
 	private $dispatcher;
@@ -43,6 +42,8 @@ class ObserverTest extends ApplicationTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$this->dispatcher = $this->getMockBuilder('\\Awf\\Event\\Observable')
 			->disableOriginalConstructor()
 			->setMethods(array('attach', 'detach', 'trigger'))
@@ -66,4 +67,3 @@ class ObserverTest extends ApplicationTestCase
 			->willReturn(array());
 	}
 }
- 

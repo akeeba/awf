@@ -18,6 +18,17 @@ class ModelStub extends Model
     /**  @var null The container passed in the construct */
     public    $passedContainer = null;
 
+    /**  @var null The container passed in the getInstance method */
+    public static $passedContainerStatic = null;
+
+    /** @var array Simply counter to check if a specific function is called */
+    public    $methodCounter = array(
+        'getClone'   => 0,
+        'savestate'  => 0,
+        'clearState' => 0,
+        'clearInput' => 0
+    );
+
     protected $name   = 'nestedset';
 
     /**
@@ -47,6 +58,16 @@ class ModelStub extends Model
         parent::__construct($container);
     }
 
+    public static function getInstance($appName = '', $modelName = '', $container = null)
+    {
+        if(is_object($container))
+        {
+            self::$passedContainerStatic = clone $container;
+        }
+
+        return parent::getInstance($appName, $modelName, $container);
+    }
+
     public function __call($method, $args)
     {
         if (isset($this->methods[$method]))
@@ -58,6 +79,8 @@ class ModelStub extends Model
 
             return call_user_func_array($func, $args);
         }
+
+        return parent::__call($method, $args);
     }
 
     /**
@@ -76,6 +99,50 @@ class ModelStub extends Model
         }
 
         return $this->name;
+    }
+
+    /**
+     * Method to test if the view can invoke model methods using the syntax $view->get('foobar');
+     */
+    public function getFoobar()
+    {
+        return 'ok';
+    }
+
+    /**
+     * Method to test if the view can invoke model methods using the syntax $view->get('dummy');
+     */
+    public function dummy()
+    {
+        return 'ok';
+    }
+
+    public function clearInput()
+    {
+        $this->methodCounter['clearInput']++;
+
+        return parent::clearInput();
+    }
+
+    public function clearState()
+    {
+        $this->methodCounter['clearState']++;
+
+        return parent::clearState();
+    }
+
+    public function getClone()
+    {
+        $this->methodCounter['getClone']++;
+
+        return parent::getClone();
+    }
+
+    public function savestate($newState)
+    {
+        $this->methodCounter['savestate']++;
+
+        return parent::savestate($newState);
     }
 }
 

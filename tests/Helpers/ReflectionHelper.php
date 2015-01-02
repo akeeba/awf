@@ -80,9 +80,9 @@ class ReflectionHelper
 	/**
 	 * Helper method that sets a protected or private property in a class by reflection.
 	 *
-	 * @param   object  $object        The object for which to set the property.
-	 * @param   string  $propertyName  The name of the property to set.
-	 * @param   mixed   $value         The value to set for the property.
+	 * @param   object|string  $object        The object for which to set the property.
+	 * @param   string         $propertyName  The name of the property to set.
+	 * @param   mixed          $value         The value to set for the property.
 	 *
 	 * @return  void
 	 */
@@ -107,4 +107,4 @@ class ReflectionHelper
 			$property->setValue($object, $value);
 		}
 	}
-} 
+}

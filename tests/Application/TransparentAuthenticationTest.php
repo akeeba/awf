@@ -10,7 +10,7 @@ namespace Awf\Tests\Application;
 use Awf\Application\TransparentAuthentication;
 use Awf\Encrypt\Aes;
 use Awf\Encrypt\Totp;
-use Awf\Tests\Helpers\ApplicationTestCase;
+use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
@@ -20,7 +20,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  *
  * @coversDefaultClass \Awf\Application\TransparentAuthentication
  */
-class TransparentAuthenticationTest extends ApplicationTestCase
+class TransparentAuthenticationTest extends AwfTestCase
 {
 	/** @var  TransparentAuthentication */
 	protected $auth;
@@ -90,8 +90,6 @@ class TransparentAuthenticationTest extends ApplicationTestCase
 
 	/**
 	 * @dataProvider GetTestGetTransparentAuthenticationCredentials
-	 *
-	 * @backupGlobals
 	 */
 	public function testGetTransparentAuthenticationCredentials($inputData, $serverGlobals, $shouldSucceed)
 	{
@@ -361,6 +359,8 @@ class TransparentAuthenticationTest extends ApplicationTestCase
 
 	protected function setUp()
 	{
+		parent::setUp();
+
 		$this->auth = new TransparentAuthentication(static::$container);
 		$this->auth->setAuthenticationMethods(array(1,2,3,4,5));
 		$this->auth->setBasicAuthUsername('awfuser');
