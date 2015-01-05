@@ -166,4 +166,19 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct result'));
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetAdditionalUrlParams
+     * @covers          Awf\Pagination\Pagination::getAdditionalUrlParams
+     */
+    public function testGetAdditionalUrlParams()
+    {
+        $params     = array('foo' => 'bar', 'empty' => null);
+        $pagination = new Pagination(20, 0, 5);
+
+        ReflectionHelper::setValue($pagination, 'additionalUrlParams', $params);
+
+        $this->assertSame($params, $pagination->getAdditionalUrlParams(), 'Pagination::getAdditionalUrlParams Failed to return the params array');
+    }
 }
