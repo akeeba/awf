@@ -695,4 +695,31 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestGetPagesCounter()
+    {
+        $data[] = array(
+            array(
+                'current' => 0,
+                'total'   => 0
+            ),
+            array(
+                'case'   => 'No pages',
+                'result' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'current' => 3,
+                'total'   => 10
+            ),
+            array(
+                'case'   => 'There are some pages',
+                'result' => 'Page 3 of 10'
+            )
+        );
+
+        return $data;
+    }
 }

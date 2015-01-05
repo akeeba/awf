@@ -13,13 +13,14 @@ use Awf\Pagination\Pagination;
 use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Application\Application;
+use Awf\Text\Text;
 
 require_once 'PaginationDataprovider.php';
 
 /**
- * @covers      Awf\Pagination\Object::<protected>
- * @covers      Awf\Pagination\Object::<private>
- * @package     Awf\Tests\Pagination\Object
+ * @covers      Awf\Pagination\Pagination::<protected>
+ * @covers      Awf\Pagination\Pagination::<private>
+ * @package     Awf\Tests\Pagination\Pagination
  */
 class PaginationTest extends AwfTestCase
 {
@@ -225,6 +226,25 @@ class PaginationTest extends AwfTestCase
             unset($result->pages);
             unset($check['result']->pages);
         }
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetPagesCounter
+     * @covers          Awf\Pagination\Pagination::getPagesCounter
+     * @dataProvider    PaginationDataprovider::getTestGetPagesCounter
+     */
+    public function testGetPagesCounter($test, $check)
+    {
+        $msg        = 'Pagination::getPagesCounter %s - Case: '.$check['case'];
+        $pagination = new Pagination(20, 3, 5);
+
+        ReflectionHelper::setValue($pagination, 'pagesCurrent', $test['current']);
+        ReflectionHelper::setValue($pagination, 'pagesTotal', $test['total']);
+
+        $result = $pagination->getPagesCounter();
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
