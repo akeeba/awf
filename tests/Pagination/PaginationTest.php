@@ -8,9 +8,11 @@
 
 namespace Awf\Tests\Pagination\Pagination;
 
+use Awf\Input\Input;
 use Awf\Pagination\Pagination;
 use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
+use Awf\Application\Application;
 
 require_once 'PaginationDataprovider.php';
 
@@ -87,6 +89,47 @@ class PaginationTest extends AwfTestCase
         );
 
         $pagination->setAdditionalUrlParams($params);
+    }
 
+    /**
+     * @group           Pagination
+     * @group           PaginationSetAdditionalUrlParamsFromInput
+     * @covers          Awf\Pagination\Pagination::setAdditionalUrlParamsFromInput
+     * @dataProvider    PaginationDataprovider::getTestSetAdditionalUrlParamsFromInput
+     */
+    public function testsetAdditionalUrlParamsFromInput($test)
+    {
+        $pagination = $this->getMock('Awf\Pagination\Pagination', array('setAdditionalUrlParam'), array(20, 0, 5), '', false);
+
+        // I presume that the param is added only once for each iteration: even if I have more params to add, they should
+        // be ignored (maybe they are not handled or allowed). In this way the test is much more easier to maintain and understand
+        $pagination->expects($this->once())->method('setAdditionalUrlParam')->willReturn(null)->with(
+            $this->equalTo('foobar'), $this->equalTo('dummy')
+        );
+
+        $input = null;
+        $app   = Application::getInstance('Fakeapp');
+
+        if($test['mock']['input'])
+        {
+            $container = $app->getContainer();
+            $container->appConfig->set('base_url', '/administrator/index.php?option=com_foobar');
+            $container['input'] = new Input(array(
+                'option' => 'shouldBeRemoved',
+                'foobar' => 'dummy'
+            ));
+
+            $app = Application::getInstance('Fakeapp', $container);
+        }
+        elseif($test['input'])
+        {
+            $input = new Input($test['input']);
+        }
+
+        // I have to inject the application since I'm not calling the constructor. I can't call it since it will automatically
+        // invoke the function under tests, messing around with my test
+        ReflectionHelper::setValue($pagination, 'application', $app);
+
+        $pagination->setAdditionalUrlParamsFromInput($input);
     }
 }

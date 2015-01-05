@@ -310,4 +310,45 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestSetAdditionalUrlParamsFromInput()
+    {
+        // Getting the input from the application
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'input' => true
+                ),
+                'input' => null
+            )
+        );
+
+        // Passing the input
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'input' => false
+                ),
+                'input' => array(
+                    'foobar' => 'dummy'
+                )
+            )
+        );
+
+        // Passing the input with some unsupported params
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'input' => false
+                ),
+                'input' => array(
+                    'foobar' => 'dummy',
+                    'array'  => array(1,2,3),
+                    'object' => (object)array('foo', 'bar')
+                )
+            )
+        );
+
+        return $data;
+    }
 }
