@@ -132,4 +132,20 @@ class PaginationTest extends AwfTestCase
 
         $pagination->setAdditionalUrlParamsFromInput($input);
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationClearAdditionalUrlParams
+     * @covers          Awf\Pagination\Pagination::clearAdditionalUrlParams
+     */
+    public function testClearAdditionalUrlParams()
+    {
+        $pagination = new Pagination(20, 0, 5);
+
+        ReflectionHelper::setValue($pagination, 'additionalUrlParams', array('foo' => 'bar'));
+
+        $pagination->clearAdditionalUrlParams();
+
+        $this->assertEmpty(ReflectionHelper::getValue($pagination, 'additionalUrlParams'), 'Pagination::additionalUrlParams Failed to reset additional params');
+    }
 }
