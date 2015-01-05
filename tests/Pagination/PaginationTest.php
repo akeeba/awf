@@ -268,4 +268,20 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetPagesLinks
+     * @covers          Awf\Pagination\Pagination::getPagesLinks
+     * @dataProvider    PaginationDataprovider::getTestGetPagesLinks
+     */
+    public function testGetPagesLinks($test, $check)
+    {
+        $msg        = 'Pagination::getPagesLinks %s - Case: '.$check['case'];
+        $pagination = new Pagination($test['total'], $test['start'], $test['limit'], $test['displayed']);
+
+        $result = $pagination->getPagesLinks();
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }

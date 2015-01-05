@@ -783,4 +783,139 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestGetPagesLinks()
+    {
+        $data[] = array(
+            array(
+                'total'     => 10,
+                'start'     => 0,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '10 links, 5 per pages, starting from 0',
+                'result' => '<ul class="pagination"><li class="disabled"><span>&lsaquo;</span></li><li class="active"><a href="">1</a></li><li><a href="http://www.example.com/index.php?limitstart=5">2</a></li><li><a href="http://www.example.com/index.php?limitstart=5">&rsaquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 10,
+                'start'     => 3,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '10 links, 5 per pages, starting from 3',
+                'result' => '<ul class="pagination"><li class="disabled"><span>&lsaquo;</span></li><li class="active"><a href="">1</a></li><li><a href="http://www.example.com/index.php?limitstart=5">2</a></li><li><a href="http://www.example.com/index.php?limitstart=5">&rsaquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 10,
+                'start'     => 6,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '10 links, 5 per pages, starting from 6',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=0">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=0">1</a></li><li class="active"><a href="">2</a></li><li class="disabled"><span>&rsaquo;</span></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '20 links, 5 per pages, starting from 6',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=0">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=0">1</a></li><li class="active"><a href="">2</a></li><li><a href="http://www.example.com/index.php?limitstart=10">3</a></li><li><a href="http://www.example.com/index.php?limitstart=15">4</a></li><li><a href="http://www.example.com/index.php?limitstart=10">&rsaquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 0,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '20 links, no limit',
+                'result' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 100,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => 'Limit is bigger than the total',
+                'result' => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 200,
+                'start'     => 32,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => 'Displaying several pages of pagination',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=0">&laquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=25">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=5">2</a></li><li><a href="http://www.example.com/index.php?limitstart=10">3</a></li><li><a href="http://www.example.com/index.php?limitstart=15">4</a></li><li><a href="http://www.example.com/index.php?limitstart=20">5</a></li><li><a href="http://www.example.com/index.php?limitstart=25">6</a></li><li class="active"><a href="">7</a></li><li><a href="http://www.example.com/index.php?limitstart=35">8</a></li><li><a href="http://www.example.com/index.php?limitstart=40">9</a></li><li><a href="http://www.example.com/index.php?limitstart=45">10</a></li><li><a href="http://www.example.com/index.php?limitstart=50">11</a></li><li><a href="http://www.example.com/index.php?limitstart=35">&rsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=195">&raquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 200,
+                'start'     => 32,
+                'limit'     => 5,
+                'displayed' => 5,
+            ),
+            array(
+                'case'   => 'Displaying several pages of pagination',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=0">&laquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=25">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=17.5">4.5</a></li><li><a href="http://www.example.com/index.php?limitstart=22.5">5.5</a></li><li><a href="http://www.example.com/index.php?limitstart=27.5">6.5</a></li><li class="active"><a href="http://www.example.com/index.php?limitstart=32.5">7.5</a></li><li><a href="http://www.example.com/index.php?limitstart=37.5">8.5</a></li><li><a href="http://www.example.com/index.php?limitstart=35">&rsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=195">&raquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 200,
+                'start'     => 190,
+                'limit'     => 5,
+                'displayed' => 50,
+            ),
+            array(
+                'case'   => 'Display more pages than the available ones',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=185">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=0">1</a></li><li><a href="http://www.example.com/index.php?limitstart=5">2</a></li><li><a href="http://www.example.com/index.php?limitstart=10">3</a></li><li><a href="http://www.example.com/index.php?limitstart=15">4</a></li><li><a href="http://www.example.com/index.php?limitstart=20">5</a></li><li><a href="http://www.example.com/index.php?limitstart=25">6</a></li><li><a href="http://www.example.com/index.php?limitstart=30">7</a></li><li><a href="http://www.example.com/index.php?limitstart=35">8</a></li><li><a href="http://www.example.com/index.php?limitstart=40">9</a></li><li><a href="http://www.example.com/index.php?limitstart=45">10</a></li><li><a href="http://www.example.com/index.php?limitstart=50">11</a></li><li><a href="http://www.example.com/index.php?limitstart=55">12</a></li><li><a href="http://www.example.com/index.php?limitstart=60">13</a></li><li><a href="http://www.example.com/index.php?limitstart=65">14</a></li><li><a href="http://www.example.com/index.php?limitstart=70">15</a></li><li><a href="http://www.example.com/index.php?limitstart=75">16</a></li><li><a href="http://www.example.com/index.php?limitstart=80">17</a></li><li><a href="http://www.example.com/index.php?limitstart=85">18</a></li><li><a href="http://www.example.com/index.php?limitstart=90">19</a></li><li><a href="http://www.example.com/index.php?limitstart=95">20</a></li><li><a href="http://www.example.com/index.php?limitstart=100">21</a></li><li><a href="http://www.example.com/index.php?limitstart=105">22</a></li><li><a href="http://www.example.com/index.php?limitstart=110">23</a></li><li><a href="http://www.example.com/index.php?limitstart=115">24</a></li><li><a href="http://www.example.com/index.php?limitstart=120">25</a></li><li><a href="http://www.example.com/index.php?limitstart=125">26</a></li><li><a href="http://www.example.com/index.php?limitstart=130">27</a></li><li><a href="http://www.example.com/index.php?limitstart=135">28</a></li><li><a href="http://www.example.com/index.php?limitstart=140">29</a></li><li><a href="http://www.example.com/index.php?limitstart=145">30</a></li><li><a href="http://www.example.com/index.php?limitstart=150">31</a></li><li><a href="http://www.example.com/index.php?limitstart=155">32</a></li><li><a href="http://www.example.com/index.php?limitstart=160">33</a></li><li><a href="http://www.example.com/index.php?limitstart=165">34</a></li><li><a href="http://www.example.com/index.php?limitstart=170">35</a></li><li><a href="http://www.example.com/index.php?limitstart=175">36</a></li><li><a href="http://www.example.com/index.php?limitstart=180">37</a></li><li><a href="http://www.example.com/index.php?limitstart=185">38</a></li><li class="active"><a href="">39</a></li><li><a href="http://www.example.com/index.php?limitstart=195">40</a></li><li><a href="http://www.example.com/index.php?limitstart=195">&rsaquo;</a></li></ul>'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'     => 200,
+                'start'     => 190,
+                'limit'     => 5,
+                'displayed' => 40,
+            ),
+            array(
+                'case'   => 'Long list of pages, we are on the end',
+                'result' => '<ul class="pagination"><li><a href="http://www.example.com/index.php?limitstart=185">&lsaquo;</a></li><li><a href="http://www.example.com/index.php?limitstart=0">1</a></li><li><a href="http://www.example.com/index.php?limitstart=5">2</a></li><li><a href="http://www.example.com/index.php?limitstart=10">3</a></li><li><a href="http://www.example.com/index.php?limitstart=15">4</a></li><li><a href="http://www.example.com/index.php?limitstart=20">5</a></li><li><a href="http://www.example.com/index.php?limitstart=25">6</a></li><li><a href="http://www.example.com/index.php?limitstart=30">7</a></li><li><a href="http://www.example.com/index.php?limitstart=35">8</a></li><li><a href="http://www.example.com/index.php?limitstart=40">9</a></li><li><a href="http://www.example.com/index.php?limitstart=45">10</a></li><li><a href="http://www.example.com/index.php?limitstart=50">11</a></li><li><a href="http://www.example.com/index.php?limitstart=55">12</a></li><li><a href="http://www.example.com/index.php?limitstart=60">13</a></li><li><a href="http://www.example.com/index.php?limitstart=65">14</a></li><li><a href="http://www.example.com/index.php?limitstart=70">15</a></li><li><a href="http://www.example.com/index.php?limitstart=75">16</a></li><li><a href="http://www.example.com/index.php?limitstart=80">17</a></li><li><a href="http://www.example.com/index.php?limitstart=85">18</a></li><li><a href="http://www.example.com/index.php?limitstart=90">19</a></li><li><a href="http://www.example.com/index.php?limitstart=95">20</a></li><li><a href="http://www.example.com/index.php?limitstart=100">21</a></li><li><a href="http://www.example.com/index.php?limitstart=105">22</a></li><li><a href="http://www.example.com/index.php?limitstart=110">23</a></li><li><a href="http://www.example.com/index.php?limitstart=115">24</a></li><li><a href="http://www.example.com/index.php?limitstart=120">25</a></li><li><a href="http://www.example.com/index.php?limitstart=125">26</a></li><li><a href="http://www.example.com/index.php?limitstart=130">27</a></li><li><a href="http://www.example.com/index.php?limitstart=135">28</a></li><li><a href="http://www.example.com/index.php?limitstart=140">29</a></li><li><a href="http://www.example.com/index.php?limitstart=145">30</a></li><li><a href="http://www.example.com/index.php?limitstart=150">31</a></li><li><a href="http://www.example.com/index.php?limitstart=155">32</a></li><li><a href="http://www.example.com/index.php?limitstart=160">33</a></li><li><a href="http://www.example.com/index.php?limitstart=165">34</a></li><li><a href="http://www.example.com/index.php?limitstart=170">35</a></li><li><a href="http://www.example.com/index.php?limitstart=175">36</a></li><li><a href="http://www.example.com/index.php?limitstart=180">37</a></li><li><a href="http://www.example.com/index.php?limitstart=185">38</a></li><li class="active"><a href="">39</a></li><li><a href="http://www.example.com/index.php?limitstart=195">40</a></li><li><a href="http://www.example.com/index.php?limitstart=195">&rsaquo;</a></li></ul>'
+            )
+        );
+
+        return $data;
+    }
 }
