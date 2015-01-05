@@ -351,4 +351,39 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestGetAdditionalUrlParam()
+    {
+        $data[] = array(
+            array(
+                'key' => 'foo'
+            ),
+            array(
+                'case'   => 'They key is set and is not null',
+                'result' => 'bar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'key' => 'empty'
+            ),
+            array(
+                'case'   => 'They key is set and is null',
+                'result' => null
+            )
+        );
+
+        $data[] = array(
+            array(
+                'key' => 'nothere'
+            ),
+            array(
+                'case'   => 'They key is not set',
+                'result' => null
+            )
+        );
+
+        return $data;
+    }
 }

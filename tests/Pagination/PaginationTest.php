@@ -148,4 +148,22 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEmpty(ReflectionHelper::getValue($pagination, 'additionalUrlParams'), 'Pagination::additionalUrlParams Failed to reset additional params');
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetAdditionalUrlParam
+     * @covers          Awf\Pagination\Pagination::getAdditionalUrlParam
+     * @dataProvider    PaginationDataprovider::getTestGetAdditionalUrlParam
+     */
+    public function testGetAdditionalUrlParam($test, $check)
+    {
+        $msg        = 'Pagination::getAdditionalUrlParam %s - Case: '.$check['case'];
+        $pagination = new Pagination(20, 0, 5);
+
+        ReflectionHelper::setValue($pagination, 'additionalUrlParams', array('foo' => 'bar', 'empty' => null));
+
+        $result = $pagination->getAdditionalUrlParam($test['key']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Failed to return the correct result'));
+    }
 }
