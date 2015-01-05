@@ -918,4 +918,13 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestGetListFooter()
+    {
+        $data[] = array(
+
+        );
+
+        return $data;
+    }
 }

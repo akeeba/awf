@@ -284,4 +284,24 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetListFooter
+     * @covers          Awf\Pagination\Pagination::getListFooter
+     */
+    public function testGetListFooter()
+    {
+        $pagination = $this->getMock('Awf\Pagination\Pagination', array('getLimitBox', 'getPagesCounter', 'getPagesLinks'), array(20, 0, 5));
+
+        $result = $pagination->getListFooter();
+        $check = '<div class="list-footer">
+
+<div class="limit">AWF_COMMON_LBL_DISPLAY_NUM</div>
+<div class="counter"></div>
+<input type="hidden" name="limitstart" value="0" />
+</div>';
+
+        $this->assertEquals($check, $result, 'Pagination::getListFooter Returned the wrong result');
+    }
 }

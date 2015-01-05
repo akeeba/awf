@@ -498,16 +498,16 @@ class Pagination
 	 */
 	public function getListFooter()
 	{
-		$list = array();
-		$list['limit'] = $this->limit;
-		$list['limitstart'] = $this->limitStart;
-		$list['total'] = $this->total;
-		$list['limitfield'] = $this->getLimitBox();
+		$list                 = array();
+		$list['limit']        = $this->limit;
+		$list['limitstart']   = $this->limitStart;
+		$list['total']        = $this->total;
+		$list['limitfield']   = $this->getLimitBox();
 		$list['pagescounter'] = $this->getPagesCounter();
-		$list['pageslinks'] = $this->getPagesLinks();
+		$list['pageslinks']   = $this->getPagesLinks();
 
 		$templatePath = $this->application->getContainer()->templatePath;
-		$chromePath = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$chromePath   = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{
