@@ -1,5 +1,7 @@
 <?php
 
+use Awf\Text\Text;
+
 class PaginationDataprovider
 {
     public static function getTest__construct()
@@ -381,6 +383,313 @@ class PaginationDataprovider
             array(
                 'case'   => 'They key is not set',
                 'result' => null
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestGetData()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => (object)array('foobar'),
+                    'addParams' => array()
+                ),
+                'total'     => 10,
+                'start'     => 0,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => 'Data is cached',
+                'result' => (object)array('foobar')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 10,
+                'start'     => 0,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => '10 links, 5 per pages, starting from 0',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 5.0, 'http://www.example.com/index.php?limitstart=5'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 5.0, 'http://www.example.com/index.php?limitstart=5'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, null, null, true),
+                        2 => new \Awf\Pagination\Object(2, 5, 'http://www.example.com/index.php?limitstart=5')
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array('foo' => 'bar')
+                ),
+                'total'     => 10,
+                'start'     => 0,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'   => 'Using additional params',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?foo=bar&limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 5.0, 'http://www.example.com/index.php?foo=bar&limitstart=5'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 5.0, 'http://www.example.com/index.php?foo=bar&limitstart=5'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, null, null, true),
+                        2 => new \Awf\Pagination\Object(2, 5, 'http://www.example.com/index.php?foo=bar&limitstart=5')
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 10,
+                'start'     => 3,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => '10 links, 5 per pages, starting from 3',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 5.0, 'http://www.example.com/index.php?limitstart=5'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 5.0, 'http://www.example.com/index.php?limitstart=5'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, null, null, true),
+                        2 => new \Awf\Pagination\Object(2, 5, 'http://www.example.com/index.php?limitstart=5')
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 10,
+                'start'     => 6,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => '10 links, 5 per pages, starting from 6',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 0.0, 'http://www.example.com/index.php?limitstart=0'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, 0, 'http://www.example.com/index.php?limitstart=0', false),
+                        2 => new \Awf\Pagination\Object(2, null, null, true)
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => '20 links, 5 per pages, starting from 6',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 0.0, 'http://www.example.com/index.php?limitstart=0'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 10.0, 'http://www.example.com/index.php?limitstart=10'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 15.0, 'http://www.example.com/index.php?limitstart=15'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, 0, 'http://www.example.com/index.php?limitstart=0', false),
+                        2 => new \Awf\Pagination\Object(2, null, null, true),
+                        3 => new \Awf\Pagination\Object(3, 10, 'http://www.example.com/index.php?limitstart=10'),
+                        4 => new \Awf\Pagination\Object(4, 15, 'http://www.example.com/index.php?limitstart=15'),
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 0,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => '20 links, no limit',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL'),
+                    'start'    => new \Awf\Pagination\Object('&laquo;'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, 0, 'http://www.example.com/index.php?limitstart=0', false),
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 20,
+                'start'     => 6,
+                'limit'     => 100,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => 'Limit is bigger than the total',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', '0', 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;'),
+                    'pages'    => array(
+                        1 => new \Awf\Pagination\Object(1, null, null, true),
+                    )
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 200,
+                'start'     => 32,
+                'limit'     => 5,
+                'displayed' => 10,
+            ),
+            array(
+                'case'           => 'Displaying several pages of pagination',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', 0, 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 25, 'http://www.example.com/index.php?limitstart=25'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 35, 'http://www.example.com/index.php?limitstart=35'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'pages'    => 10
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 200,
+                'start'     => 32,
+                'limit'     => 5,
+                'displayed' => 5,
+            ),
+            array(
+                'case'           => 'Displaying several pages of pagination',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', 0, 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 25, 'http://www.example.com/index.php?limitstart=25'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 35, 'http://www.example.com/index.php?limitstart=35'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'pages'    => 5
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 200,
+                'start'     => 190,
+                'limit'     => 5,
+                'displayed' => 50,
+            ),
+            array(
+                'case'           => 'Display more pages than the available ones',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', 0, 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 185, 'http://www.example.com/index.php?limitstart=185'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'pages'    => 40
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'data'      => null,
+                    'addParams' => array()
+                ),
+                'total'     => 200,
+                'start'     => 190,
+                'limit'     => 5,
+                'displayed' => 40,
+            ),
+            array(
+                'case'           => 'Long list of pages, we are on the end',
+                'result' => (object)array(
+                    'all'      => new \Awf\Pagination\Object('AWF_PAGINATION_LBL_VIEW_ALL', 0, 'http://www.example.com/index.php?limitstart='),
+                    'start'    => new \Awf\Pagination\Object('&laquo;', '0', 'http://www.example.com/index.php?limitstart=0'),
+                    'previous' => new \Awf\Pagination\Object('&lsaquo;', 185, 'http://www.example.com/index.php?limitstart=185'),
+                    'next'     => new \Awf\Pagination\Object('&rsaquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'end'      => new \Awf\Pagination\Object('&raquo;', 195, 'http://www.example.com/index.php?limitstart=195'),
+                    'pages'    => 40
+                )
             )
         );
 

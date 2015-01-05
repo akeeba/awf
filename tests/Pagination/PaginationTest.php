@@ -194,4 +194,38 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals(9, $result, 'Pagination::getRowOffset Failed to return the correct offset');
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetData
+     * @covers          Awf\Pagination\Pagination::getData
+     * @dataProvider    PaginationDataprovider::getTestGetData
+     */
+    public function testGetData($test, $check)
+    {
+        $msg        = 'Pagination::getData %s - Case: '.$check['case'];
+        $pagination = new Pagination($test['total'], $test['start'], $test['limit'], $test['displayed']);
+
+        ReflectionHelper::setValue($pagination, 'data', $test['mock']['data']);
+
+        if($test['mock']['addParams'])
+        {
+            ReflectionHelper::setValue($pagination, 'additionalUrlParams', $test['mock']['addParams']);
+        }
+
+        $result = $pagination->getData();
+
+        // If it's not an array I just want to do a quick check on the size: maybe I have 50 pages so it's impossible to
+        // check every item
+        if(isset($check['result']->pages) && !is_array($check['result']->pages))
+        {
+            $count = $check['result']->pages;
+            $this->assertCount($count, $result->pages);
+
+            unset($result->pages);
+            unset($check['result']->pages);
+        }
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
