@@ -181,4 +181,17 @@ class PaginationTest extends AwfTestCase
 
         $this->assertSame($params, $pagination->getAdditionalUrlParams(), 'Pagination::getAdditionalUrlParams Failed to return the params array');
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetRowOffset
+     * @covers          Awf\Pagination\Pagination::getRowOffset
+     */
+    public function testGetRowOffset()
+    {
+        $pagination = new Pagination(20, 3, 5);
+        $result = $pagination->getRowOffset(5);
+
+        $this->assertEquals(9, $result, 'Pagination::getRowOffset Failed to return the correct offset');
+    }
 }
