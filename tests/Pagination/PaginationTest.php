@@ -304,4 +304,20 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check, $result, 'Pagination::getListFooter Returned the wrong result');
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetLimitBox
+     * @covers          Awf\Pagination\Pagination::getLimitBox
+     * @dataProvider    PaginationDataprovider::getTestGetLimitBox
+     */
+    public function testGetLimitBox($test, $check)
+    {
+        $msg        = 'Pagination::getLimitBox %s - Case: '.$check['case'];
+        $pagination = new Pagination($test['total'], $test['start'], $test['limit']);
+
+        $result = $pagination->getLimitBox($test['attribs']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }
 }

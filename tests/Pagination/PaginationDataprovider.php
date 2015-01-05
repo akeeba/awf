@@ -919,10 +919,81 @@ class PaginationDataprovider
         return $data;
     }
 
-    public static function getTestGetListFooter()
+    public static function getTestGetLimitBox()
     {
         $data[] = array(
+            array(
+                'total'   => 20,
+                'start'   => 0,
+                'limit'   => 5,
+                'attribs' => null
+            ),
+            array(
+                'case'   => 'Default case',
+                'result' =>
+'<select id="limit" name="limit" class="input-sm" size="1" onchange="this.form.submit()">
+	<option value="5" selected="selected">5</option>
+	<option value="10">10</option>
+	<option value="15">15</option>
+	<option value="20">20</option>
+	<option value="25">25</option>
+	<option value="30">30</option>
+	<option value="50">AWF_50</option>
+	<option value="100">AWF_100</option>
+	<option value="0">AWF_ALL</option>
+</select>
+'
+            )
+        );
 
+        $data[] = array(
+            array(
+                'total'   => 20,
+                'start'   => 0,
+                'limit'   => 0,
+                'attribs' => null
+            ),
+            array(
+                'case'   => 'Displaying the whole list',
+                'result' =>
+'<select id="limit" name="limit" class="input-sm" size="1" onchange="this.form.submit()">
+	<option value="5">5</option>
+	<option value="10">10</option>
+	<option value="15">15</option>
+	<option value="20">20</option>
+	<option value="25">25</option>
+	<option value="30">30</option>
+	<option value="50">AWF_50</option>
+	<option value="100">AWF_100</option>
+	<option value="0" selected="selected">AWF_ALL</option>
+</select>
+'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'total'   => 20,
+                'start'   => 0,
+                'limit'   => 5,
+                'attribs' => array('class' => 'foobar')
+            ),
+            array(
+                'case'   => 'Passing additional attribs',
+                'result' =>
+                    '<select id="limit" name="limit" class="foobar">
+	<option value="5" selected="selected">5</option>
+	<option value="10">10</option>
+	<option value="15">15</option>
+	<option value="20">20</option>
+	<option value="25">25</option>
+	<option value="30">30</option>
+	<option value="50">AWF_50</option>
+	<option value="100">AWF_100</option>
+	<option value="0">AWF_ALL</option>
+</select>
+'
+            )
         );
 
         return $data;
