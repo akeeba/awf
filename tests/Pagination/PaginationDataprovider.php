@@ -763,7 +763,7 @@ class PaginationDataprovider
             ),
             array(
                 'case'   => 'No results',
-                'result' => "\nNo result was found"
+                'result' => "\nAWF_PAGINATION_LBL_NO_RESULTS"
             )
         );
 
