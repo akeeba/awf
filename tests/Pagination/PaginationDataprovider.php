@@ -722,4 +722,65 @@ class PaginationDataprovider
 
         return $data;
     }
+
+    public static function getTestGetResultsCounter()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'start' => 0,
+                    'limit' => 5,
+                    'total' => 20
+                )
+            ),
+            array(
+                'case'   => 'There are results, we did not reach the end',
+                'result' => "\nResults 1-5 of 20"
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'start' => 3,
+                    'limit' => 5,
+                    'total' => 20
+                )
+            ),
+            array(
+                'case'   => 'There are results, we did not reach the end',
+                'result' => "\nResults 4-8 of 20"
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'start' => 0,
+                    'limit' => 5,
+                    'total' => 0
+                )
+            ),
+            array(
+                'case'   => 'No results',
+                'result' => "\nNo result was found"
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'start' => 16,
+                    'limit' => 5,
+                    'total' => 20
+                )
+            ),
+            array(
+                'case'   => 'There are results, we reached the end',
+                'result' => "\nResults 17-20 of 20"
+            )
+        );
+
+        return $data;
+    }
 }

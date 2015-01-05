@@ -248,4 +248,24 @@ class PaginationTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @group           Pagination
+     * @group           PaginationGetResultsCounter
+     * @covers          Awf\Pagination\Pagination::getResultsCounter
+     * @dataProvider    PaginationDataprovider::getTestGetResultsCounter
+     */
+    public function testGetResultsCounter($test, $check)
+    {
+        $msg        = 'Pagination::getResultsCounter %s - Case: '.$check['case'];
+        $pagination = new Pagination(20, 0, 5);
+
+        ReflectionHelper::setValue($pagination, 'limitStart', $test['mock']['start']);
+        ReflectionHelper::setValue($pagination, 'limit', $test['mock']['limit']);
+        ReflectionHelper::setValue($pagination, 'total', $test['mock']['total']);
+
+        $result = $pagination->getResultsCounter();
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
