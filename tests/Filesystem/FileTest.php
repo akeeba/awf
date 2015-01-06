@@ -168,6 +168,21 @@ class FileTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @group           File
+     * @group           FileTranslatePath
+     * @covers          Awf\Filesystem\File::translatePath
+     */
+    public function testTranslatePath()
+    {
+        $path = __DIR__;
+        $file = new File(array());
+
+        $result = $file->translatePath($path);
+
+        $this->assertEquals($path, $result, 'File::translatePath Returned the wrong result');
+    }
 }
 
 function file_put_contents()
