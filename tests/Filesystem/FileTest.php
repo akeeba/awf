@@ -11,6 +11,7 @@
 namespace Awf\Filesystem;
 
 use Awf\Tests\Helpers\AwfTestCase;
+use org\bovigo\vfs\vfsStream;
 
 global $mockFilesystem;
 
@@ -167,6 +168,24 @@ class FileTest extends AwfTestCase
         $result = $file->mkdir(__DIR__.'/test', 0777);
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @group           File
+     * @group           FileRmdir
+     * @covers          Awf\Filesystem\File::rmdir
+     * @dataProvider    FileDataprovider::getTestRmdir
+     */
+    public function testRmdir($test, $check)
+    {
+        vfsStream::setup('root', null, $test['filesystem']);
+
+        $msg  = 'File::rmdir %s - Case: '.$check['case'];
+        $file = new File(array());
+
+        $result = $file->rmdir(vfsStream::url($test['path']), $test['recursive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
     }
 
     /**

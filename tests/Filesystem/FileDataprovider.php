@@ -175,4 +175,74 @@ class FileDataprovider
 
         return $data;
     }
+
+    public static function getTestRmdir()
+    {
+        $paths = array(
+            'foobar/first/second/third',
+            'foobar/dummy/test.txt',
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/foobar/first/second/third',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Trying to delete a leaf dir, not recursive',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/foobar',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Trying to delete a parent dir, not recursive',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/foobar/dummy/test.txt',
+                'recursive'  => true
+            ),
+            array(
+                'case'   => 'Path points to a file, recursive',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/foobar/dummy/test.txt',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Path points to a file, not recursive',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/foobar',
+                'recursive'  => true
+            ),
+            array(
+                'case'   => 'Trying to delete a parent dir, recursive',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }
