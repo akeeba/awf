@@ -192,8 +192,6 @@ class File implements FilesystemInterface
 		if (!is_resource($handle))
 		{
 			throw new \RuntimeException(sprintf('Cannot list contents of directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
-
-			return false;
 		}
 
 		while (($entry = readdir($handle)) !== false)
@@ -341,4 +339,4 @@ class File implements FilesystemInterface
         closedir($handle);
         return $arr;
     }
-} 
+}
