@@ -245,4 +245,44 @@ class FileDataprovider
 
         return $data;
     }
+
+    public static function getTestListFolders()
+    {
+        $paths = array(
+            'foobar/dummy/test.txt',
+            'foobar/first/second/third',
+            'foobar/file.txt',
+            'foobar/.',
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getcwd' => ''
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'vfs://root/foobar'
+            ),
+            array(
+                'case'   => 'Passed folder with folders and files',
+                'result' => array('dummy', 'first')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'getcwd' => 'vfs://root/foobar'
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => null
+            ),
+            array(
+                'case'   => 'Dir not passed',
+                'result' => array('dummy', 'first')
+            )
+        );
+
+        return $data;
+    }
 }

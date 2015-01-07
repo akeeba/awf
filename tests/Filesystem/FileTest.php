@@ -202,6 +202,33 @@ class FileTest extends AwfTestCase
 
         $this->assertEquals($path, $result, 'File::translatePath Returned the wrong result');
     }
+
+    /**
+     * @group           File
+     * @group           FileListFolders
+     * @covers          Awf\Filesystem\File::listFolders
+     * @dataProvider    FileDataprovider::getTestListFolders
+     */
+    public function testListFolders($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg  = 'File::listFolders %s - Case: '.$check['case'];
+        $file = new File(array());
+
+        vfsStream::setup('root', null, $test['filesystem']);
+
+        if($test['mock']['getcwd'])
+        {
+            $mockFilesystem['getcwd'] = function() use ($test){
+                return $test['mock']['getcwd'];
+            };
+        }
+
+        $result = $file->listFolders($test['path']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 function file_put_contents()
@@ -274,4 +301,16 @@ function mkdir()
     }
 
     return call_user_func_array('\mkdir', func_get_args());
+}
+
+function getcwd()
+{
+    global $mockFilesystem;
+
+    if(isset($mockFilesystem['getcwd']))
+    {
+        return call_user_func_array($mockFilesystem['getcwd'], func_get_args());
+    }
+
+    return call_user_func_array('\getcwd', func_get_args());
 }
