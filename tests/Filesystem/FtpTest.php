@@ -102,7 +102,7 @@ class FtpTest extends AwfTestCase
     }
 
     /**
-     * @covers          Awf\Filesystem\Ftp::__desctruct
+     * @covers          Awf\Filesystem\Ftp::__destruct
      * @dataProvider    FtpDataprovider::getTest__destruct
      */
     public function test__destruct($test, $check)
@@ -205,4 +205,16 @@ function ftp_pasv()
     }
 
     isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
+}
+
+function ftp_put()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_put']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_put'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_put']) ? $stackFilesystem['ftp_put']++ : $stackFilesystem['ftp_put'] = 1;
 }

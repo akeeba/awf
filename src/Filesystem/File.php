@@ -7,6 +7,8 @@
 
 namespace Awf\Filesystem;
 
+use Awf\Container\Container;
+
 /**
  * The File adapter of the filesystem abstraction layer.
  *
@@ -14,14 +16,18 @@ namespace Awf\Filesystem;
  */
 class File implements FilesystemInterface
 {
+    /** @var  Container Application container */
+    protected $container;
+
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Ignored by this class
+     * @param   Container   $container  Ignored by this class
+	 * @param   array       $options  Ignored by this class
 	 *
 	 * @return  File
 	 */
-	public function __construct(array $options)
+	public function __construct(Container $container, array $options)
 	{
 		// No further operation necessary
 	}

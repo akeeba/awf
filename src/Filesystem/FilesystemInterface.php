@@ -7,6 +7,8 @@
 
 namespace Awf\Filesystem;
 
+use Awf\Container\Container;
+
 /**
  * Filesystem abstraction interface.
  *
@@ -21,11 +23,12 @@ interface FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
 	 *
 	 * @return  FilesystemInterface
 	 */
-	public function __construct(array $options);
+	public function __construct(Container $container, array $options);
 
 	/**
 	 * Write the contents into the file
@@ -118,4 +121,4 @@ interface FilesystemInterface
 	 * @throws  \RuntimeException  When the server is incompatible with our folder scanner
 	 */
 	public function listFolders($dir = null);
-} 
+}

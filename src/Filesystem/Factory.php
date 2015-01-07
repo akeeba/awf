@@ -70,9 +70,9 @@ final class Factory
 
 		if (!isset(self::$instances[$signature]))
 		{
-			self::$instances[$signature] = new $className($options);
+			self::$instances[$signature] = new $className($container, $options);
 		}
 
 		return self::$instances[$signature];
 	}
-} 
+}
