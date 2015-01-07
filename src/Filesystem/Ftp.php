@@ -437,8 +437,6 @@ class Ftp implements FilesystemInterface
 		if ($list === false)
 		{
 			throw new \RuntimeException("Sorry, your FTP server doesn't support our FTP directory browser.");
-
-			return;
 		}
 
 		$folders = array();
@@ -463,4 +461,4 @@ class Ftp implements FilesystemInterface
 
 		return $folders;
 	}
-} 
+}

@@ -13,6 +13,7 @@ use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 
 global $mockFilesystem;
+global $stackFilesystem;
 
 require_once 'FtpDataprovider.php';
 
@@ -30,11 +31,12 @@ class FtpTest extends AwfTestCase
 
     protected function tearDown()
     {
-        global $mockFilesystem;
+        global $mockFilesystem, $stackFilesystem;
 
         parent::tearDown();
 
         $mockFilesystem = array();
+        $stackFilesystem = array();
     }
 
     /**
@@ -64,4 +66,49 @@ class FtpTest extends AwfTestCase
         $this->assertSame(true, ReflectionHelper::getValue($ftp, 'ssl'));
         $this->assertSame(false, ReflectionHelper::getValue($ftp, 'passive'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::__desctruct
+     * @dataProvider    FtpDataprovider::getTest__destruct
+     */
+    public function test__destruct($test, $check)
+    {
+        global $stackFilesystem;
+
+        $msg     = 'Ftp::__destruct %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => true,
+            'passive'   => false
+        );
+
+        $ftp = $this->getMock('Awf\Filesystem\Ftp', array('connect'), array(), '', false);
+
+        $ftp->__construct($options);
+
+        if($test['connection'])
+        {
+            ReflectionHelper::setValue($ftp, 'connection', 'test');
+        }
+
+        $ftp->__destruct();
+
+        $this->assertEquals($check['count'], $stackFilesystem['ftp_close'], sprintf($msg, 'Failed to close the connection'));
+    }
+}
+
+function ftp_close()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_close']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_close'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_close']) ? $stackFilesystem['ftp_close']++ : $stackFilesystem['ftp_close'] = 1;
 }
