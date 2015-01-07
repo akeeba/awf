@@ -1,7 +1,6 @@
 <?php
 /**
  * @package        awf
- * @subpackage     tests.pagination.object
  * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
