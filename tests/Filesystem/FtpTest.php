@@ -68,6 +68,40 @@ class FtpTest extends AwfTestCase
     }
 
     /**
+     * @covers          Awf\Filesystem\Ftp::connect
+     * @dataProvider    FtpDataprovider::getTestConnect
+     */
+    public function testConnect($test, $check)
+    {
+        global $mockFilesystem, $stackFilesystem;
+
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => $test['ssl'],
+            'passive'   => false
+        );
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('RuntimeException');
+        }
+
+        $mockFilesystem['ftp_ssl_connect'] = function() use ($test){ return $test['mock']['ftp_ssl_connect']; };
+        $mockFilesystem['ftp_connect']     = function() use ($test){ return $test['mock']['ftp_connect']; };
+        $mockFilesystem['ftp_login']       = function() use ($test){ return $test['mock']['ftp_login']; };
+        $mockFilesystem['ftp_chdir']       = function() use ($test){ return $test['mock']['ftp_chdir']; };
+
+        $ftp = new Ftp($options);
+
+        // If I'm here it means that no exception was thrown, so I can perform some checks
+        $this->assertNotNull(ReflectionHelper::getValue($ftp, 'connection'));
+    }
+
+    /**
      * @covers          Awf\Filesystem\Ftp::__desctruct
      * @dataProvider    FtpDataprovider::getTest__destruct
      */
@@ -111,4 +145,64 @@ function ftp_close()
     }
 
     isset($stackFilesystem['ftp_close']) ? $stackFilesystem['ftp_close']++ : $stackFilesystem['ftp_close'] = 1;
+}
+
+function ftp_ssl_connect()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_ssl_connect']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_ssl_connect'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_ssl_connect']) ? $stackFilesystem['ftp_ssl_connect']++ : $stackFilesystem['ftp_ssl_connect'] = 1;
+}
+
+function ftp_connect()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_connect']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_connect'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_connect']) ? $stackFilesystem['ftp_connect']++ : $stackFilesystem['ftp_connect'] = 1;
+}
+
+function ftp_login()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_login']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_login'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_login']) ? $stackFilesystem['ftp_login']++ : $stackFilesystem['ftp_login'] = 1;
+}
+
+function ftp_chdir()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_chdir']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_chdir'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_chdir']) ? $stackFilesystem['ftp_chdir']++ : $stackFilesystem['ftp_chdir'] = 1;
+}
+
+function ftp_pasv()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_pasv']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_pasv'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
 }
