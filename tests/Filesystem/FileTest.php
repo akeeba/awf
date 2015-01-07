@@ -229,6 +229,42 @@ class FileTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @group           File
+     * @group           FileDirectoryFiles
+     * @covers          Awf\Filesystem\File::directoryFiles
+     * @dataProvider    FileDataprovider::getTestDirectoryFiles
+     */
+    public function testDirectoryFiles($test, $check)
+    {
+        $msg  = 'File::directoryFiles %s - Case: '.$check['case'];
+        $file = new File(array());
+
+        vfsStream::setup('root', null, $test['filesystem']);
+
+        $result = $file->directoryFiles(vfsStream::url('root'), $test['filter'], $test['recurse'], $test['full'],
+                                        $test['exclude'], $test['excludeFilter'], $test['natsort']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @group           File
+     * @group           FileDirectoryFiles
+     * @covers          Awf\Filesystem\File::directoryFiles
+     */
+    public function testDirectoryFilesException()
+    {
+        $this->setExpectedException('InvalidArgumentException');
+
+        $file = new File(array());
+
+        $root = vfsStream::setup('root');
+        vfsStream::newFile('foobar.txt')->at($root);
+
+        $file->directoryFiles(vfsStream::url('root/foobar.txt'));
+    }
 }
 
 function file_put_contents()

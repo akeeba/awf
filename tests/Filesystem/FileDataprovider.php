@@ -285,4 +285,142 @@ class FileDataprovider
 
         return $data;
     }
+
+    public static function getTestDirectoryFiles()
+    {
+        $paths = array(
+            'test.txt',
+            'foobar/dummy/bar/bar.txt',
+            'foobar/dummy/test.txt',
+            'foobar/file.txt',
+            'foobar/file1.txt',
+            'foobar/file2.txt',
+            'foobar/file10.txt',
+            'foobar/file.php',
+            'foobar/.',
+            'foobar/..',
+            'foobar/.svn',
+            'foobar/CSV',
+            'foobar/.DS_Store',
+            'foobar/__MACOSX',
+            'foobar/.hidden',
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'filter'  => '.',
+                'recurse' => false,
+                'full'    => false,
+                'exclude' => array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+                'excludeFilter' => array('^\..*', '.*~'),
+                'natsort' => false
+            ),
+            array(
+                'case'   => 'No recurse, not full, standard exclude no natsort',
+                'result' => array('test.txt')
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'filter'  => '.',
+                'recurse' => true,
+                'full'    => false,
+                'exclude' => array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+                'excludeFilter' => array('^\..*', '.*~'),
+                'natsort' => false
+            ),
+            array(
+                'case'   => 'Recursive, not full, standard exclude no natsort',
+                'result' => array(
+                    'bar.txt',
+                    'file.php',
+                    'file.txt',
+                    'file1.txt',
+                    'file10.txt',
+                    'file2.txt',
+                    'test.txt',
+                    'test.txt'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'filter'  => '.',
+                'recurse' => true,
+                'full'    => false,
+                'exclude' => array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+                'excludeFilter' => array(),
+                'natsort' => false
+            ),
+            array(
+                'case'   => 'Recursive, not full, standard exclude, no exclude regex no natsort',
+                'result' => array(
+                    '.hidden',
+                    'bar.txt',
+                    'file.php',
+                    'file.txt',
+                    'file1.txt',
+                    'file10.txt',
+                    'file2.txt',
+                    'test.txt',
+                    'test.txt'
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'filter'  => '.',
+                'recurse' => true,
+                'full'    => true,
+                'exclude' => array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+                'excludeFilter' => array('^\..*', '.*~'),
+                'natsort' => true
+            ),
+            array(
+                'case'   => 'Recursive, full, standard exclude, natsort',
+                'result' => array(
+                    'vfs://root/foobar/dummy/bar/bar.txt',
+                    'vfs://root/foobar/dummy/test.txt',
+                    'vfs://root/foobar/file.php',
+                    'vfs://root/foobar/file.txt',
+                    'vfs://root/foobar/file1.txt',
+                    'vfs://root/foobar/file2.txt',
+                    'vfs://root/foobar/file10.txt',
+                    'vfs://root/test.txt',
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'filter'  => '.',
+                'recurse' => 1,
+                'full'    => false,
+                'exclude' => array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+                'excludeFilter' => array('^\..*', '.*~'),
+                'natsort' => false
+            ),
+            array(
+                'case'   => 'Recursive (only first level), not full, standard exclude no natsort',
+                'result' => array(
+                    'file.php',
+                    'file.txt',
+                    'file1.txt',
+                    'file10.txt',
+                    'file2.txt',
+                    'test.txt',
+                )
+            )
+        );
+
+        return $data;
+    }
 }
