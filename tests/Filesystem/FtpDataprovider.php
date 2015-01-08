@@ -156,4 +156,33 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestDelete()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_delete' => true
+                )
+            ),
+            array(
+                'case'  => 'FTP delete successfully completed',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_delete' => false
+                )
+            ),
+            array(
+                'case'  => 'FTP delete failed',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }

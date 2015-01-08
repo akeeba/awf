@@ -159,6 +159,37 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, ''));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::delete
+     * @dataProvider    FtpDataprovider::getTestDelete
+     */
+    public function testDelete($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::delete %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_delete']  = function() use ($test){ return $test['mock']['ftp_delete']; };
+
+        $ftp = new Ftp($options);
+
+        $result = $ftp->delete('foobar.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }
 }
 
 function ftp_close()
@@ -243,4 +274,16 @@ function ftp_fput()
     }
 
     isset($stackFilesystem['ftp_fput']) ? $stackFilesystem['ftp_fput']++ : $stackFilesystem['ftp_fput'] = 1;
+}
+
+function ftp_delete()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_delete']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_delete'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_delete']) ? $stackFilesystem['ftp_delete']++ : $stackFilesystem['ftp_delete'] = 1;
 }
