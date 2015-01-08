@@ -253,6 +253,37 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, ''));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::chmod
+     * @dataProvider    FtpDataprovider::getTestChmod
+     */
+    public function testChmod($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::chmod %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chmod']   = function() use ($test){ return $test['mock']['ftp_chmod']; };
+
+        $ftp = new Ftp($options);
+
+        $result = $ftp->chmod('foobar.txt', 0644);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }
 }
 
 function ftp_close()
@@ -373,4 +404,16 @@ function ftp_rename()
     }
 
     isset($stackFilesystem['ftp_rename']) ? $stackFilesystem['ftp_rename']++ : $stackFilesystem['ftp_rename'] = 1;
+}
+
+function ftp_chmod()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_chmod']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_chmod'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_chmod']) ? $stackFilesystem['ftp_chmod']++ : $stackFilesystem['ftp_chmod'] = 1;
 }

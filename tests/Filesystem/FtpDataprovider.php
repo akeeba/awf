@@ -258,4 +258,33 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestChmod()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_chmod' => 0644
+                )
+            ),
+            array(
+                'case'  => 'FTP chmod successfully completed',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_chmod' => false
+                )
+            ),
+            array(
+                'case'  => 'FTP chmod failed',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }

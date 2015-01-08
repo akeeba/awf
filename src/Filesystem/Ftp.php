@@ -293,7 +293,7 @@ class Ftp implements FilesystemInterface
 	{
 		$targetFile = $this->translatePath($fileName);
 
-		@ftp_chmod($this->connection, $permissions, $targetFile);
+		return (@ftp_chmod($this->connection, $permissions, $targetFile) !== false);
 	}
 
 	/**
