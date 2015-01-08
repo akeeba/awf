@@ -287,4 +287,65 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestMkdir()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_mkdir' => array()
+                ),
+                'path' => 'vfs://root/site/'
+            ),
+            array(
+                'case'   => 'Destination directory is the starting directory',
+                'result' => true,
+                'mkdir'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_mkdir' => array(true)
+                ),
+                'path' => 'dummy'
+            ),
+            array(
+                'case'   => 'Creating a single directory',
+                'result' => true,
+                'mkdir'  => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_mkdir' => array(false)
+                ),
+                'path' => 'dummy'
+            ),
+            array(
+                'case'   => 'Creation fails',
+                'result' => false,
+                'mkdir'  => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_mkdir' => array(true, true)
+                ),
+                'path' => 'dummy/foobar'
+            ),
+            array(
+                'case'   => 'Creating multiple directories',
+                'result' => true,
+                'mkdir'  => 2
+            )
+        );
+
+        return $data;
+    }
 }

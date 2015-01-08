@@ -321,13 +321,13 @@ class Ftp implements FilesystemInterface
 
 		$directories = explode('/', $targetDir);
 		$siteRootDir = $this->container['filesystemBase'];
-		$localDir = rtrim($siteRootDir, '/');
+
+		$localDir  = rtrim($siteRootDir, '/');
 		$remoteDir = '/' . $initialDir;
-		$ret = true;
 
 		foreach ($directories as $dir)
 		{
-			$localDir .= '/' . $dir;
+			$localDir  .= '/' . $dir;
 			$remoteDir .= '/' . $dir;
 
 			if (!is_dir($localDir))

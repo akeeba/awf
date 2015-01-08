@@ -11,6 +11,7 @@ namespace Awf\Filesystem;
 
 use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
+use org\bovigo\vfs\vfsStream;
 
 global $mockFilesystem;
 global $stackFilesystem;
@@ -157,7 +158,7 @@ class FtpTest extends AwfTestCase
 
         $result = $ftp->write('foobar.txt', 'dummy');
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 
     /**
@@ -188,7 +189,7 @@ class FtpTest extends AwfTestCase
 
         $result = $ftp->delete('foobar.txt');
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 
     /**
@@ -220,7 +221,7 @@ class FtpTest extends AwfTestCase
 
         $result = $ftp->copy('foobar.txt', 'dummy.txt');
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 
     /**
@@ -251,7 +252,7 @@ class FtpTest extends AwfTestCase
 
         $result = $ftp->move('foobar.txt', 'dummy.txt');
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 
     /**
@@ -282,7 +283,47 @@ class FtpTest extends AwfTestCase
 
         $result = $ftp->chmod('foobar.txt', 0644);
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::mkdir
+     * @dataProvider    FtpDataprovider::getTestMkdir
+     */
+    public function testMkdir($test, $check)
+    {
+        global $mockFilesystem, $stackFilesystem;
+
+        $msg     = 'Ftp::chmod %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_mkdir']   = function() use (&$test){ return array_shift($test['mock']['ftp_mkdir']); };
+
+        $root = vfsStream::setup('root');
+        vfsStream::newDirectory('site')->at($root);
+
+        $container = static::$container;
+        $container['filesystemBase'] = vfsStream::url('root/site');
+
+        $ftp = $this->getMock('Awf\Filesystem\Ftp', array('chmod'), array($options, $container));
+
+        $result = $ftp->mkdir($test['path'], 0755);
+        $count  = isset($stackFilesystem['ftp_mkdir']) ? $stackFilesystem['ftp_mkdir'] : 0;
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+        $this->assertEquals($check['mkdir'], $count, sprintf($msg, 'Invoked ftp_mkdir the wrong amount of times'));
     }
 }
 
@@ -290,130 +331,142 @@ function ftp_close()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_close']) ? $stackFilesystem['ftp_close']++ : $stackFilesystem['ftp_close'] = 1;
+
     if(isset($mockFilesystem['ftp_close']))
     {
         return call_user_func_array($mockFilesystem['ftp_close'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_close']) ? $stackFilesystem['ftp_close']++ : $stackFilesystem['ftp_close'] = 1;
 }
 
 function ftp_ssl_connect()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_ssl_connect']) ? $stackFilesystem['ftp_ssl_connect']++ : $stackFilesystem['ftp_ssl_connect'] = 1;
+
     if(isset($mockFilesystem['ftp_ssl_connect']))
     {
         return call_user_func_array($mockFilesystem['ftp_ssl_connect'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_ssl_connect']) ? $stackFilesystem['ftp_ssl_connect']++ : $stackFilesystem['ftp_ssl_connect'] = 1;
 }
 
 function ftp_connect()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_connect']) ? $stackFilesystem['ftp_connect']++ : $stackFilesystem['ftp_connect'] = 1;
+
     if(isset($mockFilesystem['ftp_connect']))
     {
         return call_user_func_array($mockFilesystem['ftp_connect'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_connect']) ? $stackFilesystem['ftp_connect']++ : $stackFilesystem['ftp_connect'] = 1;
 }
 
 function ftp_login()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_login']) ? $stackFilesystem['ftp_login']++ : $stackFilesystem['ftp_login'] = 1;
+
     if(isset($mockFilesystem['ftp_login']))
     {
         return call_user_func_array($mockFilesystem['ftp_login'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_login']) ? $stackFilesystem['ftp_login']++ : $stackFilesystem['ftp_login'] = 1;
 }
 
 function ftp_chdir()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_chdir']) ? $stackFilesystem['ftp_chdir']++ : $stackFilesystem['ftp_chdir'] = 1;
+
     if(isset($mockFilesystem['ftp_chdir']))
     {
         return call_user_func_array($mockFilesystem['ftp_chdir'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_chdir']) ? $stackFilesystem['ftp_chdir']++ : $stackFilesystem['ftp_chdir'] = 1;
 }
 
 function ftp_pasv()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
+
     if(isset($mockFilesystem['ftp_pasv']))
     {
         return call_user_func_array($mockFilesystem['ftp_pasv'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
 }
 
 function ftp_fget()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_fget']) ? $stackFilesystem['ftp_fget']++ : $stackFilesystem['ftp_fget'] = 1;
+
     if(isset($mockFilesystem['ftp_fget']))
     {
         return call_user_func_array($mockFilesystem['ftp_fget'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_fget']) ? $stackFilesystem['ftp_fget']++ : $stackFilesystem['ftp_fget'] = 1;
 }
 
 function ftp_fput()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_fput']) ? $stackFilesystem['ftp_fput']++ : $stackFilesystem['ftp_fput'] = 1;
+
     if(isset($mockFilesystem['ftp_fput']))
     {
         return call_user_func_array($mockFilesystem['ftp_fput'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_fput']) ? $stackFilesystem['ftp_fput']++ : $stackFilesystem['ftp_fput'] = 1;
 }
 
 function ftp_delete()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_delete']) ? $stackFilesystem['ftp_delete']++ : $stackFilesystem['ftp_delete'] = 1;
+
     if(isset($mockFilesystem['ftp_delete']))
     {
         return call_user_func_array($mockFilesystem['ftp_delete'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_delete']) ? $stackFilesystem['ftp_delete']++ : $stackFilesystem['ftp_delete'] = 1;
 }
 
 function ftp_rename()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_rename']) ? $stackFilesystem['ftp_rename']++ : $stackFilesystem['ftp_rename'] = 1;
+
     if(isset($mockFilesystem['ftp_rename']))
     {
         return call_user_func_array($mockFilesystem['ftp_rename'], func_get_args());
     }
-
-    isset($stackFilesystem['ftp_rename']) ? $stackFilesystem['ftp_rename']++ : $stackFilesystem['ftp_rename'] = 1;
 }
 
 function ftp_chmod()
 {
     global $mockFilesystem, $stackFilesystem;
 
+    isset($stackFilesystem['ftp_chmod']) ? $stackFilesystem['ftp_chmod']++ : $stackFilesystem['ftp_chmod'] = 1;
+
     if(isset($mockFilesystem['ftp_chmod']))
     {
         return call_user_func_array($mockFilesystem['ftp_chmod'], func_get_args());
     }
+}
 
-    isset($stackFilesystem['ftp_chmod']) ? $stackFilesystem['ftp_chmod']++ : $stackFilesystem['ftp_chmod'] = 1;
+function ftp_mkdir()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ftp_mkdir']) ? $stackFilesystem['ftp_mkdir']++ : $stackFilesystem['ftp_mkdir'] = 1;
+
+    if(isset($mockFilesystem['ftp_mkdir']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_mkdir'], func_get_args());
+    }
 }
