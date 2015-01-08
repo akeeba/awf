@@ -409,15 +409,14 @@ class Ftp implements FilesystemInterface
 		$fileName = str_replace('\\', '/', $fileName);
 
 		$siteRootDir = $this->container['filesystemBase'];
+
 		$appRoot = str_replace('\\', '/', $siteRootDir);
 		$appRoot = rtrim($appRoot, '/');
 
 		if (strpos($fileName, $appRoot) === 0)
 		{
 			$fileName = substr($fileName, strlen($appRoot) + 1);
-
 			$fileName = trim($fileName, '/');
-
 			$fileName = rtrim($this->directory, '/') . '/' . $fileName;
 		}
 

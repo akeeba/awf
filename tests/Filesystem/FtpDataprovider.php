@@ -470,4 +470,53 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestTranslatePath()
+    {
+        $data[] = array(
+            array(
+                'path'   => 'foobar',
+                'append' => false
+            ),
+            array(
+                'case'   => 'Simple directory',
+                'result' => 'foobar'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'path'   => 'foobar/dummy',
+                'append' => false
+            ),
+            array(
+                'case'   => 'Nested path',
+                'result' => 'foobar/dummy'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'path'   => 'foobar\dummy',
+                'append' => false
+            ),
+            array(
+                'case'   => 'Path with backslashes',
+                'result' => 'foobar/dummy'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'path'   => 'foobar',
+                'append' => true
+            ),
+            array(
+                'case'   => 'Path contains the absolute path of the app',
+                'result' => '/site/foobar'
+            )
+        );
+
+        return $data;
+    }
 }

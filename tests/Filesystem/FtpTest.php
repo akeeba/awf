@@ -362,6 +362,42 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::translatePath
+     * @dataProvider    FtpDataprovider::getTestTranslatePath
+     */
+    public function testTranslatePath($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::translatePath %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+
+        $ftp  = new Ftp($options);
+        $path = $test['path'];
+
+        if($test['append'])
+        {
+            $path = static::$container['filesystemBase'].'/'.$test['path'];
+        }
+
+        $result = $ftp->translatePath($path);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 function ftp_close()
