@@ -7,6 +7,7 @@
 
 namespace Awf\Filesystem;
 
+use Awf\Application\Application;
 use Awf\Container\Container;
 
 /**
@@ -76,15 +77,20 @@ class Ftp implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-     * @param   Container   $container  Application container
 	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  Ftp
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(Container $container, array $options)
+	public function __construct(array $options, Container $container = null)
 	{
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
         $this->container = $container;
 
 		if (isset($options['host']))

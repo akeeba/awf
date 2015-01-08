@@ -6,6 +6,7 @@
  */
 
 namespace Awf\Filesystem;
+use Awf\Application\Application;
 use Awf\Container\Container;
 
 /**
@@ -31,14 +32,19 @@ class Hybrid implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-     * @param   Container   $container  Application container
 	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(Container $container, array $options)
+	public function __construct(array $options, Container $container = null)
 	{
-		$this->fileAdapter = new File($container, $options);
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+		$this->fileAdapter = new File($options, $container);
 
 		if (isset($options['driver']))
 		{
@@ -48,7 +54,7 @@ class Hybrid implements FilesystemInterface
 			{
 				try
 				{
-					$this->abstractionAdapter = new $class($container, $options);
+					$this->abstractionAdapter = new $class($options, $container);
 				}
 				// If we can't instantiate the abstraction adapter we'll only use the direct file write method
 				catch (\RuntimeException $e)

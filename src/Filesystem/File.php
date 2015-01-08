@@ -22,12 +22,12 @@ class File implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-     * @param   Container   $container  Ignored by this class
 	 * @param   array       $options  Ignored by this class
+     * @param   Container   $container  Ignored by this class
 	 *
 	 * @return  File
 	 */
-	public function __construct(Container $container, array $options)
+	public function __construct(array $options, Container $container = null)
 	{
 		// No further operation necessary
 	}

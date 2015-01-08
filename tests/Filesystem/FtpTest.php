@@ -24,11 +24,6 @@ require_once 'FtpDataprovider.php';
  */
 class FtpTest extends AwfTestCase
 {
-    protected function setUp()
-    {
-        parent::setUp(false);
-    }
-
     protected function tearDown()
     {
         global $mockFilesystem, $stackFilesystem;
@@ -133,6 +128,37 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['count'], $stackFilesystem['ftp_close'], sprintf($msg, 'Failed to close the connection'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::write
+     * @dataProvider    FtpDataprovider::getTestWrite
+     */
+    /*public function testWrite($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::write %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_put']     = function() use($test){ return $test['mock']['ftp_put']; };
+
+        $ftp = new Ftp($options);
+
+        $result = $ftp->write('foobar.txt', 'dummy');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }*/
 }
 
 function ftp_close()

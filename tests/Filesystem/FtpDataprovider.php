@@ -127,4 +127,21 @@ class FtpDataprovider
 
         return $data;
     }
+
+    /*public static function getTestWrite()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_put' => true
+                )
+            ),
+            array(
+                'case'  => 'FTP put successfully completed',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }*/
 }

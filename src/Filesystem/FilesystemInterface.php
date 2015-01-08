@@ -23,12 +23,12 @@ interface FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-     * @param   Container   $container  Application container
 	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  FilesystemInterface
 	 */
-	public function __construct(Container $container, array $options);
+	public function __construct(array $options, Container $container = null);
 
 	/**
 	 * Write the contents into the file
