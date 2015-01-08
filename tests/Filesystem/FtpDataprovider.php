@@ -229,4 +229,33 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestMove()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_rename' => true
+                )
+            ),
+            array(
+                'case'  => 'FTP move successfully completed',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_rename' => false
+                )
+            ),
+            array(
+                'case'  => 'FTP move failed',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }

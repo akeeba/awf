@@ -222,6 +222,37 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, ''));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::move
+     * @dataProvider    FtpDataprovider::getTestMove
+     */
+    public function testMove($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::move %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_rename']  = function() use ($test){ return $test['mock']['ftp_rename']; };
+
+        $ftp = new Ftp($options);
+
+        $result = $ftp->move('foobar.txt', 'dummy.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }
 }
 
 function ftp_close()
@@ -330,4 +361,16 @@ function ftp_delete()
     }
 
     isset($stackFilesystem['ftp_delete']) ? $stackFilesystem['ftp_delete']++ : $stackFilesystem['ftp_delete'] = 1;
+}
+
+function ftp_rename()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_rename']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_rename'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_rename']) ? $stackFilesystem['ftp_rename']++ : $stackFilesystem['ftp_rename'] = 1;
 }
