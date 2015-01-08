@@ -519,4 +519,73 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestListFolders()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_chdir'   => array(true, false),
+                    'ftp_rawlist' => false
+                ),
+                'path' => 'foobar'
+            ),
+            array(
+                'case'      => 'An error occurs while changing FTP directory',
+                'exception' => true,
+                'result'    => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_chdir'   => array(true, true),
+                    'ftp_rawlist' => false
+                ),
+                'path' => 'foobar'
+            ),
+            array(
+                'case'      => 'An error occurs while fecthing directory list',
+                'exception' => true,
+                'result'    => ''
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_chdir'   => array(true, true),
+                    'ftp_rawlist' => array(
+                        "drwx--x---   6 ftp      ftp          4096 Mar 27  2014 .",
+                        "drwx--x---   6 ftp      ftp          4096 Mar 27  2014 ..",
+                        "drwx------   2 ftp      ftp          4096 May  8  2013 backups",
+                        "-rw-r--r--   1 ftp      ftp            18 Dec  2  2011 .bash_logout",
+                        "-rw-r--r--   1 ftp      ftp           176 Dec  2  2011 .bash_profile",
+                        "-rw-r--r--   1 ftp      ftp           124 Dec  2  2011 .bashrc",
+                        "drwx--x--x   3 ftp      ftp          4096 Jun 22  2012 domains",
+                        "drwxrwx---   3 ftp      ftp          4096 May  8  2013 imap",
+                        "drwxrwx---   2 ftp      ftp         12288 Jan  8 03:00 .php",
+                        "lrwxrwxrwx   1 ftp      ftp            40 May  8  2013 public_html -> ./domains/example.com/public_html",
+                        "-rw-r-----   1 ftp      ftp            34 May  8  2013 .shadow",
+                    )
+                ),
+                'path' => 'foobar'
+            ),
+            array(
+                'case'      => 'Directory list fetched from the server',
+                'exception' => false,
+                'result'    => array(
+                    0 => '.',
+                    1 => '..',
+                    5 => '.php',
+                    2 => 'backups',
+                    3 => 'domains',
+                    4 => 'imap'
+                )
+            )
+        );
+
+        return $data;
+    }
 }

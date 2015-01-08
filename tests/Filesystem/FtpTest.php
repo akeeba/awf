@@ -398,6 +398,42 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::listFolders
+     * @dataProvider    FtpDataprovider::getTestListFolders
+     */
+    public function testListFolders($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::listFolders %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use (&$test){ return array_shift($test['mock']['ftp_chdir']); };
+        $mockFilesystem['ftp_rawlist'] = function() use ($test){ return $test['mock']['ftp_rawlist']; };
+
+        if($check['exception'])
+        {
+            $this->setExpectedException('RuntimeException');
+        }
+
+        $ftp  = new Ftp($options);
+
+        $result = $ftp->listFolders($test['path']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 function ftp_close()
@@ -553,5 +589,17 @@ function ftp_rmdir()
     if(isset($mockFilesystem['ftp_rmdir']))
     {
         return call_user_func_array($mockFilesystem['ftp_rmdir'], func_get_args());
+    }
+}
+
+function ftp_rawlist()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ftp_rawlist']) ? $stackFilesystem['ftp_rawlist']++ : $stackFilesystem['ftp_rawlist'] = 1;
+
+    if(isset($mockFilesystem['ftp_rawlist']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_rawlist'], func_get_args());
     }
 }
