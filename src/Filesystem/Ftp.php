@@ -245,7 +245,7 @@ class Ftp implements FilesystemInterface
 	public function copy($from, $to)
 	{
 		$fromFile = $this->translatePath($from);
-		$toFile = $this->translatePath($to);
+		$toFile   = $this->translatePath($to);
 
 		// Make sure the buffer:// wrapper is loaded
 		class_exists('\\Awf\\Utils\\Buffer', true);

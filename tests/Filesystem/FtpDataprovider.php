@@ -185,4 +185,48 @@ class FtpDataprovider
 
         return $data;
     }
+
+    public static function getTestCopy()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_fget' => true,
+                    'ftp_fput' => true,
+                )
+            ),
+            array(
+                'case'  => 'FTP copy successfully completed',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_fget' => false,
+                    'ftp_fput' => true,
+                )
+            ),
+            array(
+                'case'  => 'FTP copy failed to read the file',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_fget' => true,
+                    'ftp_fput' => false,
+                )
+            ),
+            array(
+                'case'  => 'FTP copy failed to put the file',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
 }

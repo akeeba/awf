@@ -190,6 +190,38 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, ''));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::copy
+     * @dataProvider    FtpDataprovider::getTestCopy
+     */
+    public function testCopy($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::copy %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'foobar/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_fget']  = function() use ($test){ return $test['mock']['ftp_fget']; };
+        $mockFilesystem['ftp_fput']  = function() use ($test){ return $test['mock']['ftp_fput']; };
+
+        $ftp = new Ftp($options);
+
+        $result = $ftp->copy('foobar.txt', 'dummy.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+    }
 }
 
 function ftp_close()
@@ -262,6 +294,18 @@ function ftp_pasv()
     }
 
     isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
+}
+
+function ftp_fget()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    if(isset($mockFilesystem['ftp_fget']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_fget'], func_get_args());
+    }
+
+    isset($stackFilesystem['ftp_fget']) ? $stackFilesystem['ftp_fget']++ : $stackFilesystem['ftp_fget'] = 1;
 }
 
 function ftp_fput()
