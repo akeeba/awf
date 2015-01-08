@@ -184,7 +184,7 @@ class FileTest extends AwfTestCase
 
         $result = $file->rmdir(vfsStream::url($test['path']), $test['recursive']);
 
-        $this->assertEquals($check['result'], $result, sprintf($msg, ''));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 
     /**

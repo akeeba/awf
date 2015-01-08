@@ -295,7 +295,7 @@ class FtpTest extends AwfTestCase
     {
         global $mockFilesystem, $stackFilesystem;
 
-        $msg     = 'Ftp::chmod %s - Case: '.$check['case'];
+        $msg     = 'Ftp::mkdir %s - Case: '.$check['case'];
         $options = array(
             'host'      => 'localhost',
             'port'      => '22',
@@ -324,6 +324,43 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
         $this->assertEquals($check['mkdir'], $count, sprintf($msg, 'Invoked ftp_mkdir the wrong amount of times'));
+    }
+
+    /**
+     * @covers          Awf\Filesystem\Ftp::rmdir
+     * @dataProvider    FtpDataprovider::getTestRmdir
+     */
+    public function testRmdir($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Ftp::rmdir %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+            'ssl'       => false,
+            'passive'   => false
+        );
+
+        $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
+        $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
+        $mockFilesystem['ftp_rmdir']   = function() use (&$test){ return array_shift($test['mock']['ftp_rmdir']); };
+
+        vfsStream::setup('root', null, $test['filesystem']);
+
+        $container = static::$container;
+        $container['filesystemBase'] = vfsStream::url('root/site');
+
+        $ftp = $this->getMock('Awf\Filesystem\Ftp', array('delete'), array($options, $container));
+        $ftp->expects($this->any())->method('delete')->willReturn($test['mock']['delete']);
+
+        $result = $ftp->rmdir(vfsStream::url($test['path']), $test['recursive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
 }
 
@@ -468,5 +505,17 @@ function ftp_mkdir()
     if(isset($mockFilesystem['ftp_mkdir']))
     {
         return call_user_func_array($mockFilesystem['ftp_mkdir'], func_get_args());
+    }
+}
+
+function ftp_rmdir()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ftp_rmdir']) ? $stackFilesystem['ftp_rmdir']++ : $stackFilesystem['ftp_rmdir'] = 1;
+
+    if(isset($mockFilesystem['ftp_rmdir']))
+    {
+        return call_user_func_array($mockFilesystem['ftp_rmdir'], func_get_args());
     }
 }

@@ -371,7 +371,7 @@ class Ftp implements FilesystemInterface
 			}
 
 			$ret = true;
-			$di = new \DirectoryIterator($dirName);
+			$di  = new \DirectoryIterator($dirName);
 
 			/** @var \DirectoryIterator $dirEntry */
 			foreach ($di as $dirEntry)
