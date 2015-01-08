@@ -128,12 +128,12 @@ class FtpDataprovider
         return $data;
     }
 
-    /*public static function getTestWrite()
+    public static function getTestWrite()
     {
         $data[] = array(
             array(
                 'mock' => array(
-                    'ftp_put' => true
+                    'ftp_fput' => true
                 )
             ),
             array(
@@ -142,6 +142,18 @@ class FtpDataprovider
             )
         );
 
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ftp_fput' => false
+                )
+            ),
+            array(
+                'case'  => 'FTP put failed',
+                'result' => false
+            )
+        );
+
         return $data;
-    }*/
+    }
 }

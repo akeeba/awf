@@ -133,7 +133,7 @@ class FtpTest extends AwfTestCase
      * @covers          Awf\Filesystem\Ftp::write
      * @dataProvider    FtpDataprovider::getTestWrite
      */
-    /*public function testWrite($test, $check)
+    public function testWrite($test, $check)
     {
         global $mockFilesystem;
 
@@ -151,14 +151,14 @@ class FtpTest extends AwfTestCase
         $mockFilesystem['ftp_connect'] = function() use ($test){ return true; };
         $mockFilesystem['ftp_login']   = function() use ($test){ return true; };
         $mockFilesystem['ftp_chdir']   = function() use ($test){ return true; };
-        $mockFilesystem['ftp_put']     = function() use($test){ return $test['mock']['ftp_put']; };
+        $mockFilesystem['ftp_fput']    = function() use ($test){ return $test['mock']['ftp_fput']; };
 
         $ftp = new Ftp($options);
 
         $result = $ftp->write('foobar.txt', 'dummy');
 
         $this->assertEquals($check['result'], $result, sprintf($msg, ''));
-    }*/
+    }
 }
 
 function ftp_close()
@@ -233,14 +233,14 @@ function ftp_pasv()
     isset($stackFilesystem['ftp_pasv']) ? $stackFilesystem['ftp_pasv']++ : $stackFilesystem['ftp_pasv'] = 1;
 }
 
-function ftp_put()
+function ftp_fput()
 {
     global $mockFilesystem, $stackFilesystem;
 
-    if(isset($mockFilesystem['ftp_put']))
+    if(isset($mockFilesystem['ftp_fput']))
     {
-        return call_user_func_array($mockFilesystem['ftp_put'], func_get_args());
+        return call_user_func_array($mockFilesystem['ftp_fput'], func_get_args());
     }
 
-    isset($stackFilesystem['ftp_put']) ? $stackFilesystem['ftp_put']++ : $stackFilesystem['ftp_put'] = 1;
+    isset($stackFilesystem['ftp_fput']) ? $stackFilesystem['ftp_fput']++ : $stackFilesystem['ftp_fput'] = 1;
 }
