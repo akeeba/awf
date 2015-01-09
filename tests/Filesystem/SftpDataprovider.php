@@ -164,4 +164,48 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestWrite()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'fopen'  => false,
+                    'fwrite' => false
+                )
+            ),
+            array(
+                'case'   => 'Fails to open the strem',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'fopen'  => true,
+                    'fwrite' => false
+                )
+            ),
+            array(
+                'case'   => 'Fails to write',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'fopen'  => true,
+                    'fwrite' => 100
+                )
+            ),
+            array(
+                'case'   => 'Everything works fine',
+                'result' => 100
+            )
+        );
+
+        return $data;
+    }
 }

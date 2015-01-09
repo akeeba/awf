@@ -83,13 +83,13 @@ class SftpTest extends AwfTestCase
             'publicKey'  => 'bar'
         );
 
-        $ftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
 
-        $ftp->__construct($options);
+        $sftp->__construct($options);
 
-        ReflectionHelper::setValue($ftp, 'connection', $test['connection']);
+        ReflectionHelper::setValue($sftp, 'connection', $test['connection']);
 
-        $ftp->__destruct();
+        $sftp->__destruct();
 
         if(isset($stackFilesystem['ssh2_exec']))
         {
@@ -143,6 +143,38 @@ class SftpTest extends AwfTestCase
         $this->assertNotNull(ReflectionHelper::getValue($sftp, 'connection'));
         $this->assertNotNull(ReflectionHelper::getValue($sftp, 'sftpHandle'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::write
+     * @dataProvider    SftpDataprovider::getTestWrite
+     */
+    public function testWrite($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg = 'Sftp::write %s - Case: '.$check['case'];
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $mockFilesystem['fopen']   = function() use ($test){ return $test['mock']['fopen']; };
+        $mockFilesystem['fwrite']  = function() use ($test){ return $test['mock']['fwrite']; };
+        $mockFilesystem['fclose']  = function() { return true; };
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->write('foobar.txt', 'dummy');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once
@@ -166,6 +198,48 @@ if(!function_exists('Awf\Filesystem\function_exists'))
 
         return call_user_func_array('\function_exists', func_get_args());
     }
+}
+
+function fopen()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['fopen']) ? $stackFilesystem['fopen']++ : $stackFilesystem['fopen'] = 1;
+
+    if(isset($mockFilesystem['fopen']))
+    {
+        return call_user_func_array($mockFilesystem['fopen'], func_get_args());
+    }
+
+    return call_user_func_array('\fopen', func_get_args());
+}
+
+function fwrite()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['fwrite']) ? $stackFilesystem['fwrite']++ : $stackFilesystem['fwrite'] = 1;
+
+    if(isset($mockFilesystem['fwrite']))
+    {
+        return call_user_func_array($mockFilesystem['fwrite'], func_get_args());
+    }
+
+    return call_user_func_array('\fwrite', func_get_args());
+}
+
+function fclose()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['fclose']) ? $stackFilesystem['fclose']++ : $stackFilesystem['fclose'] = 1;
+
+    if(isset($mockFilesystem['fclose']))
+    {
+        return call_user_func_array($mockFilesystem['fclose'], func_get_args());
+    }
+
+    return call_user_func_array('\fclose', func_get_args());
 }
 
 function ssh2_connect()
