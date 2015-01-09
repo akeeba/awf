@@ -130,7 +130,7 @@ class FtpDataprovider
     {
         $data[] = array(
             array(
-                'connection' => '',
+                'connection' => null,
             ),
             array(
                 'case'  => 'Connection is not set',

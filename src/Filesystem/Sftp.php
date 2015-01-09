@@ -131,7 +131,7 @@ class Sftp implements FilesystemInterface
 
 		if (isset($options['publicKey']))
 		{
-			$this->privateKey = $options['publicKey'];
+			$this->publicKey = $options['publicKey'];
 		}
 
 		$this->connect();

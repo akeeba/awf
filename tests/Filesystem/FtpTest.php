@@ -130,14 +130,13 @@ class FtpTest extends AwfTestCase
 
         $ftp->__construct($options);
 
-        if($test['connection'])
-        {
-            ReflectionHelper::setValue($ftp, 'connection', 'test');
-        }
+        ReflectionHelper::setValue($ftp, 'connection', $test['connection']);
 
         $ftp->__destruct();
 
-        $this->assertEquals($check['count'], $stackFilesystem['ftp_close'], sprintf($msg, 'Failed to close the connection'));
+        $count = isset($stackFilesystem['ftp_close']) ? $stackFilesystem['ftp_close'] : 0;
+
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Failed to close the connection'));
     }
 
     /**
@@ -446,23 +445,25 @@ class FtpTest extends AwfTestCase
     }
 }
 
-function function_exists()
+// Let's be sure that the mocked function is created only once
+if(!function_exists('Awf\Filesystem\function_exists'))
 {
-    global $mockFilesystem, $stackFilesystem;
-
-    isset($stackFilesystem['function_exists']) ? $stackFilesystem['function_exists']++ : $stackFilesystem['function_exists'] = 1;
-
-    if(isset($mockFilesystem['function_exists']))
+    function function_exists()
     {
-        $result = call_user_func_array($mockFilesystem['function_exists'], func_get_args());
+        global $mockFilesystem, $stackFilesystem;
 
-        if($result !== '__awf_continue__')
-        {
-            return $result;
+        isset($stackFilesystem['function_exists']) ? $stackFilesystem['function_exists']++ : $stackFilesystem['function_exists'] = 1;
+
+        if (isset($mockFilesystem['function_exists'])) {
+            $result = call_user_func_array($mockFilesystem['function_exists'], func_get_args());
+
+            if ($result !== '__awf_continue__') {
+                return $result;
+            }
         }
-    }
 
-    return call_user_func_array('\function_exists', func_get_args());
+        return call_user_func_array('\function_exists', func_get_args());
+    }
 }
 
 function ftp_close()
