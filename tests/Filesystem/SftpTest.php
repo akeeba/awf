@@ -64,6 +64,42 @@ class SftpTest extends AwfTestCase
     }
 
     /**
+     * @covers          Awf\Filesystem\Sftp::__destruct
+     * @dataProvider    SftpDataprovider::getTest__destruct
+     */
+    public function test__destruct($test, $check)
+    {
+        global $stackFilesystem;
+
+        $msg     = 'Sftp::__destruct %s - Case: '.$check['case'];
+        $count   = 0;
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $ftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+
+        $ftp->__construct($options);
+
+        ReflectionHelper::setValue($ftp, 'connection', $test['connection']);
+
+        $ftp->__destruct();
+
+        if(isset($stackFilesystem['ssh2_exec']))
+        {
+            $count = (int) (array_search('exit;', $stackFilesystem['ssh2_exec']) !== false);
+        }
+
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Failed to close the connection'));
+    }
+
+    /**
      * @covers          Awf\Filesystem\Sftp::connect
      * @dataProvider    SftpDataprovider::getTestConnect
      */
@@ -189,5 +225,20 @@ function ssh2_sftp_stat()
     if(isset($mockFilesystem['ssh2_sftp_stat']))
     {
         return call_user_func_array($mockFilesystem['ssh2_sftp_stat'], func_get_args());
+    }
+}
+
+function ssh2_exec()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    $args = func_get_args();
+
+    // First argument is always the connection one, we're not interested into
+    $stackFilesystem['ssh2_exec'][] = $args[1];
+
+    if(isset($mockFilesystem['ssh2_exec']))
+    {
+        return call_user_func_array($mockFilesystem['ssh2_exec'], func_get_args());
     }
 }

@@ -2,6 +2,31 @@
 
 class SftpDataprovider
 {
+    public static function getTest__destruct()
+    {
+        $data[] = array(
+            array(
+                'connection' => null,
+            ),
+            array(
+                'case'  => 'Connection is not set',
+                'count' => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'connection' => fopen('php://stdout', 'r'),
+            ),
+            array(
+                'case'  => 'Connection is set',
+                'count' => 1
+            )
+        );
+
+        return $data;
+    }
+
     public static function getTestConnect()
     {
         // SSH2 module not loaded
