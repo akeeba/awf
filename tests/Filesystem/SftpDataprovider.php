@@ -322,4 +322,69 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestChmod()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_chmod' => false,
+                    'ssh2_exec'       => false,
+                    'function_exists' => true
+                )
+            ),
+            array(
+                'case'   => 'ssh2_sftp_chmod exists and returns false',
+                'result' => false,
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_chmod' => true,
+                    'ssh2_exec'       => false,
+                    'function_exists' => true
+                )
+            ),
+            array(
+                'case'   => 'ssh2_sftp_chmod exists and returns true',
+                'result' => true,
+                'count'  => 0
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_chmod' => false,
+                    'ssh2_exec'       => false,
+                    'function_exists' => false
+                )
+            ),
+            array(
+                'case'   => 'does not exist, chmod fails',
+                'result' => false,
+                'count'  => 1
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_chmod' => false,
+                    'ssh2_exec'       => true,
+                    'function_exists' => false
+                )
+            ),
+            array(
+                'case'   => 'does not exist, chmod succeds',
+                'result' => true,
+                'count'  => 1
+            )
+        );
+
+        return $data;
+    }
 }

@@ -271,6 +271,54 @@ class SftpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::chmod
+     * @dataProvider    SftpDataprovider::getTestChmod
+     */
+    public function testChmod($test, $check)
+    {
+        global $mockFilesystem, $stackFilesystem;
+
+        $msg     = 'Sftp::chmod %s - Case: '.$check['case'];
+        $count   = 0;
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $mockFilesystem['function_exists'] = function($function) use ($test)
+        {
+            if($function != 'ssh2_sftp_chmod')
+            {
+                return '__awf_continue__';
+            }
+
+            return $test['mock']['function_exists'];
+        };
+
+        $mockFilesystem['ssh2_sftp_chmod'] = function() use ($test){ return $test['mock']['ssh2_sftp_chmod'];};
+        $mockFilesystem['ssh2_exec']       = function() use ($test){ return $test['mock']['ssh2_exec'];};
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->chmod('foobar.txt', 0644);
+
+        if(isset($stackFilesystem['ssh2_exec']))
+        {
+            $count = (int) (array_search("chmod 644 '/foobar/./foobar.txt'", $stackFilesystem['ssh2_exec']) !== false);
+        }
+
+        $this->assertEquals($check['count'], $count, sprintf($msg, 'Failed to invoke the correct chmod method'));
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once
@@ -409,6 +457,18 @@ function ssh2_sftp_stat()
     if(isset($mockFilesystem['ssh2_sftp_stat']))
     {
         return call_user_func_array($mockFilesystem['ssh2_sftp_stat'], func_get_args());
+    }
+}
+
+function ssh2_sftp_chmod()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ssh2_sftp_chmod']) ? $stackFilesystem['ssh2_sftp_chmod']++ : $stackFilesystem['ssh2_sftp_chmod'] = 1;
+
+    if(isset($mockFilesystem['ssh2_sftp_chmod']))
+    {
+        return call_user_func_array($mockFilesystem['ssh2_sftp_chmod'], func_get_args());
     }
 }
 
