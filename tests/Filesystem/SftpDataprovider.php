@@ -208,4 +208,45 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestDelete()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_unlink' => false
+                )
+            ),
+            array(
+                'case'   => 'Unlink returns false',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_unlink' => 'exception'
+                )
+            ),
+            array(
+                'case'   => 'Unlink throws an exception',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_unlink' => true
+                )
+            ),
+            array(
+                'case'   => 'Everything works fine',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }

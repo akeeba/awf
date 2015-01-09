@@ -175,6 +175,43 @@ class SftpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::delete
+     * @dataProvider    SftpDataprovider::getTestDelete
+     */
+    public function testDelete($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg = 'Sftp::delete %s - Case: '.$check['case'];
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $mockFilesystem['ssh2_sftp_unlink']   = function() use ($test){
+            if($test['mock']['ssh2_sftp_unlink'] === 'exception')
+            {
+                throw new \Exception();
+            }
+
+            return $test['mock']['ssh2_sftp_unlink'];
+        };
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->delete('foobar.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once
@@ -314,5 +351,17 @@ function ssh2_exec()
     if(isset($mockFilesystem['ssh2_exec']))
     {
         return call_user_func_array($mockFilesystem['ssh2_exec'], func_get_args());
+    }
+}
+
+function ssh2_sftp_unlink()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ssh2_sftp_unlink']) ? $stackFilesystem['ssh2_sftp_unlink']++ : $stackFilesystem['ssh2_sftp_unlink'] = 1;
+
+    if(isset($mockFilesystem['ssh2_sftp_unlink']))
+    {
+        return call_user_func_array($mockFilesystem['ssh2_sftp_unlink'], func_get_args());
     }
 }
