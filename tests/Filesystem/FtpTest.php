@@ -86,6 +86,16 @@ class FtpTest extends AwfTestCase
             $this->setExpectedException('RuntimeException');
         }
 
+        $mockFilesystem['function_exists'] = function($function) use ($test)
+        {
+            if($function != 'ftp_ssl_connect')
+            {
+                return '__awf_continue__';
+            }
+
+            return $test['mock']['function_exists'];
+        };
+
         $mockFilesystem['ftp_ssl_connect'] = function() use ($test){ return $test['mock']['ftp_ssl_connect']; };
         $mockFilesystem['ftp_connect']     = function() use ($test){ return $test['mock']['ftp_connect']; };
         $mockFilesystem['ftp_login']       = function() use ($test){ return $test['mock']['ftp_login']; };
@@ -434,6 +444,25 @@ class FtpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+}
+
+function function_exists()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['function_exists']) ? $stackFilesystem['function_exists']++ : $stackFilesystem['function_exists'] = 1;
+
+    if(isset($mockFilesystem['function_exists']))
+    {
+        $result = call_user_func_array($mockFilesystem['function_exists'], func_get_args());
+
+        if($result !== '__awf_continue__')
+        {
+            return $result;
+        }
+    }
+
+    return call_user_func_array('\function_exists', func_get_args());
 }
 
 function ftp_close()

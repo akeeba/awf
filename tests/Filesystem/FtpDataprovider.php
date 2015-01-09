@@ -4,10 +4,28 @@ class FtpDataprovider
 {
     public static function getTestConnect()
     {
+        // Asking for SSL connection but it's not here
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'function_exists' => false,
+                    'ftp_ssl_connect' => true,
+                    'ftp_connect'     => true,
+                    'ftp_login'       => true,
+                    'ftp_chdir'       => true,
+                ),
+                'ssl' => true
+            ),
+            array(
+                'exception' => true
+            )
+        );
+
         // SSL connection works fine
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => true,
                     'ftp_connect'     => true,
                     'ftp_login'       => true,
@@ -24,6 +42,7 @@ class FtpDataprovider
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => false,
                     'ftp_connect'     => true,
                     'ftp_login'       => true,
@@ -40,6 +59,7 @@ class FtpDataprovider
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => true,
                     'ftp_connect'     => true,
                     'ftp_login'       => true,
@@ -56,6 +76,7 @@ class FtpDataprovider
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => true,
                     'ftp_connect'     => false,
                     'ftp_login'       => true,
@@ -72,6 +93,7 @@ class FtpDataprovider
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => true,
                     'ftp_connect'     => true,
                     'ftp_login'       => false,
@@ -88,6 +110,7 @@ class FtpDataprovider
         $data[] = array(
             array(
                 'mock' => array(
+                    'function_exists' => true,
                     'ftp_ssl_connect' => true,
                     'ftp_connect'     => true,
                     'ftp_login'       => true,
