@@ -319,6 +319,93 @@ class SftpTest extends AwfTestCase
         $this->assertEquals($check['count'], $count, sprintf($msg, 'Failed to invoke the correct chmod method'));
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::mkdir
+     * @dataProvider    SftpDataprovider::getTestMkdir
+     */
+    public function testMkdir($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg = 'Sftp::move %s - Case: '.$check['case'];
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $mockFilesystem['ssh2_sftp_mkdir'] = function() use ($test){ return $test['mock']['ssh2_sftp_mkdir'];};
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array(), '', false);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->mkdir('foobar.txt', 0755);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::rmdir
+     * @dataProvider    SftpDataprovider::getTestRmdir
+     */
+    public function testRmdir($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg     = 'Sftp::rmdir %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+        );
+
+        $mockFilesystem['ssh2_sftp_rmdir'] = function() use (&$test){ return array_shift($test['mock']['ssh2_sftp_rmdir']); };
+
+        vfsStream::setup('root', null, $test['filesystem']);
+
+        $container = static::$container;
+        $container['filesystemBase'] = vfsStream::url('root/site');
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect', 'delete'), array($options, $container), '', false);
+        $sftp->expects($this->any())->method('delete')->willReturn($test['mock']['delete']);
+
+        $sftp->__construct($options, $container);
+
+        $result = $sftp->rmdir(vfsStream::url($test['path']), $test['recursive']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::translatePath
+     * @dataProvider    SftpDataprovider::getTestTranslatePath
+     */
+    public function testTranslatePath($test, $check)
+    {
+        $msg     = 'Sftp::translatePath %s - Case: '.$check['case'];
+        $options = array(
+            'host'      => 'localhost',
+            'port'      => '22',
+            'username'  => 'test',
+            'password'  => 'test',
+            'directory' => 'site/ ',
+        );
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect'), array($options), '', false);
+        $sftp->__construct($options);
+
+        $result = $sftp->translatePath($test['path']);
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once
@@ -496,5 +583,29 @@ function ssh2_sftp_unlink()
     if(isset($mockFilesystem['ssh2_sftp_unlink']))
     {
         return call_user_func_array($mockFilesystem['ssh2_sftp_unlink'], func_get_args());
+    }
+}
+
+function ssh2_sftp_mkdir()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ssh2_sftp_mkdir']) ? $stackFilesystem['ssh2_sftp_mkdir']++ : $stackFilesystem['ssh2_sftp_mkdir'] = 1;
+
+    if(isset($mockFilesystem['ssh2_sftp_mkdir']))
+    {
+        return call_user_func_array($mockFilesystem['ssh2_sftp_mkdir'], func_get_args());
+    }
+}
+
+function ssh2_sftp_rmdir()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['ssh2_sftp_rmdir']) ? $stackFilesystem['ssh2_sftp_rmdir']++ : $stackFilesystem['ssh2_sftp_rmdir'] = 1;
+
+    if(isset($mockFilesystem['ssh2_sftp_rmdir']))
+    {
+        return call_user_func_array($mockFilesystem['ssh2_sftp_rmdir'], func_get_args());
     }
 }

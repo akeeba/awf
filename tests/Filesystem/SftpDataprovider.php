@@ -387,4 +387,180 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestMkdir()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_mkdir' => false
+                )
+            ),
+            array(
+                'case'   => 'Mkdir returns false',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'ssh2_sftp_mkdir' => true
+                )
+            ),
+            array(
+                'case'   => 'Mkdir returns true',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
+
+    public static function getTestRmdir()
+    {
+        $paths = array(
+            'site/first/second/third',
+            'site/dummy/test.txt',
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => '',
+                    'ssh2_sftp_rmdir' => array(true)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site/first/second/third',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Trying to delete a leaf dir, not recursive',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => '',
+                    'ssh2_sftp_rmdir' => array(false)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site/first/second/third',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Trying to delete a leaf dir, not recursive - Error',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => '',
+                    'ssh2_sftp_rmdir' => array(false)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Trying to delete a parent dir, not recursive',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => true,
+                    'ssh2_sftp_rmdir' => array(false)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site/dummy/test.txt',
+                'recursive'  => true
+            ),
+            array(
+                'case'   => 'Path points to a file, recursive',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => true,
+                    'ssh2_sftp_rmdir' => array(false)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site/dummy/test.txt',
+                'recursive'  => false
+            ),
+            array(
+                'case'   => 'Path points to a file, not recursive',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => true,
+                    'ssh2_sftp_rmdir' => array(true, true, true, true, true)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site',
+                'recursive'  => true
+            ),
+            array(
+                'case'   => 'Trying to delete a parent dir, recursive',
+                'result' => true
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'delete'    => true,
+                    'ssh2_sftp_rmdir' => array(true, true, false, true, true)
+                ),
+                'filesystem' => \Awf\Tests\Stubs\Utils\VfsHelper::createArrayDir($paths),
+                'path'       => 'root/site',
+                'recursive'  => true
+            ),
+            array(
+                'case'   => 'Trying to delete a parent dir, recursive, but something goes wrong',
+                'result' => false
+            )
+        );
+
+        return $data;
+    }
+
+    public function getTestTranslatePath()
+    {
+        $data[] = array(
+            array(
+                'path' => 'foobar/dummy.txt'
+            ),
+            array(
+                'case'   => 'Normal path',
+                'result' => '/site/foobar/dummy.txt'
+            )
+        );
+
+        $data[] = array(
+            array(
+                'path' => 'foobar\dummy.txt'
+            ),
+            array(
+                'case'   => 'Path with backslashes',
+                'result' => '/site/foobar/dummy.txt'
+            )
+        );
+
+        return $data;
+    }
 }

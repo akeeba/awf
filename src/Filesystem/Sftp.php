@@ -335,7 +335,7 @@ class Sftp implements FilesystemInterface
 
 		$ret = @ssh2_sftp_mkdir($this->sftpHandle, $targetDir, $permissions, true);
 
-		return true;
+		return $ret;
 	}
 
 	/**
@@ -400,9 +400,10 @@ class Sftp implements FilesystemInterface
 	{
 		$fileName = str_replace('\\', '/', $fileName);
 
-		$realDir = rtrim($this->directory, '/');
+		$realDir  = rtrim($this->directory, '/');
 		$realDir .= '/' . dirname($fileName);
-		$realDir = '/' . ltrim($realDir, '/');
+		$realDir  = '/' . ltrim($realDir, '/');
+
 		$fileName = $realDir . '/' . basename($fileName);
 
 		return $fileName;
