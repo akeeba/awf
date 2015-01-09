@@ -243,6 +243,34 @@ class SftpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::move
+     * @dataProvider    SftpDataprovider::getTestMove
+     */
+    public function testMove($test, $check)
+    {
+        $msg = 'Sftp::move %s - Case: '.$check['case'];
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect', 'copy', 'delete'), array(), '', false);
+        $sftp->expects($this->any())->method('copy')->willReturn($test['mock']['copy']);
+        $sftp->expects($this->any())->method('delete')->willReturn($test['mock']['delete']);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->move('foobar.txt', 'dummy.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once

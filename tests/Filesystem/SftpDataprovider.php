@@ -278,4 +278,48 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestMove()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'copy'   => false,
+                    'delete' => false
+                )
+            ),
+            array(
+                'case'   => 'Copy returns false',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'copy'   => true,
+                    'delete' => false
+                )
+            ),
+            array(
+                'case'   => 'Delete returns false',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'copy'   => true,
+                    'delete' => true
+                )
+            ),
+            array(
+                'case'   => 'Everything went ok',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }
