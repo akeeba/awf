@@ -249,4 +249,33 @@ class SftpDataprovider
 
         return $data;
     }
+
+    public static function getTestCopy()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'write' => false
+                )
+            ),
+            array(
+                'case'   => 'Write return false',
+                'result' => false
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'write' => true
+                )
+            ),
+            array(
+                'case'   => 'Write return true',
+                'result' => true
+            )
+        );
+
+        return $data;
+    }
 }

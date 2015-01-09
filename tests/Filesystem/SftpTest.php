@@ -212,6 +212,37 @@ class SftpTest extends AwfTestCase
 
         $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
     }
+
+    /**
+     * @covers          Awf\Filesystem\Sftp::copy
+     * @dataProvider    SftpDataprovider::getTestCopy
+     */
+    public function testCopy($test, $check)
+    {
+        global $mockFilesystem;
+
+        $msg = 'Sftp::copy %s - Case: '.$check['case'];
+        $options = array(
+            'host'       => 'localhost',
+            'port'       => '22',
+            'username'   => 'test',
+            'password'   => 'test',
+            'directory'  => 'foobar/ ',
+            'privateKey' => 'foo',
+            'publicKey'  => 'bar'
+        );
+
+        $mockFilesystem['file_get_contents'] = function() use ($test){ return 'foobar';};
+
+        $sftp = $this->getMock('Awf\Filesystem\Sftp', array('connect', 'write'), array(), '', false);
+        $sftp->expects($this->any())->method('write')->willReturn($test['mock']['write']);
+
+        $sftp->__construct($options);
+
+        $result = $sftp->copy('foobar.txt', 'dummy.txt');
+
+        $this->assertEquals($check['result'], $result, sprintf($msg, 'Returned the wrong result'));
+    }
 }
 
 // Let's be sure that the mocked function is created only once
@@ -235,6 +266,20 @@ if(!function_exists('Awf\Filesystem\function_exists'))
 
         return call_user_func_array('\function_exists', func_get_args());
     }
+}
+
+function file_get_contents()
+{
+    global $mockFilesystem, $stackFilesystem;
+
+    isset($stackFilesystem['file_get_contents']) ? $stackFilesystem['file_get_contents']++ : $stackFilesystem['file_get_contents'] = 1;
+
+    if(isset($mockFilesystem['file_get_contents']))
+    {
+        return call_user_func_array($mockFilesystem['file_get_contents'], func_get_args());
+    }
+
+    return call_user_func_array('\file_get_contents', func_get_args());
 }
 
 function fopen()

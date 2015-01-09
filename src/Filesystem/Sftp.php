@@ -426,7 +426,7 @@ class Sftp implements FilesystemInterface
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
 		$list = array();
-		$dir = ltrim($dir, '/');
+		$dir  = ltrim($dir, '/');
 
 		try
 		{
