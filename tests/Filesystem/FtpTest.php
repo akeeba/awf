@@ -69,7 +69,7 @@ class FtpTest extends AwfTestCase
      */
     public function testConnect($test, $check)
     {
-        global $mockFilesystem, $stackFilesystem;
+        global $mockFilesystem;
 
         $options = array(
             'host'      => 'localhost',

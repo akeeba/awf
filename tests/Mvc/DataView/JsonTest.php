@@ -77,7 +77,7 @@ class JsonTest extends DatabaseMysqliCase
      */
     public function testDisplayBrowse($test, $check)
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $msg  = 'DataView\Json::display (browse task) %s - Case: '.$check['case'];
 
