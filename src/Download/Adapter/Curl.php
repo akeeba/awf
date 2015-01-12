@@ -16,11 +16,11 @@ class Curl extends AbstractAdapter implements DownloadInterface
 {
 	public function __construct()
 	{
-		$this->priority = 110;
-		$this->supportsFileSize = true;
+		$this->priority              = 110;
+		$this->supportsFileSize      = true;
 		$this->supportsChunkDownload = true;
-		$this->name = 'curl';
-		$this->isSupported = function_exists('curl_init') && function_exists('curl_exec') && function_exists('curl_close');
+		$this->name                  = 'curl';
+		$this->isSupported           = function_exists('curl_init') && function_exists('curl_exec') && function_exists('curl_close');
 	}
 
 	/**
@@ -36,12 +36,13 @@ class Curl extends AbstractAdapter implements DownloadInterface
 	 * @param   string   $url   The remote file's URL
 	 * @param   integer  $from  Byte range to start downloading from. Use null for start of file.
 	 * @param   integer  $to    Byte range to stop downloading. Use null to download the entire file ($from is ignored)
+     * @param   array    $params  Additional params that will be added before performing the download
 	 *
 	 * @return  string  The raw file data retrieved from the remote URL.
 	 *
 	 * @throws  \Exception  A generic exception is thrown on error
 	 */
-	public function downloadAndReturn($url, $from = null, $to = null)
+	public function downloadAndReturn($url, $from = null, $to = null, array $params = array())
 	{
 		$ch = curl_init();
 
@@ -63,21 +64,34 @@ class Curl extends AbstractAdapter implements DownloadInterface
 			unset($temp);
 		}
 
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		@curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_SSLVERSION, 0);
+        curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
 
 		if (!(empty($from) && empty($to)))
 		{
 			curl_setopt($ch, CURLOPT_RANGE, "$from-$to");
 		}
 
+        if (!empty($params))
+        {
+            foreach ($params as $k => $v)
+            {
+                @curl_setopt($ch, $k, $v);
+            }
+        }
+
 		$result = curl_exec($ch);
 
-		$errno = curl_errno($ch);
+		$errno  = curl_errno($ch);
 		$errmsg = curl_error($ch);
+        $error  = '';
 		$http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 		if ($result === false)
