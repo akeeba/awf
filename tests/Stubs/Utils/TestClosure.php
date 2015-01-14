@@ -37,12 +37,16 @@ class TestClosure
     {
         if (isset($this->$method))
         {
-            $func = $this->$method;
+            $func   = $this->$method;
+            $pass[] = $this;
 
-            // Let's pass an instance of ourself, so we can manipulate other closures
-            array_unshift($args, $this);
+            // Pass everything by reference
+            foreach($args as $arg)
+            {
+                $pass[] =& $arg;
+            }
 
-            $result = call_user_func_array($func, $args);
+            $result = call_user_func_array($func, $pass);
 
             return $result;
         }

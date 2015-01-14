@@ -31,7 +31,7 @@ class FtpTest extends AwfTestCase
 
         parent::tearDown();
 
-        $mockFilesystem = array();
+        $mockFilesystem  = array();
         $stackFilesystem = array();
     }
 
