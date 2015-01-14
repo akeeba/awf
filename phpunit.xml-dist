@@ -57,6 +57,7 @@
                 <file>src/User/UserInterface.php</file>
                 <file>src/User/ManagerInterface.php</file>
                 <file>src/User/PrivilegeInterface.php</file>
+                <file>src/User/password.php</file>
                 <file>src/User/UserInterface.php</file>
                 <directory suffix=".php">tests</directory>
                 <directory suffix=".php">src/Platform/Joomla</directory>
