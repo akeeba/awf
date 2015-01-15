@@ -28,7 +28,7 @@ class DataModelSpecialColumnsTest extends DatabaseMysqliCase
     public function testReorder($test, $check)
     {
         // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
-        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        // That's harmless and appears in debug only, you might want to suppress exception throwing
         //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $before = 0;

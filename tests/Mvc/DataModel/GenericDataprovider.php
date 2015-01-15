@@ -50,7 +50,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -109,7 +109,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -182,7 +182,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -241,7 +241,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -302,7 +302,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -363,7 +363,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
