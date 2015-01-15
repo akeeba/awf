@@ -10,6 +10,8 @@ namespace Awf\Tests\Helpers;
 use Awf\Application\Application;
 use Awf\Database\Driver;
 use Awf\Tests\Stubs\Fakeapp\Container as FakeContainer;
+use Awf\Tests\Stubs\Utils\InsertOperation;
+use Awf\Tests\Stubs\Utils\TruncateOperation;
 use Awf\Uri\Uri;
 
 abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
@@ -174,26 +176,14 @@ abstract class DatabaseTest extends \PHPUnit_Extensions_Database_TestCase
 	 */
 	protected function getSetUpOperation()
 	{
-		// Required given the use of InnoDB contraints.
+		// At the moment we can safely TRUNCATE tables, since we're not using InnoDB tables nor foreign keys
+        // However if we ever need them, we can use our InsertOperation and TruncateOperation to suppress foreign keys
 		return new \PHPUnit_Extensions_Database_Operation_Composite(
 			array(
-				\PHPUnit_Extensions_Database_Operation_Factory::DELETE_ALL(),
+				\PHPUnit_Extensions_Database_Operation_Factory::TRUNCATE(),
 				\PHPUnit_Extensions_Database_Operation_Factory::INSERT()
 			)
 		);
-	}
-
-	/**
-	 * Returns the database operation executed in test cleanup.
-	 *
-	 * @return  \PHPUnit_Extensions_Database_Operation_Factory
-	 *
-	 * @since   1.0
-	 */
-	protected function getTearDownOperation()
-	{
-		// Required given the use of InnoDB contraints.
-		return \PHPUnit_Extensions_Database_Operation_Factory::DELETE_ALL();
 	}
 
 	/**
