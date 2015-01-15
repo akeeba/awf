@@ -10,7 +10,6 @@ namespace Awf\User;
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Database\Driver;
-use Awf\Session\Exception;
 use Awf\Text\Text;
 
 /**
@@ -321,6 +320,8 @@ class Manager implements ManagerInterface
 
 		$db->setQuery($query);
 		$db->execute();
+
+        return true;
 	}
 
 	/**
@@ -341,7 +342,7 @@ class Manager implements ManagerInterface
 	 *
 	 * @param   string  $name       The name of the privilege management object to unregister
 	 *
-	 * @return  mixed
+	 * @return  void
 	 */
 	public function unregisterPrivilegePlugin($name)
 	{
