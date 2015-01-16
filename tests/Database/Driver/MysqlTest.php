@@ -1,8 +1,7 @@
 <?php
 /**
  * @package        awf
- * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2015 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -12,7 +11,6 @@ namespace Awf\Tests\Database\Driver;
 
 use Awf\Database\Driver;
 use Awf\Tests\Database\DatabaseMysqlCase;
-use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
  * Test class for Awf\Database\Driver\Mysql.
