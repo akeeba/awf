@@ -41,9 +41,9 @@ class TestClosure
             $pass[] = $this;
 
             // Pass everything by reference
-            foreach($args as $arg)
+            for($i = 0; $i < count($args); $i++)
             {
-                $pass[] =& $arg;
+                $pass[] =& $args[$i];
             }
 
             $result = call_user_func_array($func, $pass);
