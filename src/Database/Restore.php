@@ -180,7 +180,7 @@ abstract class Restore
 		$this->dbKey = $container['dbrestore']['dbkey'];
 
 		$maxExecTime = isset($container['dbrestore']['maxexectime']) ? (int)$container['dbrestore']['maxexectime'] : 5;
-		$runTimeBias = $container['dbrestore']['runtimebias'] ? (int)$container['dbrestore']['runtimebias'] : 75;
+		$runTimeBias = isset($container['dbrestore']['runtimebias']) ? (int)$container['dbrestore']['runtimebias'] : 75;
 
 		$maxExecTime = ($maxExecTime < 1) ? 1 : $maxExecTime;
 		$runTimeBias = ($runTimeBias < 10) ? 10 : $runTimeBias;
