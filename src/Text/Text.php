@@ -96,9 +96,16 @@ abstract class Text
 		}
 
 		// Suppress the warning message when error reporting is enabled
-		$strings = @parse_ini_file($filename);
+		$strings = false;
+
+		if (function_exists('parse_ini_file'))
+		{
+			$strings = @parse_ini_file($filename);
+		}
 
 		// Compatibility with Joomla! translation files and Transifex' broken way to conforming to a broken standard.
+		// Also works around morons who pretend to be hosts and disable the parse_ini_file function but NOT
+		// parse_ini_string or ini_set. I have lost faith in humanity.
 		if ($strings === false)
 		{
 			$rawText = @file_get_contents($filename);
