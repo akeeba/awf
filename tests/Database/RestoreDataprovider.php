@@ -223,4 +223,184 @@ class RestoreDataprovider
 
         return $data;
     }
+
+    public static function getTestStepRestoration()
+    {
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(),
+                    'timer'    => array(),
+                    'running'  => 5,
+                )
+            ),
+            array(
+                'case'   => 'We immediately run out of time',
+                'result' => array(
+                    'percent'   => 0,
+                    'restored'  => '0 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 0,
+                    'current_line'  => 0,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '2 minutes',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(),
+                    'timer'    => array(5),
+                    'running'  => 5,
+                )
+            ),
+            array(
+                'case'   => "We read all the parts",
+                'result' => array(
+                    'percent'   => 0,
+                    'restored'  => '0 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 0,
+                    'current_line'  => 0,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '2 minutes',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(str_repeat('-', 100)),
+                    'timer'    => array(5),
+                    'running'  => 5,
+                )
+            ),
+            array(
+                'case'   => 'We process only one query',
+                'result' => array(
+                    'percent'   => 2.6,
+                    'restored'  => '100 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 1,
+                    'current_line'  => 1,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '3 minutes',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(str_repeat('-', 100), str_repeat('+', 400)),
+                    'timer'    => array(5, 2),
+                    'running'  => 6,
+                )
+            ),
+            array(
+                'case'   => 'We process two queries',
+                'result' => array(
+                    'percent'   => 12.8,
+                    'restored'  => '500 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 2,
+                    'current_line'  => 2,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '41 seconds',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(str_repeat('-', 100), 'exception', str_repeat('+', 400)),
+                    'timer'    => array(5, 3, 2),
+                    'running'  => 6,
+                )
+            ),
+            array(
+                'case'   => 'We process two queries, with a skip between them',
+                'result' => array(
+                    'percent'   => 12.8,
+                    'restored'  => '500 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 2,
+                    'current_line'  => 2,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '41 seconds',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(str_repeat('-', 100), '', str_repeat('+', 400)),
+                    'timer'    => array(5, 3, 2),
+                    'running'  => 6,
+                )
+            ),
+            array(
+                'case'   => 'We process two queries, with an empty query between them',
+                'result' => array(
+                    'percent'   => 12.8,
+                    'restored'  => '500 b',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 2,
+                    'current_line'  => 2,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '41 seconds',
+                    'error'         => null,
+                    'done'          => 0
+                )
+            )
+        );
+
+        $data[] = array(
+            array(
+                'mock' => array(
+                    'nextLine' => array(str_repeat('-', 100), str_repeat('+', 400), 'EOF'),
+                    'timer'    => array(5, 3, 2),
+                    'running'  => 6,
+                )
+            ),
+            array(
+                'case'   => 'We read the whole file',
+                'result' => array(
+                    'percent'   => 100,
+                    'restored'  => '3.81 Kb',
+                    'total'     => '3.81 Kb',
+                    'queries_restored' => 3,
+                    'current_line'  => 3,
+                    'current_part'  => 0,
+                    'total_parts'   => 1,
+                    'eta'           => '0 seconds',
+                    'error'         => null,
+                    'done'          => 1
+                )
+            )
+        );
+
+        return $data;
+    }
 }

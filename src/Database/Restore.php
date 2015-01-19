@@ -667,9 +667,10 @@ abstract class Restore
 	{
 		$parts = $this->getParam('parts', 1);
 		$this->openFile();
-		$this->lineNumber = $this->start;
+
+		$this->lineNumber    = $this->start;
 		$this->totalSizeRead = 0;
-		$this->queries = 0;
+		$this->queries       = 0;
 
 		while ($this->timer->getTimeLeft() > 0)
 		{
@@ -725,8 +726,9 @@ abstract class Restore
 			{
 				$this->fileOffset = 0;
 			}
-			$bytes_in_step = $current_foffset - $this->fileOffset;
-			$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + $bytes_in_step;
+
+			$bytes_in_step    = $current_foffset - $this->fileOffset;
+			$this->runSize    = (is_null($this->runSize) ? 0 : $this->runSize) + $bytes_in_step;
 			$this->fileOffset = $current_foffset;
 		}
 
@@ -753,6 +755,7 @@ abstract class Restore
 
 		// Calculate estimated time
 		$bytesPerSecond = $bytes_in_step / $this->timer->getRunningTime();
+
 		if ($bytesPerSecond <= 0.01)
 		{
 			$remainingSeconds = 120;
