@@ -28,7 +28,7 @@ class Installer
 	 *
 	 * @param   Container  $container  The application container
 	 */
-	function __construct(Container $container)
+	public function __construct(Container $container)
 	{
 		$this->xmlDirectory = $container->basePath . '/assets/sql/xml';
 		$this->db = $container->db;

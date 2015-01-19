@@ -4,7 +4,6 @@
  * @copyright      2014-2015 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
- * This class is adapted from Joomla! Framework
  */
 
 namespace Awf\Tests\Database;
