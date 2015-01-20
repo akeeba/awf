@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>mysql</driver>
+            <driver>mysqli</driver>
+            <driver>pdomysql</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <!-- Change the column type -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="type" operator="and" value="text" coltype="LONGTEXT" />
+            <query><![CDATA[
+ALTER TABLE `#__foobar_example` MODIFY COLUMN `text` MEDIUMTEXT;
+            ]]></query>
+        </action>
+    </sql>
+</schema>

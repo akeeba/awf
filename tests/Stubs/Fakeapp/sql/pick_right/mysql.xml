@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <!-- Metadata -->
+    <meta>
+        <!-- Supported driver types -->
+        <drivers>
+            <driver>mysql</driver>
+            <driver>mysqli</driver>
+            <driver>pdomysql</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__foobar_example" canfail="0">
+            <condition type="missing" value="" />
+            <query><![CDATA[
+    CREATE TABLE `#__foobar_example` (
+        `example_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+        `description` varchar(255) NOT NULL,
+        `text` longtext,
+    PRIMARY KEY (`example_id`)
+    ) DEFAULT CHARACTER SET utf8;
+                ]]></query>
+        </action>
+    </sql>
+</schema>

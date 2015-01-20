@@ -33,6 +33,18 @@ class TestClosure
         }
     }
 
+    public function __get($name)
+    {
+        $method = 'get__'.$name;
+
+        if(is_callable(array($this, $method)))
+        {
+            return $this->$method();
+        }
+
+        return null;
+    }
+
     public function __call($method, $args)
     {
         if (isset($this->$method))

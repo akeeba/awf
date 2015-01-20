@@ -11,6 +11,7 @@ namespace Awf\Database;
 
 
 use Awf\Container\Container;
+use Awf\Filesystem\File;
 
 class Installer
 {
@@ -20,8 +21,8 @@ class Installer
 	/** @var  string  The directory where the XML schema files are stored */
 	private $xmlDirectory = null;
 
-	/** @var  array  A list of the base names of the XML schema files */
-	public $xmlFiles = array('mysql', 'mysqli', 'postgresql', 'sqlsrv', 'mssql');
+    /** @var  string  Force a specific **absolute** file path for the XML schema file */
+    private $forcedFile = null;
 
 	/**
 	 * Public constructor
@@ -31,13 +32,15 @@ class Installer
 	public function __construct(Container $container)
 	{
 		$this->xmlDirectory = $container->basePath . '/assets/sql/xml';
-		$this->db = $container->db;
+		$this->db           = $container->db;
 	}
 
 	/**
 	 * Sets the directory where XML schema files are stored
 	 *
 	 * @param   string  $xmlDirectory
+     *
+     * @codeCoverageIgnore
 	 */
 	public function setXmlDirectory($xmlDirectory)
 	{
@@ -48,354 +51,426 @@ class Installer
 	 * Returns the directory where XML schema files are stored
 	 *
 	 * @return  string
+     *
+     * @codeCoverageIgnore
 	 */
 	public function getXmlDirectory()
 	{
 		return $this->xmlDirectory;
 	}
 
-	/**
-	 * Creates or updates the database schema
-	 *
-	 * @return  void
-	 *
-	 * @throws  \Exception  When a database query fails and it doesn't have the canfail flag
-	 */
-	public function updateSchema()
-	{
-		// Get the schema XML file
-		$xml = $this->findSchemaXml();
+    /**
+     * Returns the absolute path to the forced XML schema file
+     *
+     * @return  string
+     *
+     * @codeCoverageIgnore
+     */
+    public function getForcedFile()
+    {
+        return $this->forcedFile;
+    }
 
-		if (empty($xml))
-		{
-			return;
-		}
+    /**
+     * Sets the absolute path to an XML schema file which will be read no matter what. Set to a blank string to let the
+     * Installer class auto-detect your schema file based on your database type.
+     *
+     * @param  string  $forcedFile
+     *
+     * @codeCoverageIgnore
+     */
+    public function setForcedFile($forcedFile)
+    {
+        $this->forcedFile = $forcedFile;
+    }
 
-		// Make sure there are SQL commands in this file
-		if (!$xml->sql)
-		{
-			return;
-		}
+    /**
+     * Creates or updates the database schema
+     *
+     * @return  void
+     *
+     * @throws  \Exception  When a database query fails and it doesn't have the canfail flag
+     */
+    public function updateSchema()
+    {
+        // Get the schema XML file
+        $xml = $this->findSchemaXml();
 
-		// Walk the sql > action tags to find all tables
-		$tables = array();
-		/** @var \SimpleXMLElement $actions */
-		$actions = $xml->sql->children();
+        if (empty($xml))
+        {
+            return;
+        }
 
-		/** @var \SimpleXMLElement $action */
-		foreach ($actions as $action)
-		{
-			// Get the attributes
-			$attributes = $action->attributes();
+        // Make sure there are SQL commands in this file
+        if (!$xml->sql)
+        {
+            return;
+        }
 
-			// Get the table / view name
-			$table = $attributes->table ? $attributes->table : '';
+        // Walk the sql > action tags to find all tables
+        $tables = array();
+        /** @var \SimpleXMLElement $actions */
+        $actions = $xml->sql->children();
 
-			if (empty($table))
-			{
-				continue;
-			}
+        /** @var \SimpleXMLElement $action */
+        foreach ($actions as $action)
+        {
+            // Get the attributes
+            $attributes = $action->attributes();
 
-			// Am I allowed to let this action fail?
-			$canFailAction = $attributes->canfail ? $attributes->canfail : 0;
+            // Get the table / view name
+            $table = $attributes->table ? $attributes->table : '';
 
-			// Evaluate conditions
-			$shouldExecute = true;
+            if (empty($table))
+            {
+                continue;
+            }
 
-			/** @var \SimpleXMLElement $node */
-			foreach ($action->children() as $node)
-			{
-				if ($node->getName() == 'condition')
-				{
-					// Get the operator
-					$operator = $node->attributes()->operator ? (string)$node->attributes()->operator : 'and';
-					$operator = empty($operator) ? 'and' : $operator;
+            // Am I allowed to let this action fail?
+            $canFailAction = $attributes->canfail ? $attributes->canfail : 0;
 
-					$condition = $this->conditionMet($table, $node);
+            // Evaluate conditions
+            $shouldExecute = true;
 
-					switch ($operator)
-					{
-						case 'not':
-							$shouldExecute = $shouldExecute && !$condition;
-							break;
+            /** @var \SimpleXMLElement $node */
+            foreach ($action->children() as $node)
+            {
+                if ($node->getName() == 'condition')
+                {
+                    // Get the operator
+                    $operator = $node->attributes()->operator ? (string)$node->attributes()->operator : 'and';
+                    $operator = empty($operator) ? 'and' : $operator;
 
-						case 'or':
-							$shouldExecute = $shouldExecute || $condition;
-							break;
+                    $condition = $this->conditionMet($table, $node);
 
-						case 'nor':
-							$shouldExecute = $shouldExecute || !$condition;
-							break;
+                    switch ($operator)
+                    {
+                        case 'not':
+                            $shouldExecute = $shouldExecute && !$condition;
+                            break;
 
-						case 'xor':
-							$shouldExecute = ($shouldExecute xor $condition);
-							break;
+                        case 'or':
+                            $shouldExecute = $shouldExecute || $condition;
+                            break;
 
-						case 'maybe':
-							$shouldExecute = $condition ? true : $shouldExecute;
-							break;
+                        case 'nor':
+                            $shouldExecute = !$shouldExecute && !$condition;
+                            break;
 
-						default:
-							$shouldExecute = $shouldExecute && $condition;
-							break;
-					}
-				}
+                        case 'xor':
+                            $shouldExecute = ($shouldExecute xor $condition);
+                            break;
 
-				if (!$shouldExecute)
-				{
-					break;
-				}
-			}
+                        case 'maybe':
+                            $shouldExecute = $condition ? true : $shouldExecute;
+                            break;
 
-			// Make sure all conditions are met
-			if (!$shouldExecute)
-			{
-				continue;
-			}
+                        default:
+                            $shouldExecute = $shouldExecute && $condition;
+                            break;
+                    }
+                }
 
-			// Execute queries
-			foreach ($action->children() as $node)
-			{
-				if ($node->getName() == 'query')
-				{
-					$canFail = $node->attributes->canfail ? $node->attributes->canfail : $canFailAction;
+                // DO NOT USE BOOLEAN SHORT CIRCUIT EVALUATION!
+                // if (!$shouldExecute) break;
+            }
 
-					$this->db->setQuery((string) $node);
+            // Make sure all conditions are met
+            if (!$shouldExecute)
+            {
+                continue;
+            }
 
-					try
-					{
-						$this->db->execute();
-					}
-					catch (\Exception $e)
-					{
-						// If we are not allowed to fail, throw back the exception we caught
-						if (!$canFail)
-						{
-							throw $e;
-						}
-					}
-				}
-			}
-		}
-	}
+            // Execute queries
+            foreach ($action->children() as $node)
+            {
+                if ($node->getName() == 'query')
+                {
+                    $canFail = $node->attributes->canfail ? (string)$node->attributes->canfail : $canFailAction;
 
-	/**
-	 * Uninstalls the database schema
-	 *
-	 * @return  void
-	 */
-	public function removeSchema()
-	{
-		// Get the schema XML file
-		$xml = $this->findSchemaXml();
+                    if (is_string($canFail))
+                    {
+                        $canFail = strtoupper($canFail);
+                    }
 
-		if (empty($xml))
-		{
-			return;
-		}
+                    $canFail = (in_array($canFail, array(true, 1, 'YES', 'TRUE')));
 
-		// Make sure there are SQL commands in this file
-		if (!$xml->sql)
-		{
-			return;
-		}
+                    $this->db->setQuery((string) $node);
 
-		// Walk the sql > action tags to find all tables
-		$tables = array();
-		/** @var \SimpleXMLElement $actions */
-		$actions = $xml->sql->children();
+                    try
+                    {
+                        $this->db->execute();
+                    }
+                    catch (\Exception $e)
+                    {
+                        // If we are not allowed to fail, throw back the exception we caught
+                        if (!$canFail)
+                        {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-		/** @var \SimpleXMLElement $action */
-		foreach ($actions as $action)
-		{
-			$attributes = $action->attributes();
-			$tables[] = (string)$attributes->table;
-		}
+    /**
+     * Uninstalls the database schema
+     *
+     * @return  void
+     */
+    public function removeSchema()
+    {
+        // Get the schema XML file
+        $xml = $this->findSchemaXml();
 
-		// Simplify the tables list
-		$tables = array_unique($tables);
+        if (empty($xml))
+        {
+            return;
+        }
 
-		// Start dropping tables
-		foreach ($tables as $table)
-		{
-			try
-			{
-				$this->db->dropTable($table);
-			}
-			catch (\Exception $e)
-			{
-				// Do not fail if I can't drop the table
-			}
-		}
-	}
+        // Make sure there are SQL commands in this file
+        if (!$xml->sql)
+        {
+            return;
+        }
 
-	/**
-	 * Find an suitable schema XML file for this database type and return the SimpleXMLElement holding its information
-	 *
-	 * @return  null|\SimpleXMLElement  Null if no suitable schema XML file is found
-	 */
-	protected function findSchemaXml()
-	{
-		$driverType = $this->db->name;
-		$xml = null;
+        // Walk the sql > action tags to find all tables
+        $tables = array();
+        /** @var \SimpleXMLElement $actions */
+        $actions = $xml->sql->children();
 
-		foreach ($this->xmlFiles as $baseName)
-		{
-			// Remove any accidental whitespace
-			$baseName = trim($baseName);
+        /** @var \SimpleXMLElement $action */
+        foreach ($actions as $action)
+        {
+            $attributes = $action->attributes();
+            $tables[] = (string)$attributes->table;
+        }
 
-			// Get the full path to the file
-			$fileName = $this->xmlDirectory . '/' . $baseName . '.xml';
+        // Simplify the tables list
+        $tables = array_unique($tables);
 
-			// Make sure the file exists
-			if (!@file_exists($fileName))
-			{
-				continue;
-			}
+        // Start dropping tables
+        foreach ($tables as $table)
+        {
+            try
+            {
+                $this->db->dropTable($table);
+            }
+            catch (\Exception $e)
+            {
+                // Do not fail if I can't drop the table
+            }
+        }
+    }
 
-			// Make sure the file is a valid XML document
-			try
-			{
-				$xml = new \SimpleXMLElement($fileName, LIBXML_NONET, true);
-			}
-			catch (\Exception $e)
-			{
-				$xml = null;
-				continue;
-			}
+    /**
+     * Find an suitable schema XML file for this database type and return the SimpleXMLElement holding its information
+     *
+     * @return  null|\SimpleXMLElement  Null if no suitable schema XML file is found
+     */
+    protected function findSchemaXml()
+    {
+        $xml = null;
 
-			// Make sure the file is an XML schema file
-			if ($xml->getName() != 'schema')
-			{
-				$xml = null;
-				continue;
-			}
+        // Do we have a forced file?
+        if ($this->forcedFile)
+        {
+            $xml = $this->openAndVerify($this->forcedFile);
 
-			if (!$xml->meta)
-			{
-				$xml = null;
-				continue;
-			}
+            if ($xml !== false)
+            {
+                return $xml;
+            }
+        }
 
-			if (!$xml->meta->drivers)
-			{
-				$xml = null;
-				continue;
-			}
+        // Get all XML files in the schema directory
+        $filesystem = new File(array());
+        $xmlFiles   = $filesystem->directoryFiles($this->xmlDirectory, '\.xml$');
 
-			/** @var \SimpleXMLElement $drivers */
-			$drivers = $xml->meta->drivers;
+        if (empty($xmlFiles))
+        {
+            return $xml;
+        }
 
-			foreach ($drivers->children() as $driverTypeTag)
-			{
-				$thisDriverType = (string)$driverTypeTag;
+        foreach ($xmlFiles as $baseName)
+        {
+            // Remove any accidental whitespace
+            $baseName = trim($baseName);
 
-				if ($thisDriverType == $driverType)
-				{
-					return $xml;
-				}
-			}
+            // Get the full path to the file
+            $fileName = $this->xmlDirectory . '/' . $baseName;
 
-			$xml = null;
-		}
+            $xml = $this->openAndVerify($fileName);
 
-		return $xml;
-	}
+            if ($xml !== false)
+            {
+                return $xml;
+            }
+        }
 
-	/**
-	 * Checks if a condition is met
-	 *
-	 * @param   string            $table  The table we're operating on
-	 * @param   \SimpleXMLElement $node   The condition definition node
-	 *
-	 * @return  bool
-	 */
-	protected function conditionMet($table, \SimpleXMLElement $node)
-	{
-		static $allTables = null;
+        return null;
+    }
 
-		if (empty($allTables))
-		{
-			$allTables = $this->db->getTableList();
-		}
+    /**
+     * Opens the schema XML file and return the SimpleXMLElement holding its information. If the file doesn't exist, it
+     * is not a schema file or it doesn't match our database driver we return boolean false.
+     *
+     * @return  false|\SimpleXMLElement  False if it's not a suitable XML schema file
+     */
+    protected function openAndVerify($fileName)
+    {
+        $driverType = $this->db->name;
 
-		// Does the table exist?
-		$tableNormal = $this->db->replacePrefix($table);
-		$tableExists = in_array($tableNormal, $allTables);
+        // Make sure the file exists
+        if (!@file_exists($fileName))
+        {
+            return false;
+        }
 
-		// Initialise
-		$condition = false;
+        // Make sure the file is a valid XML document
+        try
+        {
+            $xml = new \SimpleXMLElement($fileName, LIBXML_NONET, true);
+        }
+        catch (\Exception $e)
+        {
+            $xml = null;
 
-		// Get the condition's attributes
-		$attributes = $node->attributes();
-		$type = $attributes->type ? $attributes->type : null;
-		$value = $attributes->value ? $attributes->value : null;
+            return false;
+        }
 
-		switch ($type)
-		{
-			// Check if a table or column is missing
-			case 'missing':
-				$tableName = (string)$table;
-				$fieldName = (string)$value;
+        // Make sure the file is an XML schema file
+        if ($xml->getName() != 'schema')
+        {
+            $xml = null;
 
-				if (empty($fieldName))
-				{
-					$condition = !$tableExists;
-				}
-				else
-				{
-					$tableColumns = $this->db->getTableColumns($tableNormal, true);
-					$condition = !array_key_exists($fieldName, $tableColumns);
-				}
-				break;
+            return false;
+        }
 
-			// Check if a column type matches the "coltype" attribute
-			case 'type':
-				$tableColumns = $this->db->getTableColumns($table, true);
-				$condition = false;
+        if (!$xml->meta)
+        {
+            $xml = null;
 
-				if (array_key_exists($value, $tableColumns))
-				{
-					$coltype = $attributes->coltype ? $attributes->coltype : null;
+            return false;
+        }
 
-					if (!empty($coltype))
-					{
-						$coltype = strtolower($coltype);
-						$currentType = strtolower($tableColumns[$value]);
+        if (!$xml->meta->drivers)
+        {
+            $xml = null;
 
-						$condition = ($coltype == $currentType);
-					}
-				}
+            return false;
+        }
 
-				break;
+        /** @var \SimpleXMLElement $drivers */
+        $drivers = $xml->meta->drivers;
 
-			// Check if the result of a query matches our expectation
-			case 'equals':
-				$query = (string)$node;
-				$this->db->setQuery($query);
+        foreach ($drivers->children() as $driverTypeTag)
+        {
+            $thisDriverType = (string)$driverTypeTag;
 
-				try
-				{
-					$result = $this->db->loadResult();
-					$condition = ($result == $value);
-				}
-				catch (\Exception $e)
-				{
-					return false;
-				}
+            if ($thisDriverType == $driverType)
+            {
+                return $xml;
+            }
+        }
 
-				break;
+        return false;
+    }
 
-			// Always returns true
-			case 'true':
-				return true;
-				break;
+    /**
+     * Checks if a condition is met
+     *
+     * @param   string            $table  The table we're operating on
+     * @param   \SimpleXMLElement  $node   The condition definition node
+     *
+     * @return  bool
+     */
+    protected function conditionMet($table, \SimpleXMLElement $node)
+    {
+        static $allTables = null;
 
-			default:
-				return false;
-				break;
-		}
+        if (empty($allTables))
+        {
+            $allTables = $this->db->getTableList();
+        }
 
-		return $condition;
-	}
+        // Does the table exist?
+        $tableNormal = $this->db->replacePrefix($table);
+        $tableExists = in_array($tableNormal, $allTables);
+
+        // Initialise
+        $condition = false;
+
+        // Get the condition's attributes
+        $attributes = $node->attributes();
+        $type = $attributes->type ? $attributes->type : null;
+        $value = $attributes->value ? (string) $attributes->value : null;
+
+        switch ($type)
+        {
+            // Check if a table or column is missing
+            case 'missing':
+                $fieldName = (string)$value;
+
+                if (empty($fieldName))
+                {
+                    $condition = !$tableExists;
+                }
+                else
+                {
+                    $tableColumns = $this->db->getTableColumns($tableNormal, true);
+                    $condition = !array_key_exists($fieldName, $tableColumns);
+                }
+                break;
+
+            // Check if a column type matches the "coltype" attribute
+            case 'type':
+                $tableColumns = $this->db->getTableColumns($table, false);
+                $condition = false;
+
+                if (array_key_exists($value, $tableColumns))
+                {
+                    $coltype = $attributes->coltype ? $attributes->coltype : null;
+
+                    if (!empty($coltype))
+                    {
+                        $coltype = strtolower($coltype);
+                        $currentType = strtolower($tableColumns[$value]->Type);
+
+                        $condition = ($coltype == $currentType);
+                    }
+                }
+
+                break;
+
+            // Check if the result of a query matches our expectation
+            case 'equals':
+                $query = (string)$node;
+                $this->db->setQuery($query);
+
+                try
+                {
+                    $result = $this->db->loadResult();
+                    $condition = ($result == $value);
+                }
+                catch (\Exception $e)
+                {
+                    return false;
+                }
+
+                break;
+
+            // Always returns true
+            case 'true':
+                return true;
+                break;
+
+            default:
+                return false;
+                break;
+        }
+
+        return $condition;
+    }
 }

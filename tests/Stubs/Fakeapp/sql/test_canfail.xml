@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>mysql</driver>
+            <driver>mysqli</driver>
+            <driver>pdomysql</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__foobar_example" canfail="1">
+            <condition type="true" operator="and" />
+            <query><![CDATA[
+DIE DIE DIE
+            ]]></query>
+        </action>
+        <action table="#__foobar_example" canfail="yes">
+            <condition type="true" operator="and" />
+            <query><![CDATA[
+DIE DIE DIE
+            ]]></query>
+        </action>
+        <action table="#__foobar_example" canfail="true">
+            <condition type="true" operator="and" />
+            <query><![CDATA[
+DIE DIE DIE
+            ]]></query>
+        </action>
+    </sql>
+</schema>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>mysql</driver>
+            <driver>mysqli</driver>
+            <driver>pdomysql</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <!-- Insert if id=1 is not there -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="equals" operator="not" value="1"><![CDATA[
+SELECT COUNT(*) FROM `#__foobar_example` WHERE `example_id` = 1;
+            ]]></condition>
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(1, 'Example one', 'This is the text of example one');
+            ]]></query>
+        </action>
+
+        <!-- Insert if id=1 is there. -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="equals" operator="and" value="1"><![CDATA[
+SELECT COUNT(*) FROM `#__foobar_example` WHERE `example_id` = 1;
+            ]]></condition>
+            <condition type="missing" operator="not" value="description" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(2, 'Example two', 'This is the text of example two');
+            ]]></query>
+        </action>
+
+        <!-- Always insert -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="true" operator="and" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(3, 'Example three', 'This is the text of example three');
+            ]]></query>
+        </action>
+
+        <!-- Never insert -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="and" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(4, 'Example four', 'This is the text of example four');
+            ]]></query>
+        </action>
+
+        <!-- Test OR positive -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="or" /> <!-- default state is TRUE, that's why it works -->
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(5, 'Example 5', 'This is the text of example five');
+            ]]></query>
+        </action>
+
+
+        <!-- Test OR negative -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="and" /> <!-- default state is TRUE, that's why we have AND here -->
+            <condition type="false" operator="or" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(6, 'Example 6', 'This is the text of example six');
+            ]]></query>
+        </action>
+
+
+        <!-- Test NOR positive. WARNING: NOR logic matrix, see http://en.wikipedia.org/wiki/NOR_gate Both inputs must be false -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="and" /> <!-- default state is TRUE, that's why we have AND here -->
+            <condition type="false" operator="nor" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(7, 'Example 7', 'This is the text of example 7');
+            ]]></query>
+        </action>
+
+        <!-- Test NOR negative -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="nor" /> <!-- default is TRUE. true NOR false = false -->
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(8, 'Example 8', 'This is the text of example 8');
+            ]]></query>
+        </action>
+
+        <!-- XOR positive test -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="xor" /> <!-- default state is TRUE, that's why it works -->
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(9, 'Example 9', 'This is the text of example 9');
+            ]]></query>
+        </action>
+
+        <!-- XOR negative test -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="true" operator="xor" /> <!-- default state is TRUE, that's why it works -->
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(10, 'Example 10', 'This is the text of example 10');
+            ]]></query>
+        </action>
+
+        <!-- MAYBE positive test -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="and" /> <!-- default state is TRUE, that's why it is needed -->
+            <condition type="true" operator="maybe" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(11, 'Example 11', 'This is the text of example 9');
+            ]]></query>
+        </action>
+
+        <!-- MAYBE negative test -->
+        <action table="#__foobar_example" canfail="0">
+            <condition type="false" operator="and" /> <!-- default state is TRUE, that's why it is needed -->
+            <condition type="false" operator="maybe" />
+            <query><![CDATA[
+INSERT INTO `#__foobar_example`
+(`example_id`,`description`, `text`) VALUES
+(12, 'Example 12', 'This is the text of example 10');
+            ]]></query>
+        </action>
+    </sql>
+</schema>
