@@ -170,7 +170,7 @@ class InstallerTest extends DatabaseMysqliCase
     }
 
     /**
-     * @covers  FOF30\Database\Installer::removeSchema
+     * @covers  Awf\Database\Installer::removeSchema
      */
     public function testRemoveSchema()
     {
