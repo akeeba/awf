@@ -8,6 +8,7 @@
 namespace Awf\Text;
 
 use \Awf\Application\Application;
+use Awf\Filesystem\File;
 
 /**
  * Class Text
@@ -239,16 +240,14 @@ abstract class Text
 				if (!file_exists($langFilename))
 				{
 					$langFilename = '';
+                    $filesystem   = new File(array());
 
-					if (function_exists('glob'))
-					{
-						$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
+                    $allFiles = $filesystem->directoryFiles($baseName, $languageStruct[1].'\-.*', false, true);
 
-						if (count($allFiles))
-						{
-							$langFilename = array_shift($allFiles);
-						}
-					}
+                    if (count($allFiles))
+                    {
+                        $langFilename = array_shift($allFiles);
+                    }
 				}
 
 				if (!empty($langFilename) && file_exists($langFilename))
