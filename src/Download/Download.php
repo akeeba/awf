@@ -7,6 +7,7 @@
 
 namespace Awf\Download;
 
+use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Text\Text;
 use Awf\Timer\Timer;
@@ -41,8 +42,13 @@ class Download
      */
     private $adapterOptions = array();
 
-	public function __construct(Container $c)
+	public function __construct(Container $c = null)
 	{
+        if(!is_object($c))
+        {
+            $c = Application::getInstance()->getContainer();
+        }
+
         $this->container = $c;
 
 		// Find the best fitting adapter
