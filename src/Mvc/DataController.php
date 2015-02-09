@@ -418,7 +418,10 @@ class DataController extends Controller
 			$this->getIDsFromRequest($model, true);
 		}
 
-		$model->unlock();
+		if ($model->getId())
+		{
+			$model->unlock();
+		}
 
 		// Remove any saved data
 		$this->container->segment->remove($model->getHash() . 'savedata');
