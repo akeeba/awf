@@ -131,7 +131,8 @@ class ConfigurationTest extends AwfTestCase
 		$this->config->saveConfiguration();
 
 		$this->assertEquals('/dev/foobar', MockFilesystem::$outFilename);
-		$this->assertEquals("<?php die; ?>\n{\n    \"foo\": \"bar\"\n}", MockFilesystem::$writtenData);
+		$data = str_replace(array("\n", "\t", ': ', '    '), array('', '', ':', ''), MockFilesystem::$writtenData);
+		$this->assertEquals("<?php die; ?>{\"foo\":\"bar\"}", $data);
 	}
 
 	protected function setUp($resetContainer = true)
