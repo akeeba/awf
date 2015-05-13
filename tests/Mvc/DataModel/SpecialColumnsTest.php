@@ -19,6 +19,11 @@ require_once 'SpecialColumnsDataprovider.php';
  */
 class DataModelSpecialColumnsTest extends DatabaseMysqliCase
 {
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
     /**
      * @group           DataModel
      * @group           DataModelReorder

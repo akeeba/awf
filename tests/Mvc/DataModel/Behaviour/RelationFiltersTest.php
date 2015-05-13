@@ -15,7 +15,13 @@ require_once 'RelationFiltersDataprovider.php';
  */
 class RelationFiltersTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+
+	/**
      * @group           Behaviour
      * @group           RelationFiltersOnAfterBuildQuery
      * @covers          Awf\Mvc\DataModel\Behaviour\RelationFilters::onAfterBuildQuery

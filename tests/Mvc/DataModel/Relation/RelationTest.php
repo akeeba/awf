@@ -17,7 +17,12 @@ require_once 'RelationDataprovider.php';
  */
 class RelationTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           Relation
      * @group           RelationContruct
      * @covers          Awf\Mvc\DataModel\Relation::__construct

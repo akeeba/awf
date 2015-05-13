@@ -14,7 +14,12 @@ use Fakeapp\Model\Children;
  */
 class RawTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group       DataViewRaw
      * @group       DataViewRawOnBeforeBrowse
      * @covers      Awf\Mvc\DataView\Raw::onBeforeBrowse

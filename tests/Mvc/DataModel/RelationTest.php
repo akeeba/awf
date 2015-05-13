@@ -16,9 +16,14 @@ require_once 'RelationDataprovider.php';
  * @covers      Awf\Mvc\DataModel::<private>
  * @package     Awf\Tests\DataModel
  */
-class DataModelRealtionTest extends DatabaseMysqliCase
+class DataModelRelationTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           DataModel
      * @group           DataModelSaveTouches
      * @covers          Awf\Mvc\DataModel::save

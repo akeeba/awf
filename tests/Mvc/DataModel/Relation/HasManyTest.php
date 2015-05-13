@@ -16,7 +16,12 @@ require_once 'HasManyDataprovider.php';
  */
 class HasManyTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           HasMany
      * @group           HasManyConstruct
      * @covers          Awf\Mvc\DataModel\Relation\HasMany::__construct

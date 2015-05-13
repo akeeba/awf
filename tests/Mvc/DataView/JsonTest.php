@@ -18,7 +18,12 @@ require_once 'JsonDataprovider.php';
  */
 class JsonTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           DataViewJson
      * @group           DataViewJsonConstruct
      * @covers          Awf\Mvc\DataView\Json::__construct
