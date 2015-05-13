@@ -124,6 +124,12 @@ abstract class DatabaseMysqlCase extends DatabaseTest
 
 			$restore = new \Awf\Database\Restore\Mysql(static::$container);
 			$restore->stepRestoration();
+
+			static::$container->appConfig->set('dbhost', self::$options['host']);
+			static::$container->appConfig->set('dbuser', self::$options['user']);
+			static::$container->appConfig->set('dbpass', self::$options['password']);
+			static::$container->appConfig->set('dbname', self::$options['database']);
+			static::$container->appConfig->set('prefix', 'awf_');
 		}
 	}
 

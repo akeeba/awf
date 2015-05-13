@@ -16,19 +16,24 @@ use Awf\Database\Installer;
  */
 class InstallerTest extends DatabaseMysqliCase
 {
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
 
         // Make sure the #__foobar_example table does not exist before running the tests
-        $db = static::$container->db;
+        $db = static::$driver;
         $db->dropTable('#__foobar_example', true);
     }
 
     public static function tearDownAfterClass()
     {
         // Make sure the #__foobar_example table does not exist after running the tests
-        $db = static::$container->db;
+        $db = static::$driver;
         $db->dropTable('#__foobar_example', true);
 
         parent::tearDownAfterClass();
@@ -42,7 +47,7 @@ class InstallerTest extends DatabaseMysqliCase
      */
     public function testCreateNewTable()
     {
-        $db        = static::$container->db;
+        $db        = static::$driver;
 
         $tables = $db->setQuery('SHOW TABLES')->loadColumn();
         $prefix = $db->getPrefix();
@@ -65,7 +70,7 @@ class InstallerTest extends DatabaseMysqliCase
      */
     public function testInsertDataUsingEqualsChecks()
     {
-        $db = static::$container->db;
+        $db = static::$driver;
 
         $installer = new Installer(static::$container);
         $installer->setForcedFile(static::$container->basePath.'/sql/test_equals.xml');
@@ -128,7 +133,7 @@ class InstallerTest extends DatabaseMysqliCase
      */
     public function testModifyColumnType()
     {
-        $db = static::$container->db;
+        $db = static::$driver;
 
         $installer = new Installer(static::$container);
         $installer->setForcedFile(static::$container->basePath.'/sql/test_type.xml');
@@ -174,7 +179,7 @@ class InstallerTest extends DatabaseMysqliCase
      */
     public function testRemoveSchema()
     {
-        $db = static::$container->db;
+        $db = static::$driver;
         $tables = $db->setQuery('SHOW TABLES')->loadColumn();
         $prefix = $db->getPrefix();
         $this->assertTrue(in_array($prefix . 'foobar_example', $tables), 'The table must exist before testing starts');

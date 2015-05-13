@@ -574,7 +574,7 @@ class MysqliTest extends DatabaseMysqliCase
 	 */
 	public function testSelect()
 	{
-		$altDb = defined('AWFTEST_DATABASE_MYSQL_ALTDB') ? AWFTEST_DATABASE_MYSQL_ALTDB : getenv('AWFTEST_DATABASE_MYSQL_ALTDB');
+		$altDb = defined('AWFTEST_DATABASE_MYSQLI_ALTDB') ? AWFTEST_DATABASE_MYSQLI_ALTDB : getenv('AWFTEST_DATABASE_MYSQLI_ALTDB');
 		self::$driver->select($altDb);
 
 		$query = 'SELECT DATABASE()';
