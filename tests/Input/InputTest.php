@@ -197,7 +197,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 
 		$instance = new Input;
 
-		// Test the get method.
+		// Test getting a value for an existing variable
 		$this->assertThat(
 			$instance->get('foo'),
 			$this->equalTo('bar'),
@@ -206,14 +206,20 @@ class InputTest extends \PHPUnit_Framework_TestCase
 
 		$_GET['foo'] = 'bar2';
 
-		// Test the get method.
+		// Under PHP 5.3 we never reference $_REQUEST. We use a copy since we need to work around magic_quotes_gpc
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt'))
+		{
+			$instance = new Input;
+		}
+
+		// Test accessing the $_GET data specifically.
 		$this->assertThat(
 			$instance->get->get('foo'),
 			$this->equalTo('bar2'),
 			'Checks first use of new super-global.'
 		);
 
-		// Test the get method.
+		// Test getting a default value for a non-existing variable.
 		$this->assertThat(
 			$instance->get('default_value', 'default'),
 			$this->equalTo('default'),
@@ -221,6 +227,12 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$_REQUEST['empty'] = '';
+
+		// Under PHP 5.3 we never reference $_REQUEST. We use a copy since we need to work around magic_quotes_gpc
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt'))
+		{
+			$instance = new Input;
+		}
 
 		// Test the get method
 		$this->assertThat(
