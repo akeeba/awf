@@ -160,7 +160,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 		$buffer->position = 0;
 		$buffer->stream_write('ABCDE');
 
-		$positions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+		$positions = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
 		foreach ($positions as $pos)
 		{
@@ -183,11 +183,11 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 		$buffer->position = 0;
 		$buffer->stream_write('ABCDE');
 
-		$data = [
-			[0, false],
-			[5, false],
-			[10, true]
-		];
+		$data = array(
+			array(0, false),
+			array(5, false),
+			array(10, true)
+		);
 
 		foreach ($data as $datum)
 		{
@@ -212,19 +212,19 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 		$buffer->position = 0;
 		$buffer->stream_write('ABCDE');
 
-		$data = [
-			[0, SEEK_SET, 0, true],
-			[5, SEEK_SET, 5, true],
-			[100, SEEK_SET, 5, false],
-			[2, SEEK_CUR, 7, true],
-			[5, SEEK_CUR, 12, true],
-			[-6, SEEK_CUR, 12, false],
-			[5, SEEK_SET, 5, true],
-			[-5, SEEK_END, 5, true],
-			[-10, SEEK_END, 0, true],
-			[0, SEEK_END, 10, true],
-			[-20, SEEK_END, 10, false],
-		];
+		$data = array(
+			array(0, SEEK_SET, 0, true),
+			array(5, SEEK_SET, 5, true),
+			array(100, SEEK_SET, 5, false),
+			array(2, SEEK_CUR, 7, true),
+			array(5, SEEK_CUR, 12, true),
+			array(-6, SEEK_CUR, 12, false),
+			array(5, SEEK_SET, 5, true),
+			array(-5, SEEK_END, 5, true),
+			array(-10, SEEK_END, 0, true),
+			array(0, SEEK_END, 10, true),
+			array(-20, SEEK_END, 10, false),
+		);
 
 		foreach ($data as $point)
 		{

@@ -59,7 +59,7 @@ class Xml extends AbstractRegistryFormat
 
 		foreach ($xml->children() as $node)
 		{
-			$obj->$node['name'] = $this->getValueFromNode($node);
+			$obj->{$node['name']} = $this->getValueFromNode($node);
 		}
 
 		return $obj;
@@ -113,7 +113,7 @@ class Xml extends AbstractRegistryFormat
 
 				foreach ($node->children() as $child)
 				{
-					$value->$child['name'] = $this->getValueFromNode($child);
+					$value->{$child['name']} = $this->getValueFromNode($child);
 				}
 
 				break;
