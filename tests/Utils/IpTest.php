@@ -23,7 +23,7 @@ class IpTest extends AwfTestCase
     /** @var  array Saves a copy of the $_SERVER variable*/
     private $serverBCK;
 
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
 

@@ -26,7 +26,7 @@ require_once 'UserDataprovider.php';
  */
 class UserTest extends AwfTestCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

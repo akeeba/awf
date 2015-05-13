@@ -25,7 +25,7 @@ class UriTest extends AwfTestCase
 	 */
 	protected $object;
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
         parent::setUp();
 

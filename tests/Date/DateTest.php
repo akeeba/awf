@@ -697,7 +697,7 @@ class DateTest extends AwfTestCase
 	 *
 	 * @since   1.0
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 

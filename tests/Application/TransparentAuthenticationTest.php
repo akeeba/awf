@@ -357,9 +357,9 @@ class TransparentAuthenticationTest extends AwfTestCase
 		);
 	}
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
-		parent::setUp();
+		parent::setUp($resetContainer);
 
 		$this->auth = new TransparentAuthentication(static::$container);
 		$this->auth->setAuthenticationMethods(array(1,2,3,4,5));

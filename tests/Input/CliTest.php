@@ -17,7 +17,7 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class CliTest extends AwfTestCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

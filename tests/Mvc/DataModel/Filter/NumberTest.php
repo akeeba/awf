@@ -12,7 +12,7 @@ require_once 'NumberDataprovider.php';
  */
 class NumberTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

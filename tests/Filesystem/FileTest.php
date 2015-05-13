@@ -23,7 +23,7 @@ require_once 'FileDataprovider.php';
  */
 class FileTest extends AwfTestCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

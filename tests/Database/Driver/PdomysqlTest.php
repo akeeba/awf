@@ -14,8 +14,8 @@ use Awf\Tests\Database\DatabasePdoCase;
 
 class PdomysqlTest extends DatabasePdoCase
 {
-    protected function setUp()
-    {
+	protected function setUp($resetContainer = true)
+	{
         parent::setUp(false);
     }
 

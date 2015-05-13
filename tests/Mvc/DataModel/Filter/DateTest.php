@@ -12,7 +12,7 @@ require_once 'DateDataprovider.php';
  */
 class DateTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

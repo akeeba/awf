@@ -13,7 +13,7 @@ require_once 'BooleanDataprovider.php';
  */
 class BooleanTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

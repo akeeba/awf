@@ -40,7 +40,7 @@ class ObserverTest extends AwfTestCase
 		), $observableEvents);
 	}
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp();
 

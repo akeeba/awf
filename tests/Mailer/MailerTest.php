@@ -34,7 +34,7 @@ class MailerTest extends AwfTestCase
 	 *
 	 * @return void
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp();
 

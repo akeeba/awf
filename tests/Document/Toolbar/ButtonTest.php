@@ -20,7 +20,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class ButtonTest extends AwfTestCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

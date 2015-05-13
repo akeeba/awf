@@ -851,7 +851,7 @@ class InflectorTest extends AwfTestCase
 		);
 	}
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

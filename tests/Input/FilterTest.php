@@ -17,7 +17,7 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class FilterTest extends AwfTestCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

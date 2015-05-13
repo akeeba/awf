@@ -13,7 +13,7 @@ use Awf\Tests\Helpers\AwfTestCase;
 
 class LinksTest extends AwfTestCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

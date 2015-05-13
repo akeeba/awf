@@ -12,7 +12,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class RelationTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

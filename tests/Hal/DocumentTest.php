@@ -18,7 +18,7 @@ class DocumentTest extends AwfTestCase
 	/** @var Document */
 	protected $document = null;
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

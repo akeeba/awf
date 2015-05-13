@@ -12,7 +12,7 @@ require_once 'TextDataprovider.php';
  */
 class TextTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

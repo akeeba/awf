@@ -15,7 +15,7 @@ require_once 'AbstractFilterDataprovider.php';
  */
 class AbstractFilterTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

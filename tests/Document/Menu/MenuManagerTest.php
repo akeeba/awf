@@ -25,7 +25,7 @@ class MenuManagerTest extends AwfTestCase
 	/** @var  \Awf\Document\Menu\MenuManager */
 	protected $manager;
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp();
 

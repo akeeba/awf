@@ -359,7 +359,7 @@ class DriverTest extends DatabaseTest
 	 *
 	 * @return void
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 

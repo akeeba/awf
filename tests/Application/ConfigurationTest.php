@@ -134,9 +134,9 @@ class ConfigurationTest extends AwfTestCase
 		$this->assertEquals("<?php die; ?>\n{\n    \"foo\": \"bar\"\n}", MockFilesystem::$writtenData);
 	}
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
-		parent::setUp();
+		parent::setUp($resetContainer);
 
 		$this->config = new Configuration(static::$container);
 	}

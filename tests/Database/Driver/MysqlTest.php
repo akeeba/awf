@@ -19,7 +19,7 @@ use Awf\Tests\Database\DatabaseMysqlCase;
  */
 class MysqlTest extends DatabaseMysqlCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

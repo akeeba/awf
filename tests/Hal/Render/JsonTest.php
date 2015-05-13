@@ -21,7 +21,7 @@ class JsonTest extends AwfTestCase
 	/**
 	 * Creating the HAL Document fixture
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 
