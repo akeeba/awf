@@ -9,6 +9,7 @@ namespace Awf\Tests\TreeModel;
 
 use Awf\Tests\Database\DatabaseMysqlCase;
 use Awf\Database\Driver;
+use Awf\Tests\Database\DatabaseMysqliCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Fakeapp\Container;
 use Awf\Tests\Stubs\Mvc\TreeModelStub;
@@ -20,7 +21,7 @@ require_once 'TreeModelDataprovider.php';
  * @covers      Awf\Mvc\TreeModel::<private>
  * @package     Awf\Tests\TreeModel
  */
-class TreeModelTest extends DatabaseMysqlCase
+class TreeModelTest extends DatabaseMysqliCase
 {
     /**
      * @group           TreeModel
