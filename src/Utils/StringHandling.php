@@ -7,7 +7,7 @@
 
 namespace Awf\Utils;
 
-abstract class String
+abstract class StringHandling
 {
 	/**
 	 * Convert a string into a slug (alias), suitable for use in URLs. Please

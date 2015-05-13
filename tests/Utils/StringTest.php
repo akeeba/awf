@@ -8,7 +8,7 @@
 
 namespace Awf\Tests\Utils;
 
-use Awf\Utils\String;
+use Awf\Utils\StringHandling;
 
 class StringTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,7 +19,7 @@ class StringTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testToSlug($word, $expect, $message)
 	{
-		$string = String::toSlug($word);
+		$string = StringHandling::toSlug($word);
 		$this->assertEquals(
 			$expect,
 			$string,
@@ -47,7 +47,7 @@ class StringTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testToASCII($word, $expect, $message)
 	{
-		$string = String::toSlug($word);
+		$string = StringHandling::toSlug($word);
 		$this->assertEquals(
 			$expect,
 			$string,
@@ -85,7 +85,7 @@ class StringTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testToBool($string, $expected)
 	{
-		$this->assertEquals($expected, String::toBool($string));
+		$this->assertEquals($expected, StringHandling::toBool($string));
 	}
 }
  

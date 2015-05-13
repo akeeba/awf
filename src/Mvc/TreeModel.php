@@ -12,7 +12,7 @@ use Awf\Container\Container;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\RelationManager;
-use Awf\Utils\String;
+use Awf\Utils\StringHandling;
 
 /**
  * A DataModel which implements nested trees
@@ -67,7 +67,7 @@ class TreeModel extends DataModel
 		// Create a slug if there is a title and an empty slug
 		if ($this->hasField('title') && $this->hasField('slug') && !$this->slug)
 		{
-			$this->slug = String::toSlug($this->title);
+			$this->slug = StringHandling::toSlug($this->title);
 		}
 
 		// Create the SHA-1 hash of the slug for faster searching (make sure the hash column is CHAR(64) to take
