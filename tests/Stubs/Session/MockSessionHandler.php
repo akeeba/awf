@@ -7,8 +7,7 @@
 
 namespace Awf\Tests\Stubs\Session;
 
-
-class MockSessionHandler implements \SessionHandlerInterface
+class MockSessionHandler
 {
 	public $data;
 
