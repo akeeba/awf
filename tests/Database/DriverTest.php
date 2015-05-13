@@ -15,7 +15,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Helpers\TestHelper;
 use Awf\Tests\Helpers\DatabaseTest;
 
-require_once __DIR__ . '/../Stubs/database/NosqlDriver.php';
+require_once __DIR__ . '/../Stubs/Database/NosqlDriver.php';
 
 /**
  * Class DriverTest
