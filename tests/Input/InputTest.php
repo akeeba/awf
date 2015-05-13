@@ -262,6 +262,12 @@ class InputTest extends \PHPUnit_Framework_TestCase
 			'Line: ' . __LINE__ . '.'
 		);
 
+		// Under PHP 5.3 we never reference $_REQUEST. We use a copy since we need to work around magic_quotes_gpc
+		if (version_compare(PHP_VERSION, '5.4.0', 'lt'))
+		{
+			$this->markTestSkipped('We cannot check if $_REQUEST is modified under PHP 5.3');
+		}
+
 		$this->instance->def('Awf', 'under test');
 
 		$this->assertArrayHasKey('Awf', $_REQUEST, 'Checks super-global was modified.');
@@ -282,7 +288,7 @@ class InputTest extends \PHPUnit_Framework_TestCase
 		$this->instance->set('foo', 'bar');
 
 		$this->assertThat(
-			$_REQUEST['foo'],
+			$this->instance->get('foo', 'nope'),
 			$this->equalTo('bar'),
 			'Line: ' . __LINE__ . '.'
 		);
