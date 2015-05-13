@@ -270,7 +270,9 @@ class TreeModel extends DataModel
 		}
 		else
 		{
-			return $newNode->insertAsChildOf($this->getParent());
+			$parentNode = $this->getParent();
+
+			return $newNode->insertAsChildOf($parentNode);
 		}
 	}
 
