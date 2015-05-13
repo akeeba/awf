@@ -8,8 +8,10 @@
 
 namespace Awf\Tests\Stubs\Mvc;
 
+use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Mvc\Model;
+use Awf\Tests\Helpers\ReflectionHelper;
 
 class ModelStub extends Model
 {

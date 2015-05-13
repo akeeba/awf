@@ -4,13 +4,24 @@ class ViewDataprovider
 {
     public function getTestGet()
     {
+	    if (!defined('APATH_BASE'))
+	    {
+		    define('APATH_BASE', realpath(__DIR__ . '/../Stubs/Fakeapp'));
+	    }
+
+	    $_SERVER['HTTPS'] = 'off';
+	    $_SERVER['HTTP_HOST'] = 'www.example.com';
+	    $_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
+
+	    $container = \Awf\Application\Application::getInstance('Fakeapp')->getContainer();
+
         $data[] = array(
             array(
                 'mock' => array(
                     'viewProperty' => array(),
                     'defaultModel' => 'foobars',
                     'instances' => array(
-                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub($container)
                     )
                 ),
                 'property' => 'foobar',
@@ -29,7 +40,7 @@ class ViewDataprovider
                     'viewProperty' => array(),
                     'defaultModel' => 'foobars',
                     'instances' => array(
-                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub($container)
                     )
                 ),
                 'property' => 'dummy',
@@ -48,7 +59,7 @@ class ViewDataprovider
                     'viewProperty' => array(),
                     'defaultModel' => 'foobars',
                     'instances' => array(
-                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub($container)
                     )
                 ),
                 'property' => 'nothere',
@@ -67,7 +78,7 @@ class ViewDataprovider
                     'viewProperty' => array(),
                     'defaultModel' => 'dummy',
                     'instances' => array(
-                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub($container)
                     )
                 ),
                 'property' => 'foobar',
@@ -86,7 +97,7 @@ class ViewDataprovider
                     'viewProperty' => array(),
                     'defaultModel' => 'dummy',
                     'instances' => array(
-                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub()
+                        'foobars' => new \Awf\Tests\Stubs\Mvc\ModelStub($container)
                     )
                 ),
                 'property' => 'dummy',

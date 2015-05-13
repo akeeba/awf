@@ -139,7 +139,7 @@ class ModelTest extends AwfTestCase
                 }
             ));
 
-            // Let's save current app istances, I'll have to restore them later
+            // Let's save current app instances, I'll have to restore them later
             $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
             ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
         }

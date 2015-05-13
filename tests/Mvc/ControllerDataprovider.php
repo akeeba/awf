@@ -332,10 +332,21 @@ class ControllerDataprovider
             )
         );
 
+	    if (!defined('APATH_BASE'))
+	    {
+		    define('APATH_BASE', realpath(__DIR__ . '/../Stubs/Fakeapp'));
+	    }
+
+	    $_SERVER['HTTPS'] = 'off';
+	    $_SERVER['HTTP_HOST'] = 'www.example.com';
+	    $_SERVER['REQUEST_URI'] = '/foo/bar/baz.html?q=1';
+
+	    $container = \Awf\Application\Application::getInstance('Fakeapp')->getContainer();
+
         $data[] = array(
             array(
                 'mock' => array(
-                    'getModel'  => new \Awf\Tests\Stubs\Mvc\ModelStub(),
+                    'getModel'  => new \Awf\Tests\Stubs\Mvc\ModelStub($container),
                     'task'      => 'foobar',
                     'doTask'    => 'foobar',
                     'layout'    => 'dummy'
