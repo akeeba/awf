@@ -16,6 +16,11 @@ require_once 'ManagerDataprovider.php';
  */
 class ManagerTest extends DatabaseMysqliCase
 {
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
     /**
      * @covers          Awf\User\Manager::__construct
      */
@@ -162,6 +167,8 @@ class ManagerTest extends DatabaseMysqliCase
                     ->from($db->qn('#__users'))
                     ->where($db->qn('id').' = '.$db->q($check['user_id']));
         $userCheck = $db->setQuery($query)->loadAssoc();
+
+	    $userCheck['id'] = (int) $userCheck['id'];
 
         $this->assertEquals($check['user'], $userCheck, sprintf($msg, 'Failed to save the user'));
     }

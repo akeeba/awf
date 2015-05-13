@@ -180,7 +180,7 @@ class ManagerDataprovider
                     'name' => 'test',
                     'email' => 'test@example.com',
                     'username' => 'changed',
-                    'password' => '$2y$10$1bZNcHV4m11lL2vHOQsQau7I50J.QgOBRFp2W8NoL7f',
+                    'password' => '$2y$10$1bZNcHV4m11lL2vHOQsQau7I50J.QgOBRFp2W8NoL7fC/SsFBXw86',
                     'parameters' => '{}'
                 )
             )
