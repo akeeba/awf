@@ -122,7 +122,7 @@ abstract class Relation
 	 *
 	 * @return Collection|DataModel
 	 */
-	public function getData(callable $callback = null, Collection $dataCollection = null)
+	public function getData($callback = null, Collection $dataCollection = null)
 	{
 		if (is_null($this->data))
 		{
