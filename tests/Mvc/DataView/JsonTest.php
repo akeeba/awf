@@ -86,12 +86,13 @@ class JsonTest extends DatabaseMysqliCase
 
         $msg  = 'DataView\Json::display (browse task) %s - Case: '.$check['case'];
 
-        $input     = new Input();
         $container = Application::getInstance()->getContainer();
+	    $container->input->setData(array());
 
-        $input->set('callback', $test['callback']);
-
-        $container['mvc_config'] = array('input' => $input);
+	    if (!empty($test['callback']))
+	    {
+		    $container->input->set('callback', $test['callback']);
+	    }
 
         $view  = new JsonStub($container);
         $model = new Parents();
@@ -140,13 +141,15 @@ class JsonTest extends DatabaseMysqliCase
     {
         $msg  = 'DataView\Json::display (read task) %s - Case: '.$check['case'];
 
-        $input     = new Input();
         $container = Application::getInstance()->getContainer();
+	    $container->input->setData(array());
 
-        $input->set('id', 2);
-        $input->set('callback', $test['callback']);
+	    $container->input->set('id', 2);
 
-        $container['mvc_config'] = array('input' => $input);
+	    if (!empty($test['callback']))
+	    {
+		    $container->input->set('callback', $test['callback']);
+	    }
 
         $view = new JsonStub($container);
 
