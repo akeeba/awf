@@ -1,3 +1,3 @@
 #!/bin/sh
 
-../vendor/bin/phpunit -c ../phpunit.xml ../tests/ ${@}
+LC_ALL=C ../vendor/bin/phpunit -c ../phpunit.xml ../tests/ ${@}
