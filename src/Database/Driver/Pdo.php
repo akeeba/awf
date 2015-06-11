@@ -363,6 +363,8 @@ abstract class Pdo extends Driver
 	 */
 	public function execute()
 	{
+		static $isReconnecting = false;
+
 		$this->connect();
 
 		if (!is_object($this->connection))
@@ -420,8 +422,10 @@ abstract class Pdo extends Driver
 			$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
 
 			// Check if the server was disconnected.
-			if (!$this->connected())
+			if (!$this->connected() && !$isReconnecting)
 			{
+				$isReconnecting = true;
+
 				try
 				{
 					// Attempt to reconnect.
@@ -440,7 +444,10 @@ abstract class Pdo extends Driver
 				}
 
 				// Since we were able to reconnect, run the query again.
-				return $this->execute();
+				$result = $this->execute();
+				$isReconnecting = false;
+
+				return $result;
 			}
 			else
 				// The server was not disconnected.

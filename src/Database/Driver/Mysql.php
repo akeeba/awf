@@ -224,6 +224,8 @@ class Mysql extends Mysqli
 	 */
 	public function execute()
 	{
+		static $isReconnecting = false;
+
 		$this->connect();
 
 		if (!is_resource($this->connection))
@@ -255,12 +257,16 @@ class Mysql extends Mysqli
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @mysql_query($sql, $this->connection);
 
+		unset($sql);
+
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
 			// Check if the server was disconnected.
-			if (!$this->connected())
+			if (!$this->connected() && !$isReconnecting)
 			{
+				$isReconnecting = true;
+
 				try
 				{
 					// Attempt to reconnect.
@@ -279,7 +285,10 @@ class Mysql extends Mysqli
 				}
 
 				// Since we were able to reconnect, run the query again.
-				return $this->execute();
+				$result = $this->execute();
+				$isReconnecting = false;
+
+				return $result;
 			}
 			// The server was not disconnected.
 			else
