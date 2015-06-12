@@ -91,7 +91,7 @@ class PhpTokenizer
 
             // If I have the skip argument I have to skip the first lines (literal chars are always skipped since they
             // don't report the line they're in)
-            if($skip && ($line <= $skip) && !$ignoreSkip)
+            if($skip && ($line < $skip) && !$ignoreSkip)
             {
                 continue;
             }
