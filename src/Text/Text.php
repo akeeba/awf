@@ -98,10 +98,10 @@ abstract class Text
 		if ($strings === false)
 		{
 			$rawText = @file_get_contents($filename);
-			$rawText = str_replace('\\"_QQ_\\"', '"', $rawText);
-			$rawText = str_replace('\\"_QQ_"', '"', $rawText);
-			$rawText = str_replace('"_QQ_\\"', '"', $rawText);
-			$rawText = str_replace('"_QQ_"', '"', $rawText);
+			$rawText = str_replace('\\"_QQ_\\"', '\"', $rawText);
+			$rawText = str_replace('\\"_QQ_"', '\"', $rawText);
+			$rawText = str_replace('"_QQ_\\"', '\"', $rawText);
+			$rawText = str_replace('"_QQ_"', '\"', $rawText);
 			$strings = parse_ini_string($rawText);
 		}
 
