@@ -98,6 +98,16 @@ class File implements FilesystemInterface
 		return @chmod($fileName, $permissions);
 	}
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        return @getcwd();
+    }
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.

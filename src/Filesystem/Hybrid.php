@@ -164,6 +164,23 @@ class Hybrid implements FilesystemInterface
 		return $ret;
 	}
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        $ret = $this->fileAdapter->cwd();
+
+        if (!$ret && is_object($this->abstractionAdapter))
+        {
+            return $this->abstractionAdapter->cwd();
+        }
+
+        return $ret;
+    }
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.

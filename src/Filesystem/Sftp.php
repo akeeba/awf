@@ -319,6 +319,16 @@ class Sftp implements FilesystemInterface
 		}
 	}
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        return ssh2_sftp_realpath($this->sftpHandle, ".");
+    }
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.
