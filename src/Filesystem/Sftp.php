@@ -87,8 +87,6 @@ class Sftp implements FilesystemInterface
      * @param   Container   $container  Application container
 	 *
 	 * @return  Sftp
-	 *
-	 * @throws  \RuntimeException
 	 */
 	public function __construct(array $options, Container $container = null)
 	{
@@ -195,18 +193,6 @@ class Sftp implements FilesystemInterface
 		if ($this->sftpHandle === false)
 		{
 			throw new \RuntimeException('Cannot start an SFTP session with the server', 500);
-		}
-
-		// Attempt to change to the initial directory
-		if (!@$result = @ssh2_sftp_stat($this->sftpHandle, $this->directory))
-		{
-			$this->connection = null;
-			$this->sftpHandle = null;
-
-			if (!empty($this->directory))
-			{
-				throw new \RuntimeException(sprintf('Cannot change to initial SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $this->directory), 500);
-			}
 		}
 	}
 
