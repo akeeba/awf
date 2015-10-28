@@ -97,6 +97,11 @@ class Pdomysql extends Pdo
      */
     public static function isSupported()
     {
+        if (!class_exists('\PDO') || !class_exists('\PDOException') || !class_exists('\PDOStatement'))
+        {
+            return false;
+        }
+
         return in_array('mysql', \PDO::getAvailableDrivers());
     }
 
