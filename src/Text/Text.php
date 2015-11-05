@@ -8,6 +8,7 @@
 namespace Awf\Text;
 
 use \Awf\Application\Application;
+use Awf\Utils\ParseIni;
 
 /**
  * Class Text
@@ -92,7 +93,7 @@ abstract class Text
 		}
 
 		// Suppress the warning message when error reporting is enabled
-		$strings = @parse_ini_file($filename);
+		$strings = ParseIni::parse_ini_file($filename, false);
 
 		// Compatibility with Joomla! translation files and Transifex' broken way to conforming to a broken standard.
 		if ($strings === false)
