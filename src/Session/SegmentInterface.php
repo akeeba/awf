@@ -120,4 +120,12 @@ interface SegmentInterface
 	 *
 	 */
 	public function clearFlash();
+
+	/**
+	 * Commit the session data to PHP's session storage using a safely encoded format to prevent PHP session
+	 * unserialization attacks.
+	 *
+	 * @return  void
+	 */
+	public function save();
 }

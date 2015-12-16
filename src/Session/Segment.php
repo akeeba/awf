@@ -9,6 +9,7 @@
  */
 
 namespace Awf\Session;
+use Awf\Encrypt\Base32;
 
 /**
  * A session segment; lazy-loads from the session.
@@ -43,6 +44,13 @@ class Segment implements SegmentInterface
 	protected $data;
 
 	/**
+	 * Base32 encoder, in case base64 encoding is not available on this server
+	 *
+	 * @var Base32
+	 */
+	protected $encoder;
+
+	/**
 	 *
 	 * Constructor.
 	 *
@@ -55,6 +63,7 @@ class Segment implements SegmentInterface
 	{
 		$this->session = $session;
 		$this->name = $name;
+		$this->encoder = new Base32();
 	}
 
 	/**
@@ -111,14 +120,47 @@ class Segment implements SegmentInterface
 			$this->session->start();
 		}
 
-		// if we don't have a $_SESSION key for the segment, create one
-		if (!isset($_SESSION[$this->name]))
+		// Intialize data
+		$this->data = array();
+
+		// Try loading data from the session
+		if (isset($_SESSION[$this->name]) && !empty($_SESSION[$this->name]))
 		{
-			$_SESSION[$this->name] = array();
+			$data = $_SESSION[$this->name];
+
+			if (function_exists('base64_encode') && function_exists('base64_decode'))
+			{
+				$data = base64_decode($data);
+			}
+			else
+			{
+				$data = $this->encoder->decode($data);
+			}
+
+			$this->data = unserialize($data);
+		}
+	}
+
+	/**
+	 * Commit the session data to PHP's session storage using a safely encoded format to prevent PHP session
+	 * unserialization attacks.
+	 *
+	 * @return  void
+	 */
+	public function save()
+	{
+		$data = serialize($this->data);
+
+		if (function_exists('base64_encode') && function_exists('base64_decode'))
+		{
+			$data = base64_encode($data);
+		}
+		else
+		{
+			$data = $this->encoder->encode($data);
 		}
 
-		// set $data as a reference to the $_SESSION key
-		$this->data = & $_SESSION[$this->name];
+		$_SESSION[$this->name] = $data;
 	}
 
 	/**
@@ -360,5 +402,13 @@ class Segment implements SegmentInterface
 		{
 			unset($this->data[$key]);
 		}
+	}
+
+	/**
+	 * Automatically sync the session data to PHP's session storage
+	 */
+	protected function __destruct()
+	{
+		$this->save();
 	}
 }
