@@ -403,12 +403,4 @@ class Segment implements SegmentInterface
 			unset($this->data[$key]);
 		}
 	}
-
-	/**
-	 * Automatically sync the session data to PHP's session storage
-	 */
-	protected function __destruct()
-	{
-		$this->save();
-	}
 }
