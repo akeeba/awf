@@ -509,6 +509,43 @@ class DataModel extends Model
 		}
 	}
 
+    /**
+     * Adds a known field to the DataModel. This is only necessary if you are using a custom buildQuery with JOINs or
+     * field aliases. Please note that you need to make further modifications for bind() and save() to work in this
+     * case. Please refer to the documentation blocks of these methods for more information. It is generally considered
+     * a very BAD idea using JOINs instead of relations. It complicates your life and is bound to cause bugs that are
+     * very hard to track back.
+     *
+     * @param   string  $fieldName  The name of the field
+     * @param   mixed   $default    Default value, used by reset() (default: null)
+     * @param   string  $type       Database type for the field. If unsure use 'integer', 'float' or 'text'.
+     * @param   bool    $replace    Should we replace an existing known field definition?
+     *
+     * @return  $this  Self, for chaining
+     */
+    public function addKnownField($fieldName, $default = null, $type = 'integer', $replace = false)
+    {
+        if (array_key_exists($fieldName, $this->knownFields) && !$replace)
+        {
+            return $this;
+        }
+
+        $info = (object)array(
+            'Default' => $default,
+            'Type' => $type,
+        );
+
+        $this->knownFields[$fieldName] = $info;
+
+        // Initialize only the null or not yet set records
+        if(!isset($this->recordData[$fieldName]))
+        {
+            $this->recordData[$fieldName] = $default;
+        }
+
+        return $this;
+    }
+
 	/**
 	 * Get the columns from a database table.
 	 *
