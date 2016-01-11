@@ -8,12 +8,11 @@
 namespace Awf\Mvc\DataView;
 
 use Awf\Container\Container;
+use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel;
 use Awf\Text\Text;
 
-defined('_JEXEC') or die;
-
-class Csv extends Html
+class Csv extends Raw
 {
 	/**
 	 *  Should I produce a CSV header row.
@@ -77,7 +76,7 @@ class Csv extends Html
 		if (empty($this->csvFilename))
 		{
 			$view = $this->input->getCmd('view', 'cpanel');
-			$view = $this->container->inflector->pluralize($view);
+			$view = Inflector::pluralize($view);
 			$this->csvFilename = strtolower($view) . '.csv';
 		}
 
@@ -160,11 +159,6 @@ class Csv extends Html
             $items = $this->items;
 
 			// Default CSV behaviour in case the template isn't there!
-			if (count($items) === 0)
-			{
-                throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
-			}
-
 			$item    = $items->last();
 			$keys    = $item->getData();
 			$keys    = array_keys($keys);
