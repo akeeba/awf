@@ -124,9 +124,10 @@ class Csv extends Raw
 
         $document = $this->container->application->getDocument();
 
-		if ($document instanceof \Awf\Document\Html)
+		if ($document instanceof \Awf\Document\Csv)
 		{
-			$document->setMimeType('text/csv');
+            $view = $this->container->input->getCmd('view', '');
+			$document->setName($view);
 		}
 
 		if (is_null($tpl))
