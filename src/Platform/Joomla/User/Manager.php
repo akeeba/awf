@@ -38,7 +38,7 @@ class Manager extends \Awf\User\Manager
 			// We don't have a current user yet? Let's load it!
 			if (!is_object($this->currentUser))
 			{
-				$this->currentUser = new User(\JFactory::getUser($id));
+				$this->currentUser = new User(\JFactory::getUser($id)->id);
 			}
 
 			return $this->currentUser;
@@ -195,4 +195,4 @@ class Manager extends \Awf\User\Manager
 	{
 		throw new \RuntimeException('unregisterAuthenticationPlugin is not availabe under Joomla!');
 	}
-} 
+}
