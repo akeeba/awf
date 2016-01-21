@@ -21,6 +21,8 @@ use Awf\Platform\Joomla\User\Manager;
  *
  * @package Awf\Platform\Joomla\Container
  *
+ * @property  string                                                $extension_name        The name of the extension
+ *
  * @property-read  \Awf\Platform\Joomla\Application\Application		$application           The application instance
  * @property-read  \Awf\Platform\Joomla\Application\Configuration   $appConfig             The application configuration registry
  * @property-read  \Awf\Platform\Joomla\Event\Dispatcher            $eventDispatcher       The global event dispatcher
@@ -34,6 +36,15 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
+        $this->extension_name = '';
+
+        // If we don't pass an extension name, let's deduct it from the application name
+        // This allows us to have an extension named com_foobar with Dummy\Whatever as namespace
+        if (empty($values['extension_name']))
+        {
+            $values['extension_name'] = $values['application_name'];
+        }
+
 		// Set up the filesystem path
 		if (empty($values['filesystemBase']))
 		{
@@ -43,7 +54,7 @@ class Container extends \Awf\Container\Container
 		// Set up the base path
 		if (empty($values['basePath']))
 		{
-			$basePath = '/components/com_' . strtolower($values['application_name']) . '/' . $values['application_name'];
+			$basePath = '/components/com_' . strtolower($values['extension_name']) . '/' . $values['extension_name'];
 			$values['basePath'] = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_ROOT) . $basePath;
 		}
 
@@ -68,7 +79,7 @@ class Container extends \Awf\Container\Container
 		// Set up the SQL files path
 		if (empty($values['sqlPath']))
 		{
-			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($values['application_name'])
+			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($values['extension_name'])
 				. '/sql/xml';
 		}
 
@@ -200,4 +211,4 @@ class Container extends \Awf\Container\Container
 		});
 
 	}
-} 
+}

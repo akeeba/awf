@@ -91,14 +91,14 @@ class Application extends \Awf\Application\Application
 		$this->container->eventDispatcher->attach(new ViewAlternatePaths($this->container->eventDispatcher));
 
 		// Set up the template (theme) to use – different for front-end and back-end
-		if (empty($this->template) || ($this->template == $this->container->application_name))
+		if (empty($this->template) || ($this->template == $this->container->extension_name))
 		{
 			$template = Helper::isBackend() ? 'backend' : 'frontend';
 			$this->setTemplate($template);
 		}
 
 		// Load the extra language files
-		$appName = $this->container->application_name;
+		$appName = $this->container->extension_name;
 		$appNameLower = strtolower($appName);
 		$languageTag = \JFactory::getLanguage()->getTag();
 		Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', false, $this->container->languagePath);
@@ -163,4 +163,4 @@ class Application extends \Awf\Application\Application
 	{
 		\JFactory::getApplication()->close($code);
 	}
-} 
+}
