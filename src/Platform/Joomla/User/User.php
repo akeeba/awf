@@ -11,10 +11,6 @@ use Awf\Registry\Registry;
 use Awf\User\AuthenticationInterface;
 use Awf\User\PrivilegeInterface;
 use Awf\User\UserInterface;
-use JArrayHelper;
-use JFactory;
-use JText;
-use JUserHelper;
 
 class User extends \JUser implements UserInterface
 {
@@ -22,7 +18,6 @@ class User extends \JUser implements UserInterface
 	{
 		return parent::bind($array);
 	}
-
 
 	/**
 	 * Returns the ID of the user
@@ -145,10 +140,15 @@ class User extends \JUser implements UserInterface
 	 * Gets the user's parameters. The parameters are stored in JSON format in the user record automatically. If you
 	 * need to write to them you can use the returned Registry object instance.
 	 *
-	 * @return  \JRegistry
+	 * @return  Registry
 	 */
 	public function &getParameters()
 	{
+        if (!empty($this->params) && is_string($this->params))
+        {
+            $this->params = new Registry($this->params);
+        }
+
 		return $this->params;
 	}
 
@@ -256,4 +256,4 @@ class User extends \JUser implements UserInterface
 	{
 		throw new \RuntimeException('triggerAuthenticationEvent is not availabe under Joomla!');
 	}
-} 
+}
