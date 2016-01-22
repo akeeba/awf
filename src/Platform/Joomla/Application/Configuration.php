@@ -38,7 +38,7 @@ class Configuration extends \Awf\Application\Configuration
 			'base_url'	=> \JUri::base() . 'index.php?option=com_' . strtolower($this->container->extension_name),
 			'live_site'	=> \JUri::base() . 'index.php?option=com_' . strtolower($this->container->extension_name),
 			'cms_url'	=> \JUri::base(),
-			'options'	=> array(),
+			'options'	=> new \stdClass(),
 		);
 
 		// Get the Joomla! FTP layer options
