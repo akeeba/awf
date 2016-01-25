@@ -67,7 +67,9 @@ class Container extends \Awf\Container\Container
 		// Set up the temporary path
 		if (empty($values['temporaryPath']))
 		{
-			$values['temporaryPath'] = \JFactory::getConfig()->get('tmp_path', sys_get_temp_dir());
+            // Since this code could be invoked in VERY EARLY STAGES of the application (ie CLI), let's be 100% sure to load
+            // the correct file, otherwise Joomla will fallback to the empty file in the libraries folder and things will break
+			$values['temporaryPath'] = \JFactory::getConfig(JPATH_CONFIGURATION.'/configuration.php')->get('tmp_path', sys_get_temp_dir());
 		}
 
 		// Set up the language path
