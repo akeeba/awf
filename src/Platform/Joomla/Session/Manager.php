@@ -10,6 +10,7 @@
 
 namespace Awf\Platform\Joomla\Session;
 
+use Awf\Platform\Joomla\Helper\Helper;
 use Awf\Session\Manager as SessionManager;
 use Awf\Session\Segment;
 use Awf\Session\SegmentFactory;
@@ -157,7 +158,11 @@ class Manager extends SessionManager
 	 */
 	public function start()
 	{
-		\JFactory::getSession()->start();
+        // Start the session only if we're not in CLI
+        if(!Helper::isCli())
+        {
+            \JFactory::getSession()->start();
+        }
 
 		return true;
 	}
