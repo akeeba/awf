@@ -7,6 +7,7 @@
 
 namespace Awf\Platform\Joomla\User;
 
+use Awf\Platform\Joomla\Application\Application;
 use Awf\Registry\Registry;
 use Awf\User\AuthenticationInterface;
 use Awf\User\PrivilegeInterface;
@@ -214,7 +215,9 @@ class User extends \JUser implements UserInterface
 	 */
 	public function getPrivilege($privilege, $default = false)
 	{
-		return $this->authorise($privilege);
+		$option = 'com_' . Application::getInstance()->getContainer()->extension_name;
+
+		return $this->authorise($privilege, $option);
 	}
 
 	/**
