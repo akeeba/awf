@@ -22,7 +22,7 @@ interface UserInterface
 	 *
 	 * @return  void
 	 */
-	public function bind($data);
+	public function bind(&$data);
 
 	/**
 	 * Returns the ID of the user

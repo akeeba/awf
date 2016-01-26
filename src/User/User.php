@@ -43,7 +43,7 @@ class User implements UserInterface
 	 *
 	 * @return  void
 	 */
-	public function bind($data)
+	public function bind(&$data)
 	{
 		// Reset the parameters storage
 		$this->parameters = null;

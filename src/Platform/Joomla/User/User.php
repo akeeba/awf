@@ -14,7 +14,7 @@ use Awf\User\UserInterface;
 
 class User extends \JUser implements UserInterface
 {
-	public function bind($array)
+	public function bind(&$array)
 	{
 		return parent::bind($array);
 	}
