@@ -145,7 +145,7 @@ class User extends \JUser implements UserInterface
 	 */
 	public function &getParameters()
 	{
-        if (!empty($this->params) && is_string($this->params))
+        if (is_string($this->params))
         {
             $this->params = new Registry($this->params);
         }
