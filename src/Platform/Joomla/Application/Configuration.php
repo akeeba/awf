@@ -41,29 +41,6 @@ class Configuration extends \Awf\Application\Configuration
 			'options'	=> new \stdClass(),
 		);
 
-		// Get the Joomla! FTP layer options
-		if (!class_exists('JClientHelper'))
-		{
-			\JLoader::import('joomla.client.helper');
-		}
-
-		$ftpOptions = \JClientHelper::getCredentials('ftp');
-
-		// If the FTP layer is enabled, enable the Hybrid filesystem engine
-		if ($ftpOptions['enabled'] == 1)
-		{
-			$data['fs'] = array(
-				'driver'	=> 'hybrid',
-				'host'		=> $ftpOptions['host'],
-				'port'		=> empty($ftpOptions['port']) ? '21' : $ftpOptions['port'],
-				'directory'	=> rtrim($ftpOptions['root'], '/\\'),
-				'ssl'		=> false,
-				'passive'	=> true,
-				'username'	=> $ftpOptions['user'],
-				'password'	=> $ftpOptions['pass'],
-			);
-		}
-
 		// Populate the options key with the component configuration
 		$db = $this->container->db;
 
