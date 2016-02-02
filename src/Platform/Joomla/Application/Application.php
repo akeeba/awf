@@ -125,6 +125,11 @@ class Application extends \Awf\Application\Application
 	 */
 	public function redirect($url, $msg = '', $msgType = 'info', $moved = false)
 	{
+		if (($msgType == 'info') && version_compare(JVERSION, '3.2.0', 'ge'))
+		{
+			$msgType = 'message';
+		}
+
 		\JFactory::getApplication()->enqueueMessage($msg, $msgType);
 		\JFactory::getApplication()->redirect($url, $moved);
 	}
@@ -139,6 +144,11 @@ class Application extends \Awf\Application\Application
 	 */
 	public function enqueueMessage($msg, $type = 'info')
 	{
+		if (($type == 'info') && version_compare(JVERSION, '3.2.0', 'ge'))
+		{
+			$type = 'message';
+		}
+
 		\JFactory::getApplication()->enqueueMessage($msg, $type);
 	}
 
