@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -131,12 +131,13 @@ class ConfigurationTest extends AwfTestCase
 		$this->config->saveConfiguration();
 
 		$this->assertEquals('/dev/foobar', MockFilesystem::$outFilename);
-		$this->assertEquals("<?php die; ?>\n{\n    \"foo\": \"bar\"\n}", MockFilesystem::$writtenData);
+		$data = str_replace(array("\n", "\t", ': ', '    '), array('', '', ':', ''), MockFilesystem::$writtenData);
+		$this->assertEquals("<?php die; ?>{\"foo\":\"bar\"}", $data);
 	}
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
-		parent::setUp();
+		parent::setUp($resetContainer);
 
 		$this->config = new Configuration(static::$container);
 	}

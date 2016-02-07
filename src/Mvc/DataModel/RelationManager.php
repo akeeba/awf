@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -323,7 +323,7 @@ class RelationManager
 	 *
 	 * @throws Relation\Exception\RelationNotFound
 	 */
-	public function getData($name, callable $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData($name, $callback = null, \Awf\Utils\Collection $dataCollection = null)
 	{
 		if (!isset($this->relations[$name]))
 		{

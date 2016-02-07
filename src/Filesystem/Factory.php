@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -70,9 +70,9 @@ final class Factory
 
 		if (!isset(self::$instances[$signature]))
 		{
-			self::$instances[$signature] = new $className($options);
+			self::$instances[$signature] = new $className($options, $container);
 		}
 
 		return self::$instances[$signature];
 	}
-} 
+}

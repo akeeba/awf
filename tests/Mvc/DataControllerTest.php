@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\DataController;
 
@@ -365,8 +370,9 @@ class DataControllertest extends DatabaseMysqliCase
         ));
 
         $model = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataModelStub', array('unlock', 'getId'), array($container));
-        $model->expects($this->once())->method('getId')->willReturn($test['mock']['getId']);
-        $model->expects($this->once())->method('unlock')->willReturn(null);
+        $model->expects($this->exactly(2))->method('getId')->willReturn($test['mock']['getId']);
+	    $expectedCalls = empty($test['mock']['getId']) ? 0 : 1;
+        $model->expects($this->exactly($expectedCalls))->method('unlock')->willReturn(null);
 
         $controller = $this->getMock('\\Awf\\Tests\\Stubs\\Mvc\\DataControllerStub', array('getModel', 'getIDsFromRequest', 'setRedirect'), array($container));
         $controller->expects($this->any())->method('getModel')->willReturn($model);

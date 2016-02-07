@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 class SpecialColumnsDataprovider
 {
@@ -52,7 +57,7 @@ class SpecialColumnsDataprovider
             ),
             array(
                 'case' => 'Records with no ordering',
-                'order' => array(1, 2, 3, 4)
+                'order' => array(1, 4, 3, 2)
             )
         );
 

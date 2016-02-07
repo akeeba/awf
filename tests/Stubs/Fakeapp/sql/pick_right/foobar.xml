@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <!-- Metadata -->
+    <meta>
+        <!-- Supported driver types -->
+        <drivers>
+            <driver>foobar</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__ak_profiles" canfail="0">
+            <condition type="missing" value="" />
+            <query><![CDATA[
+    DIE DIE DIE;
+                ]]></query>
+        </action>
+    </sql>
+</schema>

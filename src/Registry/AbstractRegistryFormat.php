@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -23,13 +23,14 @@ abstract class AbstractRegistryFormat
 	 * Returns a reference to a Format object, only creating it
 	 * if it doesn't already exist.
 	 *
-	 * @param   string  $type  The format to load
+	 * @param   string  $type     The format to load
+	 * @param   array   $options  Additional options to configure the object
 	 *
 	 * @return  AbstractRegistryFormat  Registry format handler
 	 *
 	 * @throws  \InvalidArgumentException
 	 */
-	public static function getInstance($type)
+	public static function getInstance($type, array $options = array())
 	{
 		// Sanitize format type.
 		$type = strtolower(preg_replace('/[^A-Z0-9_]/i', '', $type));
@@ -37,11 +38,24 @@ abstract class AbstractRegistryFormat
 		// Only instantiate the object if it doesn't already exist.
 		if (!isset(self::$instances[$type]))
 		{
-			$class = '\\Awf\\Registry\\Format\\' . ucfirst($type);
+			$localNamespace = __NAMESPACE__ . '\\Format';
+			$namespace      = isset($options['format_namespace']) ? $options['format_namespace'] : $localNamespace;
+			$class          = $namespace . '\\' . ucfirst($type);
 
 			if (!class_exists($class))
 			{
-				throw new \InvalidArgumentException('Unable to load format class.', 500);
+				// Were we given a custom namespace?  If not, there's nothing else we can do
+				if ($namespace === $localNamespace)
+				{
+					throw new \InvalidArgumentException(sprintf('Unable to load format class for type "%s".', $type), 500);
+				}
+
+				$class = $localNamespace . '\\' . ucfirst($type);
+
+				if (!class_exists($class))
+				{
+					throw new \InvalidArgumentException(sprintf('Unable to load format class for type "%s".', $type), 500);
+				}
 			}
 
 			self::$instances[$type] = new $class;

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * Based on Laravel 4's Illuminate\Support\Collection with minimal changes
@@ -20,6 +20,11 @@ use JsonSerializable;
 use IteratorAggregate;
 
 require_once __DIR__ . '/helpers.php';
+
+if (!interface_exists('\\JsonSerializable'))
+{
+	require_once __DIR__ . '/../Compat/JsonSerializable.php';
+}
 
 class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -556,7 +561,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return Collection
 	 */
-	public function transform(callable $callback)
+	public function transform($callback)
 	{
 		$this->items = array_map($callback, $this->items);
 

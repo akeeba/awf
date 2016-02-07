@@ -1,14 +1,14 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Text;
 
 use \Awf\Application\Application;
-use Awf\Filesystem\File;
+use Awf\Utils\ParseIni;
 
 /**
  * Class Text
@@ -66,18 +66,14 @@ abstract class Text
 		}
 
 		$fileNames = array(
-			// langPath/en-GB/en-GB.MyApp.ini
-			$languagePath . '/' . $langCode . '/' . $langCode . '.' . strtolower($appName) . $suffix,
 			// langPath/MyApp/en-GB.ini
 			$languagePath . '/' . strtolower($appName) . '/' . $langCode . $suffix,
 			// langPath/MyApp/en-GB/en-GB.ini
 			$languagePath . '/' . strtolower($appName) . '/' . $langCode . '/' . $langCode . $suffix,
-			// langPath/en-GB.MyApp.ini
-			$languagePath . '/' . $langCode . '.' . strtolower($appName) . $suffix,
-			// langPath/en-GB/en-GB.ini
-			$languagePath . '/' . $langCode . '/' . $langCode . $suffix,
 			// langPath/en-GB.ini
 			$languagePath . '/' . $langCode . $suffix,
+			// langPath/en-GB/en-GB.ini
+			$languagePath . '/' . $langCode . '/' . $langCode . $suffix,
 		);
 
 		$filename = null;
@@ -97,23 +93,16 @@ abstract class Text
 		}
 
 		// Suppress the warning message when error reporting is enabled
-		$strings = false;
-
-		if (function_exists('parse_ini_file'))
-		{
-			$strings = @parse_ini_file($filename);
-		}
+		$strings = ParseIni::parse_ini_file($filename, false);
 
 		// Compatibility with Joomla! translation files and Transifex' broken way to conforming to a broken standard.
-		// Also works around morons who pretend to be hosts and disable the parse_ini_file function but NOT
-		// parse_ini_string or ini_set. I have lost faith in humanity.
 		if ($strings === false)
 		{
 			$rawText = @file_get_contents($filename);
-			$rawText = str_replace('\\"_QQ_\\"', '"', $rawText);
-			$rawText = str_replace('\\"_QQ_"', '"', $rawText);
-			$rawText = str_replace('"_QQ_\\"', '"', $rawText);
-			$rawText = str_replace('"_QQ_"', '"', $rawText);
+			$rawText = str_replace('\\"_QQ_\\"', '\"', $rawText);
+			$rawText = str_replace('\\"_QQ_"', '\"', $rawText);
+			$rawText = str_replace('"_QQ_\\"', '\"', $rawText);
+			$rawText = str_replace('"_QQ_"', '\"', $rawText);
 			$strings = parse_ini_string($rawText);
 		}
 
@@ -240,14 +229,16 @@ abstract class Text
 				if (!file_exists($langFilename))
 				{
 					$langFilename = '';
-                    $filesystem   = new File(array());
 
-                    $allFiles = $filesystem->directoryFiles($baseName, $languageStruct[1].'\-.*', false, true);
+					if (function_exists('glob'))
+					{
+						$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
 
-                    if (count($allFiles))
-                    {
-                        $langFilename = array_shift($allFiles);
-                    }
+						if (count($allFiles))
+						{
+							$langFilename = array_shift($allFiles);
+						}
+					}
 				}
 
 				if (!empty($langFilename) && file_exists($langFilename))

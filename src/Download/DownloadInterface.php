@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -66,12 +66,13 @@ interface DownloadInterface
 	 * @param   string   $url   The remote file's URL
 	 * @param   integer  $from  Byte range to start downloading from. Use null for start of file.
 	 * @param   integer  $to    Byte range to stop downloading. Use null to download the entire file ($from is ignored)
+     * @param   array    $params  Additional params that will be added before performing the download
 	 *
 	 * @return  string  The raw file data retrieved from the remote URL.
 	 *
-	 * @throws  Exception  A generic exception is thrown on error
+	 * @throws  \Exception  A generic exception is thrown on error
 	 */
-	public function downloadAndReturn($url, $from = null, $to = null);
+    public function downloadAndReturn($url, $from = null, $to = null, array $params = array());
 
 	/**
 	 * Get the size of a remote file in bytes

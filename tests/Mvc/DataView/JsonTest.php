@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\DataView\Raw;
 
@@ -18,7 +23,12 @@ require_once 'JsonDataprovider.php';
  */
 class JsonTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           DataViewJson
      * @group           DataViewJsonConstruct
      * @covers          Awf\Mvc\DataView\Json::__construct
@@ -77,16 +87,17 @@ class JsonTest extends DatabaseMysqliCase
      */
     public function testDisplayBrowse($test, $check)
     {
-        \PHPUnit_Framework_Error_Warning::$enabled = false;
+        //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $msg  = 'DataView\Json::display (browse task) %s - Case: '.$check['case'];
 
-        $input     = new Input();
         $container = Application::getInstance()->getContainer();
+	    $container->input->setData(array());
 
-        $input->set('callback', $test['callback']);
-
-        $container['mvc_config'] = array('input' => $input);
+	    if (!empty($test['callback']))
+	    {
+		    $container->input->set('callback', $test['callback']);
+	    }
 
         $view  = new JsonStub($container);
         $model = new Parents();
@@ -135,13 +146,15 @@ class JsonTest extends DatabaseMysqliCase
     {
         $msg  = 'DataView\Json::display (read task) %s - Case: '.$check['case'];
 
-        $input     = new Input();
         $container = Application::getInstance()->getContainer();
+	    $container->input->setData(array());
 
-        $input->set('id', 2);
-        $input->set('callback', $test['callback']);
+	    $container->input->set('id', 2);
 
-        $container['mvc_config'] = array('input' => $input);
+	    if (!empty($test['callback']))
+	    {
+		    $container->input->set('callback', $test['callback']);
+	    }
 
         $view = new JsonStub($container);
 

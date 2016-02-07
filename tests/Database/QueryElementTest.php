@@ -2,7 +2,7 @@
 /**
  * @package        awf
  * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -21,7 +21,7 @@ use Awf\Tests\Helpers\AwfTestCase;
  */
 class DatabaseQueryElementTest extends AwfTestCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}

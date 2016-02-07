@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
@@ -21,6 +21,8 @@ use Awf\Platform\Joomla\User\Manager;
  *
  * @package Awf\Platform\Joomla\Container
  *
+ * @property  string                                                $extension_name        The name of the extension
+ *
  * @property-read  \Awf\Platform\Joomla\Application\Application		$application           The application instance
  * @property-read  \Awf\Platform\Joomla\Application\Configuration   $appConfig             The application configuration registry
  * @property-read  \Awf\Platform\Joomla\Event\Dispatcher            $eventDispatcher       The global event dispatcher
@@ -34,12 +36,14 @@ class Container extends \Awf\Container\Container
 {
 	public function __construct(array $values = array())
 	{
-		$appNameForPaths = $values['application_name'];
+        $this->extension_name = '';
 
-		if (Helper::isBackend() && (substr($appNameForPaths, -5) == 'Admin'))
-		{
-			$appNameForPaths = substr($appNameForPaths, 0, -5);
-		}
+        // If we don't pass an extension name, let's deduct it from the application name
+        // This allows us to have an extension named com_foobar with Dummy\Whatever as namespace
+        if (empty($values['extension_name']))
+        {
+            $values['extension_name'] = $values['application_name'];
+        }
 
 		// Set up the filesystem path
 		if (empty($values['filesystemBase']))
@@ -50,7 +54,7 @@ class Container extends \Awf\Container\Container
 		// Set up the base path
 		if (empty($values['basePath']))
 		{
-			$basePath = '/components/com_' . $appNameForPaths . '/' . $values['application_name'];
+			$basePath = '/components/com_' . strtolower($values['extension_name']) . '/' . $values['extension_name'];
 			$values['basePath'] = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_ROOT) . $basePath;
 		}
 
@@ -63,7 +67,9 @@ class Container extends \Awf\Container\Container
 		// Set up the temporary path
 		if (empty($values['temporaryPath']))
 		{
-			$values['temporaryPath'] = \JFactory::getConfig()->get('tmp_path', sys_get_temp_dir());
+            // Since this code could be invoked in VERY EARLY STAGES of the application (ie CLI), let's be 100% sure to load
+            // the correct file, otherwise Joomla will fallback to the empty file in the libraries folder and things will break
+			$values['temporaryPath'] = \JFactory::getConfig(JPATH_CONFIGURATION.'/configuration.php')->get('tmp_path', sys_get_temp_dir());
 		}
 
 		// Set up the language path
@@ -75,7 +81,7 @@ class Container extends \Awf\Container\Container
 		// Set up the SQL files path
 		if (empty($values['sqlPath']))
 		{
-			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . $appNameForPaths
+			$values['sqlPath'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($values['extension_name'])
 				. '/sql/xml';
 		}
 
@@ -207,4 +213,4 @@ class Container extends \Awf\Container\Container
 		});
 
 	}
-} 
+}

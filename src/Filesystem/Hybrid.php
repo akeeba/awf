@@ -1,11 +1,13 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Filesystem;
+use Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * Hybrid filesystem abstraction. It uses direct file writing. When it detects that the write failed, it switches to
@@ -30,13 +32,19 @@ class Hybrid implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
-		$this->fileAdapter = new File($options);
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+		$this->fileAdapter = new File($options, $container);
 
 		if (isset($options['driver']))
 		{
@@ -46,7 +54,7 @@ class Hybrid implements FilesystemInterface
 			{
 				try
 				{
-					$this->abstractionAdapter = new $class($options);
+					$this->abstractionAdapter = new $class($options, $container);
 				}
 				// If we can't instantiate the abstraction adapter we'll only use the direct file write method
 				catch (\RuntimeException $e)
@@ -156,6 +164,23 @@ class Hybrid implements FilesystemInterface
 		return $ret;
 	}
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        $ret = $this->fileAdapter->cwd();
+
+        if (!$ret && is_object($this->abstractionAdapter))
+        {
+            return $this->abstractionAdapter->cwd();
+        }
+
+        return $ret;
+    }
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.
@@ -250,4 +275,4 @@ class Hybrid implements FilesystemInterface
 
 		return $list;
 	}
-} 
+}

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -67,6 +67,12 @@ class Mysqli extends Database\Restore
 	 */
 	protected function getDatabase()
 	{
+        // Do I have all I need?
+        if(!isset($this->container['dbrestore']['dbname']) || !isset($this->container['dbrestore']['dbuser']))
+        {
+            throw new \RuntimeException('AWF_RESTORE_ERROR_MISSINGDBDETAILS', 500);
+        }
+
 		if (!is_object($this->db))
 		{
 			$db = parent::getDatabase();

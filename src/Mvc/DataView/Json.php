@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -35,11 +35,12 @@ class Json extends Raw
 	/**
 	 * Public constructor
 	 *
-	 * @param   Container  $config  The component's configuration array
+	 * @param   Container  $container
+	 * @param   array      $config  The component's configuration array
 	 */
-	public function __construct($config = null)
+	public function __construct($container = null, $config = null)
 	{
-		parent::__construct($config);
+		parent::__construct($container);
 
 		if (isset($config['use_hypermedia']))
 		{

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -59,7 +59,7 @@ class Xml extends AbstractRegistryFormat
 
 		foreach ($xml->children() as $node)
 		{
-			$obj->$node['name'] = $this->getValueFromNode($node);
+			$obj->{$node['name']} = $this->getValueFromNode($node);
 		}
 
 		return $obj;
@@ -113,7 +113,7 @@ class Xml extends AbstractRegistryFormat
 
 				foreach ($node->children() as $child)
 				{
-					$value->$child['name'] = $this->getValueFromNode($child);
+					$value->{$child['name']} = $this->getValueFromNode($child);
 				}
 
 				break;

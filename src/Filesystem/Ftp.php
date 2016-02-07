@@ -1,18 +1,23 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Filesystem;
-use Awf\Text\Text;
+
+use Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * FTP filesystem abstraction layer
  */
 class Ftp implements FilesystemInterface
 {
+    /** @var  Container Application container */
+    protected $container;
+
 	/**
 	 * FTP server's hostname or IP address
 	 *
@@ -72,14 +77,22 @@ class Ftp implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  Ftp
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+        $this->container = $container;
+
 		if (isset($options['host']))
 		{
 			$this->host = $options['host'];
@@ -232,7 +245,7 @@ class Ftp implements FilesystemInterface
 	public function copy($from, $to)
 	{
 		$fromFile = $this->translatePath($from);
-		$toFile = $this->translatePath($to);
+		$toFile   = $this->translatePath($to);
 
 		// Make sure the buffer:// wrapper is loaded
 		class_exists('\\Awf\\Utils\\Buffer', true);
@@ -280,8 +293,18 @@ class Ftp implements FilesystemInterface
 	{
 		$targetFile = $this->translatePath($fileName);
 
-		@ftp_chmod($this->connection, $permissions, $targetFile);
+		return (@ftp_chmod($this->connection, $permissions, $targetFile) !== false);
 	}
+
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        return @ftp_pwd($this->connection);
+    }
 
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
@@ -308,13 +331,13 @@ class Ftp implements FilesystemInterface
 
 		$directories = explode('/', $targetDir);
 		$siteRootDir = $this->container['filesystemBase'];
-		$localDir = rtrim($siteRootDir, '/');
+
+		$localDir  = rtrim($siteRootDir, '/');
 		$remoteDir = '/' . $initialDir;
-		$ret = true;
 
 		foreach ($directories as $dir)
 		{
-			$localDir .= '/' . $dir;
+			$localDir  .= '/' . $dir;
 			$remoteDir .= '/' . $dir;
 
 			if (!is_dir($localDir))
@@ -358,7 +381,7 @@ class Ftp implements FilesystemInterface
 			}
 
 			$ret = true;
-			$di = new \DirectoryIterator($dirName);
+			$di  = new \DirectoryIterator($dirName);
 
 			/** @var \DirectoryIterator $dirEntry */
 			foreach ($di as $dirEntry)
@@ -396,15 +419,14 @@ class Ftp implements FilesystemInterface
 		$fileName = str_replace('\\', '/', $fileName);
 
 		$siteRootDir = $this->container['filesystemBase'];
+
 		$appRoot = str_replace('\\', '/', $siteRootDir);
 		$appRoot = rtrim($appRoot, '/');
 
 		if (strpos($fileName, $appRoot) === 0)
 		{
 			$fileName = substr($fileName, strlen($appRoot) + 1);
-
 			$fileName = trim($fileName, '/');
-
 			$fileName = rtrim($this->directory, '/') . '/' . $fileName;
 		}
 
@@ -437,8 +459,6 @@ class Ftp implements FilesystemInterface
 		if ($list === false)
 		{
 			throw new \RuntimeException("Sorry, your FTP server doesn't support our FTP directory browser.");
-
-			return;
 		}
 
 		$folders = array();
@@ -463,4 +483,4 @@ class Ftp implements FilesystemInterface
 
 		return $folders;
 	}
-} 
+}

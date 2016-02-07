@@ -1,11 +1,13 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Filesystem;
+
+use Awf\Container\Container;
 
 /**
  * The File adapter of the filesystem abstraction layer.
@@ -14,14 +16,18 @@ namespace Awf\Filesystem;
  */
 class File implements FilesystemInterface
 {
+    /** @var  Container Application container */
+    protected $container;
+
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Ignored by this class
+	 * @param   array       $options  Ignored by this class
+     * @param   Container   $container  Ignored by this class
 	 *
 	 * @return  File
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
 		// No further operation necessary
 	}
@@ -91,6 +97,16 @@ class File implements FilesystemInterface
 	{
 		return @chmod($fileName, $permissions);
 	}
+
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        return @getcwd();
+    }
 
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
@@ -192,8 +208,6 @@ class File implements FilesystemInterface
 		if (!is_resource($handle))
 		{
 			throw new \RuntimeException(sprintf('Cannot list contents of directory "%s" – make sure the folder exists and that you have adequate permissions to it', $dir), 500);
-
-			return false;
 		}
 
 		while (($entry = readdir($handle)) !== false)
@@ -341,4 +355,4 @@ class File implements FilesystemInterface
         closedir($handle);
         return $arr;
     }
-} 
+}

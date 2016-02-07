@@ -1,35 +1,23 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
 namespace Awf\Platform\Joomla\User;
 
+use Awf\Platform\Joomla\Application\Application;
+use Awf\Registry\Registry;
 use Awf\User\AuthenticationInterface;
 use Awf\User\PrivilegeInterface;
 use Awf\User\UserInterface;
-use JUser;
 
-class User implements UserInterface
+class User extends \JUser implements UserInterface
 {
-	/**
-	 * The internal Joomla! user object
-	 *
-	 * @var JUser
-	 */
-	private $user = null;
-
-	public function __construct($identifier = 0)
+	public function bind(&$array)
 	{
-		$this->user = new JUser($identifier);
-	}
-
-
-	public function bind($array)
-	{
-		return $this->user->bind($array);
+		return parent::bind($array);
 	}
 
 	/**
@@ -39,7 +27,7 @@ class User implements UserInterface
 	 */
 	public function getId()
 	{
-		return $this->user->id;
+		return $this->id;
 	}
 
 	/**
@@ -49,7 +37,7 @@ class User implements UserInterface
 	 */
 	public function getUsername()
 	{
-		return $this->user->username;
+		return $this->username;
 	}
 
 	/**
@@ -61,7 +49,7 @@ class User implements UserInterface
 	 */
 	public function setUsername($username)
 	{
-		$this->user->username = $username;
+		$this->username = $username;
 	}
 
 	/**
@@ -71,7 +59,7 @@ class User implements UserInterface
 	 */
 	public function getName()
 	{
-		return $this->user->name;
+		return $this->name;
 	}
 
 	/**
@@ -83,7 +71,7 @@ class User implements UserInterface
 	 */
 	public function setName($name)
 	{
-		$this->user->name = $name;
+		$this->name = $name;
 	}
 
 	/**
@@ -93,7 +81,7 @@ class User implements UserInterface
 	 */
 	public function getEmail()
 	{
-		return $this->user->email;
+		return $this->email;
 	}
 
 	/**
@@ -105,7 +93,7 @@ class User implements UserInterface
 	 */
 	public function setEmail($email)
 	{
-		$this->user->email = $email;
+		$this->email = $email;
 	}
 
 	/**
@@ -115,7 +103,7 @@ class User implements UserInterface
 	 */
 	public function getPassword()
 	{
-		return $this->user->password;
+		return $this->password;
 	}
 
 	/**
@@ -131,7 +119,7 @@ class User implements UserInterface
 			'password'		=> $password,
 			'password2'		=> $password,
 		);
-		$this->user->bind($data);
+		$this->bind($data);
 	}
 
 	/**
@@ -153,11 +141,16 @@ class User implements UserInterface
 	 * Gets the user's parameters. The parameters are stored in JSON format in the user record automatically. If you
 	 * need to write to them you can use the returned Registry object instance.
 	 *
-	 * @return  \Joomla\Registry\Registry
+	 * @return  Registry
 	 */
 	public function &getParameters()
 	{
-		return $this->user->params;
+        if (is_string($this->params))
+        {
+            $this->params = new Registry($this->params);
+        }
+
+		return $this->params;
 	}
 
 	/**
@@ -222,7 +215,9 @@ class User implements UserInterface
 	 */
 	public function getPrivilege($privilege, $default = false)
 	{
-		return $this->user->authorise($privilege);
+		$option = 'com_' . Application::getInstance()->getContainer()->extension_name;
+
+		return $this->authorise($privilege, $option);
 	}
 
 	/**
@@ -264,4 +259,4 @@ class User implements UserInterface
 	{
 		throw new \RuntimeException('triggerAuthenticationEvent is not availabe under Joomla!');
 	}
-} 
+}

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\Stubs\Utils;
 
@@ -33,16 +38,32 @@ class TestClosure
         }
     }
 
+    public function __get($name)
+    {
+        $method = 'get__'.$name;
+
+        if(is_callable(array($this, $method)))
+        {
+            return $this->$method();
+        }
+
+        return null;
+    }
+
     public function __call($method, $args)
     {
         if (isset($this->$method))
         {
-            $func = $this->$method;
+            $func   = $this->$method;
+            $pass[] = $this;
 
-            // Let's pass an instance of ourself, so we can manipulate other closures
-            array_unshift($args, $this);
+            // Pass everything by reference
+            for($i = 0; $i < count($args); $i++)
+            {
+                $pass[] =& $args[$i];
+            }
 
-            $result = call_user_func_array($func, $args);
+            $result = call_user_func_array($func, $pass);
 
             return $result;
         }

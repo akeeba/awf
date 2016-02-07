@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
@@ -38,7 +38,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$this->session = $this->newSession();
 	}
 
-	protected function newSession(array $cookies = [])
+	protected function newSession(array $cookies = array())
 	{
 		return new Manager(
 			new SegmentFactory(),
@@ -72,7 +72,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$segment->foo = 'bar';
 		$segment->baz = 'dib';
 
-		$expect = ['test' => ['foo' => 'bar', 'baz' => 'dib']];
+		$expect = array('test' => array('foo' => 'bar', 'baz' => 'dib'));
 		$this->assertSame($expect, $_SESSION);
 
 		// now clear it
@@ -157,9 +157,9 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($this->session->isAvailable());
 
 		// fake a cookie
-		$cookies = [
+		$cookies = array(
 			$this->session->getName() => 'fake-cookie-value',
-		];
+		);
 		$this->session = $this->newSession($cookies);
 
 		// now it should look active

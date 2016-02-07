@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * This class is based on the JPagination class found in Joomla! 3
@@ -72,6 +72,9 @@ class Pagination
 	protected $additionalUrlParams = array();
 
 	protected $application = null;
+
+    /** @var  object    Pagination data object */
+    protected static $data;
 
 	/**
 	 * Constructor.
@@ -315,14 +318,12 @@ class Pagination
 	 */
 	public function getData()
 	{
-		static $data;
-
-		if (!is_object($data))
+		if (!is_object(self::$data))
 		{
-			$data = $this->_buildDataObject();
+			self::$data = $this->_buildDataObject();
 		}
 
-		return $data;
+		return self::$data;
 	}
 
 	/**
@@ -497,16 +498,16 @@ class Pagination
 	 */
 	public function getListFooter()
 	{
-		$list = array();
-		$list['limit'] = $this->limit;
-		$list['limitstart'] = $this->limitStart;
-		$list['total'] = $this->total;
-		$list['limitfield'] = $this->getLimitBox();
+		$list                 = array();
+		$list['limit']        = $this->limit;
+		$list['limitstart']   = $this->limitStart;
+		$list['total']        = $this->total;
+		$list['limitfield']   = $this->getLimitBox();
 		$list['pagescounter'] = $this->getPagesCounter();
-		$list['pageslinks'] = $this->getPagesLinks();
+		$list['pageslinks']   = $this->getPagesLinks();
 
 		$templatePath = $this->application->getContainer()->templatePath;
-		$chromePath = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$chromePath   = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{
@@ -687,7 +688,7 @@ class Pagination
 		}
 
 		// Set the start and previous data objects.
-		$data->start = new Object('&laquo;');
+		$data->start    = new Object('&laquo;');
 		$data->previous = new Object('&lsaquo;');
 
 		if ($this->pagesCurrent > 1)
@@ -696,21 +697,23 @@ class Pagination
 
 			$data->start->base = '0';
 			$data->start->link = $router->route($params . '&limitstart=0');
+
 			$data->previous->base = $page;
 			$data->previous->link = $router->route($params . '&limitstart=' . $page);
 		}
 
 		// Set the next and end data objects.
 		$data->next = new Object('&rsaquo;');
-		$data->end = new Object('&raquo;');
+		$data->end  = new Object('&raquo;');
 
 		if ($this->pagesCurrent < $this->pagesTotal)
 		{
 			$next = $this->pagesCurrent * $this->limit;
-			$end = ($this->pagesTotal - 1) * $this->limit;
+			$end  = ($this->pagesTotal - 1) * $this->limit;
 
 			$data->next->base = $next;
 			$data->next->link = $router->route($params . '&limitstart=' . $next);
+
 			$data->end->base = $end;
 			$data->end->link = $router->route($params . '&limitstart=' . $end);
 		}

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -25,7 +25,7 @@ class UriTest extends AwfTestCase
 	 */
 	protected $object;
 
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
         parent::setUp();
 

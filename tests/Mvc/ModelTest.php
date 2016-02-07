@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
@@ -139,7 +139,7 @@ class ModelTest extends AwfTestCase
                 }
             ));
 
-            // Let's save current app istances, I'll have to restore them later
+            // Let's save current app instances, I'll have to restore them later
             $oldinstances = ReflectionHelper::getValue('\\Awf\\Application\\Application', 'instances');
             ReflectionHelper::setValue('\\Awf\\Application\\Application', 'instances', array('tests' => $fakeapp));
         }

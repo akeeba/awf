@@ -1,11 +1,13 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Filesystem;
+
+use Awf\Container\Container;
 
 /**
  * Filesystem abstraction interface.
@@ -21,11 +23,12 @@ interface FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  FilesystemInterface
 	 */
-	public function __construct(array $options);
+	public function __construct(array $options, Container $container = null);
 
 	/**
 	 * Write the contents into the file
@@ -76,6 +79,13 @@ interface FilesystemInterface
 	 */
 	public function chmod($fileName, $permissions);
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd();
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.
@@ -118,4 +128,4 @@ interface FilesystemInterface
 	 * @throws  \RuntimeException  When the server is incompatible with our folder scanner
 	 */
 	public function listFolders($dir = null);
-} 
+}

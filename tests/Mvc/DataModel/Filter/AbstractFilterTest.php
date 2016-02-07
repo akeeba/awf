@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\DataModel\AbstracFilter;
 
@@ -15,7 +20,7 @@ require_once 'AbstractFilterDataprovider.php';
  */
 class AbstractFilterTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

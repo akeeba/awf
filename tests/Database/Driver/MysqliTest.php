@@ -2,7 +2,7 @@
 /**
  * @package        awf
  * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -19,7 +19,7 @@ use Awf\Tests\Database\DatabaseMysqliCase;
  */
 class MysqliTest extends DatabaseMysqliCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}
@@ -186,7 +186,7 @@ class MysqliTest extends DatabaseMysqliCase
 	 */
 	public function testGetTableColumns()
 	{
-		$tableCol = array('id' => 'int unsigned', 'title' => 'varchar', 'start_date' => 'datetime', 'description' => 'text');
+		$tableCol = array('id' => 'int unsigned', 'title' => 'varchar', 'start_date' => 'datetime', 'description' => 'varchar');
 
 		$this->assertThat(
 			self::$driver->getTableColumns('awf_dbtest'),
@@ -231,7 +231,7 @@ class MysqliTest extends DatabaseMysqliCase
 		$description = new \stdClass;
 		$description->Default = null;
 		$description->Field = 'description';
-		$description->Type = 'text';
+		$description->Type = 'varchar(255)';
 		$description->Null = 'NO';
 		$description->Key = '';
 		$description->Collation = 'utf8_general_ci';
@@ -574,7 +574,7 @@ class MysqliTest extends DatabaseMysqliCase
 	 */
 	public function testSelect()
 	{
-		$altDb = defined('AWFTEST_DATABASE_MYSQL_ALTDB') ? AWFTEST_DATABASE_MYSQL_ALTDB : getenv('AWFTEST_DATABASE_MYSQL_ALTDB');
+		$altDb = defined('AWFTEST_DATABASE_MYSQLI_ALTDB') ? AWFTEST_DATABASE_MYSQLI_ALTDB : getenv('AWFTEST_DATABASE_MYSQLI_ALTDB');
 		self::$driver->select($altDb);
 
 		$query = 'SELECT DATABASE()';
@@ -654,7 +654,7 @@ class MysqliTest extends DatabaseMysqliCase
 
 		/* try to insert this tuple, inserted only when savepoint != null */
 		$queryIns = self::$driver->getQuery(true);
-		$queryIns->insert('#__dbtest')
+		$queryIns->insert('#__dbtest_innodb')
 			->columns('id, title, start_date, description')
 			->values("7, 'testRollback', '1970-01-01', 'testRollbackSp'");
 		self::$driver->setQuery($queryIns)->execute();
@@ -667,7 +667,7 @@ class MysqliTest extends DatabaseMysqliCase
 
 		/* try to insert this tuple, always rolled back */
 		$queryIns = self::$driver->getQuery(true);
-		$queryIns->insert('#__dbtest')
+		$queryIns->insert('#__dbtest_innodb')
 			->columns('id, title, start_date, description')
 			->values("8, 'testRollback', '1972-01-01', 'testRollbackSp'");
 		self::$driver->setQuery($queryIns)->execute();
@@ -686,7 +686,7 @@ class MysqliTest extends DatabaseMysqliCase
 		 */
 		$queryCheck = self::$driver->getQuery(true);
 		$queryCheck->select('*')
-			->from('#__dbtest')
+			->from('#__dbtest_innodb')
 			->where("description = 'testRollbackSp'");
 		self::$driver->setQuery($queryCheck);
 		$result = self::$driver->loadRowList();

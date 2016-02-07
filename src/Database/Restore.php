@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -161,6 +161,9 @@ abstract class Restore
 	 */
 	protected $container = null;
 
+    /** @var array Internal cache for Restore instances */
+    protected static $instances = array();
+
 	/**
 	 * Public constructor. Initialises the database restoration engine.
 	 *
@@ -177,12 +180,17 @@ abstract class Restore
 
 		$this->container = $container;
 
+        if(!isset($container['dbrestore']['dbkey']))
+        {
+            throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDBKEYINCONTAINER'), 500);
+        }
+
 		$this->dbKey = $container['dbrestore']['dbkey'];
 
 		$maxExecTime = isset($container['dbrestore']['maxexectime']) ? (int)$container['dbrestore']['maxexectime'] : 5;
-		$runTimeBias = $container['dbrestore']['runtimebias'] ? (int)$container['dbrestore']['runtimebias'] : 75;
+		$runTimeBias = isset($container['dbrestore']['runtimebias']) ? (int)$container['dbrestore']['runtimebias'] : 75;
 
-		$maxExecTime = ($maxExecTime < 1) ? 1 : $maxExecTime;
+		$maxExecTime = ($maxExecTime <  1) ?  1 : $maxExecTime;
 		$runTimeBias = ($runTimeBias < 10) ? 10 : $runTimeBias;
 
 		$this->timer = new Timer($maxExecTime, $runTimeBias);
@@ -232,22 +240,36 @@ abstract class Restore
 	 */
 	public static function getInstance(Container $container)
 	{
-		static $instances = array();
-
 		if (!isset($container['dbrestore']))
 		{
 			throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDATAINCONTAINER'), 500);
 		}
 
+        if(!isset($container['dbrestore']['dbkey']))
+        {
+            throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDBKEYINCONTAINER'), 500);
+        }
+
 		$dbkey = $container['dbrestore']['dbkey'];
 
-		if (!array_key_exists($dbkey, $instances))
+		if (!array_key_exists($dbkey, self::$instances))
 		{
-			$class = '\\Awf\\Database\\Restore\\' . ucfirst($container['dbrestore']['dbtype']);
-			$instances[$dbkey] = new $class($container);
+            if(!isset($container['dbrestore']['dbtype']))
+            {
+                throw new \Exception(Text::_('AWF_RESTORE_ERROR_NORESTOREDBTYPEINCONTAINER'), 500);
+            }
+
+            $class = '\\Awf\\Database\\Restore\\' . ucfirst($container['dbrestore']['dbtype']);
+
+            if(!class_exists($class, true))
+            {
+                throw new \Exception(Text::_('AWF_RESTORE_ERROR_RESTORECLASSNOTEXISTS'), 500);
+            }
+
+			self::$instances[$dbkey] = new $class($container);
 		}
 
-		return $instances[$dbkey];
+		return self::$instances[$dbkey];
 	}
 
 	/**
@@ -335,17 +357,22 @@ abstract class Restore
 		}
 
 		// First, try to fetch from the session storage
-		$this->totalSize = $this->getFromStorage('totalsize', 0);
-		$this->runSize = $this->getFromStorage('runsize', 0);
-		$this->partsMap = $this->getFromStorage('partsmap', array());
-		$this->currentPart = $this->getFromStorage('curpart', 0);
-		$this->fileOffset = $this->getFromStorage('foffset', 0);
-		$this->start = $this->getFromStorage('start', 0);
+		$this->totalSize    = $this->getFromStorage('totalsize', 0);
+		$this->runSize      = $this->getFromStorage('runsize', 0);
+		$this->partsMap     = $this->getFromStorage('partsmap', array());
+		$this->currentPart  = $this->getFromStorage('curpart', 0);
+		$this->fileOffset   = $this->getFromStorage('foffset', 0);
+		$this->start        = $this->getFromStorage('start', 0);
 		$this->totalQueries = $this->getFromStorage('totalqueries', 0);
 
 		// If that didn't work try a full initalisation
 		if (empty($this->partsMap))
 		{
+            if(!isset($this->container['dbrestore']['sqlfile']))
+            {
+                throw new \RuntimeException('AWF_RESTORE_ERROR_NORESTOREFILEINCONTAINER', 500);
+            }
+
 			$sqlfile = $this->container['dbrestore']['sqlfile'];
 
 			$parts = $this->getParam('parts', 1);
@@ -640,9 +667,10 @@ abstract class Restore
 	{
 		$parts = $this->getParam('parts', 1);
 		$this->openFile();
-		$this->lineNumber = $this->start;
+
+		$this->lineNumber    = $this->start;
 		$this->totalSizeRead = 0;
-		$this->queries = 0;
+		$this->queries       = 0;
 
 		while ($this->timer->getTimeLeft() > 0)
 		{
@@ -698,8 +726,9 @@ abstract class Restore
 			{
 				$this->fileOffset = 0;
 			}
-			$bytes_in_step = $current_foffset - $this->fileOffset;
-			$this->runSize = (is_null($this->runSize) ? 0 : $this->runSize) + $bytes_in_step;
+
+			$bytes_in_step    = $current_foffset - $this->fileOffset;
+			$this->runSize    = (is_null($this->runSize) ? 0 : $this->runSize) + $bytes_in_step;
 			$this->fileOffset = $current_foffset;
 		}
 
@@ -726,6 +755,7 @@ abstract class Restore
 
 		// Calculate estimated time
 		$bytesPerSecond = $bytes_in_step / $this->timer->getRunningTime();
+
 		if ($bytesPerSecond <= 0.01)
 		{
 			$remainingSeconds = 120;

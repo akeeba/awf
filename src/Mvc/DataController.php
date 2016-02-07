@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
@@ -418,7 +418,10 @@ class DataController extends Controller
 			$this->getIDsFromRequest($model, true);
 		}
 
-		$model->unlock();
+		if ($model->getId())
+		{
+			$model->unlock();
+		}
 
 		// Remove any saved data
 		$this->container->segment->remove($model->getHash() . 'savedata');

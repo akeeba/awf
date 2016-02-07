@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -470,8 +470,8 @@ final class ArrayHelper
 						$locale = $sortLocale[$i];
 					}
 
-					$va = $a->$key[$i];
-					$vb = $b->$key[$i];
+					$va = $a->{$key[$i]};
+					$vb = $b->{$key[$i]};
 
 					if ((is_bool($va) || is_numeric($va)) && (is_bool($vb) || is_numeric($vb)))
 					{

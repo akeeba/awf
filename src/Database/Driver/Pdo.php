@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -126,6 +126,7 @@ abstract class Pdo extends Driver
 		// Find the correct PDO DSN Format to use:
 		switch ($this->options['driver'])
 		{
+            // @codeCoverageIgnoreStart
 			case 'cubrid':
 				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 33000;
 
@@ -206,7 +207,7 @@ abstract class Pdo extends Driver
 				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
 
 				break;
-
+            // @codeCoverageIgnoreEnd
 			case 'mysql':
 				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 3306;
 
@@ -216,7 +217,7 @@ abstract class Pdo extends Driver
 				$with = array($this->options['host'], $this->options['port'], $this->options['database'], $this->options['charset']);
 
 				break;
-
+            // @codeCoverageIgnoreStart
 			case 'oci':
 				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 1521;
 				$this->options['charset'] = (isset($this->options['charset'])) ? $this->options['charset'] : 'AL32UTF8';
@@ -282,7 +283,7 @@ abstract class Pdo extends Driver
 				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
 
 				break;
-
+            // @codeCoverageIgnoreEnd
 			default:
 				throw new \UnexpectedValueException('The ' . $this->options['driver'] . ' driver is not supported.');
 		}
@@ -362,6 +363,8 @@ abstract class Pdo extends Driver
 	 */
 	public function execute()
 	{
+		static $isReconnecting = false;
+
 		$this->connect();
 
 		if (!is_object($this->connection))
@@ -419,8 +422,10 @@ abstract class Pdo extends Driver
 			$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
 
 			// Check if the server was disconnected.
-			if (!$this->connected())
+			if (!$this->connected() && !$isReconnecting)
 			{
+				$isReconnecting = true;
+
 				try
 				{
 					// Attempt to reconnect.
@@ -439,7 +444,10 @@ abstract class Pdo extends Driver
 				}
 
 				// Since we were able to reconnect, run the query again.
-				return $this->execute();
+				$result = $this->execute();
+				$isReconnecting = false;
+
+				return $result;
 			}
 			else
 				// The server was not disconnected.
@@ -940,4 +948,35 @@ abstract class Pdo extends Driver
 		// Get connection back
 		$this->__construct($this->options);
 	}
+
+    /**
+     * Get the current query object or a new Query object.
+     *
+     * @param   boolean  $new  False to return the current query object, True to return a new Query object.
+     *
+     * @return  Query  The current query object or a new object extending the Query class.
+     *
+     * @throws  \RuntimeException
+     */
+    public function getQuery($new = false)
+    {
+        if ($new)
+        {
+            // We are going to use the generic PDO driver not matter what
+            $class = '\\Awf\\Database\\Query\\Pdo';
+
+            // Make sure we have a query class for this driver.
+            if (!class_exists($class))
+            {
+                // If it doesn't exist we are at an impasse so throw an exception.
+                throw new \RuntimeException('Database Query Class not found.');
+            }
+
+            return new $class($this);
+        }
+        else
+        {
+            return $this->sql;
+        }
+    }
 }

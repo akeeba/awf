@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Nicholas
- * Date: 6/6/2014
- * Time: 1:20 μμ
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Utils;
@@ -23,7 +22,7 @@ class IpTest extends AwfTestCase
     /** @var  array Saves a copy of the $_SERVER variable*/
     private $serverBCK;
 
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
 

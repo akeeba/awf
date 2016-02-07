@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
+
 namespace Awf\Tests\DataModel\Text;
 
 use Awf\Mvc\DataModel\Filter\Text;
@@ -12,7 +18,7 @@ require_once 'TextDataprovider.php';
  */
 class TextTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		solo
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * This file contains a namespaced but otherwise unmodified copy of Pimple, the DI

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
@@ -10,6 +10,7 @@
 
 namespace Awf\Platform\Joomla\Session;
 
+use Awf\Platform\Joomla\Helper\Helper;
 use Awf\Session\Manager as SessionManager;
 use Awf\Session\Segment;
 use Awf\Session\SegmentFactory;
@@ -157,7 +158,11 @@ class Manager extends SessionManager
 	 */
 	public function start()
 	{
-		\JFactory::getSession()->start();
+        // Start the session only if we're not in CLI
+        if(!Helper::isCli())
+        {
+            \JFactory::getSession()->start();
+        }
 
 		return true;
 	}

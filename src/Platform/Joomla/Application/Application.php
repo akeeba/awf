@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -38,27 +38,13 @@ class Application extends \Awf\Application\Application
 			$name = $container->input->get('option', null);
 		}
 
-		$classNames = array(
-			'\\' . ucfirst($name) . '\\Application',
-			'\\' . ucfirst(strtolower($name)) . '\\Application',
-		);
-
 		$name = strtolower($name);
 
 		if (!array_key_exists($name, self::$instances))
 		{
-			$className = null;
+			$className = '\\' . ucfirst($name) . '\\Application';
 
-			foreach ($classNames as $possibleClassName)
-			{
-				if (class_exists($possibleClassName))
-				{
-					$className = $possibleClassName;
-					break;
-				}
-			}
-
-			if (empty($className))
+			if (!class_exists($className))
 			{
 				$filePath = (Helper::isBackend() ? JPATH_ADMINISTRATOR : JPATH_SITE) . '/components/com_'
 					. strtolower($name) . '/' . $name . '/application.php';
@@ -105,37 +91,18 @@ class Application extends \Awf\Application\Application
 		$this->container->eventDispatcher->attach(new ViewAlternatePaths($this->container->eventDispatcher));
 
 		// Set up the template (theme) to use – different for front-end and back-end
-		if (empty($this->template) || ($this->template == $this->container->application_name))
+		if (empty($this->template) || ($this->template == $this->container->extension_name))
 		{
 			$template = Helper::isBackend() ? 'backend' : 'frontend';
 			$this->setTemplate($template);
 		}
 
 		// Load the extra language files
-		$appName = $this->container->application_name;
-
-		if (Helper::isBackend() && (substr($appName, -5) == 'Admin'))
-		{
-			$appName = substr($appName, 0, -5);
-		}
-
+		$appName = $this->container->extension_name;
 		$appNameLower = strtolower($appName);
 		$languageTag = \JFactory::getLanguage()->getTag();
 		Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', false, $this->container->languagePath);
 		Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, $this->container->languagePath);
-
-		// Load the framework's language file
-		Text::loadLanguage('en-GB', 'lib_awf', '.ini', false, $this->container->languagePath);
-		Text::loadLanguage($languageTag, 'lib_awf', '.ini', false, $this->container->languagePath);
-
-		// In the back-end, also load front-end languages
-		if (Helper::isBackend())
-		{
-			Text::loadLanguage('en-GB', $appName, '.com_' . $appNameLower . '.ini', true, JPATH_SITE . '/language');
-			Text::loadLanguage($languageTag, $appName, '.com_' . $appNameLower . '.ini', true, JPATH_SITE . '/language');
-			Text::loadLanguage('en-GB', 'lib_awf', '.ini', true, JPATH_SITE . '/language');
-			Text::loadLanguage($languageTag, 'lib_awf', '.ini', false, JPATH_SITE . '/language');
-		}
 	}
 
 	/**
@@ -158,6 +125,11 @@ class Application extends \Awf\Application\Application
 	 */
 	public function redirect($url, $msg = '', $msgType = 'info', $moved = false)
 	{
+		if (($msgType == 'info') && version_compare(JVERSION, '3.2.0', 'ge'))
+		{
+			$msgType = 'message';
+		}
+
 		\JFactory::getApplication()->enqueueMessage($msg, $msgType);
 		\JFactory::getApplication()->redirect($url, $moved);
 	}
@@ -172,6 +144,11 @@ class Application extends \Awf\Application\Application
 	 */
 	public function enqueueMessage($msg, $type = 'info')
 	{
+		if (($type == 'info') && version_compare(JVERSION, '3.2.0', 'ge'))
+		{
+			$type = 'message';
+		}
+
 		\JFactory::getApplication()->enqueueMessage($msg, $type);
 	}
 
@@ -196,4 +173,4 @@ class Application extends \Awf\Application\Application
 	{
 		\JFactory::getApplication()->close($code);
 	}
-} 
+}

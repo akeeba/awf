@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -240,7 +240,7 @@ class Controller
 		// Initialise
 		$this->methods = array();
 		$this->message = null;
-		$this->messageType = 'message';
+		$this->messageType = 'info';
 		$this->paths = array();
 		$this->redirect = null;
 		$this->taskMap = array();

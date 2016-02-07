@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
@@ -120,4 +120,12 @@ interface SegmentInterface
 	 *
 	 */
 	public function clearFlash();
+
+	/**
+	 * Commit the session data to PHP's session storage using a safely encoded format to prevent PHP session
+	 * unserialization attacks.
+	 *
+	 * @return  void
+	 */
+	public function save();
 }

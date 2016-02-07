@@ -1,13 +1,13 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Utils;
 
-abstract class String
+abstract class StringHandling
 {
 	/**
 	 * Convert a string into a slug (alias), suitable for use in URLs. Please

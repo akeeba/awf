@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 class DataModelGenericDataprovider
 {
@@ -50,7 +55,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -109,7 +114,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -182,7 +187,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -241,7 +246,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -302,7 +307,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,
@@ -363,7 +368,7 @@ class DataModelGenericDataprovider
                     ),
                     'description' => (object) array(
                         'Field' => 'description',
-                        'Type' => 'text',
+                        'Type' => 'varchar(255)',
                         'Collation' => 'utf8_general_ci',
                         'Null' => 'NO',
                         'Key' => null,

@@ -1,17 +1,22 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
 namespace Awf\Filesystem;
+use Awf\Application\Application;
+use Awf\Container\Container;
 
 /**
  * SFTP filesystem abstraction layer
  */
 class Sftp implements FilesystemInterface
 {
+    /** @var  Container Application container */
+    protected $container;
+
 	/**
 	 * SFTP server's hostname or IP address
 	 *
@@ -78,14 +83,20 @@ class Sftp implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array   $options  Configuration options for the filesystem abstraction object
+	 * @param   array       $options    Configuration options for the filesystem abstraction object
+     * @param   Container   $container  Application container
 	 *
 	 * @return  Sftp
-	 *
-	 * @throws  \RuntimeException
 	 */
-	public function __construct(array $options)
+	public function __construct(array $options, Container $container = null)
 	{
+        if(!is_object($container))
+        {
+            $container = Application::getInstance()->getContainer();
+        }
+
+        $this->container = $container;
+
 		if (isset($options['host']))
 		{
 			$this->host = $options['host'];
@@ -118,7 +129,7 @@ class Sftp implements FilesystemInterface
 
 		if (isset($options['publicKey']))
 		{
-			$this->privateKey = $options['publicKey'];
+			$this->publicKey = $options['publicKey'];
 		}
 
 		$this->connect();
@@ -182,18 +193,6 @@ class Sftp implements FilesystemInterface
 		if ($this->sftpHandle === false)
 		{
 			throw new \RuntimeException('Cannot start an SFTP session with the server', 500);
-		}
-
-		// Attempt to change to the initial directory
-		if (!@$result = @ssh2_sftp_stat($this->sftpHandle, $this->directory))
-		{
-			$this->connection = null;
-			$this->sftpHandle = null;
-
-			if (!empty($this->directory))
-			{
-				throw new \RuntimeException(sprintf('Cannot change to initial SFTP directory "%s" – make sure the folder exists and that you have adequate permissions to it', $this->directory), 500);
-			}
 		}
 	}
 
@@ -306,6 +305,16 @@ class Sftp implements FilesystemInterface
 		}
 	}
 
+    /**
+     * Return the current working dir
+     *
+     * @return  string
+     */
+    public function cwd()
+    {
+        return ssh2_sftp_realpath($this->sftpHandle, ".");
+    }
+
 	/**
 	 * Create a directory if it doesn't exist. The operation is implicitly recursive, i.e. it will create all
 	 * intermediate directories if they do not already exist.
@@ -322,7 +331,7 @@ class Sftp implements FilesystemInterface
 
 		$ret = @ssh2_sftp_mkdir($this->sftpHandle, $targetDir, $permissions, true);
 
-		return true;
+		return $ret;
 	}
 
 	/**
@@ -387,9 +396,10 @@ class Sftp implements FilesystemInterface
 	{
 		$fileName = str_replace('\\', '/', $fileName);
 
-		$realDir = rtrim($this->directory, '/');
+		$realDir  = rtrim($this->directory, '/');
 		$realDir .= '/' . dirname($fileName);
-		$realDir = '/' . ltrim($realDir, '/');
+		$realDir  = '/' . ltrim($realDir, '/');
+
 		$fileName = $realDir . '/' . basename($fileName);
 
 		return $fileName;
@@ -413,7 +423,7 @@ class Sftp implements FilesystemInterface
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
 		$list = array();
-		$dir = ltrim($dir, '/');
+		$dir  = ltrim($dir, '/');
 
 		try
 		{
@@ -454,4 +464,4 @@ class Sftp implements FilesystemInterface
 
 		return $list;
 	}
-} 
+}

@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\DataModel;
 
@@ -19,6 +24,11 @@ require_once 'SpecialColumnsDataprovider.php';
  */
 class DataModelSpecialColumnsTest extends DatabaseMysqliCase
 {
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
     /**
      * @group           DataModel
      * @group           DataModelReorder
@@ -28,7 +38,7 @@ class DataModelSpecialColumnsTest extends DatabaseMysqliCase
     public function testReorder($test, $check)
     {
         // Please note that if you try to debug this test, you'll get a "Couldn't fetch mysqli_result" error
-        // That's harmless and appears in debug only, you might want to suppress exception thowing
+        // That's harmless and appears in debug only, you might want to suppress exception throwing
         //\PHPUnit_Framework_Error_Warning::$enabled = false;
 
         $before = 0;

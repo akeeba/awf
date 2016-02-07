@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -459,6 +459,8 @@ class Mysqli extends Driver
 	 */
 	public function execute()
 	{
+		static $isReconnecting = false;
+
 		$this->connect();
 
 		if (!is_object($this->connection))
@@ -490,6 +492,8 @@ class Mysqli extends Driver
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @mysqli_query($this->connection, $sql);
 
+		unset($sql);
+
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
@@ -497,8 +501,10 @@ class Mysqli extends Driver
 			$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
 
 			// Check if the server was disconnected.
-			if (!$this->connected())
+			if (!$this->connected() && !$isReconnecting)
 			{
+				$isReconnecting = true;
+
 				try
 				{
 					// Attempt to reconnect.
@@ -515,7 +521,10 @@ class Mysqli extends Driver
 				$this->errorMsg = null;
 
 				// Since we were able to reconnect, run the query again.
-				return $this->execute();
+				$result = $this->execute();
+				$isReconnecting = false;
+
+				return $result;
 			}
 			// The server was not disconnected.
 			else

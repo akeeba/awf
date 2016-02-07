@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -183,7 +183,7 @@ class View
 	 * Constructor
 	 *
 	 * @param   Container $container   A named configuration array for object construction.<br/>
-	 *                                 Inside it you can have an 'mvc_option' array with the following options:<br/>
+	 *                                 Inside it you can have an 'mvc_config' array with the following options:<br/>
 	 *                                 name: the name (optional) of the view (defaults to the view class name suffix).<br/>
 	 *                                 escape: the name (optional) of the function to use for escaping strings<br/>
 	 *                                 template_path: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>

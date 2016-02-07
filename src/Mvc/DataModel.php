@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * Based on ideas and code from FOF, Joomla! Platform, Joomla! Framework and Laravel 4
@@ -508,6 +508,43 @@ class DataModel extends Model
 			$this->setState($name, $value);
 		}
 	}
+
+    /**
+     * Adds a known field to the DataModel. This is only necessary if you are using a custom buildQuery with JOINs or
+     * field aliases. Please note that you need to make further modifications for bind() and save() to work in this
+     * case. Please refer to the documentation blocks of these methods for more information. It is generally considered
+     * a very BAD idea using JOINs instead of relations. It complicates your life and is bound to cause bugs that are
+     * very hard to track back.
+     *
+     * @param   string  $fieldName  The name of the field
+     * @param   mixed   $default    Default value, used by reset() (default: null)
+     * @param   string  $type       Database type for the field. If unsure use 'integer', 'float' or 'text'.
+     * @param   bool    $replace    Should we replace an existing known field definition?
+     *
+     * @return  $this  Self, for chaining
+     */
+    public function addKnownField($fieldName, $default = null, $type = 'integer', $replace = false)
+    {
+        if (array_key_exists($fieldName, $this->knownFields) && !$replace)
+        {
+            return $this;
+        }
+
+        $info = (object)array(
+            'Default' => $default,
+            'Type' => $type,
+        );
+
+        $this->knownFields[$fieldName] = $info;
+
+        // Initialize only the null or not yet set records
+        if(!isset($this->recordData[$fieldName]))
+        {
+            $this->recordData[$fieldName] = $default;
+        }
+
+        return $this;
+    }
 
 	/**
 	 * Get the columns from a database table.
@@ -1263,7 +1300,7 @@ class DataModel extends Model
 	 *
 	 * @return  $this  Self, for chaining
 	 */
-	public function chunk($chunkSize, callable $callback)
+	public function chunk($chunkSize, $callback)
 	{
 		$totalItems = $this->count();
 
@@ -2891,7 +2928,7 @@ class DataModel extends Model
 	 *
 	 * @return $this
 	 */
-	public function whereHas($relation, callable $callBack, $replace = true)
+	public function whereHas($relation, $callBack, $replace = true)
 	{
 		$this->has($relation, 'callback', $callBack, $replace);
 

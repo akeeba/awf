@@ -31,6 +31,25 @@
     </row>
   </table>
 
+  <table name="awf_users">
+    <column>id</column>
+    <column>name</column>
+    <column>email</column>
+    <column>username</column>
+    <column>password</column>
+    <column>parameters</column>
+
+    <row>
+      <value>1</value>
+      <value>test</value>
+      <value>test@example.com</value>
+      <value>test</value>
+      <!-- Hashed value for "test" -->
+      <value>$2y$10$1bZNcHV4m11lL2vHOQsQau7I50J.QgOBRFp2W8NoL7fC/SsFBXw86</value>
+      <value></value>
+    </row>
+  </table>
+
   <table name="awf_dbtest_extended">
     <column>id</column>
     <column>title</column>

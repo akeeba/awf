@@ -2,7 +2,7 @@
 /**
  * @package        awf
  * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -124,6 +124,12 @@ abstract class DatabaseMysqlCase extends DatabaseTest
 
 			$restore = new \Awf\Database\Restore\Mysql(static::$container);
 			$restore->stepRestoration();
+
+			static::$container->appConfig->set('dbhost', self::$options['host']);
+			static::$container->appConfig->set('dbuser', self::$options['user']);
+			static::$container->appConfig->set('dbpass', self::$options['password']);
+			static::$container->appConfig->set('dbname', self::$options['database']);
+			static::$container->appConfig->set('prefix', 'awf_');
 		}
 	}
 

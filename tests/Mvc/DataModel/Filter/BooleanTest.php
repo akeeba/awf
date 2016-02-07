@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
+
 namespace Awf\Tests\DataModel\Filter\Boolean;
 
 use Awf\Mvc\DataModel\Filter\Boolean;
@@ -13,7 +19,7 @@ require_once 'BooleanDataprovider.php';
  */
 class BooleanTest extends DatabaseMysqliCase
 {
-    protected function setUp()
+    protected function setUp($resetContainer = true)
     {
         parent::setUp(false);
     }

@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
+
 namespace Awf\Tests\DataModel\Relation\Relation\BelongsToMany;
 
 use Awf\Mvc\DataModel\Collection;
@@ -18,7 +24,12 @@ require_once 'BelongsToManyDataprovider.php';
  */
 class BelongsToManyTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           BelongsToMany
      * @group           BelongsToManyContruct
      * @covers          Awf\Mvc\DataModel\Relation\BelongsToMany::__construct

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd 
+ * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -9,6 +9,9 @@ namespace Awf\Platform\Joomla\Application;
 
 use Awf\Utils\Phpfunc;
 
+/**
+ * @property   \Awf\Platform\Joomla\Container\Container $container
+ */
 class Configuration extends \Awf\Application\Configuration
 {
 	/**
@@ -32,34 +35,11 @@ class Configuration extends \Awf\Application\Configuration
 				'driver'	=> 'file'
 			),
 			'dateformat'	=> \JText::_('DATE_FORMAT_LC2'),
-			'base_url'	=> \JUri::base() . '/index.php?option=com_' . strtolower($this->container->application_name),
-			'live_site'	=> \JUri::base() . '/index.php?option=com_' . strtolower($this->container->application_name),
+			'base_url'	=> \JUri::base() . 'index.php?option=com_' . strtolower($this->container->extension_name),
+			'live_site'	=> \JUri::base() . 'index.php?option=com_' . strtolower($this->container->extension_name),
 			'cms_url'	=> \JUri::base(),
-			'options'	=> array(),
+			'options'	=> new \stdClass(),
 		);
-
-		// Get the Joomla! FTP layer options
-		if (!class_exists('JClientHelper'))
-		{
-			\JLoader::import('joomla.client.helper');
-		}
-
-		$ftpOptions = \JClientHelper::getCredentials('ftp');
-
-		// If the FTP layer is enabled, enable the Hybrid filesystem engine
-		if ($ftpOptions['enabled'] == 1)
-		{
-			$data['fs'] = array(
-				'driver'	=> 'hybrid',
-				'host'		=> $ftpOptions['host'],
-				'port'		=> empty($ftpOptions['port']) ? '21' : $ftpOptions['port'],
-				'directory'	=> rtrim($ftpOptions['root'], '/\\'),
-				'ssl'		=> false,
-				'passive'	=> true,
-				'username'	=> $ftpOptions['user'],
-				'password'	=> $ftpOptions['pass'],
-			);
-		}
 
 		// Populate the options key with the component configuration
 		$db = $this->container->db;
@@ -67,7 +47,7 @@ class Configuration extends \Awf\Application\Configuration
 		$sql = $db->getQuery(true)
 			->select($db->qn('params'))
 			->from($db->qn('#__extensions'))
-			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->application_name)));
+			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->extension_name)));
 
 		try
 		{
@@ -109,7 +89,7 @@ class Configuration extends \Awf\Application\Configuration
 		$sql = $db->getQuery(true)
 			->update($db->qn('#__extensions'))
 			->set($db->qn('params') . ' = ' . $db->q($optionsJson))
-			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->application_name)));
+			->where($db->qn('element') . " = " . $db->q('com_' . strtolower($this->container->extension_name)));
 
 		$db->setQuery($sql)->execute();
 	}

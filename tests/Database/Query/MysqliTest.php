@@ -2,7 +2,7 @@
 /**
  * @package        awf
  * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -116,7 +116,7 @@ class MysqliTest extends AwfTestCase
 	 *
 	 * @return  void
 	 */
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 

@@ -1,8 +1,7 @@
 <?php
 /**
  * @package        awf
- * @subpackage     tests.date.date
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
@@ -12,7 +11,6 @@ namespace Awf\Tests\Database\Driver;
 
 use Awf\Database\Driver;
 use Awf\Tests\Database\DatabaseMysqlCase;
-use Awf\Tests\Helpers\ReflectionHelper;
 
 /**
  * Test class for Awf\Database\Driver\Mysql.
@@ -21,7 +19,7 @@ use Awf\Tests\Helpers\ReflectionHelper;
  */
 class MysqlTest extends DatabaseMysqlCase
 {
-	protected function setUp()
+	protected function setUp($resetContainer = true)
 	{
 		parent::setUp(false);
 	}
@@ -199,7 +197,7 @@ class MysqlTest extends DatabaseMysqlCase
 	 */
 	public function testGetTableColumns()
 	{
-		$tableCol = array('id' => 'int unsigned', 'title' => 'varchar', 'start_date' => 'datetime', 'description' => 'text');
+		$tableCol = array('id' => 'int unsigned', 'title' => 'varchar', 'start_date' => 'datetime', 'description' => 'varchar');
 
 		$this->assertThat(
 			self::$driver->getTableColumns('awf_dbtest'),
@@ -244,7 +242,7 @@ class MysqlTest extends DatabaseMysqlCase
 		$description = new \stdClass;
 		$description->Default    = null;
 		$description->Field      = 'description';
-		$description->Type       = 'text';
+		$description->Type       = 'varchar(255)';
 		$description->Null       = 'NO';
 		$description->Key        = '';
 		$description->Collation  = 'utf8_general_ci';
@@ -667,7 +665,7 @@ class MysqlTest extends DatabaseMysqlCase
 
 		/* try to insert this tuple, inserted only when savepoint != null */
 		$queryIns = self::$driver->getQuery(true);
-		$queryIns->insert('#__dbtest')
+		$queryIns->insert('#__dbtest_innodb')
 			->columns('id, title, start_date, description')
 			->values("7, 'testRollback', '1970-01-01', 'testRollbackSp'");
 		self::$driver->setQuery($queryIns)->execute();
@@ -680,7 +678,7 @@ class MysqlTest extends DatabaseMysqlCase
 
 		/* try to insert this tuple, always rolled back */
 		$queryIns = self::$driver->getQuery(true);
-		$queryIns->insert('#__dbtest')
+		$queryIns->insert('#__dbtest_innodb')
 			->columns('id, title, start_date, description')
 			->values("8, 'testRollback', '1972-01-01', 'testRollbackSp'");
 		self::$driver->setQuery($queryIns)->execute();
@@ -699,7 +697,7 @@ class MysqlTest extends DatabaseMysqlCase
 		 */
 		$queryCheck = self::$driver->getQuery(true);
 		$queryCheck->select('*')
-			->from('#__dbtest')
+			->from('#__dbtest_innodb')
 			->where("description = 'testRollbackSp'");
 		self::$driver->setQuery($queryCheck);
 		$result = self::$driver->loadRowList();

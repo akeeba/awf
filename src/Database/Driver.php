@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -218,12 +218,19 @@ abstract class Driver implements DatabaseInterface
 			$options = array(
 				'driver'	=> $config->get('dbdriver', 'mysqli'),
 				'database'	=> $config->get('dbname', 'solo'),
-				'select'	=> true,
+				'select'	=> $config->get('dbselect', true),
 				'host'		=> $config->get('dbhost', 'localhost'),
 				'user'		=> $config->get('dbuser', ''),
 				'password'	=> $config->get('dbpass', ''),
 				'prefix'	=> $config->get('prefix', 'solo_'),
 			);
+
+			$connection = $config->get('connection', null);
+
+			if (!empty($connection))
+			{
+				$options['connection'] = $connection;
+			}
 		}
 
 		// Sanitize the database connector options.

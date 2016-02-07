@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * This class is adapted from the Joomla! Framework
@@ -526,6 +526,8 @@ class Sqlsrv extends Driver
 	 */
 	public function execute()
 	{
+		static $isReconnecting = false;
+
 		$this->connect();
 
 		if (!is_resource($this->connection))
@@ -567,12 +569,16 @@ class Sqlsrv extends Driver
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @sqlsrv_query($this->connection, $sql, array(), $array);
 
+		unset ($sql);
+
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
 			// Check if the server was disconnected.
-			if (!$this->connected())
+			if (!$this->connected() && !$isReconnecting)
 			{
+				$isReconnecting = true;
+
 				try
 				{
 					// Attempt to reconnect.
@@ -592,7 +598,10 @@ class Sqlsrv extends Driver
 				}
 
 				// Since we were able to reconnect, run the query again.
-				return $this->execute();
+				$result = $this->execute();
+				$isReconnecting = false;
+
+				return $result;
 			}
 			// The server was not disconnected.
 			else

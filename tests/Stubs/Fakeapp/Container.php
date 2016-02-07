@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Nicholas
- * Date: 6/6/2014
- * Time: 4:11 μμ
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Stubs\Fakeapp;

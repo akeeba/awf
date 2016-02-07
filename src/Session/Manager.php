@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  *
  * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
@@ -68,6 +68,8 @@ class Manager
 	 */
 	protected $cookie_params = array();
 
+	protected $segments = array();
+
 	/**
 	 *
 	 * Constructor
@@ -107,7 +109,12 @@ class Manager
 	 */
 	public function newSegment($name)
 	{
-		return $this->segment_factory->newInstance($this, $name);
+		if (!isset($this->segments[$name]))
+		{
+			$this->segments[$name] = $this->segment_factory->newInstance($this, $name);
+		}
+
+		return $this->segments[$name];
 	}
 
 	/**
@@ -161,6 +168,8 @@ class Manager
 	 */
 	public function clear()
 	{
+		$this->segments = array();
+
 		@session_unset();
 	}
 
@@ -173,6 +182,15 @@ class Manager
 	 */
 	public function commit()
 	{
+		if (count($this->segments))
+		{
+			/** @var SegmentInterface $segment */
+			foreach ($this->segments as $segment)
+			{
+				$segment->save();
+			}
+		}
+
 		@session_write_close();
 	}
 

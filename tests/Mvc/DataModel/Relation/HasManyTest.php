@@ -1,4 +1,9 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
 
 namespace Awf\Tests\DataModel\Relation\Relation\HasMany;
 
@@ -16,7 +21,12 @@ require_once 'HasManyDataprovider.php';
  */
 class HasManyTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           HasMany
      * @group           HasManyConstruct
      * @covers          Awf\Mvc\DataModel\Relation\HasMany::__construct

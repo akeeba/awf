@@ -2,14 +2,16 @@
 /**
  * @package        awf
  * @subpackage     tests.stubs
- * @copyright      2014 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Stubs\Mvc;
 
+use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Mvc\Model;
+use Awf\Tests\Helpers\ReflectionHelper;
 
 class ModelStub extends Model
 {

@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package        awf
+ * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license        GNU GPL version 3 or later
+ */
+
 namespace Awf\Tests\DataModel;
 
 use Awf\Mvc\DataModel\Collection;
@@ -16,9 +22,14 @@ require_once 'RelationDataprovider.php';
  * @covers      Awf\Mvc\DataModel::<private>
  * @package     Awf\Tests\DataModel
  */
-class DataModelRealtionTest extends DatabaseMysqliCase
+class DataModelRelationTest extends DatabaseMysqliCase
 {
-    /**
+	protected function setUp($resetContainer = true)
+	{
+		parent::setUp(false);
+	}
+
+	/**
      * @group           DataModel
      * @group           DataModelSaveTouches
      * @covers          Awf\Mvc\DataModel::save
