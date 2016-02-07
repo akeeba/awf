@@ -4,7 +4,7 @@
 
     <!-- Default properties, set only if not already assigned in the build.properties file -->
     <property name="dirs.root" value=".." />
-    <property name="dirs.library" value="../Awf" />
+    <property name="dirs.library" value="../src" />
     <property name="version" value="git" />
 
     <property name="dirs.bin" value="bin" />
@@ -94,8 +94,8 @@
     -->
 
     <target name="package-lib" description="Library package build"
-            depends="new-release,setup-properties">>
-        <zipme basedir="${dirs.phpapp}" destfile="${dirs.bin.release}/awf-${version}.zip" includeemptydirs="true">
+            depends="new-release,setup-properties">
+        <zipme basedir="${dirs.library}" destfile="${dirs.bin.release}/awf-${version}.zip" includeemptydirs="true">
             <fileset refid="library" />
         </zipme>
     </target>
