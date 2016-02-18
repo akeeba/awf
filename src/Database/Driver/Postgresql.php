@@ -624,8 +624,6 @@ class Postgresql extends Driver
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @pg_query($this->connection, $query);
 
-		unset($query);
-
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
@@ -668,6 +666,8 @@ class Postgresql extends Driver
 				throw new \RuntimeException($this->errorMsg);
 			}
 		}
+
+		unset($query);
 
 		return $this->cursor;
 	}

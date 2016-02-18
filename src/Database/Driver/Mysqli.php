@@ -492,8 +492,6 @@ class Mysqli extends Driver
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @mysqli_query($this->connection, $sql);
 
-		unset($sql);
-
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
@@ -532,6 +530,8 @@ class Mysqli extends Driver
 				throw new \RuntimeException($this->errorMsg, $this->errorNum);
 			}
 		}
+
+		unset($sql);
 
 		return $this->cursor;
 	}
