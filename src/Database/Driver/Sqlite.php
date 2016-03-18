@@ -472,4 +472,29 @@ class Sqlite extends Pdo
 			}
 		}
 	}
+
+    /**
+     * Get the current query object or a new Query object.
+     * We have to override the parent method since it will always return a PDO query, while we have a
+     * specialized class for SQLite
+     *
+     * @param   boolean  $new  False to return the current query object, True to return a new Query object.
+     *
+     * @return  Query  The current query object or a new object extending the Query class.
+     *
+     * @throws  \RuntimeException
+     */
+    public function getQuery($new = false)
+    {
+        if ($new)
+        {
+            $class = '\\Awf\\Database\\Query\\Sqlite';
+
+            return new $class($this);
+        }
+        else
+        {
+            return $this->sql;
+        }
+    }
 }
