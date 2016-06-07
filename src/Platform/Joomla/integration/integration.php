@@ -20,10 +20,10 @@ use Awf\Session;
  */
 defined('_JEXEC') or die;
 
-// Makes sure we have PHP 5.3.4 or later
-if (version_compare(PHP_VERSION, '5.3.4', 'lt'))
+// Makes sure we have PHP 5.3.3 or later
+if (version_compare(PHP_VERSION, '5.3.3', 'lt'))
 {
-	echo sprintf('This component requires PHP 5.3.4 or later but your server only has PHP %s.', PHP_VERSION);
+	echo sprintf('This component requires PHP 5.3.3 or later but your server only has PHP %s.', PHP_VERSION);
 }
 
 // Include the autoloader
