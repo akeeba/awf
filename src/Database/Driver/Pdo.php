@@ -118,13 +118,13 @@ abstract class Pdo extends Driver
 		}
 
 		// Make sure the PDO extension for PHP is installed and enabled.
-		if (!self::isSupported())
+		if (!static::isSupported())
 		{
 			throw new \RuntimeException('PDO Extension is not available.', 1);
 		}
 
 		// Find the correct PDO DSN Format to use:
-		switch ($this->options['driver'])
+		switch (strtolower($this->options['driver']))
 		{
             // @codeCoverageIgnoreStart
 			case 'cubrid':

@@ -7,14 +7,22 @@
 
 namespace Awf\Utils;
 
+/**
+ * PHP has a very strange way of handling INI files, thoroughly undocumented. For example, using ${bollocks}
+ * in a value will replace that string with the php.ini setting or an environment variable of the same name.
+ * Of course this kind of asshattery completely breaks parsing when you have the character sequence ${ in,
+ * let's say, a password. In fact it will throw a warning and stop parsing the file. Same applies if you include
+ * special characters without enclosing them in double quotes – despite that something like that is perfectly
+ * allowed in INI files and even supported in php.ini itself.
+ *
+ * Basically, PHP's handling of INI is a massive pile of undocumented crap and WTF. So despite the native
+ * functions being faster we will NOT use them as they are also completely broken in too many ways. And then you
+ * wonder why PHP developers drink to oblivion in conferences... Sigh...
+ */
 abstract class ParseIni
 {
 	/**
-	 * Parse an INI file and return an associative array. This monstrosity is required because some utter morons who
-	 * think they are hosts have disabled PHP's parse_ini_file() function for "security reasons". Apparently their
-	 * blatant ignorance doesn't allow them to discern between the innocuous parse_ini_file and the potentially
-	 * dangerous ini_set, leading them to disable the former and let the latter enabled. In other words, THIS CLASS IS
-	 * ONLY HERE TO FIX STUPID.
+	 * Parse an INI file and return an associative array.
 	 *
 	 * @param    string  $file              The file to process
 	 * @param    bool    $process_sections  True to also process INI sections
@@ -23,30 +31,13 @@ abstract class ParseIni
 	 */
 	public static function parse_ini_file($file, $process_sections, $rawdata = false)
 	{
-		$isMoronHostFile = !function_exists('parse_ini_file');
-		$isMoronHostString = !function_exists('parse_ini_string');
-
 		if ($rawdata)
 		{
-			if ($isMoronHostString)
-			{
-				return self::parse_ini_file_php($file, $process_sections, $rawdata);
-			}
-			else
-			{
-				return parse_ini_string($file, $process_sections);
-			}
+			return self::parse_ini_file_php($file, $process_sections, $rawdata);
 		}
 		else
 		{
-			if ($isMoronHostFile)
-			{
-				return self::parse_ini_file_php($file, $process_sections);
-			}
-			else
-			{
-				return parse_ini_file($file, $process_sections);
-			}
+			return self::parse_ini_file_php($file, $process_sections);
 		}
 	}
 

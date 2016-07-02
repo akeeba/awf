@@ -92,19 +92,14 @@ abstract class Text
 			return;
 		}
 
-		// Suppress the warning message when error reporting is enabled
-		$strings = ParseIni::parse_ini_file($filename, false);
-
 		// Compatibility with Joomla! translation files and Transifex' broken way to conforming to a broken standard.
-		if ($strings === false)
-		{
-			$rawText = @file_get_contents($filename);
-			$rawText = str_replace('\\"_QQ_\\"', '\"', $rawText);
-			$rawText = str_replace('\\"_QQ_"', '\"', $rawText);
-			$rawText = str_replace('"_QQ_\\"', '\"', $rawText);
-			$rawText = str_replace('"_QQ_"', '\"', $rawText);
-			$strings = parse_ini_string($rawText);
-		}
+		$rawText = @file_get_contents($filename);
+		$rawText = str_replace('\\"_QQ_\\"', '\"', $rawText);
+		$rawText = str_replace('\\"_QQ_"', '\"', $rawText);
+		$rawText = str_replace('"_QQ_\\"', '\"', $rawText);
+		$rawText = str_replace('"_QQ_"', '\"', $rawText);
+
+		$strings = ParseIni::parse_ini_file($rawText, false, true);
 
 		if (!empty(static::$iniProcessCallbacks) && !empty($strings))
 		{

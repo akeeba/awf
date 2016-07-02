@@ -66,17 +66,24 @@ class PhpTokenizer
 
     protected function findToken($type, $name, $skip = 0)
     {
-        $tokens = token_get_all($this->code);
+        $code   = $this->processCode($skip);
+
+        // Simply sanity check. If the "string" is not present (even in commented code), there's
+        // no need to loop on every token: we can simply assume that the variable is not there
+        if(strpos($code, $name) === false)
+        {
+            return null;
+        }
+
+        $tokens = token_get_all($code);
 
         $iterator   = new Collection($tokens);
         $collection = $iterator->getCachingIterator();
-        $ignoreSkip = false;
+        $offset     = $skip ? $skip - 1 : 0;
 
         // Ok let's start looking for the requested token
         foreach($collection as $token)
         {
-            $line = 0;
-
             if(is_string($token))
             {
                 $info['token'] = $this->tokenChar($token);
@@ -86,27 +93,15 @@ class PhpTokenizer
             {
                 $info['token'] = token_name($token[0]);
                 $info['value'] = $token[1];
-                $line          = $token[2];
             }
 
-            // If I have the skip argument I have to skip the first lines (literal chars are always skipped since they
-            // don't report the line they're in)
-            if($skip && ($line < $skip) && !$ignoreSkip)
-            {
-                continue;
-            }
-
-            // Ok, now I can stop checking for the skip (again, literal chars have no line info, otherwise I'll
-            // keep skipping them all the time
-            $ignoreSkip = true;
-
-            // Ok token found, let's get the line
+            // Ok token found, let's get the line (we have to add the skip count since we processed the whole code string)
             if($info['token'] == $type && $info['value'] == $name)
             {
                 // If it's an array, that's easy
                 if(is_array($token))
                 {
-                    return $token[2];
+                    return $token[2] + $offset;
                 }
                 else
                 {
@@ -126,13 +121,51 @@ class PhpTokenizer
                             continue;
                         }
 
-                        return $next[2];
+                        return $next[2] + $offset;
                     }
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Processes the current code snippet, removing the lines we have to skip
+     *
+     * @param   int     $skip
+     *
+     * @return  string  The part of the code we're interested in
+     */
+    protected function processCode($skip)
+    {
+        if(!$skip)
+        {
+            return $this->code;
+        }
+
+        $lines  = explode("\n", $this->code);
+
+        // If the line is not defined, let's return the whole code
+        if(!isset($lines[$skip]))
+        {
+            return $this->code;
+        }
+
+        // I have to add the opening tag, otherwise token_get_all() won't find anything
+        $result = '<?php'."\n";
+
+        for($i = ($skip - 1); $i < count($lines); $i++)
+        {
+            if(!isset($lines[$i]))
+            {
+                break;
+            }
+
+            $result .= $lines[$i]."\n";
+        }
+
+        return $result;
     }
 
     protected function extractData($start, $end)

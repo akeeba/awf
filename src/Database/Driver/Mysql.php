@@ -257,8 +257,6 @@ class Mysql extends Mysqli
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @mysql_query($sql, $this->connection);
 
-		unset($sql);
-
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
@@ -301,6 +299,8 @@ class Mysql extends Mysqli
 				throw new \RuntimeException($this->errorMsg, $this->errorNum);
 			}
 		}
+
+		unset($sql);
 
 		return $this->cursor;
 	}

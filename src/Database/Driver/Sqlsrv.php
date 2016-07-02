@@ -569,8 +569,6 @@ class Sqlsrv extends Driver
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$this->cursor = @sqlsrv_query($this->connection, $sql, array(), $array);
 
-		unset ($sql);
-
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
@@ -615,6 +613,8 @@ class Sqlsrv extends Driver
 				throw new \RuntimeException($this->errorMsg, $this->errorNum);
 			}
 		}
+
+		unset ($sql);
 
 		return $this->cursor;
 	}
