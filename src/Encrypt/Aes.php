@@ -56,11 +56,11 @@ class Aes
 	 */
 	public function __construct($key, $strength = 128, $mode = 'cbc', Phpfunc $phpfunc = null)
 	{
-		$this->adapter = new Mcrypt();
+		$this->adapter = new OpenSSL();
 
 		if (!$this->adapter->isSupported($phpfunc))
 		{
-			$this->adapter = new OpenSSL();
+			$this->adapter = new Mcrypt();
 		}
 
 		$this->adapter->setEncryptionMode($mode, $strength);
