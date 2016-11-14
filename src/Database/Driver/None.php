@@ -14,7 +14,6 @@ use Awf\Database\Query;
 
 /**
  * Dummy driver class for flat-file CMS
- *
  */
 class None extends Driver
 {
@@ -53,7 +52,7 @@ class None extends Driver
      */
     public function getQuery($new = false)
     {
-	    throw new \RuntimeException('None Driver is not allowed to create a query object');
+	    return $this->sql;
     }
 
 	/**
