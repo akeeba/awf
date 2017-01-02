@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf-miniblog
- * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright      2014-2017 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This is the AWF integration file for the Joomla! 2.x / 3.x CMS. It allows you to run an AWF application as a Joomla!
