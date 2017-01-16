@@ -24,6 +24,7 @@ use Awf\Utils\Phpfunc;
  * @property  string                                         $temporaryPath         The temporary directory of your application
  * @property  string                                         $filesystemBase        The base path of your web root (for use by Awf\Filesystem)
  * @property  string                                         $sqlPath               The path to the SQL files restored by Awf\Database\Restore
+ * @property  string                                         $mediaQueryKey         The query string parameter to append to media added through the Template class
  *
  * @property-read  \Awf\Application\Application              $application           The application instance
  * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
@@ -50,6 +51,7 @@ class Container extends Pimple
 		$this->temporaryPath = null;
 		$this->filesystemBase = null;
 		$this->sqlPath = null;
+		$this->mediaQueryKey = null;
 
 		parent::__construct($values);
 

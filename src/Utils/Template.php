@@ -13,7 +13,7 @@ use Awf\Uri\Uri;
 
 abstract class Template
 {
-	public static function addCss($path, $app = null)
+	public static function addCss($path, $app = null, $useMediaQueryKey = true)
 	{
 		if (!is_object($app))
 		{
@@ -21,10 +21,20 @@ abstract class Template
 		}
 
 		$url = self::parsePath($path, false, $app);
+
+		$mediaQueryKey = $app->getContainer()->mediaQueryKey;
+
+		if ($useMediaQueryKey && !empty($mediaQueryKey))
+		{
+			$uri = Uri::getInstance($url);
+			$uri->setVar($mediaQueryKey, '1');
+			$url = $uri->toString();
+		}
+
 		$app->getDocument()->addStyleSheet($url);
 	}
 
-	public static function addJs($path, $app = null)
+	public static function addJs($path, $app = null, $useMediaQueryKey = true)
 	{
 		if (!is_object($app))
 		{
@@ -32,6 +42,16 @@ abstract class Template
 		}
 
 		$url = self::parsePath($path, false, $app);
+
+		$mediaQueryKey = $app->getContainer()->mediaQueryKey;
+
+		if ($useMediaQueryKey && !empty($mediaQueryKey))
+		{
+			$uri = Uri::getInstance($url);
+			$uri->setVar($mediaQueryKey, '1');
+			$url = $uri->toString();
+		}
+
 		$app->getDocument()->addScript($url);
 	}
 
