@@ -302,6 +302,26 @@ class MenuManager
 				$options['order'] = 0;
 			}
 
+			if (array_key_exists('privileges', $options) && is_array($options['privileges']))
+			{
+				$user = $this->container->userManager->getUser();
+				$allow = true;
+
+				foreach ($options['privileges'] as $privilege)
+				{
+					if (!$user->getPrivilege($privilege, true))
+					{
+						$allow = false;
+						break;
+					}
+				}
+
+				if (!$allow)
+				{
+					continue;
+				}
+			}
+
 			// Create a menu item
 			$item = new Item($options, $this->container);
 
