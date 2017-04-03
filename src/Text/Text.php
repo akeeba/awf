@@ -229,10 +229,13 @@ abstract class Text
 					{
 						$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
 
-						if (count($allFiles))
+						// Cover both failure cases: false (filesystem error) and empty array (no file found)
+						if (!is_array($allFiles) || empty($allFiles))
 						{
-							$langFilename = array_shift($allFiles);
+							continue;
 						}
+
+						$langFilename = array_shift($allFiles);
 					}
 				}
 
