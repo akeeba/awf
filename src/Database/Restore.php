@@ -883,7 +883,7 @@ abstract class Restore
 		{
 			return 0;
 		}
-		$unit = array('b', 'Kb', 'Mb', 'Gb', 'Tb', 'Pb');
+		$unit = array('b', 'KB', 'MB', 'GB', 'TB', 'PB');
 		$i = floor(log($size, 1024));
 		if (($i < 0) || ($i > 5))
 		{
