@@ -33,3 +33,5 @@ RELEASENOTES text eol=lf
 *.jpa binary
 *.jps binary
 *.zip binary
+*.phar binary
+*.dat binary
