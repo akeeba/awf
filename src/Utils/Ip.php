@@ -63,6 +63,12 @@ class Ip
 				return $_SERVER['HTTP_X_FORWARDED_FOR'];
 			}
 
+			// Are we using Sucuri firewall? They use a custom HTTP header
+			if (array_key_exists('HTTP_X_SUCURI_CLIENTIP', $_SERVER) && !empty($_SERVER['HTTP_X_SUCURI_CLIENTIP']))
+			{
+				return $_SERVER['HTTP_X_SUCURI_CLIENTIP'];
+			}
+
 			// Do we have a client-ip header (e.g. non-transparent proxy)?
 			if (array_key_exists('HTTP_CLIENT_IP', $_SERVER) && !empty($_SERVER['HTTP_CLIENT_IP']))
 			{
@@ -89,6 +95,12 @@ class Ip
 		if (getenv('HTTP_X_FORWARDED_FOR'))
 		{
 			return getenv('HTTP_X_FORWARDED_FOR');
+		}
+
+		// Are we using Sucuri firewall? They use a custom HTTP header
+		if (getenv('HTTP_X_SUCURI_CLIENTIP'))
+		{
+			return getenv('HTTP_X_SUCURI_CLIENTIP');
 		}
 
 		// Do we have a client-ip header?
