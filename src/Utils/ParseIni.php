@@ -81,6 +81,8 @@ abstract class ParseIni
 		{
 			$line = trim($line);
 			$line = str_replace("\t", " ", $line);
+			$line = str_replace('\"', '"', $line);
+			$line = str_replace('""', '"', $line);
 
 			// Comments
 			if (!preg_match('/^[a-zA-Z0-9[]/', $line))
