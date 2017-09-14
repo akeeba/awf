@@ -105,6 +105,15 @@ class Manager implements ManagerInterface
 				$id = $this->container->segment->get('user_id', 0);
 				// Load the current user
 				$this->currentUser = $this->getUser($id);
+
+				/**
+				 * If the current user doesn't exist in the database we get null back. In this case we need to revert to a
+				 * guest user.
+				 */
+				if (is_null($this->currentUser))
+				{
+					$this->currentUser = $this->getUser(0);
+				}
 			}
 
 			$user = $this->currentUser;
