@@ -634,12 +634,12 @@ class Pagination
 	/**
 	 * Method to create an active pagination link to the item
 	 *
-	 * @param   \Awf\Pagination\Object  $item  The object with which to make an active link.
+	 * @param   \Awf\Pagination\PaginationObject $item The object with which to make an active link.
 	 *
 	 * @return  string  HTML link
 	 */
 
-	protected function _item_active(\Awf\Pagination\Object $item)
+	protected function _item_active(\Awf\Pagination\PaginationObject $item)
 	{
 		return '<a href="' . $item->link . '">' . $item->text . '</a>';
 	}
@@ -647,11 +647,11 @@ class Pagination
 	/**
 	 * Method to create an inactive pagination string
 	 *
-	 * @param   \Awf\Pagination\Object  $item  The item to be processed
+	 * @param   \Awf\Pagination\PaginationObject $item The item to be processed
 	 *
 	 * @return  string
 	 */
-	protected function _item_inactive(\Awf\Pagination\Object $item)
+	protected function _item_inactive(\Awf\Pagination\PaginationObject $item)
 	{
 		return '<span>' . $item->text . '</span>';
 	}
@@ -679,7 +679,7 @@ class Pagination
 
 		$params = 'index.php?' . substr($params, 1);
 
-		$data->all = new Object(Text::_('AWF_PAGINATION_LBL_VIEW_ALL'));
+		$data->all = new PaginationObject(Text::_('AWF_PAGINATION_LBL_VIEW_ALL'));
 
 		if (!$this->viewAll)
 		{
@@ -688,8 +688,8 @@ class Pagination
 		}
 
 		// Set the start and previous data objects.
-		$data->start    = new Object('&laquo;');
-		$data->previous = new Object('&lsaquo;');
+		$data->start    = new PaginationObject('&laquo;');
+		$data->previous = new PaginationObject('&lsaquo;');
 
 		if ($this->pagesCurrent > 1)
 		{
@@ -703,8 +703,8 @@ class Pagination
 		}
 
 		// Set the next and end data objects.
-		$data->next = new Object('&rsaquo;');
-		$data->end  = new Object('&raquo;');
+		$data->next = new PaginationObject('&rsaquo;');
+		$data->end  = new PaginationObject('&raquo;');
 
 		if ($this->pagesCurrent < $this->pagesTotal)
 		{
@@ -725,7 +725,7 @@ class Pagination
 		{
 			$offset = ($i - 1) * $this->limit;
 
-			$data->pages[$i] = new Object($i);
+			$data->pages[$i] = new PaginationObject($i);
 
 			if ($i != $this->pagesCurrent || $this->viewAll)
 			{

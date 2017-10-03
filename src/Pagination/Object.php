@@ -7,42 +7,16 @@
 
 namespace Awf\Pagination;
 
-
-class Object
+/**
+ * This is a backwards compatibility class. It should not be used in PHP 7.2 and later.
+ */
+class Object extends PaginationObject
 {
-	/**
-	 * @var    string  The link text.
-	 */
-	public $text;
-
-	/**
-	 * @var    integer  The number of rows as a base offset.
-	 */
-	public $base;
-
-	/**
-	 * @var    string  The link URL.
-	 */
-	public $link;
-
-	/**
-	 * @var    boolean  Flag whether the object is the 'active' page
-	 */
-	public $active;
-
-	/**
-	 * Class constructor.
-	 *
-	 * @param   string   $text    The link text.
-	 * @param   integer  $base    The number of rows as a base offset.
-	 * @param   string   $link    The link URL.
-	 * @param   boolean  $active  Flag whether the object is the 'active' page
-	 */
 	public function __construct($text, $base = null, $link = null, $active = false)
 	{
-		$this->text   = $text;
-		$this->base   = $base;
-		$this->link   = $link;
-		$this->active = $active;
+		trigger_error(sprintf("Using %s is deprecated and will cause fatal errors in PHP 7.2 and later. Update your code.", __CLASS__), E_USER_NOTICE);
+
+		parent::__construct($text, $base, $link, $active);
 	}
+
 } 
