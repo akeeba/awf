@@ -8,7 +8,7 @@
 
 namespace Awf\Tests\Pagination\Object;
 
-use Awf\Pagination\Object;
+use Awf\Pagination\PaginationObject;
 use Awf\Tests\Helpers\AwfTestCase;
 
 /**
@@ -16,7 +16,7 @@ use Awf\Tests\Helpers\AwfTestCase;
  * @covers      Awf\Pagination\Object::<private>
  * @package     Awf\Tests\Pagination\Object
  */
-class ObjectTest extends AwfTestCase
+class PaginationObjectTest extends AwfTestCase
 {
     /**
      * @group       PaginationObject
@@ -24,7 +24,7 @@ class ObjectTest extends AwfTestCase
      */
     public function test__construct()
     {
-        $object = new Object('Foobar', 2, 'www.example.com/index.php', true);
+        $object = new PaginationObject('Foobar', 2, 'www.example.com/index.php', true);
 
         $this->assertEquals('Foobar', $object->text);
         $this->assertEquals(2, $object->base);
