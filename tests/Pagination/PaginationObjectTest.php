@@ -12,15 +12,14 @@ use Awf\Pagination\PaginationObject;
 use Awf\Tests\Helpers\AwfTestCase;
 
 /**
- * @covers      Awf\Pagination\Object::<protected>
- * @covers      Awf\Pagination\Object::<private>
- * @package     Awf\Tests\Pagination\Object
+ * @covers      \Awf\Pagination\PaginationObject::<protected>
+ * @covers      \Awf\Pagination\PaginationObject::<private>
  */
 class PaginationObjectTest extends AwfTestCase
 {
     /**
      * @group       PaginationObject
-     * @covers      Awf\Pagination\Object::__construct
+     * @covers      \Awf\Pagination\PaginationObject::__construct
      */
     public function test__construct()
     {
