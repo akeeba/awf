@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014-2017 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * This is a modified copy of Laravel 4's "helpers.php"

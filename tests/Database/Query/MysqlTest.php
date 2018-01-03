@@ -2,7 +2,7 @@
 /**
  * @package        awf
  * @subpackage     tests.date.date
- * @copyright      2014-2017 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is adapted from Joomla! Framework
