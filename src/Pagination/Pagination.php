@@ -399,12 +399,12 @@ class Pagination
 		{
 			include_once $chromePath;
 
-			if (function_exists('pagination_item_active') && function_exists('pagination_item_inactive'))
+			if (function_exists('_akeeba_pagination_item_active') && function_exists('_akeeba_pagination_item_inactive'))
 			{
 				$itemOverride = true;
 			}
 
-			if (function_exists('pagination_list_render'))
+			if (function_exists('_akeeba_pagination_list_render'))
 			{
 				$listOverride = true;
 			}
@@ -415,36 +415,36 @@ class Pagination
 		if ($data->all->base !== null)
 		{
 			$list['all']['active'] = true;
-			$list['all']['data'] = ($itemOverride) ? pagination_item_active($data->all) : $this->_item_active($data->all);
+			$list['all']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->all) : $this->_item_active($data->all);
 		}
 		else
 		{
 			$list['all']['active'] = false;
-			$list['all']['data'] = ($itemOverride) ? pagination_item_inactive($data->all) : $this->_item_inactive($data->all);
+			$list['all']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->all) : $this->_item_inactive($data->all);
 		}
 
 		$list['start']['current'] = false;
 		if ($data->start->base !== null)
 		{
 			$list['start']['active'] = true;
-			$list['start']['data'] = ($itemOverride) ? pagination_item_active($data->start) : $this->_item_active($data->start);
+			$list['start']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->start) : $this->_item_active($data->start);
 		}
 		else
 		{
 			$list['start']['active'] = false;
-			$list['start']['data'] = ($itemOverride) ? pagination_item_inactive($data->start) : $this->_item_inactive($data->start);
+			$list['start']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->start) : $this->_item_inactive($data->start);
 		}
 
 		$list['previous']['current'] = false;
 		if ($data->previous->base !== null)
 		{
 			$list['previous']['active'] = true;
-			$list['previous']['data'] = ($itemOverride) ? pagination_item_active($data->previous) : $this->_item_active($data->previous);
+			$list['previous']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->previous) : $this->_item_active($data->previous);
 		}
 		else
 		{
 			$list['previous']['active'] = false;
-			$list['previous']['data'] = ($itemOverride) ? pagination_item_inactive($data->previous) : $this->_item_inactive($data->previous);
+			$list['previous']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->previous) : $this->_item_inactive($data->previous);
 		}
 
 		// Make sure it exists
@@ -454,36 +454,36 @@ class Pagination
 		{
 			$list['pages'][$i]['current'] = $this->pagesCurrent == $i;
 			$list['pages'][$i]['active'] = true;
-			$list['pages'][$i]['data'] = ($itemOverride) ? pagination_item_active($page) : $this->_item_active($page);
+			$list['pages'][$i]['data'] = ($itemOverride) ? _akeeba_pagination_item_active($page) : $this->_item_active($page);
 		}
 
 		$list['next']['current'] = false;
 		if ($data->next->base !== null)
 		{
 			$list['next']['active'] = true;
-			$list['next']['data'] = ($itemOverride) ? pagination_item_active($data->next) : $this->_item_active($data->next);
+			$list['next']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->next) : $this->_item_active($data->next);
 		}
 		else
 		{
 			$list['next']['active'] = false;
-			$list['next']['data'] = ($itemOverride) ? pagination_item_inactive($data->next) : $this->_item_inactive($data->next);
+			$list['next']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->next) : $this->_item_inactive($data->next);
 		}
 
 		$list['end']['current'] = false;
 		if ($data->end->base !== null)
 		{
 			$list['end']['active'] = true;
-			$list['end']['data'] = ($itemOverride) ? pagination_item_active($data->end) : $this->_item_active($data->end);
+			$list['end']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->end) : $this->_item_active($data->end);
 		}
 		else
 		{
 			$list['end']['active'] = false;
-			$list['end']['data'] = ($itemOverride) ? pagination_item_inactive($data->end) : $this->_item_inactive($data->end);
+			$list['end']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->end) : $this->_item_inactive($data->end);
 		}
 
 		if ($this->total > $this->limit)
 		{
-			return ($listOverride) ? pagination_list_render($list) : $this->_list_render($list);
+			return ($listOverride) ? _akeeba_pagination_list_render($list, $this) : $this->_list_render($list);
 		}
 		else
 		{
@@ -513,9 +513,9 @@ class Pagination
 		{
 			include_once $chromePath;
 
-			if (function_exists('pagination_list_footer'))
+			if (function_exists('_akeeba_pagination_list_footer'))
 			{
-				return pagination_list_footer($list);
+				return _akeeba_pagination_list_footer($list);
 			}
 		}
 
