@@ -101,7 +101,7 @@ class PhpTokenizer
                 // If it's an array, that's easy
                 if(is_array($token))
                 {
-                    return $token[2] + $offset;
+                    return $token[2] + $offset - 1;
                 }
                 else
                 {
