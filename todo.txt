@@ -1,0 +1,23 @@
+Import the entire  FOF30\View\Engine namespace into Awf\Mvc\Engine
+Reactor View::loadAnyTemplate to use the view finder
+    Import methods
+        incrementRender
+        decrementRender
+        doneRendering
+        renderEach
+        startSection
+        yieldSection
+        stopSection
+        appendSection
+        extendSection
+        yieldContent
+        flushSections
+        flushSectionsIfDoneRendering
+        processTemplate
+        includeTemplateFile
+        handleViewException??
+        getEngine
+        getExtension
+    Remove
+        parseTemplatePath
+Import FOF30\Utils\FEFHelper namespace into \Awf\Utils\FEFHelper (used by Blade)
