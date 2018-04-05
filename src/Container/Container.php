@@ -9,6 +9,7 @@ namespace Awf\Container;
 
 use Awf\Application\Application;
 use Awf\Database\Driver;
+use Awf\Mvc\Compiler\Blade;
 use Awf\Pimple\Pimple;
 use Awf\Session;
 use Awf\Utils\Phpfunc;
@@ -28,6 +29,7 @@ use Awf\Utils\Phpfunc;
  *
  * @property-read  \Awf\Application\Application              $application           The application instance
  * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
+ * @property-read  \Awf\Mvc\Compiler\Blade                   $blade                 The Blade view template compiler engine
  * @property-read  \Awf\Database\Driver                      $db                    The global database connection object
  * @property-read  \Awf\Dispatcher\Dispatcher                $dispatcher            The application dispatcher
  * @property-read  \Awf\Event\Dispatcher                     $eventDispatcher       The global event dispatched
@@ -70,6 +72,15 @@ class Container extends Pimple
 			$this['appConfig'] = function (Container $c)
 			{
 				return new \Awf\Application\Configuration($c);
+			};
+		}
+
+		// Blade view template compiler service
+		if (!isset($this['blade']))
+		{
+			$this['blade'] = function (Container $c)
+			{
+				return new Blade($c);
 			};
 		}
 

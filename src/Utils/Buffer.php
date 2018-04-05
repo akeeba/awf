@@ -38,6 +38,99 @@ class Buffer
 	public $_buffers = array();
 
 	/**
+	 * Is it possible to register stream wrappers on this server?
+	 *
+	 * @var bool|null
+	 */
+	public static $canRegisterWrapper = null;
+
+	/**
+	 * Can I register the buffer:// stream wrapper
+	 *
+	 * @return  bool  True if the stream wrapper can be registered
+	 */
+	public static function canRegisterWrapper()
+	{
+		if (is_null(static::$canRegisterWrapper))
+		{
+			static::$canRegisterWrapper = false;
+
+			// Maybe the host has disabled registering stream wrappers altogether?
+			if (!function_exists('stream_wrapper_register'))
+			{
+				return false;
+			}
+
+			// Check for Suhosin
+			if (function_exists('extension_loaded'))
+			{
+				$hasSuhosin = extension_loaded('suhosin');
+			}
+			else
+			{
+				$hasSuhosin = -1; // Can't detect
+			}
+
+			if ($hasSuhosin !== true)
+			{
+				$hasSuhosin = defined('SUHOSIN_PATCH') ? true : -1;
+			}
+
+			if ($hasSuhosin === -1)
+			{
+				if (function_exists('ini_get'))
+				{
+					$hasSuhosin = false;
+
+					$maxIdLength = ini_get('suhosin.session.max_id_length');
+
+					if ($maxIdLength !== false)
+					{
+						$hasSuhosin = ini_get('suhosin.session.max_id_length') !== '';
+					}
+				}
+			}
+
+			// If we can't detect whether Suhosin is installed we won't proceed to prevent a White Screen of Death
+			if ($hasSuhosin === -1)
+			{
+				return false;
+			}
+
+			// If Suhosin is installed but ini_get is not available we won't proceed to prevent a WSoD
+			if ($hasSuhosin && !function_exists('ini_get'))
+			{
+				return false;
+			}
+
+			// If Suhosin is installed check if buffer:// is whitelisted
+			if ($hasSuhosin)
+			{
+				$whiteList = ini_get('suhosin.executor.include.whitelist');
+
+				// Nothing in the whitelist? I can't go on, sorry.
+				if (empty($whiteList))
+				{
+					return false;
+				}
+
+				$whiteList = explode(',', $whiteList);
+				$whiteList = array_map(function ($x) { return trim($x); }, $whiteList);
+
+				if (!in_array('buffer://', $whiteList))
+				{
+					return false;
+				}
+			}
+
+			static::$canRegisterWrapper = true;
+		}
+
+		return static::$canRegisterWrapper;
+	}
+
+
+	/**
 	 * Function to open file or url
 	 *
 	 * @param   string  $path           The URL that was passed
@@ -183,4 +276,7 @@ class Buffer
 }
 
 // Register the stream
-stream_wrapper_register("buffer", "\\Awf\\Utils\\Buffer");
+if (Buffer::canRegisterWrapper())
+{
+	stream_wrapper_register("buffer", "\\Awf\\Utils\\Buffer");
+}
