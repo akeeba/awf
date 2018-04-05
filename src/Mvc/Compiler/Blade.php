@@ -835,61 +835,6 @@ class Blade implements CompilerInterface
 	}
 
 	/**
-	 * Compile the `sortgrid` statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileSortgrid($expression)
-	{
-		return "<?php echo \\Awf\\Utils\\FEFHelper\\BrowseView::sortGrid{$expression} ?>";
-	}
-
-	/**
-	 * Compile the `fieldtitle` statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileFieldtitle($expression)
-	{
-		return "<?php echo \\Awf\\Utils\\FEFHelper\\BrowseView::fieldLabel{$expression} ?>";
-	}
-
-	/**
-	 * Compile the `modelfilter($localField, [$modelTitleField, $modelName, $placeholder, $params])` statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileModelfilter($expression)
-	{
-		return "<?php echo \\Awf\\Utils\\FEFHelper\\BrowseView::modelFilter{$expression} ?>";
-	}
-
-	/**
-	 * Compile the `selectfilter($localField, $options [, $placeholder, $params])` statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileSelectfilter($expression)
-	{
-		return "<?php echo \\Awf\\Utils\\FEFHelper\\BrowseView::selectFilter{$expression} ?>";
-	}
-
-	/**
-	 * Compile the `searchfilter($localField, $searchField = null, $placeholder = null, array $attributes = [])` statements into valid PHP.
-	 *
-	 * @param  string  $expression
-	 * @return string
-	 */
-	protected function compileSearchfilter($expression)
-	{
-		return "<?php echo \\Awf\\Utils\\FEFHelper\\BrowseView::searchFilter{$expression} ?>";
-	}
-
-	/**
 	 * Compile the media statements into valid PHP.
 	 *
 	 * @param  string  $expression

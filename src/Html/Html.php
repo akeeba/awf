@@ -74,6 +74,11 @@ abstract class Html
 
 		if (!class_exists($className))
 		{
+			$className = __NAMESPACE__ . '\\' . $prefix . '\\' . ucfirst($file);
+		}
+
+		if (!class_exists($className))
+		{
 			throw new \InvalidArgumentException(sprintf('%s %s not found.', $prefix, $file), 500);
 		}
 
