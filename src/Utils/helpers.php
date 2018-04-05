@@ -399,6 +399,26 @@ if ( ! function_exists('array_where'))
 	}
 }
 
+if ( ! function_exists('ends_with'))
+{
+	/**
+	 * Determine if a given string ends with a given substring.
+	 *
+	 * @param  string  $haystack
+	 * @param  string|array  $needles
+	 * @return bool
+	 */
+	function ends_with($haystack, $needles)
+	{
+		foreach ((array) $needles as $needle)
+		{
+			if ((string) $needle === substr($haystack, -strlen($needle))) return true;
+		}
+
+		return false;
+	}
+}
+
 if ( ! function_exists('last'))
 {
 	/**
@@ -458,6 +478,26 @@ if ( ! function_exists('preg_replace_sub'))
 			return array_shift($replacements);
 
 		}, $subject);
+	}
+}
+
+if ( ! function_exists('starts_with'))
+{
+	/**
+	 * Determine if a given string starts with a given substring.
+	 *
+	 * @param  string        $haystack
+	 * @param  string|array  $needles
+	 * @return bool
+	 */
+	function starts_with($haystack, $needles)
+	{
+		foreach ((array) $needles as $needle)
+		{
+			if ($needle != '' && strpos($haystack, $needle) === 0) return true;
+		}
+
+		return false;
 	}
 }
 
