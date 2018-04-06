@@ -732,7 +732,7 @@ class View
 	/**
 	 * Add an alias for a view template.
 	 *
-	 * @param  string  $viewTemplate  Existing view template, in the format componentPart://componentName/viewName/layoutName
+	 * @param  string  $viewTemplate  Existing view template, in the format viewName/layoutName
 	 * @param  string  $alias         The alias of the view template (any string will do)
 	 *
 	 * @return void
@@ -875,7 +875,7 @@ class View
 	 * Go through a data array and render a subtemplate against each record (think master-detail views). This is
 	 * accessible through Blade templates as @each
 	 *
-	 * @param  string $viewTemplate The view template to use for each subitem, format componentPart://componentName/viewName/layoutName
+	 * @param  string $viewTemplate The view template to use for each subitem, format viewName/layoutName
 	 * @param  array  $data         The array of data you want to render. It can be a DataModel\Collection, array, ...
 	 * @param  string $eachItemName How to call each item in the loaded subtemplate (passed through $forceParams)
 	 * @param  string $empty        What to display if the array is empty
