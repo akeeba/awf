@@ -27,7 +27,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 		$buffer = new Buffer();
 
 		$dummy = null;
-		$return = $buffer->stream_open('buffer://path/to/some/file', 'w', null, $dummy);
+		$return = $buffer->stream_open('awf://path/to/some/file', 'w', null, $dummy);
 
 		$this->assertTrue($return);
 
@@ -246,7 +246,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 
 		$dummy = null;
 
-		$buffer->stream_open('buffer://path/to/some/file', 'w', null, $dummy);
+		$buffer->stream_open('awf://path/to/some/file', 'w', null, $dummy);
 
 		return $buffer;
 	}
