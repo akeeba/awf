@@ -200,7 +200,10 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	 */
 	protected function putToCache($path, $content)
 	{
-		$cachePath = $this->getCachePath($path);
+		$cachePath   = $this->getCachePath($path);
+		$cacheFolder = dirname($cachePath);
+
+		$this->makeCacheFolder($cacheFolder);
 
 		if (@file_put_contents($cachePath, $content))
 		{
@@ -213,6 +216,28 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		}
 
 		return false;
+	}
+
+	/**
+	 * Makes sure the cache folder actually exists
+	 *
+	 * @param   string  $cacheFolder  The absolute filesystem path to the cache folder
+	 *
+	 * @return  void
+	 */
+	private function makeCacheFolder($cacheFolder)
+	{
+		if (@is_dir($cacheFolder))
+		{
+			return;
+		}
+
+		if (@mkdir($cacheFolder, 0755, true))
+		{
+			return;
+		}
+
+		$this->view->getContainer()->fileSystem->mkdir($cacheFolder, 0644);
 	}
 
 	/**
