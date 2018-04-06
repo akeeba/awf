@@ -35,7 +35,7 @@ class Buffer
 	 *
 	 * @var    array
 	 */
-	public $_buffers = array();
+	public static $buffers = array();
 
 	/**
 	 * Is it possible to register stream wrappers on this server?
@@ -45,7 +45,7 @@ class Buffer
 	public static $canRegisterWrapper = null;
 
 	/**
-	 * Can I register the buffer:// stream wrapper
+	 * Should I register the awf:// stream wrapper
 	 *
 	 * @return  bool  True if the stream wrapper can be registered
 	 */
@@ -103,7 +103,7 @@ class Buffer
 				return false;
 			}
 
-			// If Suhosin is installed check if buffer:// is whitelisted
+			// If Suhosin is installed check if awf:// is whitelisted
 			if ($hasSuhosin)
 			{
 				$whiteList = ini_get('suhosin.executor.include.whitelist');
@@ -117,7 +117,7 @@ class Buffer
 				$whiteList = explode(',', $whiteList);
 				$whiteList = array_map(function ($x) { return trim($x); }, $whiteList);
 
-				if (!in_array('buffer://', $whiteList))
+				if (!in_array('awf://', $whiteList))
 				{
 					return false;
 				}
@@ -128,7 +128,6 @@ class Buffer
 
 		return static::$canRegisterWrapper;
 	}
-
 
 	/**
 	 * Function to open file or url
@@ -145,12 +144,46 @@ class Buffer
 	 */
 	public function stream_open($path, $mode, $options, &$opened_path)
 	{
-		$url = parse_url($path);
-		$this->name = $url["host"];
-		$this->_buffers[$this->name] = null;
+		$url            = parse_url($path);
+		$this->name     = $url['host'] . $url['path'];
 		$this->position = 0;
 
+		if (!isset(static::$buffers[ $this->name ]))
+		{
+			static::$buffers[ $this->name ] = null;
+		}
+
 		return true;
+	}
+
+	public function unlink($path)
+	{
+		$url  = parse_url($path);
+		$name = $url['host'];
+
+		if (isset(static::$buffers[ $name ]))
+		{
+			unset (static::$buffers[ $name ]);
+		}
+	}
+
+	public function stream_stat()
+	{
+		return array(
+			'dev'     => 0,
+			'ino'     => 0,
+			'mode'    => 0644,
+			'nlink'   => 0,
+			'uid'     => 0,
+			'gid'     => 0,
+			'rdev'    => 0,
+			'size'    => strlen(static::$buffers[ $this->name ]),
+			'atime'   => 0,
+			'mtime'   => 0,
+			'ctime'   => 0,
+			'blksize' => - 1,
+			'blocks'  => - 1,
+		);
 	}
 
 	/**
@@ -163,10 +196,11 @@ class Buffer
 	 *                   the stream is empty.
 	 *
 	 * @see     streamWrapper::stream_read
+	 * @since   11.1
 	 */
 	public function stream_read($count)
 	{
-		$ret = substr($this->_buffers[$this->name], $this->position, $count);
+		$ret = substr(static::$buffers[ $this->name ], $this->position, $count);
 		$this->position += strlen($ret);
 
 		return $ret;
@@ -180,12 +214,13 @@ class Buffer
 	 * @return  integer
 	 *
 	 * @see     streamWrapper::stream_write
+	 * @since   11.1
 	 */
 	public function stream_write($data)
 	{
-		$left = substr($this->_buffers[$this->name], 0, $this->position);
-		$right = substr($this->_buffers[$this->name], $this->position + strlen($data));
-		$this->_buffers[$this->name] = $left . $data . $right;
+		$left                           = substr(static::$buffers[ $this->name ], 0, $this->position);
+		$right                          = substr(static::$buffers[ $this->name ], $this->position + strlen($data));
+		static::$buffers[ $this->name ] = $left . $data . $right;
 		$this->position += strlen($data);
 
 		return strlen($data);
@@ -197,6 +232,7 @@ class Buffer
 	 * @return  integer
 	 *
 	 * @see     streamWrapper::stream_tell
+	 * @since   11.1
 	 */
 	public function stream_tell()
 	{
@@ -209,29 +245,31 @@ class Buffer
 	 * @return  boolean  True if the pointer is at the end of the stream
 	 *
 	 * @see     streamWrapper::stream_eof
+	 * @since   11.1
 	 */
 	public function stream_eof()
 	{
-		return $this->position >= strlen($this->_buffers[$this->name]);
+		return $this->position >= strlen(static::$buffers[ $this->name ]);
 	}
 
 	/**
 	 * The read write position updates in response to $offset and $whence
 	 *
-	 * @param   integer $offset    The offset in bytes
-	 * @param   integer $whence    Position the offset is added to
-	 *                             Options are SEEK_SET, SEEK_CUR, and SEEK_END
+	 * @param   integer $offset   The offset in bytes
+	 * @param   integer $whence   Position the offset is added to
+	 *                            Options are SEEK_SET, SEEK_CUR, and SEEK_END
 	 *
 	 * @return  boolean  True if updated
 	 *
 	 * @see     streamWrapper::stream_seek
+	 * @since   11.1
 	 */
 	public function stream_seek($offset, $whence)
 	{
 		switch ($whence)
 		{
 			case SEEK_SET:
-				if ($offset < strlen($this->_buffers[$this->name]) && $offset >= 0)
+				if ($offset < strlen(static::$buffers[ $this->name ]) && $offset >= 0)
 				{
 					$this->position = $offset;
 
@@ -257,9 +295,9 @@ class Buffer
 				break;
 
 			case SEEK_END:
-				if (strlen($this->_buffers[$this->name]) + $offset >= 0)
+				if (strlen(static::$buffers[ $this->name ]) + $offset >= 0)
 				{
-					$this->position = strlen($this->_buffers[$this->name]) + $offset;
+					$this->position = strlen(static::$buffers[ $this->name ]) + $offset;
 
 					return true;
 				}
@@ -278,5 +316,5 @@ class Buffer
 // Register the stream
 if (Buffer::canRegisterWrapper())
 {
-	stream_wrapper_register("buffer", "\\Awf\\Utils\\Buffer");
+	stream_wrapper_register("awf", "\\Awf\\Utils\\Buffer");
 }
