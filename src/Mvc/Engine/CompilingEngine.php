@@ -89,8 +89,10 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 
 		if ($canUseStreams)
 		{
-			$id         = $this->getIdentifier($path);
-			$streamPath = 'buffer://' . $this->view->getContainer()->componentName . '/compiled_templates/' . $id . '.php';
+			$id           = $this->getIdentifier($path);
+			$streamPath   = 'awf://' . $this->view->getContainer()->application_name . '/compiled_templates/' . $id . '.php';
+
+			file_put_contents($streamPath, $content);
 
 			return array(
 				'type'    => 'path',
@@ -99,7 +101,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		}
 
 		// I couldn't use a stream wrapper. I have to give up.
-		$errorMessage = "Could not write to your temporary directory “%s”. Please make it writeable to PHP by changing the permissions. Alternatively, ask your host to make sure that they have not disabled the stream_wrapper_register() function in PHP. Moreover, if your host is using the Suhosin patch for PHP ask them to whitelist the buffer:// stream wrapper in their server's php.ini file. If you do not understand what this means please contact your host and paste this entire message to them.";
+		$errorMessage = "Could not write to your temporary directory “%s”. Please make it writeable to PHP by changing the permissions. Alternatively, ask your host to make sure that they have not disabled the stream_wrapper_register() function in PHP. Moreover, if your host is using the Suhosin patch for PHP ask them to whitelist the awf:// stream wrapper in their server's php.ini file. If you do not understand what this means please contact your host and paste this entire message to them.";
 		throw new \RuntimeException(sprintf($errorMessage, $cacheFolder), 500);
 	}
 
