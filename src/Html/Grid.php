@@ -15,7 +15,7 @@ use Awf\Text\Text;
  */
 abstract class Grid
 {
-	public static $javascriptPrefix = 'Solo.System.';
+	public static $javascriptPrefix = 'akeeba.System.';
 
 	/**
 	 * Method to sort a column in a grid
