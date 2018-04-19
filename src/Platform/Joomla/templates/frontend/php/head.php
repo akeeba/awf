@@ -47,9 +47,29 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 }
 
 // Script declarations
-if(!empty($scriptDeclarations)) foreach($scriptDeclarations as $type => $content)
+if (!is_array($scriptDeclarations))
 {
-	JFactory::getApplication()->getDocument()->addScriptDeclaration($content, $type);
+	$scriptDeclarations = array();
+}
+
+$scriptDeclarations[] = 'window.addEventListener(\'DOMContentLoaded\', function(event) { akeeba.fef.menuButton(); akeeba.fef.tabs(); });';
+
+foreach ($scriptDeclarations as $type => $content)
+{
+	if ($this->getContainer()->input->get('tmpl') == 'component')
+	{
+		JFactory::getApplication()->getDocument()->addScriptDeclaration($content, $type);
+	}
+	else
+	{
+		echo <<< HTML
+<script type="$type">
+akeeba.loadScripts[akeeba.loadScripts.length] = function () {
+	$content
+}
+</script>
+HTML;
+	}
 }
 
 // CSS declarations after the template CSS
