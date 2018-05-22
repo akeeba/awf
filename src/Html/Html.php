@@ -56,6 +56,81 @@ abstract class Html
 	}
 
 	/**
+	 * Function caller. Call me line Html::_('HtmlClass.function', $param1, $param2)
+	 *
+	 * @param   string  $key  The name of helper method to load, (prefix).(class).function
+	 *                        prefix and class are optional and can be used to load custom
+	 *                        html helpers.
+	 *
+	 * @return  mixed
+	 *
+	 * @throws  \InvalidArgumentException
+	 */
+	public static function _($key)
+	{
+		list($prefix, $file, $func) = static::extract($key);
+
+		$className = $prefix . ucfirst($file);
+
+		if (!class_exists($className))
+		{
+			$className = __NAMESPACE__ . '\\' . $prefix . '\\' . ucfirst($file);
+		}
+
+		if (!class_exists($className))
+		{
+			throw new \InvalidArgumentException(sprintf('%s %s not found.', $prefix, $file), 500);
+		}
+
+		$toCall = array($className, $func);
+
+		if (!is_callable($toCall))
+		{
+			throw new \InvalidArgumentException(sprintf('%s::%s not found.', $className, $func), 500);
+		}
+
+		$args = func_get_args();
+
+		// Remove function name from arguments
+		array_shift($args);
+
+		// PHP 5.3 workaround
+		$temp = array();
+
+		foreach ($args as &$arg)
+		{
+			$temp[] = &$arg;
+		}
+
+		return call_user_func_array($toCall, $temp);
+	}
+
+	/**
+	 * Method to extract a key
+	 *
+	 * @param   string  $key  The name of helper method to load, (prefix).(class).function
+	 *                        prefix and class are optional and can be used to load custom html helpers.
+	 *
+	 * @return  array  Contains lowercase key, prefix, file, function.
+	 *
+	 * @since   1.6
+	 */
+	protected static function extract($key)
+	{
+		$key = preg_replace('#[^A-Z0-9_\.]#i', '', $key);
+
+		// Check to see whether we need to load a helper file
+		$parts = explode('.', $key);
+
+		$prefix = count($parts) === 3 ? array_shift($parts) : '\\Awf\\Html\\';
+		$file   = count($parts) === 2 ? array_shift($parts) : '';
+		$func   = array_shift($parts);
+
+		return array($prefix, $file, $func);
+	}
+
+
+	/**
 	 * Write a <a></a> element
 	 *
 	 * @param   string  $url      The relative URL to use for the href attribute
