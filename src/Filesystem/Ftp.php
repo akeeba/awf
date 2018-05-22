@@ -206,10 +206,10 @@ class Ftp implements FilesystemInterface
 	{
 		$targetFile = $this->translatePath($fileName);
 
-		// Make sure the buffer:// wrapper is loaded
+		// Make sure the awf:// wrapper is loaded
 		class_exists('\\Awf\\Utils\\Buffer', true);
 
-		$handle = fopen('buffer://awf_filesystem_ftp', 'r+');
+		$handle = fopen('awf://awf_filesystem_ftp', 'r+');
 		fwrite($handle, $contents);
 		rewind($handle);
 
@@ -247,10 +247,10 @@ class Ftp implements FilesystemInterface
 		$fromFile = $this->translatePath($from);
 		$toFile   = $this->translatePath($to);
 
-		// Make sure the buffer:// wrapper is loaded
+		// Make sure the awf:// wrapper is loaded
 		class_exists('\\Awf\\Utils\\Buffer', true);
 
-		$handle = fopen('buffer://awf_filesystem_ftp', 'r+');
+		$handle = fopen('awf://awf_filesystem_ftp', 'r+');
 
 		$ret = @ftp_fget($this->connection, $handle, $fromFile, FTP_BINARY);
 
