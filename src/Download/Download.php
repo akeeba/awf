@@ -168,6 +168,11 @@ class Download
 	 */
 	public function getFromURL($url)
 	{
+		if (is_null($this->adapter))
+		{
+			throw new \RuntimeException("No downloader adapter available. Please check your server configuration");
+		}
+
 		try
 		{
             return $this->adapter->downloadAndReturn($url, null, null, $this->adapterOptions);
