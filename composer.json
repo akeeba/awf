@@ -3,8 +3,9 @@
     "type": "library",
 	"description": "A framework for single-source standalone apps, Joomla! components and WordPress plugins",
 	"require" : {
-		"php": ">=5.3.4"
-	},
+		"php": ">=5.3.4",
+      "ext-curl": "*"
+    },
 	"keywords": ["framework","joomla","wordpress"],
 	"homepage": "https://github.com/akeeba/awf",
 	"license": "GPLv3",
