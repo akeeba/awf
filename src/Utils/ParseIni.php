@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -81,6 +81,8 @@ abstract class ParseIni
 		{
 			$line = trim($line);
 			$line = str_replace("\t", " ", $line);
+			$line = str_replace('\"', '"', $line);
+			$line = str_replace('""', '"', $line);
 
 			// Comments
 			if (!preg_match('/^[a-zA-Z0-9[]/', $line))

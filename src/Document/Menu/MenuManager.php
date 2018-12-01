@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -300,6 +300,26 @@ class MenuManager
 			if (!array_key_exists('order', $options))
 			{
 				$options['order'] = 0;
+			}
+
+			if (array_key_exists('privileges', $options) && is_array($options['privileges']))
+			{
+				$user = $this->container->userManager->getUser();
+				$allow = true;
+
+				foreach ($options['privileges'] as $privilege)
+				{
+					if (!$user->getPrivilege($privilege, true))
+					{
+						$allow = false;
+						break;
+					}
+				}
+
+				if (!$allow)
+				{
+					continue;
+				}
 			}
 
 			// Create a menu item

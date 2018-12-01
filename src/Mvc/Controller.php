@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -757,15 +757,17 @@ class Controller
 	 * Provides CSRF protection through the forced use of a secure token. If the token doesn't match the one in the
 	 * session we die() immediately.
 	 *
+	 * @param 	bool	$useCMS	If a token is not found, should we try to use CMS functions?
+	 *
 	 * @return  void
 	 *
 	 * @throws  \Exception
 	 */
-	protected function csrfProtection()
+	protected function csrfProtection($useCMS = false)
 	{
-		$isValidToken = false;
+		$inCMS 		= $this->container->segment->get('insideCMS', false);
 		$tokenValue = $this->container->session->getCsrfToken()->getValue();
-		$token = $this->input->get('token', '', 'raw');
+		$token 		= $this->input->get('token', '', 'raw');
 
 		if ($token == $tokenValue)
 		{
@@ -775,6 +777,20 @@ class Controller
 		{
 			$altToken = $this->input->get($tokenValue, 0, 'int');
 			$isValidToken = $altToken == 1;
+		}
+
+		// TODO Maybe we should create a real provider for supporting all CMS etc etc but in reality we're only in WordPress, so...
+		// We didn't found any valid token, but we're inside a CMS and we were asked to check with CSRF functions
+		if (!$isValidToken && $useCMS && $inCMS)
+		{
+			// If we're inside WordPress, let's get the nonce and the action used to generate it
+			if (\function_exists('wp_verify_nonce'))
+			{
+				$wp_token  = $this->input->get('_wpnonce', '', 'raw');
+				$wp_action = $this->input->get('_wpaction', '');
+
+				$isValidToken = \wp_verify_nonce($wp_token, $wp_action);
+			}
 		}
 
 		if (!$isValidToken)

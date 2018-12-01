@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 
@@ -883,7 +883,7 @@ abstract class Restore
 		{
 			return 0;
 		}
-		$unit = array('b', 'Kb', 'Mb', 'Gb', 'Tb', 'Pb');
+		$unit = array('b', 'KB', 'MB', 'GB', 'TB', 'PB');
 		$i = floor(log($size, 1024));
 		if (($i < 0) || ($i > 5))
 		{

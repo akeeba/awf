@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -168,6 +168,11 @@ class Download
 	 */
 	public function getFromURL($url)
 	{
+		if (is_null($this->adapter))
+		{
+			throw new \RuntimeException("No downloader adapter available. Please check your server configuration");
+		}
+
 		try
 		{
             return $this->adapter->downloadAndReturn($url, null, null, $this->adapterOptions);

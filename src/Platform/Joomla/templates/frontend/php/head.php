@@ -1,8 +1,10 @@
 <?php
 /**
- * @package		awf
- * @copyright	2014 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package     Awf
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license     GNU GPL version 3 or later
+ *
+ * This file is a heavily modified version of the JMail class found in Joomla! 3. It is a wrapper to PHPMailer.
  */
 
 use Awf\Document\Document;
@@ -53,9 +55,29 @@ if(!empty($scripts)) foreach($scripts as $url => $params)
 }
 
 // Script declarations
-if(!empty($scriptDeclarations)) foreach($scriptDeclarations as $type => $content)
+if (!is_array($scriptDeclarations))
 {
-	JFactory::getApplication()->getDocument()->addScriptDeclaration($content, $type);
+	$scriptDeclarations = array();
+}
+
+$scriptDeclarations[] = 'window.addEventListener(\'DOMContentLoaded\', function(event) { akeeba.fef.menuButton(); akeeba.fef.tabs(); });';
+
+foreach ($scriptDeclarations as $type => $content)
+{
+	if ($this->getContainer()->input->get('tmpl') == 'component')
+	{
+		JFactory::getApplication()->getDocument()->addScriptDeclaration($content, $type);
+	}
+	else
+	{
+		echo <<< HTML
+<script type="$type">
+akeeba.loadScripts[akeeba.loadScripts.length] = function () {
+	$content
+}
+</script>
+HTML;
+	}
 }
 
 // CSS declarations after the template CSS

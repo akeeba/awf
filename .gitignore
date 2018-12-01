@@ -19,6 +19,8 @@
 
 /phpunit.xml
 
+/release
+
 /Tests/coverage
 
 /vendor

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  *
  * Based on Laravel 4's Illuminate\Database\Eloquent\Collection

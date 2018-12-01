@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     Awf
- * @copyright   2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license     GNU GPL version 3 or later
  */
 namespace Awf\Utils;
@@ -101,7 +101,7 @@ class PhpTokenizer
                 // If it's an array, that's easy
                 if(is_array($token))
                 {
-                    return $token[2] + $offset;
+                    return $token[2] + $offset - 1;
                 }
                 else
                 {
