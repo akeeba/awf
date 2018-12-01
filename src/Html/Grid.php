@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        awf
- * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  *
  * This class is based on the JHtml package of Joomla! 3
@@ -15,7 +15,7 @@ use Awf\Text\Text;
  */
 abstract class Grid
 {
-	public static $javascriptPrefix = 'Solo.System.';
+	public static $javascriptPrefix = 'akeeba.System.';
 
 	/**
 	 * Method to sort a column in a grid

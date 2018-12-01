@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        solo
- * @copyright      2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license        GNU GPL version 3 or later
  */
 
@@ -9,6 +9,7 @@ namespace Awf\Container;
 
 use Awf\Application\Application;
 use Awf\Database\Driver;
+use Awf\Mvc\Compiler\Blade;
 use Awf\Pimple\Pimple;
 use Awf\Session;
 use Awf\Utils\Phpfunc;
@@ -24,9 +25,11 @@ use Awf\Utils\Phpfunc;
  * @property  string                                         $temporaryPath         The temporary directory of your application
  * @property  string                                         $filesystemBase        The base path of your web root (for use by Awf\Filesystem)
  * @property  string                                         $sqlPath               The path to the SQL files restored by Awf\Database\Restore
+ * @property  string                                         $mediaQueryKey         The query string parameter to append to media added through the Template class
  *
  * @property-read  \Awf\Application\Application              $application           The application instance
  * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
+ * @property-read  \Awf\Mvc\Compiler\Blade                   $blade                 The Blade view template compiler engine
  * @property-read  \Awf\Database\Driver                      $db                    The global database connection object
  * @property-read  \Awf\Dispatcher\Dispatcher                $dispatcher            The application dispatcher
  * @property-read  \Awf\Event\Dispatcher                     $eventDispatcher       The global event dispatched
@@ -50,6 +53,7 @@ class Container extends Pimple
 		$this->temporaryPath = null;
 		$this->filesystemBase = null;
 		$this->sqlPath = null;
+		$this->mediaQueryKey = null;
 
 		parent::__construct($values);
 
@@ -68,6 +72,15 @@ class Container extends Pimple
 			$this['appConfig'] = function (Container $c)
 			{
 				return new \Awf\Application\Configuration($c);
+			};
+		}
+
+		// Blade view template compiler service
+		if (!isset($this['blade']))
+		{
+			$this['blade'] = function (Container $c)
+			{
+				return new Blade($c);
 			};
 		}
 

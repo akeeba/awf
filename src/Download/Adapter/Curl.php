@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -14,6 +14,8 @@ use Awf\Text\Text;
  */
 class Curl extends AbstractAdapter implements DownloadInterface
 {
+	protected $headers = array();
+
 	public function __construct()
 	{
 		$this->priority              = 110;
@@ -73,19 +75,60 @@ class Curl extends AbstractAdapter implements DownloadInterface
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_SSLVERSION, 0);
         curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+		curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'reponseHeaderCallback'));
 
 		if (!(empty($from) && empty($to)))
 		{
 			curl_setopt($ch, CURLOPT_RANGE, "$from-$to");
 		}
 
+		if (!is_array($params))
+		{
+			$params = array();
+		}
+
+		$patched_accept_encoding = false;
+
+		// Work around LiteSpeed sending compressed output under HTTP/2 when no encoding was requested
+		// See https://github.com/joomla/joomla-cms/issues/21423#issuecomment-410941000
+		if (defined('CURLOPT_ACCEPT_ENCODING'))
+		{
+			if (!array_key_exists(CURLOPT_ACCEPT_ENCODING, $params))
+			{
+				$params[CURLOPT_ACCEPT_ENCODING] = 'identity';
+			}
+
+			$patched_accept_encoding = true;
+		}
+
         if (!empty($params))
         {
             foreach ($params as $k => $v)
             {
+            	// I couldn't patch the accept encoding header (missing constant), so I'll check if we manually set it
+            	if (!$patched_accept_encoding && $k == CURLOPT_HTTPHEADER)
+				{
+					foreach ($v as $custom_header)
+					{
+						// Ok, we explicitly set the Accept-Encoding header, so we consider it patched
+						if (stripos($custom_header, 'Accept-Encoding') !== false)
+						{
+							$patched_accept_encoding = true;
+						}
+					}
+				}
+
                 @curl_setopt($ch, $k, $v);
             }
         }
+
+        // Accept encoding wasn't patched, let's manually do that
+        if (!$patched_accept_encoding)
+		{
+			@curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Encoding: identity'));
+
+			$patched_accept_encoding = true;
+		}
 
 		$result = curl_exec($ch);
 
@@ -97,6 +140,10 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		if ($result === false)
 		{
 			$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_CURL_ERROR', $errno, $errmsg);
+		}
+		elseif (($http_status >= 300) && ($http_status <= 399) && isset($this->headers['location']) && !empty($this->headers['location']))
+		{
+			return $this->downloadAndReturn($this->headers['location'], $from, $to, $params);
 		}
 		elseif ($http_status > 299)
 		{
@@ -130,11 +177,17 @@ class Curl extends AbstractAdapter implements DownloadInterface
 
 		$ch = curl_init();
 
+		curl_setopt($ch, CURLOPT_AUTOREFERER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($ch, CURLOPT_SSLVERSION, 0);
+
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_NOBODY, true );
 		curl_setopt($ch, CURLOPT_HEADER, true );
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
 		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
+		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
 
 		$data = curl_exec($ch);
 		curl_close($ch);
@@ -143,23 +196,73 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		{
 			$content_length = "unknown";
 			$status = "unknown";
+			$redirection = null;
 
-			if (preg_match( "/^HTTP\/1\.[01] (\d\d\d)/", $data, $matches))
+			if (preg_match( "/^HTTP\/1\.[01] (\d\d\d)/i", $data, $matches))
 			{
 				$status = (int)$matches[1];
 			}
 
-			if (preg_match( "/Content-Length: (\d+)/", $data, $matches))
+			if (preg_match( "/Content-Length: (\d+)/i", $data, $matches))
 			{
 				$content_length = (int)$matches[1];
+			}
+
+			if (preg_match( "/Location: (.*)/i", $data, $matches))
+			{
+				$redirection = (int)$matches[1];
 			}
 
 			if( $status == 200 || ($status > 300 && $status <= 308) )
 			{
 				$result = $content_length;
 			}
+
+			if (($status > 300) && ($status <= 308))
+			{
+				if (!empty($redirection))
+				{
+					return $this->getFileSize($redirection);
+				}
+
+				return -1;
+			}
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Handles the HTTP headers returned by cURL
+	 *
+	 * @param   resource  $ch    cURL resource handle (unused)
+	 * @param   string    $data  Each header line, as returned by the server
+	 *
+	 * @return  int  The length of the $data string
+	 */
+	protected function reponseHeaderCallback(&$ch, &$data)
+	{
+		$strlen = strlen($data);
+
+		if (($strlen) <= 2)
+		{
+			return $strlen;
+		}
+
+		if (substr($data, 0, 4) == 'HTTP')
+		{
+			return $strlen;
+		}
+
+		if (strpos($data, ':') === false)
+		{
+			return $strlen;
+		}
+
+		list($header, $value) = explode(': ', trim($data), 2);
+
+		$this->headers[strtolower($header)] = $value;
+
+		return $strlen;
 	}
 }

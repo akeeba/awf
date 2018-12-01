@@ -1,7 +1,7 @@
 <?php
 /**
  * @package		awf
- * @copyright	2014-2016 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license		GNU GPL version 3 or later
  */
 
@@ -27,7 +27,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 		$buffer = new Buffer();
 
 		$dummy = null;
-		$return = $buffer->stream_open('buffer://path/to/some/file', 'w', null, $dummy);
+		$return = $buffer->stream_open('awf://path/to/some/file', 'w', null, $dummy);
 
 		$this->assertTrue($return);
 
@@ -246,7 +246,7 @@ class BufferTest extends \PHPUnit_Framework_TestCase
 
 		$dummy = null;
 
-		$buffer->stream_open('buffer://path/to/some/file', 'w', null, $dummy);
+		$buffer->stream_open('awf://path/to/some/file', 'w', null, $dummy);
 
 		return $buffer;
 	}
