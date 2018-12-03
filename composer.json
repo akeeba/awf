@@ -24,7 +24,8 @@
   "autoload": {
     "psr-4": {
       "Awf\\": "src/"
-    }
+    },
+    "files": ["src/Utils/helpers.php"]
   },
   "version": "0.0.1",
   "require-dev": {
