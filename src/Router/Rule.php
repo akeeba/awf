@@ -166,6 +166,11 @@ class Rule
 		if ($this->useCallableForParse)
 		{
 			$ret = call_user_func($this->parseCallable, $path);
+
+			if (is_null($ret))
+			{
+				return null;
+			}
 		}
 		else
 		{
