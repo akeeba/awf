@@ -296,7 +296,10 @@ class Router
 		// Set the query vars to the application
 		if (is_array($routeVars) && !empty($routeVars))
 		{
-			$this->container->input->setData($routeVars);
+			foreach ($routeVars as $k => $v)
+			{
+				$this->container->input->set($k, $v);
+			}
 		}
 	}
 
