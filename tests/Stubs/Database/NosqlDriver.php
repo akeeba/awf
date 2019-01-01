@@ -1,14 +1,15 @@
 <?php
 /**
- * @package        awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This file is adapted from the Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Database\Driver;
 
+/**
+ * This file is adapted from the Joomla! Framework
+ */
 
 use Awf\Database\Driver;
 use Awf\Database\Query;

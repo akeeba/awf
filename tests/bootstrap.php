@@ -1,11 +1,8 @@
 <?php
 /**
- * @package		awf
- * @subpackage  tests
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
- * Bootstrap file for unit testing
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 // Include the AWF autoloader.

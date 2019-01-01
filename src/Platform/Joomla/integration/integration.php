@@ -1,16 +1,18 @@
 <?php
 /**
- * @package        awf-miniblog
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This is the AWF integration file for the Joomla! 2.x / 3.x CMS. It allows you to run an AWF application as a Joomla!
- * component. You need to provide the following variables before including this script:
- *
- * @var string $appName The application name, e.g. Foobar for com_foobar. It's also the name of your AWF Application's
- *                      namespace. The admin side in this case will have the namespace FoobarAdmin and component name
- *                      com_foobar
- * @var array $containerOverrides Any variables you want to push to the DI Container
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
+ */
+
+/**
+- * This is the AWF integration file for the Joomla! 2.x / 3.x CMS. It allows you to run an AWF application as a Joomla!
+- * component. You need to provide the following variables before including this script:
+- *
+- * @var string $appName The application name, e.g. Foobar for com_foobar. It's also the name of your AWF Application's
+- *                      namespace. The admin side in this case will have the namespace FoobarAdmin and component name
+- *                      com_foobar
+- * @var array $containerOverrides Any variables you want to push to the DI Container
  */
 
 use Awf\Session;

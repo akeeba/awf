@@ -1,10 +1,8 @@
 <?php
 /**
- * @package        awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This class is adapted from Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Database;
@@ -18,6 +16,8 @@ use Awf\Tests\Stubs\Database\Query;
  * Test class for Awf\Database\Query.
  *
  * @since  1.0
+ *
+ * This class is adapted from Joomla! Framework
  */
 class QueryTest extends AwfTestCase
 {

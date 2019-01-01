@@ -1,12 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
- * Based on Laravel 4's Illuminate\Database\Eloquent\Collection
- *
- * Laravel 4 is distributed under the MIT license, see https://github.com/laravel/framework/blob/master/LICENSE.txt
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel;
@@ -38,6 +34,10 @@ use Awf\Utils\Collection as BaseCollection;
  * @method void unpublish()
  *
  * @package Awf\Mvc\DataModel
+ *
+ * Based on Laravel 4's Illuminate\Database\Eloquent\Collection
+ *
+ * Laravel 4 is distributed under the MIT license, see https://github.com/laravel/framework/blob/master/LICENSE.txt
  */
 class Collection extends BaseCollection
 {

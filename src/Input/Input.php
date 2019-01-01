@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * Based on the Joomla! Platform and FOF
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Input;
@@ -32,6 +30,8 @@ namespace Awf\Input;
  * @method    string    getHtml($name, $default)
  * @method    string    getPath($name, $default)
  * @method    string    getUsername($name, $default)
+ *
+ * Based on the Joomla! Platform and FOF
  */
 class Input implements \Serializable, \Countable
 {

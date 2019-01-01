@@ -1,9 +1,11 @@
 <?php
 /**
- * @package     FOF
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 2 or later
- *
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
+ */
+
+/**
  * This file overrides certain core cURL functions inside the FOF30\Download\Adapter namespace. Because of the strange
  * way PHP handles calls to functions, the functions specified in this namespace override the core functions which are
  * implicitly defined in the global namespace. Therefore when the FOF30\Download\Adapter\Curl adapter calls, say,

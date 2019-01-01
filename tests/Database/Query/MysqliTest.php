@@ -1,11 +1,8 @@
 <?php
 /**
- * @package        awf
- * @subpackage     tests.date.date
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This class is adapted from Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Database\Query;
@@ -17,6 +14,8 @@ use Awf\Tests\Helpers\TestHelper;
  * Test class for \Awf\Database\Query\Mysqli.
  *
  * @since  1.1
+ *
+ * This class is adapted from Joomla! Framework
  */
 class MysqliTest extends AwfTestCase
 {

@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework and includes bug fixes not present there
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Database\Driver;
@@ -14,6 +12,8 @@ use Awf\Database\Query;
 
 /**
  * PostgreSQL database driver
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @see         http://dev.mysql.com/doc/
  */

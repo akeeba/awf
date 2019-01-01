@@ -1,9 +1,11 @@
 <?php
 /**
- * @package		solo
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
+ */
+
+/**
  * This file contains a namespaced but otherwise unmodified copy of Pimple, the DI
  * container by Fabien Potencier. The following notice accompanies the original
  * file:

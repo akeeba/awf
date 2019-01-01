@@ -4,7 +4,8 @@
   "description": "A framework for single-source standalone apps, Joomla! components and WordPress plugins",
   "require": {
     "php": ">=5.3.4",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-simplexml": "*"
   },
   "keywords": [
     "framework",
