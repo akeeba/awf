@@ -1,14 +1,11 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Database;
-
 
 use Awf\Container\Container;
 use Awf\Filesystem\File;

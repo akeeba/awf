@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Database;
@@ -15,6 +13,8 @@ namespace Awf\Database;
  * Adds bind/unbind methods as well as a getBounded() method
  * to retrieve the stored bounded variables on demand prior to
  * query execution.
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @since  1.0
  *

@@ -1,11 +1,8 @@
 <?php
 /**
- * @package        awf
- * @subpackage     tests.date.date
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This class is adapted from Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Database;
@@ -23,6 +20,8 @@ require_once __DIR__ . '/../Stubs/Database/NosqlDriver.php';
  * @package Awf\Tests\Tests
  *
  * @coversDefaultClass \Awf\Database\Driver
+ *
+ * This class is adapted from Joomla! Framework
  */
 class DriverTest extends DatabaseTest
 {

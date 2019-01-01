@@ -1,8 +1,8 @@
 <?php
 /**
- * @package        awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 // We will use the same namespace as the SUT, so when PHP will try to look for the native function, he will look inside

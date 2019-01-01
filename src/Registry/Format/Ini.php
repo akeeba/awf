@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Registry\Format;
@@ -14,6 +12,8 @@ use stdClass;
 
 /**
  * INI format handler for Registry.
+ *
+ * This class is adapted from the Joomla! Framework
  */
 class Ini extends AbstractRegistryFormat
 {

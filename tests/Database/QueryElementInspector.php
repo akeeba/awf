@@ -1,11 +1,8 @@
 <?php
 /**
- * @package        awf
- * @subpackage     tests.date.date
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This class is adapted from Joomla! Framework
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Tests\Database;
@@ -14,6 +11,8 @@ namespace Awf\Tests\Database;
  * Class to expose protected properties and methods in QueryElement for testing purposes.
  *
  * @since  1.0
+ *
+ * This class is adapted from Joomla! Framework
  */
 class QueryElementInspector extends \Awf\Database\QueryElement
 {

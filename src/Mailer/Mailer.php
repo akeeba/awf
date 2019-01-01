@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This file is a heavily modified version of the JMail class found in Joomla! 3. It is a wrapper to PHPMailer.
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Mailer;
@@ -18,6 +16,11 @@ if (!function_exists('PHPMailerAutoload'))
 	require_once __DIR__ . '/phpmailer/PHPMailerAutoload.php';
 }
 
+/**
+ * A class to abstract email sending
+ *
+ * This file is a heavily modified version of the JMail class found in Joomla! 3.
+ */
 class Mailer extends \PHPMailer
 {
 

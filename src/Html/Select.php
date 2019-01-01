@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is based on the JHtml package of Joomla! 3 but is heavily modified
+ * @package    awf
+ * @copyright  Copyright (c)2014-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license    GNU GPL version 3 or later
  */
 
 namespace Awf\Html;
@@ -14,6 +12,8 @@ use Awf\Utils\ArrayHelper;
 
 /**
  * An abstraction to creating HTML select elements and related widgets
+ *
+ * This class is based on the JHtml package of Joomla! 3 but heavily modified
  */
 abstract class Select
 {
