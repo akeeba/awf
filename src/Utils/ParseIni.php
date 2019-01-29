@@ -8,16 +8,15 @@
 namespace Awf\Utils;
 
 /**
- * PHP has a very strange way of handling INI files, thoroughly undocumented. For example, using ${bollocks}
- * in a value will replace that string with the php.ini setting or an environment variable of the same name.
- * Of course this kind of asshattery completely breaks parsing when you have the character sequence ${ in,
- * let's say, a password. In fact it will throw a warning and stop parsing the file. Same applies if you include
- * special characters without enclosing them in double quotes – despite that something like that is perfectly
- * allowed in INI files and even supported in php.ini itself.
+ * PHP will, by default, parse INI files and INI strings in the default mode, i.e. allowing variable interpolation and
+ * requiring wrapping the value in double quotes.
  *
- * Basically, PHP's handling of INI is a massive pile of undocumented crap and WTF. So despite the native
- * functions being faster we will NOT use them as they are also completely broken in too many ways. And then you
- * wonder why PHP developers drink to oblivion in conferences... Sigh...
+ * For example, ${foo} will be replaced with the contents of the variable $foo in the current context.
+ *
+ * This is problematic when you have passwords where such special characters are very likely to occur.
+ *
+ * Since ANGIE will only parse a small amount of INI data and is used infrequently we bypass the problem by using a much
+ * slower, but safe, parser written entirely in PHP instead of the native functions.
  */
 abstract class ParseIni
 {
