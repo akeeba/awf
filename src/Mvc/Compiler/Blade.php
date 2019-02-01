@@ -86,9 +86,33 @@ class Blade implements CompilerInterface
 	 */
 	protected $container;
 
+	/**
+	 * Should I use the PHP Tokenizer extension to compile Blade templates? Default is true and is preferable. We expect
+	 * this to be false only on bad quality hosts. It can be overridden with Reflection for testing purposes.
+	 *
+	 * @var bool
+	 */
+	protected $usingTokenizer = false;
+
 	public function __construct(Container $container)
 	{
 		$this->container = $container;
+		$this->usingTokenizer = false;
+
+		if (function_exists('token_get_all') && defined('T_INLINE_HTML'))
+		{
+			$this->usingTokenizer = true;
+		}
+	}
+
+	/**
+	 * Report if the PHP Tokenizer extension is being used
+	 *
+	 * @return  bool
+	 */
+	public function isUsingTokenizer()
+	{
+		return $this->usingTokenizer;
 	}
 
 	/**
@@ -156,12 +180,24 @@ class Blade implements CompilerInterface
 	{
 		$result = '';
 
-		// Here we will loop through all of the tokens returned by the Zend lexer and
-		// parse each one into the corresponding valid PHP. We will then have this
-		// template as the correctly rendered PHP that can be rendered natively.
-		foreach (token_get_all($value) as $token)
+		if ($this->usingTokenizer)
 		{
-			$result .= is_array($token) ? $this->parseToken($token) : $token;
+			// Here we will loop through all of the tokens returned by the Zend lexer and
+			// parse each one into the corresponding valid PHP. We will then have this
+			// template as the correctly rendered PHP that can be rendered natively.
+			foreach (token_get_all($value) as $token)
+			{
+				$result .= is_array($token) ? $this->parseToken($token) : $token;
+			}
+		}
+		else
+		{
+			foreach ($this->compilers as $type)
+			{
+				$value = $this->{"compile{$type}"}($value);
+			}
+
+			$result .= $value;
 		}
 
 		// If there are any footer lines that need to get added to a template we will
