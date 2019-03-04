@@ -3,9 +3,10 @@
   "type": "library",
   "description": "A framework for single-source standalone apps, Joomla! components and WordPress plugins",
   "require": {
-    "php": ">=5.3.4",
+    "php": ">=5.4.0",
     "ext-curl": "*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "ext-pdo": "*"
   },
   "keywords": [
     "framework",
