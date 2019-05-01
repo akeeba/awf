@@ -63,8 +63,11 @@ class Pdomysql extends Pdo
     public function __construct($options)
     {
         // Get some basic values from the options.
-        $options['driver']	= 'mysql';
-        $options['charset'] = (isset($options['charset'])) ? $options['charset'] : 'utf8';
+        $options['driver']        = 'mysql';
+        $options['charset']       = (isset($options['charset'])) ? $options['charset'] : 'utf8';
+
+        // As soon as PDO connect set the sql_mode to '' (avoids issues with the date being NULL/zero
+        $options['driverOptions'] = [\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode=""'];
 
         $this->charset = $options['charset'];
 
