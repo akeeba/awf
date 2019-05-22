@@ -70,8 +70,15 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			);
 		}
 
-		// Compile it and cache it.
-		$content        = $this->compile($path, $forceParams);
+		/**
+		 * Compile and cache the file. We also add the file path in a comment at the top of the file so phpStorm can
+		 * debug it.
+		 *
+		 * @see https://blog.jetbrains.com/phpstorm/2019/02/phpstorm-2019-1-eap-191-5849-26/
+		 * @see https://laravel-news.com/laravel-5-8-blade-template-file-path
+		 */
+		$content        = "<?php /* $path */ ?>\n";
+		$content        .= $this->compile($path, $forceParams);
 		$cacheFolder    = $this->view->getContainer()->temporaryPath;
 		$cachedFilePath = $this->putToCache($path, $content);
 
