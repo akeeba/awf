@@ -7,9 +7,8 @@
 
 namespace Awf\Database\Driver;
 
+// !!IMPORTANT!! DO NOT PUT use PDO STATEMENTS HERE. IT CAUSES IMMEDIATE CRASH ON PHP INSTALLATIONS WHICH LACK PDO.
 use Awf\Database\Query\Pgsql as QueryBase;
-use PDO;
-use PDOStatement;
 
 /**
  * PostgreSQL database driver
@@ -20,10 +19,10 @@ use PDOStatement;
  */
 class Pgsql extends Postgresql
 {
-	/** @var PDO The db connection resource */
+	/** @var \PDO The db connection resource */
 	protected $connection = null;
 
-	/** @var PDOStatement The database connection cursor from the last query. */
+	/** @var \PDOStatement The database connection cursor from the last query. */
 	protected $cursor;
 
 	/** @var array Driver options for PDO */
@@ -64,7 +63,7 @@ class Pgsql extends Postgresql
 	 */
 	public function __destruct()
 	{
-		if ($this->cursor instanceof PDOStatement)
+		if ($this->cursor instanceof \PDOStatement)
 		{
 			$this->cursor->closeCursor();
 			$this->cursor = null;
@@ -107,7 +106,7 @@ class Pgsql extends Postgresql
 		// connect to the server
 		try
 		{
-			$this->connection = new PDO(
+			$this->connection = new \PDO(
 				$connectionString,
 				$this->options['user'],
 				$this->options['password'],
@@ -131,8 +130,8 @@ class Pgsql extends Postgresql
 		{
 		}
 
-		$this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+		$this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+		$this->connection->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
 
 		if ($this->options['select'] && !empty($this->database))
 		{
@@ -197,7 +196,7 @@ class Pgsql extends Postgresql
 
 		try
 		{
-			/** @var PDOStatement $statement */
+			/** @var \PDOStatement $statement */
 			$statement = $this->connection->prepare('SELECT 1');
 			$executed  = $statement->execute();
 			$ret       = 0;
@@ -206,9 +205,9 @@ class Pgsql extends Postgresql
 			{
 				$row = [0];
 
-				if (!empty($statement) && $statement instanceof PDOStatement)
+				if (!empty($statement) && $statement instanceof \PDOStatement)
 				{
-					$row = $statement->fetch(PDO::FETCH_NUM);
+					$row = $statement->fetch(\PDO::FETCH_NUM);
 				}
 
 				$ret = $row[0];
@@ -235,7 +234,7 @@ class Pgsql extends Postgresql
 	 */
 	public function getAffectedRows()
 	{
-		if ($this->cursor instanceof PDOStatement)
+		if ($this->cursor instanceof \PDOStatement)
 		{
 			return $this->cursor->rowCount();
 		}
@@ -252,12 +251,12 @@ class Pgsql extends Postgresql
 	 */
 	public function getNumRows($cur = null)
 	{
-		if ($cur instanceof PDOStatement)
+		if ($cur instanceof \PDOStatement)
 		{
 			return $cur->rowCount();
 		}
 
-		if ($this->cursor instanceof PDOStatement)
+		if ($this->cursor instanceof \PDOStatement)
 		{
 			return $this->cursor->rowCount();
 		}
@@ -292,7 +291,7 @@ class Pgsql extends Postgresql
 	 */
 	public function getVersion()
 	{
-		return $this->connection->getAttribute(PDO::ATTR_SERVER_VERSION);
+		return $this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION);
 	}
 
 	/**
@@ -527,13 +526,13 @@ class Pgsql extends Postgresql
 	{
 		$ret = null;
 
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
 		{
-			$ret = $cursor->fetch(PDO::FETCH_NUM);
+			$ret = $cursor->fetch(\PDO::FETCH_NUM);
 		}
-		elseif ($this->cursor instanceof PDOStatement)
+		elseif ($this->cursor instanceof \PDOStatement)
 		{
-			$ret = $this->cursor->fetch(PDO::FETCH_NUM);
+			$ret = $this->cursor->fetch(\PDO::FETCH_NUM);
 		}
 
 		return $ret;
@@ -550,13 +549,13 @@ class Pgsql extends Postgresql
 	{
 		$ret = null;
 
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
 		{
-			$ret = $cursor->fetch(PDO::FETCH_ASSOC);
+			$ret = $cursor->fetch(\PDO::FETCH_ASSOC);
 		}
-		elseif ($this->cursor instanceof PDOStatement)
+		elseif ($this->cursor instanceof \PDOStatement)
 		{
-			$ret = $this->cursor->fetch(PDO::FETCH_ASSOC);
+			$ret = $this->cursor->fetch(\PDO::FETCH_ASSOC);
 		}
 
 		return $ret;
@@ -574,11 +573,11 @@ class Pgsql extends Postgresql
 	{
 		$ret = null;
 
-		if (!empty($cursor) && $cursor instanceof PDOStatement)
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
 		{
 			$ret =  $cursor->fetchObject($class);
 		}
-		elseif ($this->cursor instanceof PDOStatement)
+		elseif ($this->cursor instanceof \PDOStatement)
 		{
 			$ret = $this->cursor->fetchObject($class);
 		}
@@ -595,13 +594,13 @@ class Pgsql extends Postgresql
 	 */
 	public function freeResult($cursor = null)
 	{
-		if ($cursor instanceof PDOStatement)
+		if ($cursor instanceof \PDOStatement)
 		{
 			$cursor->closeCursor();
 			$cursor = null;
 		}
 
-		if ($this->cursor instanceof PDOStatement)
+		if ($this->cursor instanceof \PDOStatement)
 		{
 			$this->cursor->closeCursor();
 			$this->cursor = null;
@@ -637,7 +636,7 @@ class Pgsql extends Postgresql
 		foreach ($properties as $property)
 		{
 			// Do not serialize properties that are \PDO
-			if ($property->isStatic() == false && !($this->{$property->name} instanceof PDO))
+			if ($property->isStatic() == false && !($this->{$property->name} instanceof \PDO))
 			{
 				array_push($serializedProperties, $property->name);
 			}
