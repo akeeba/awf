@@ -66,6 +66,11 @@ abstract class ParseIni
 			$ini = explode("\n", $file);
 		}
 
+		if (!is_array($ini))
+		{
+			return array();
+		}
+
 		if (count($ini) == 0)
 		{
 			return array();
