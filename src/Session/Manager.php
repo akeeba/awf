@@ -328,7 +328,7 @@ class Manager
 	public function setCookieParams(array $params)
 	{
 		$this->cookie_params = array_merge($this->cookie_params, $params);
-		session_set_cookie_params(
+		@session_set_cookie_params(
 			$this->cookie_params['lifetime'],
 			$this->cookie_params['path'],
 			$this->cookie_params['domain'],
