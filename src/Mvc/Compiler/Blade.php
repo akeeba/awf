@@ -9,6 +9,8 @@ namespace Awf\Mvc\Compiler;
 
 use Awf\Container\Container;
 
+require_once __DIR__ . '/../../Utils/helpers.php';
+
 class Blade implements CompilerInterface
 {
 	/**
