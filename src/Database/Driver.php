@@ -1248,7 +1248,7 @@ abstract class Driver implements DatabaseInterface
 			}
 			else
 			{
-				$parts[] = $q{0} . $part . $q{1};
+				$parts[] = $q[0] . $part . $q[1];
 			}
 		}
 

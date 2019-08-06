@@ -15,8 +15,6 @@
 /build/templates/release-wp.json
 /build/build.properties
 
-/composer.lock
-
 /phpunit.xml
 
 /release
