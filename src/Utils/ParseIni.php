@@ -85,8 +85,6 @@ abstract class ParseIni
 		{
 			$line = trim($line);
 			$line = str_replace("\t", " ", $line);
-			$line = str_replace('\"', '"', $line);
-			$line = str_replace('""', '"', $line);
 
 			// Comments
 			if (!preg_match('/^[a-zA-Z0-9[]/', $line))
@@ -95,7 +93,7 @@ abstract class ParseIni
 			}
 
 			// Sections
-			if ($line{0} == '[')
+			if ($line[0] == '[')
 			{
 				$tmp = explode(']', $line);
 				$sections[] = trim(substr($tmp[0], 1));
@@ -118,7 +116,7 @@ abstract class ParseIni
 				$tmp = explode(';', $value);
 				if (count($tmp) == 2)
 				{
-					if ((($value{0} != '"') && ($value{0} != "'")) ||
+					if ((($value[0] != '"') && ($value[0] != "'")) ||
 						preg_match('/^".*"\s*;/', $value) || preg_match('/^".*;[^"]*$/', $value) ||
 						preg_match("/^'.*'\s*;/", $value) || preg_match("/^'.*;[^']*$/", $value)
 					)
@@ -128,11 +126,11 @@ abstract class ParseIni
 				}
 				else
 				{
-					if ($value{0} == '"')
+					if ($value[0] == '"')
 					{
 						$value = preg_replace('/^"(.*)".*/', '$1', $value);
 					}
-					elseif ($value{0} == "'")
+					elseif ($value[0] == "'")
 					{
 						$value = preg_replace("/^'(.*)'.*/", '$1', $value);
 					}
