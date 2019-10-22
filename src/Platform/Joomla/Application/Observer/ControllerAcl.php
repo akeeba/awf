@@ -74,7 +74,6 @@ class ControllerAcl extends Observer
 		// Get the controller, model and table
 		$container = $this->subject->getContainer();
 		$application_name = $container->application_name;
-		$component_name = 'com_' . strtolower($application_name);
 		/** @var DataController $controller */
 		$controller = Controller::getInstance($application_name, $controllerName, $container);
 		$model = $controller->getModel();

@@ -182,7 +182,13 @@ abstract class Application
 
 		if (!array_key_exists($name, self::$instances))
 		{
-			$className = '\\' . ucfirst($name) . '\\Application';
+			$className = $container->applicationNamespace . '\\Application';
+
+			if (!class_exists($className, true))
+			{
+				$className = '\\' . ucfirst($name) . '\\Application';
+			}
+
 
 			if (!class_exists($className))
 			{

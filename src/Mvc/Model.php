@@ -121,9 +121,9 @@ class Model
 
 		// Try to load the Model class
 		$classes = array(
-			'\\' . ucfirst($appName) . '\\Model\\' . ucfirst($modelName),
-			'\\' . ucfirst($appName) . '\\Model\\' . ucfirst(Inflector::pluralize($modelName)), // For data models
-			'\\' . ucfirst($appName) . '\\Model\\DefaultModel',
+			$container->applicationNamespace . '\\Model\\' . ucfirst($modelName),
+			$container->applicationNamespace . '\\Model\\' . ucfirst(Inflector::pluralize($modelName)), // For data models
+			$container->applicationNamespace . '\\Model\\DefaultModel',
 		);
 
 		foreach ($classes as $className)
