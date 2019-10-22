@@ -214,10 +214,10 @@ class View
 		}
 
 		$classNames = array(
-			'\\' . ucfirst($appName) . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
-			'\\' . ucfirst($appName) . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
-			'\\' . ucfirst($appName) . '\\View\\Default\\' . ucfirst($viewType),
-			'\\' . ucfirst($appName) . '\\View\\DefaultView'
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
+			$container->applicationNamespace . '\\View\\Default\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\DefaultView'
 		);
 
 		foreach ($classNames as $className)

@@ -192,7 +192,7 @@ class Controller
 		}
 
 		// Get the class base name, e.g. \Foobar\Controller\
-		$classBaseName = '\\' . ucfirst($appName) . '\\Controller\\';
+		$classBaseName = $container->applicationNamespace . '\\Controller\\';
 
 		// Get the class name suffixes, in the order to be searched for
 		$classSuffixes = array(
