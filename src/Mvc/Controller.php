@@ -353,6 +353,18 @@ class Controller
 			throw new \Exception(Text::sprintf('AWF_APPLICATION_ERROR_TASK_NOT_FOUND', $task), 404);
 		}
 
+		$method_name = 'onBeforeExecute';
+
+		if (method_exists($this, $method_name))
+		{
+			$result = $this->$method_name($task, $doTask);
+
+			if (!$result)
+			{
+				return false;
+			}
+		}
+
 		$method_name = 'onBefore' . ucfirst($task);
 
 		if (method_exists($this, $method_name))
@@ -391,6 +403,18 @@ class Controller
 		if (method_exists($this, $method_name))
 		{
 			$result = $this->$method_name();
+
+			if (!$result)
+			{
+				return false;
+			}
+		}
+
+		$method_name = 'onAfterExecute';
+
+		if (method_exists($this, $method_name))
+		{
+			$result = $this->$method_name($task, $doTask);
 
 			if (!$result)
 			{
