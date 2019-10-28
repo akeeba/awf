@@ -9,6 +9,7 @@ namespace Awf\Mvc;
 
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
+use Awf\Utils\Path;
 
 /**
  * Locates the appropriate template file for a view
@@ -242,13 +243,16 @@ class ViewTemplateFinder
 		}
 
 		// Remove duplicate paths
+		$paths = array_map(function ($path) {
+			return rtrim($path, '/' . DIRECTORY_SEPARATOR);
+		}, $paths);
 		$paths = array_unique($paths);
 
 		foreach ($this->extensions as $extension)
 		{
 			$filenameToFind = $parts['template'] . $extension;
 
-			$fileName = \Awf\Utils\Path::find($paths, $filenameToFind);
+			$fileName = Path::find($paths, $filenameToFind);
 
 			if ($fileName)
 			{

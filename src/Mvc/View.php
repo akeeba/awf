@@ -422,7 +422,7 @@ class View
 	 *
 	 * @return  string  The name of the model
 	 *
-	 * @throws  \Exception
+	 * @throws  RuntimeException
 	 */
 	public function getName()
 	{
@@ -432,10 +432,10 @@ class View
 
 			if (!preg_match('/(.*)\\\\View\\\\(.*)\\\\(.*)/i', get_class($this), $r))
 			{
-				throw new \Exception(\Awf\Text\Text::_('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
+				throw new RuntimeException(Text::_('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
 			}
 
-			$this->name = strtolower($r[2]);
+			$this->name = $r[2];
 		}
 
 		return $this->name;
@@ -671,6 +671,8 @@ class View
 				$basePath . 'default',
 			);
 		}
+
+		$paths = array_unique($paths);
 
 		foreach ($paths as $path)
 		{
