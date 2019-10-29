@@ -601,7 +601,7 @@ class Controller
 	 */
 	public function setModel($modelName, Model &$model)
 	{
-		$this->modelInstances[$modelName] = $model;
+		$this->modelInstances[strtolower($modelName)] = $model;
 	}
 
 	/**
