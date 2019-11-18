@@ -98,6 +98,7 @@ abstract class Text
 		$rawText = str_replace('\\"_QQ_"', '\"', $rawText);
 		$rawText = str_replace('"_QQ_\\"', '\"', $rawText);
 		$rawText = str_replace('"_QQ_"', '\"', $rawText);
+		$rawText = str_replace('\\"', '"', $rawText);
 
 		$strings = ParseIni::parse_ini_file($rawText, false, true);
 
