@@ -1,3 +1,9 @@
+/*
+ * @package   awf
+ * @copyright Copyright (c)2014-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
 CREATE TABLE `#__dbtest` (  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,  `title` varchar(50) NOT NULL,  `start_date` datetime NOT NULL,  `description` varchar(255) NOT NULL,  PRIMARY KEY (`id`)) ENGINE=MEMORY DEFAULT CHARSET=utf8;
 CREATE TABLE `#__dbtest_innodb` (  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,  `title` varchar(50) NOT NULL,  `start_date` datetime NOT NULL,  `description` varchar(255) NOT NULL,  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE TABLE `#__users` (  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,  `name` varchar(50) NOT NULL, `email` varchar(50) NOT NULL, `username` varchar(50) NOT NULL, `password` varchar(255) NOT NULL, `parameters` varchar(255) NOT NULL,  PRIMARY KEY (`id`)) ENGINE=MEMORY DEFAULT CHARSET=utf8;

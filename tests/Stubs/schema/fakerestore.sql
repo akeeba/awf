@@ -1,4 +1,10 @@
 /*
+ * @package   awf
+ * @copyright Copyright (c)2014-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+/*
   This is a dummy file to test the Restore class
   Everything is mocked, however we need a a concrete file so AWF can perform some calculations about the
   size and the speed of the restore.
