@@ -1,4 +1,10 @@
 <?xml version="1.0"?>
+<!--
+  ~ @package   awf
+  ~ @copyright Copyright (c)2014-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @license   GNU GPL version 3 or later
+  -->
+
 <project name="AWF" description="AWF" default="git">
     <import file="${phing.dir}/../../buildfiles/phing/common.xml" />
 
