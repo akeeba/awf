@@ -304,7 +304,7 @@ class Blade implements CompilerInterface
 	{
 		if (method_exists($this, $method = 'compile'.ucfirst($match[1])))
 		{
-			$match[0] = $this->$method(array_get($match, 3));
+			$match[0] = $this->$method(akeeba_array_get($match, 3));
 		}
 
 		return isset($match[3]) ? $match[0] : $match[0].$match[2];
@@ -734,7 +734,7 @@ class Blade implements CompilerInterface
 	 */
 	protected function compileExtends($expression)
 	{
-		if (starts_with($expression, '('))
+		if (akeeba_starts_with($expression, '('))
 		{
 			$expression = substr($expression, 1, -1);
 		}
@@ -754,7 +754,7 @@ class Blade implements CompilerInterface
 	 */
 	protected function compileInclude($expression)
 	{
-		if (starts_with($expression, '('))
+		if (akeeba_starts_with($expression, '('))
 		{
 			$expression = substr($expression, 1, -1);
 		}

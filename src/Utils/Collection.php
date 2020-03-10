@@ -131,7 +131,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function fetch($key)
 	{
-		return new static(array_fetch($this->items, $key));
+		return new static(akeeba_array_fetch($this->items, $key));
 	}
 
 	/**
@@ -162,7 +162,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 		}
 		else
 		{
-			return array_first($this->items, $callback, $default);
+			return akeeba_array_first($this->items, $callback, $default);
 		}
 	}
 
@@ -173,7 +173,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function flatten()
 	{
-		return new static(array_flatten($this->items));
+		return new static(akeeba_array_flatten($this->items));
 	}
 
 	/**
@@ -203,7 +203,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 			return $this->items[$key];
 		}
 
-		return value($default);
+		return akeeba_value($default);
 	}
 
 	/**
@@ -219,7 +219,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 
 		foreach ($this->items as $key => $value)
 		{
-			$key = is_callable($groupBy) ? $groupBy($value, $key) : array_get($value, $groupBy);
+			$key = is_callable($groupBy) ? $groupBy($value, $key) : akeeba_array_get($value, $groupBy);
 
 			$results[$key][] = $value;
 		}
@@ -299,7 +299,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function lists($value, $key = null)
 	{
-		return array_pluck($this->items, $value, $key);
+		return akeeba_array_pluck($this->items, $value, $key);
 	}
 
 	/**
@@ -603,7 +603,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	{
 		return function ($item) use ($value)
 		{
-			return is_object($item) ? $item->{$value} : array_get($item, $value);
+			return is_object($item) ? $item->{$value} : akeeba_array_get($item, $value);
 		};
 	}
 
