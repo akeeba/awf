@@ -837,9 +837,9 @@ class View
 	{
 		$extensions = array_keys($this->viewEngineMap);
 
-		return array_first($extensions, function($key, $value) use ($path)
+		return akeeba_array_first($extensions, function($key, $value) use ($path)
 		{
-			return ends_with($path, $value);
+			return akeeba_ends_with($path, $value);
 		});
 	}
 
@@ -907,11 +907,11 @@ class View
 		// a language string starting with text|.
 		else
 		{
-			if (starts_with($empty, 'raw|'))
+			if (akeeba_starts_with($empty, 'raw|'))
 			{
 				$result = substr($empty, 4);
 			}
-			elseif (starts_with($empty, 'text|'))
+			elseif (akeeba_starts_with($empty, 'text|'))
 			{
 				$result = Text::_(substr($empty, 5));
 			}

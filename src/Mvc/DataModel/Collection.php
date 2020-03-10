@@ -56,7 +56,7 @@ class Collection extends BaseCollection
 			$key = $key->getId();
 		}
 
-		return array_first($this->items, function($itemKey, $model) use ($key)
+		return akeeba_array_first($this->items, function($itemKey, $model) use ($key)
 		{
 			return $model->getId() == $key;
 
@@ -120,7 +120,7 @@ class Collection extends BaseCollection
 	 */
 	public function fetch($key)
 	{
-		return new static(array_fetch($this->toArray(), $key));
+		return new static(akeeba_array_fetch($this->toArray(), $key));
 	}
 
 	/**
