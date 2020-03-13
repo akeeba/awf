@@ -7,7 +7,8 @@
 
 namespace Awf\Text;
 
-use \Awf\Application\Application;
+use Awf\Application\Application;
+use Awf\Exception\App;
 use Awf\Utils\ParseIni;
 
 /**
@@ -20,15 +21,15 @@ use Awf\Utils\ParseIni;
 abstract class Text
 {
 	/** @var   array  The cache of translation strings */
-	private static $strings = array();
+	private static $strings = [];
 
 	/** @var   array[callable]  Callables to use to process translation strings after laoding them */
-	private static $iniProcessCallbacks = array();
+	private static $iniProcessCallbacks = [];
 
 	/**
 	 * Adds an INI process callback to the stack
 	 *
-	 * @param   callable $callable The processing callback to add
+	 * @param   callable  $callable  The processing callback to add
 	 *
 	 * @return  void
 	 */
@@ -40,11 +41,11 @@ abstract class Text
 	/**
 	 * Loads the language file for a specific language
 	 *
-	 * @param   string  $langCode     The ISO language code, e.g. en-GB, use null for automatic detection
-	 * @param   string  $appName      The name of the application to load translation strings for
-	 * @param   string  $suffix       The suffix of the language file, by default it's .ini
-	 * @param   boolean $overwrite    Should I overwrite old language strings?
-	 * @param   string  $languagePath The base path to the language files (optional)
+	 * @param   string   $langCode      The ISO language code, e.g. en-GB, use null for automatic detection
+	 * @param   string   $appName       The name of the application to load translation strings for
+	 * @param   string   $suffix        The suffix of the language file, by default it's .ini
+	 * @param   boolean  $overwrite     Should I overwrite old language strings?
+	 * @param   string   $languagePath  The base path to the language files (optional)
 	 *
 	 * @return  void
 	 */
@@ -65,7 +66,7 @@ abstract class Text
 			$languagePath = Application::getInstance($appName)->getContainer()->languagePath;
 		}
 
-		$fileNames = array(
+		$fileNames = [
 			// langPath/MyApp/en-GB.ini
 			$languagePath . '/' . strtolower($appName) . '/' . $langCode . $suffix,
 			// langPath/MyApp/en-GB/en-GB.ini
@@ -74,7 +75,7 @@ abstract class Text
 			$languagePath . '/' . $langCode . $suffix,
 			// langPath/en-GB/en-GB.ini
 			$languagePath . '/' . $langCode . '/' . $langCode . $suffix,
-		);
+		];
 
 		$filename = null;
 
@@ -134,9 +135,9 @@ abstract class Text
 	 * the best fit language that exists on our system or falling back to en-GB
 	 * when no preferred language exists.
 	 *
-	 * @param   string $appName      The application's name to load language strings for
-	 * @param   string $suffix       The suffix of the language file, by default it's .ini
-	 * @param   string $languagePath The base path to the language files (optional)
+	 * @param   string  $appName       The application's name to load language strings for
+	 * @param   string  $suffix        The suffix of the language file, by default it's .ini
+	 * @param   string  $languagePath  The base path to the language files (optional)
 	 *
 	 * @return  string  The language code
 	 */
@@ -151,7 +152,7 @@ abstract class Text
 			$languages = explode(",", $languages);
 
 			// First we need to sort languages by their weight
-			$temp = array();
+			$temp = [];
 
 			foreach ($languages as $lang)
 			{
@@ -173,15 +174,15 @@ abstract class Text
 			{
 				// pull out the language, place languages into array of full and primary
 				// string structure:
-				$temp_array = array();
+				$temp_array = [];
 				// slice out the part before the dash, place into array
 				$temp_array[0] = $language; //full language
-				$parts = explode('-', $language);
+				$parts         = explode('-', $language);
 				$temp_array[1] = $parts[0]; // cut out primary language
 
 				if ((strlen($temp_array[0]) == 5) && ((substr($temp_array[0], 2, 1) == '-') || (substr($temp_array[0], 2, 1) == '_')))
 				{
-					$langLocation = strtoupper(substr($temp_array[0], 3, 2));
+					$langLocation  = strtoupper(substr($temp_array[0], 3, 2));
 					$temp_array[0] = $temp_array[1] . '-' . $langLocation;
 				}
 
@@ -247,7 +248,7 @@ abstract class Text
 			}
 
 			// Look for subdirectory layout
-			$allFolders = array();
+			$allFolders = [];
 
 			try
 			{
@@ -297,11 +298,14 @@ abstract class Text
 	/**
 	 * Translate a string
 	 *
-	 * @param   string $key Language key
+	 * @param   string   $key                   Language key
+	 * @param   boolean  $jsSafe                Make the result javascript safe. Mutually exclusive with
+	 *                                          $interpretBackSlashes.
+	 * @param   boolean  $interpretBackSlashes  Interpret \t and \n. Mutually exclusive with $jsSafe.
 	 *
 	 * @return  string  Translation
 	 */
-	public static function _($key)
+	public static function _($key, $jsSafe = false, $interpretBackSlashes = true)
 	{
 		if (empty(self::$strings))
 		{
@@ -313,26 +317,40 @@ abstract class Text
 
 		if (array_key_exists($key, self::$strings))
 		{
-			return self::$strings[$key];
+			$string = self::$strings[$key];
 		}
 		else
 		{
-			return $key;
+			$string = $key;
 		}
+
+		if ($jsSafe)
+		{
+			// Javascript filter
+			return addslashes($string);
+		}
+
+		if ($interpretBackSlashes && (strpos($string, '\\') !== false))
+		{
+			// Interpret \n and \t characters
+			return str_replace(['\\\\', '\t', '\n'], ["\\", "\t", "\n"], $string);
+		}
+
+		return $string;
 	}
 
 	/**
-	 * Passes a string through a sprintf.
+	 * Passes a string through sprintf.
 	 *
 	 * Note that this method can take a mixed number of arguments as for the sprintf function.
 	 *
-	 * @param   string $string The format string.
+	 * @param   string  $string  The format string.
 	 *
 	 * @return  string  The translated strings
 	 */
 	public static function sprintf($string)
 	{
-		$args = func_get_args();
+		$args  = func_get_args();
 		$count = count($args);
 		if ($count > 0)
 		{
@@ -347,7 +365,7 @@ abstract class Text
 	/**
 	 * Does a translation key exist?
 	 *
-	 * @param   string $key The key to check
+	 * @param   string  $key  The key to check
 	 *
 	 * @return  boolean
 	 */
@@ -362,5 +380,51 @@ abstract class Text
 		$key = strtoupper($key);
 
 		return array_key_exists($key, self::$strings);
+	}
+
+	/**
+	 * Translate a string into the current language and stores it in the JavaScript language store.
+	 *
+	 * @param   string   $string                The Text key.
+	 * @param   boolean  $jsSafe                Ensure the output is JavaScript safe.
+	 * @param   boolean  $interpretBackSlashes  Interpret \t and \n.
+	 *
+	 * @return  void
+	 */
+	public static function script($string = null, $jsSafe = false, $interpretBackSlashes = true)
+	{
+		// Translate the string.
+		$translated = self::_($string, $jsSafe, $interpretBackSlashes);
+
+		// Create an entry to merge into the 'akeeba.text' script option
+		$thisEntry = [
+			strtoupper($string) => $translated,
+		];
+
+		// Update Joomla.JText script options
+		try
+		{
+			Application::getInstance()->getDocument()->addScriptOptions('akeeba.text', $thisEntry, true);
+		}
+		catch (App $e)
+		{
+		}
+	}
+
+	/**
+	 * Get the strings that have been loaded to the JavaScript language store.
+	 *
+	 * @return  array
+	 */
+	public static function getScriptStrings()
+	{
+		try
+		{
+			return Application::getInstance()->getDocument()->getScriptOptions('akeeba.text');
+		}
+		catch (App $e)
+		{
+			return [];
+		}
 	}
 }
