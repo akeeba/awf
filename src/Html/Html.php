@@ -394,6 +394,9 @@ abstract class Html
 	/**
 	 * Displays a calendar control field
 	 *
+	 * This field can use either jQuery DatePicker (default) or Pikaday. This is controlled by the application Container,
+	 * namely its awf_date_picker field. It can be either "jQuery" or "Pikaday".
+	 *
 	 * @param   string       $value    The date value
 	 * @param   string       $name     The name of the text field
 	 * @param   string       $id       The id of the text field
@@ -436,12 +439,20 @@ abstract class Html
 			// Only display the triggers once for each control.
 			if (!in_array($id, $done))
 			{
+				// Do I use jQuery date picker or Pikaday?
+				$container = $app->getContainer();
+				$pickerType = isset($container['awf_date_picker']) ? $container['awf_date_picker'] : 'jQuery';
+				$pickerType = !in_array($pickerType, ['jQuery', 'Pikaday']) ? 'jQuery' : $pickerType;
+
 				// @todo Implement a way for the application to override the language
 				$lang = Text::detectLanguage($app->getName());
 
 				$document = $app->getDocument();
-				$document
-					->addScriptDeclaration( <<< JS
+
+				if ($pickerType === 'jQuery')
+				{
+					$document
+						->addScriptDeclaration( <<< JS
 akeeba.jQuery(document).ready(function(){
 	akeeba.jQuery('#$id-container').datepicker({
 		format: "$format",
@@ -452,7 +463,22 @@ akeeba.jQuery(document).ready(function(){
 })
 JS
 
-					);
+						);
+				}
+				else
+				{
+					$document
+						->addScriptDeclaration( <<< JS
+akeeba.System.documentReady(function() {
+   new Pikaday({
+   		field: document.getElementById('$id-container'),
+   		format: "$format",
+   }); 
+});
+JS
+						);
+
+				}
 				$done[] = $id;
 			}
 
