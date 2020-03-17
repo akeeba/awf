@@ -75,12 +75,12 @@ abstract class Template
 	 */
 	public static function parsePath($path, $localFile = false, $app = null)
 	{
-		$rootPath = $app->getContainer()->filesystemBase;
-
 		if (!is_object($app))
 		{
 			$app = Application::getInstance();
 		}
+
+		$rootPath = $app->getContainer()->filesystemBase;
 
 		if ($localFile)
 		{
