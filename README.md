@@ -13,4 +13,4 @@ No installable ZIP packages will be provided for this software since March 2016.
 
 ## INTERNAL PROJECT
 
-This is meant to be an internal software development project for use with our site, akeebabackup.com. As such, future versions of this software will drop any features we do not wish to maintain because we do not intend or anticipate to use on our site.
+This is meant to be an internal software development project for use with our site, akeeba.com. As such, future versions of this software will drop any features we do not wish to maintain because we do not intend or anticipate to use on our site.

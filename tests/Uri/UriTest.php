@@ -96,7 +96,7 @@ class UriTest extends AwfTestCase
 		$actual = Uri::isInternal('http://www.example.com/something/something/test.html');
 		$this->assertTrue($actual);
 
-		$actual = Uri::isInternal('http://www.akeebabackup.com/something/something/test.html');
+		$actual = Uri::isInternal('https://www.akeeba.com/something/something/test.html');
 		$this->assertFalse($actual);
 	}
 
