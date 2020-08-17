@@ -17,6 +17,20 @@ class Buffer
 {
 
 	/**
+	 * Buffer hash
+	 *
+	 * @var    array
+	 */
+	public static $buffers = [];
+
+	/**
+	 * Is it possible to register stream wrappers on this server?
+	 *
+	 * @var bool|null
+	 */
+	public static $canRegisterWrapper = null;
+
+	/**
 	 * Stream position
 	 *
 	 * @var    integer
@@ -29,20 +43,6 @@ class Buffer
 	 * @var    string
 	 */
 	public $name = null;
-
-	/**
-	 * Buffer hash
-	 *
-	 * @var    array
-	 */
-	public static $buffers = array();
-
-	/**
-	 * Is it possible to register stream wrappers on this server?
-	 *
-	 * @var bool|null
-	 */
-	public static $canRegisterWrapper = null;
 
 	/**
 	 * Should I register the awf:// stream wrapper
@@ -115,7 +115,9 @@ class Buffer
 				}
 
 				$whiteList = explode(',', $whiteList);
-				$whiteList = array_map(function ($x) { return trim($x); }, $whiteList);
+				$whiteList = array_map(function ($x) {
+					return trim($x);
+				}, $whiteList);
 
 				if (!in_array('awf://', $whiteList))
 				{
@@ -132,9 +134,9 @@ class Buffer
 	/**
 	 * Function to open file or url
 	 *
-	 * @param   string  $path           The URL that was passed
-	 * @param   string  $mode           Mode used to open the file @see fopen
-	 * @param   integer $options        Flags used by the API, may be STREAM_USE_PATH and
+	 * @param   string   $path          The URL that was passed
+	 * @param   string   $mode          Mode used to open the file @see fopen
+	 * @param   integer  $options       Flags used by the API, may be STREAM_USE_PATH and
 	 *                                  STREAM_REPORT_ERRORS
 	 * @param   string  &$opened_path   Full path of the resource. Used with STREAM_USE_PATH option
 	 *
@@ -148,9 +150,9 @@ class Buffer
 		$this->name     = $url['host'] . $url['path'];
 		$this->position = 0;
 
-		if (!isset(static::$buffers[ $this->name ]))
+		if (!isset(static::$buffers[$this->name]))
 		{
-			static::$buffers[ $this->name ] = null;
+			static::$buffers[$this->name] = null;
 		}
 
 		return true;
@@ -161,15 +163,15 @@ class Buffer
 		$url  = parse_url($path);
 		$name = $url['host'];
 
-		if (isset(static::$buffers[ $name ]))
+		if (isset(static::$buffers[$name]))
 		{
-			unset (static::$buffers[ $name ]);
+			unset (static::$buffers[$name]);
 		}
 	}
 
 	public function stream_stat()
 	{
-		return array(
+		return [
 			'dev'     => 0,
 			'ino'     => 0,
 			'mode'    => 0644,
@@ -177,19 +179,19 @@ class Buffer
 			'uid'     => 0,
 			'gid'     => 0,
 			'rdev'    => 0,
-			'size'    => strlen(static::$buffers[ $this->name ]),
+			'size'    => strlen(static::$buffers[$this->name]),
 			'atime'   => 0,
 			'mtime'   => 0,
 			'ctime'   => 0,
-			'blksize' => - 1,
-			'blocks'  => - 1,
-		);
+			'blksize' => -1,
+			'blocks'  => -1,
+		];
 	}
 
 	/**
 	 * Read stream
 	 *
-	 * @param   integer $count How many bytes of data from the current position should be returned.
+	 * @param   integer  $count  How many bytes of data from the current position should be returned.
 	 *
 	 * @return  mixed    The data from the stream up to the specified number of bytes (all data if
 	 *                   the total number of bytes in the stream is less than $count. Null if
@@ -200,7 +202,7 @@ class Buffer
 	 */
 	public function stream_read($count)
 	{
-		$ret = substr(static::$buffers[ $this->name ], $this->position, $count);
+		$ret            = substr(static::$buffers[$this->name], $this->position, $count);
 		$this->position += strlen($ret);
 
 		return $ret;
@@ -209,7 +211,7 @@ class Buffer
 	/**
 	 * Write stream
 	 *
-	 * @param   string $data The data to write to the stream.
+	 * @param   string  $data  The data to write to the stream.
 	 *
 	 * @return  integer
 	 *
@@ -218,10 +220,10 @@ class Buffer
 	 */
 	public function stream_write($data)
 	{
-		$left                           = substr(static::$buffers[ $this->name ], 0, $this->position);
-		$right                          = substr(static::$buffers[ $this->name ], $this->position + strlen($data));
-		static::$buffers[ $this->name ] = $left . $data . $right;
-		$this->position += strlen($data);
+		$left                         = substr(static::$buffers[$this->name], 0, $this->position);
+		$right                        = substr(static::$buffers[$this->name], $this->position + strlen($data));
+		static::$buffers[$this->name] = $left . $data . $right;
+		$this->position               += strlen($data);
 
 		return strlen($data);
 	}
@@ -249,14 +251,14 @@ class Buffer
 	 */
 	public function stream_eof()
 	{
-		return $this->position >= strlen(static::$buffers[ $this->name ]);
+		return $this->position >= strlen(static::$buffers[$this->name]);
 	}
 
 	/**
 	 * The read write position updates in response to $offset and $whence
 	 *
-	 * @param   integer $offset   The offset in bytes
-	 * @param   integer $whence   Position the offset is added to
+	 * @param   integer  $offset  The offset in bytes
+	 * @param   integer  $whence  Position the offset is added to
 	 *                            Options are SEEK_SET, SEEK_CUR, and SEEK_END
 	 *
 	 * @return  boolean  True if updated
@@ -269,7 +271,7 @@ class Buffer
 		switch ($whence)
 		{
 			case SEEK_SET:
-				if ($offset < strlen(static::$buffers[ $this->name ]) && $offset >= 0)
+				if ($offset < strlen(static::$buffers[$this->name]) && $offset >= 0)
 				{
 					$this->position = $offset;
 
@@ -295,9 +297,9 @@ class Buffer
 				break;
 
 			case SEEK_END:
-				if (strlen(static::$buffers[ $this->name ]) + $offset >= 0)
+				if (strlen(static::$buffers[$this->name]) + $offset >= 0)
 				{
-					$this->position = strlen(static::$buffers[ $this->name ]) + $offset;
+					$this->position = strlen(static::$buffers[$this->name]) + $offset;
 
 					return true;
 				}
@@ -310,6 +312,11 @@ class Buffer
 			default:
 				return false;
 		}
+	}
+
+	public function stream_set_option($option, $arg1, $arg2)
+	{
+		return true;
 	}
 }
 
