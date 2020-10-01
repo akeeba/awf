@@ -57,6 +57,11 @@ class Download
 
 		foreach ($allAdapters as $adapterInfo)
 		{
+			if (!class_exists($adapterInfo['classname'], true))
+			{
+				continue;
+			}
+
 			/** @var Adapter\AbstractAdapter $adapter */
 			$adapter = new $adapterInfo['classname'];
 
