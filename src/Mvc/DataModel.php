@@ -42,16 +42,16 @@ use Awf\Text\Text;
 class DataModel extends Model
 {
 	/** @var   array  A list of tables in the database */
-	protected static $tableCache = array();
+	protected static $tableCache = [];
 
 	/** @var   array  A list of table fields, keyed per table */
-	protected static $tableFieldCache = array();
+	protected static $tableFieldCache = [];
 
 	/** @var   array  A list of permutations of the prefix with upper/lowercase letters */
-	protected static $prefixCasePermutations = array();
+	protected static $prefixCasePermutations = [];
 
 	/** @var   array  Table field name aliases, defined as aliasFieldName => actualFieldName */
-	protected $aliasFields = array();
+	protected $aliasFields = [];
 
 	/** @var   boolean  Should I run automatic checks on the table data? */
 	protected $autoChecks = true;
@@ -66,22 +66,22 @@ class DataModel extends Model
 	protected $dbo = null;
 
 	/** @var   array  Which fields should be exempt from automatic checks when autoChecks is enabled */
-	protected $fieldsSkipChecks = array();
+	protected $fieldsSkipChecks = [];
 
 	/** @var   array  Which fields should be auto-filled from the model state (by extent, the request)? */
-	protected $fillable = array();
+	protected $fillable = [];
 
 	/** @var   array  Which fields should never be auto-filled from the model state (by extent, the request)? */
-	protected $guarded = array();
+	protected $guarded = [];
 
 	/** @var   string  The identity field's name */
 	protected $idFieldName = '';
 
 	/** @var   array  A hash array with the table fields we know about and their information. Each key is the field name, the value is the field information */
-	protected $knownFields = array();
+	protected $knownFields = [];
 
 	/** @var   array  The data of the current record */
-	protected $recordData = array();
+	protected $recordData = [];
 
 	/** @var   boolean  What will delete() do? True: trash (enabled set to -2); false: hard delete (remove from database) */
 	protected $softDelete = false;
@@ -90,44 +90,45 @@ class DataModel extends Model
 	protected $tableName = '';
 
 	/** @var   array  A collection of custom, additional where clauses to apply during buildQuery */
-	protected $whereClauses = array();
+	protected $whereClauses = [];
 
 	/** @var   RelationManager  The relation manager of this model */
 	protected $relationManager = null;
 
 	/** @var   array  A list of all eager loaded relations and their attached callbacks */
-	protected $eagerRelations = array();
+	protected $eagerRelations = [];
 
 	/** @var   array  A list of the relation filter definitions for this model */
-	protected $relationFilters = array();
+	protected $relationFilters = [];
 
 	/** @var   array  A list of the relations which will be auto-touched by save() and touch() methods */
-	protected $touches = array();
+	protected $touches = [];
 
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
 	 * You can use the $container['mvc_config'] array to pass some configuration values to the object:
 	 *
-	 * tableName            String. The name of the database table to use. Default: #__appName_viewNamePlural (Ruby on Rails convention)
-	 * idFieldName            String. The table key field name. Default: appName_viewNameSingular_id (Ruby on Rails convention)
-	 * knownFields            Array. The known fields in the table. Default: read from the table itself
-	 * autoChecks            Boolean. Should I turn on automatic data validation checks?
-	 * fieldsSkipChecks        Array. List of fields which should not participate in automatic data validation checks.
-	 * aliasFields            Array. Associative array of "magic" field aliases.
-	 * behavioursDispatcher    EventDispatcher. The model behaviours event dispatcher.
-	 * behaviourObservers    Array. The model behaviour observers to attach to the behavioursDispatcher.
-	 * behaviours            Array. A list of behaviour names to instantiate and attach to the behavioursDispatcher.
-	 * fillable_fields        Array. Which fields should be auto-filled from the model state (by extent, the request)?
-	 * guarded_fields        Array. Which fields should never be auto-filled from the model state (by extent, the request)?
-	 * relations            Array (hashed). The relations to autoload on model creation.
+	 * tableName            String. The name of the database table to use. Default: #__appName_viewNamePlural (Ruby on
+	 * Rails convention) idFieldName            String. The table key field name. Default: appName_viewNameSingular_id
+	 * (Ruby on Rails convention) knownFields            Array. The known fields in the table. Default: read from the
+	 * table itself autoChecks            Boolean. Should I turn on automatic data validation checks? fieldsSkipChecks
+	 *       Array. List of fields which should not participate in automatic data validation checks. aliasFields
+	 *           Array. Associative array of "magic" field aliases. behavioursDispatcher    EventDispatcher. The model
+	 *           behaviours event dispatcher. behaviourObservers    Array. The model behaviour observers to attach to
+	 *           the behavioursDispatcher. behaviours            Array. A list of behaviour names to instantiate and
+	 *           attach to the behavioursDispatcher. fillable_fields        Array. Which fields should be auto-filled
+	 *           from the model state (by extent, the request)? guarded_fields        Array. Which fields should never
+	 *           be auto-filled from the model state (by extent, the request)? relations            Array (hashed). The relations to autoload on model creation.
 	 *
-	 * Setting either fillable_fields or guarded_fields turns on automatic filling of fields in the constructor. If both
+	 * Setting either fillable_fields or guarded_fields turns on automatic filling of fields in the constructor. If
+	 * both
 	 * are set only guarded_fields is taken into account. Fields are not filled automatically outside the constructor.
+	 *
+	 * @param   Container  $container
 	 *
 	 * @see \Awf\Mvc\Model::__construct()
 	 *
-	 * @param   Container $container
 	 */
 	public function __construct(\Awf\Container\Container $container = null)
 	{
@@ -150,7 +151,7 @@ class DataModel extends Model
 		elseif (empty($this->tableName))
 		{
 			// The table name is by default: #__appName_viewNamePlural (Ruby on Rails convention)
-			$viewPlural = Inflector::pluralize($this->getName());
+			$viewPlural      = Inflector::pluralize($this->getName());
 			$this->tableName = '#__' . strtolower($this->container->application->getName()) . '_' . strtolower($viewPlural);
 		}
 
@@ -162,7 +163,7 @@ class DataModel extends Model
 		elseif (empty($this->idFieldName))
 		{
 			// The default ID field is: appName_viewNameSingular_id (Ruby on Rails convention)
-			$viewSingular = Inflector::singularize($this->getName());
+			$viewSingular      = Inflector::singularize($this->getName());
 			$this->idFieldName = strtolower($this->container->application->getName()) . '_' . strtolower($viewSingular) . '_id';
 		}
 
@@ -177,7 +178,7 @@ class DataModel extends Model
 			$this->knownFields = $this->getTableFields();
 		}
 
-		if(empty($this->knownFields))
+		if (empty($this->knownFields))
 		{
 			throw new NoTableColumns(sprintf('Model %s could not fetch column list for the table %s', $this->getName(), $this->tableName));
 		}
@@ -232,7 +233,7 @@ class DataModel extends Model
 		// Do I have a list of fillable fields?
 		if (isset($this->config['fillable_fields']) && is_array($this->config['fillable_fields']))
 		{
-			$this->fillable = array();
+			$this->fillable = [];
 			$this->autoFill = true;
 
 			foreach ($this->config['fillable_fields'] as $field)
@@ -251,7 +252,7 @@ class DataModel extends Model
 		// Do I have a list of guarded fields?
 		if (isset($this->config['guarded_fields']) && is_array($this->config['guarded_fields']))
 		{
-			$this->guarded = array();
+			$this->guarded  = [];
 			$this->autoFill = true;
 
 			foreach ($this->config['guarded_fields'] as $field)
@@ -311,7 +312,7 @@ class DataModel extends Model
 					continue;
 				}
 
-				$defaultRelConfig = array(
+				$defaultRelConfig = [
 					'type'              => 'hasOne',
 					'foreignModelClass' => null,
 					'localKey'          => null,
@@ -319,7 +320,7 @@ class DataModel extends Model
 					'pivotTable'        => null,
 					'pivotLocalKey'     => null,
 					'pivotForeignKey'   => null,
-				);
+				];
 
 				$relConfig = array_merge($defaultRelConfig, $relConfig);
 
@@ -333,7 +334,7 @@ class DataModel extends Model
 		foreach ($this->knownFields as $fieldName => $information)
 		{
 			// Initialize only the null or not yet set records
-			if(!isset($this->recordData[$fieldName]))
+			if (!isset($this->recordData[$fieldName]))
 			{
 				$this->recordData[$fieldName] = $information->Default;
 			}
@@ -344,8 +345,8 @@ class DataModel extends Model
 	 * Magic caller. It works like the magic setter and returns ourselves for chaining. If no arguments are passed we'll
 	 * only look for a scope filter.
 	 *
-	 * @param   string $name
-	 * @param   mixed  $arguments
+	 * @param   string  $name
+	 * @param   mixed   $arguments
 	 *
 	 * @return  static
 	 */
@@ -364,20 +365,20 @@ class DataModel extends Model
 
 		if ($this->relationManager->isMagicMethod($name))
 		{
-			return call_user_func_array(array($this->relationManager, $name), $arguments);
+			return call_user_func_array([$this->relationManager, $name], $arguments);
 		}
 
-		$arg1 = array_shift($arguments);
+		$arg1        = array_shift($arguments);
 		$this->$name = $arg1;
 
 		return $this;
 	}
 
 	/**
-	 * Magic checker on a property. It follows the same logic of the __get magic method, however, if nothing is found, it
-	 * won't return the state of a variable (we are checking if a property is set)
+	 * Magic checker on a property. It follows the same logic of the __get magic method, however, if nothing is found,
+	 * it won't return the state of a variable (we are checking if a property is set)
 	 *
-	 * @param   string  $name   The name of the field to check
+	 * @param   string  $name  The name of the field to check
 	 *
 	 * @return  bool    Is the field set?
 	 */
@@ -389,7 +390,7 @@ class DataModel extends Model
 		if (substr($name, 0, 3) == 'flt')
 		{
 			$isState = true;
-			$name = strtolower(substr($name, 3, 1)) . substr($name, 4);
+			$name    = strtolower(substr($name, 3, 1)) . substr($name, 4);
 		}
 
 		// If $name is a field name, get its value
@@ -421,7 +422,7 @@ class DataModel extends Model
 	 * Tip: You can define custom field getter methods as getFieldNameAttribute, where FieldName is your field's name,
 	 *      in CamelCase (even if the field name itself is in snake_case).
 	 *
-	 * @param   string $name The name of the field / state variable to retrieve
+	 * @param   string  $name  The name of the field / state variable to retrieve
 	 *
 	 * @return  static|mixed
 	 */
@@ -432,7 +433,7 @@ class DataModel extends Model
 		if (substr($name, 0, 3) == 'flt')
 		{
 			$isState = true;
-			$name = strtolower(substr($name, 3, 1)) . substr($name, 4);
+			$name    = strtolower(substr($name, 3, 1)) . substr($name, 4);
 		}
 
 		// If $name is a field name, get its value
@@ -468,8 +469,8 @@ class DataModel extends Model
 	 * Tip: You can define custom field setter methods as setFieldNameAttribute, where FieldName is your field's name,
 	 *      in CamelCase (even if the field name itself is in snake_case).
 	 *
-	 * @param   string $name  The name of the field / scope / state variable to set
-	 * @param   mixed  $value The value to set
+	 * @param   string  $name   The name of the field / scope / state variable to set
+	 * @param   mixed   $value  The value to set
 	 *
 	 * @return  void
 	 */
@@ -481,12 +482,12 @@ class DataModel extends Model
 		if (substr($name, 0, 3) == 'flt')
 		{
 			$isState = true;
-			$name = strtolower(substr($name, 3, 1)) . substr($name, 4);
+			$name    = strtolower(substr($name, 3, 1)) . substr($name, 4);
 		}
 		elseif (substr($name, 0, 5) == 'scope')
 		{
 			$isScope = true;
-			$name = strtolower(substr($name, 5, 1)) . substr($name, 5);
+			$name    = strtolower(substr($name, 5, 1)) . substr($name, 5);
 		}
 
 		// If $name is a field name, set its value
@@ -512,47 +513,47 @@ class DataModel extends Model
 		}
 	}
 
-    /**
-     * Adds a known field to the DataModel. This is only necessary if you are using a custom buildQuery with JOINs or
-     * field aliases. Please note that you need to make further modifications for bind() and save() to work in this
-     * case. Please refer to the documentation blocks of these methods for more information. It is generally considered
-     * a very BAD idea using JOINs instead of relations. It complicates your life and is bound to cause bugs that are
-     * very hard to track back.
-     *
-     * @param   string  $fieldName  The name of the field
-     * @param   mixed   $default    Default value, used by reset() (default: null)
-     * @param   string  $type       Database type for the field. If unsure use 'integer', 'float' or 'text'.
-     * @param   bool    $replace    Should we replace an existing known field definition?
-     *
-     * @return  $this  Self, for chaining
-     */
-    public function addKnownField($fieldName, $default = null, $type = 'integer', $replace = false)
-    {
-        if (array_key_exists($fieldName, $this->knownFields) && !$replace)
-        {
-            return $this;
-        }
+	/**
+	 * Adds a known field to the DataModel. This is only necessary if you are using a custom buildQuery with JOINs or
+	 * field aliases. Please note that you need to make further modifications for bind() and save() to work in this
+	 * case. Please refer to the documentation blocks of these methods for more information. It is generally considered
+	 * a very BAD idea using JOINs instead of relations. It complicates your life and is bound to cause bugs that are
+	 * very hard to track back.
+	 *
+	 * @param   string  $fieldName  The name of the field
+	 * @param   mixed   $default    Default value, used by reset() (default: null)
+	 * @param   string  $type       Database type for the field. If unsure use 'integer', 'float' or 'text'.
+	 * @param   bool    $replace    Should we replace an existing known field definition?
+	 *
+	 * @return  $this  Self, for chaining
+	 */
+	public function addKnownField($fieldName, $default = null, $type = 'integer', $replace = false)
+	{
+		if (array_key_exists($fieldName, $this->knownFields) && !$replace)
+		{
+			return $this;
+		}
 
-        $info = (object)array(
-            'Default' => $default,
-            'Type' => $type,
-        );
+		$info = (object) [
+			'Default' => $default,
+			'Type'    => $type,
+		];
 
-        $this->knownFields[$fieldName] = $info;
+		$this->knownFields[$fieldName] = $info;
 
-        // Initialize only the null or not yet set records
-        if(!isset($this->recordData[$fieldName]))
-        {
-            $this->recordData[$fieldName] = $default;
-        }
+		// Initialize only the null or not yet set records
+		if (!isset($this->recordData[$fieldName]))
+		{
+			$this->recordData[$fieldName] = $default;
+		}
 
-        return $this;
-    }
+		return $this;
+	}
 
 	/**
 	 * Get the columns from a database table.
 	 *
-	 * @param   string $tableName Table name. If null current table is used
+	 * @param   string  $tableName  Table name. If null current table is used
 	 *
 	 * @return  mixed  An array of the field names, or false if an error occurs.
 	 */
@@ -593,7 +594,7 @@ class DataModel extends Model
 			if (!in_array($checkName, static::$tableCache) && preg_match('/[A-Z]/', $prefix) && (substr($name, 0, 3) == '#__'))
 			{
 				$prefixPermutations = $this->getPrefixCasePermutations();
-				$partialCheckName = substr($name, 3);
+				$partialCheckName   = substr($name, 3);
 
 				foreach ($prefixPermutations as $permutatedPrefix)
 				{
@@ -665,7 +666,7 @@ class DataModel extends Model
 	 */
 	public function getData()
 	{
-		$ret = array();
+		$ret = [];
 
 		foreach ($this->knownFields as $field => $info)
 		{
@@ -709,8 +710,8 @@ class DataModel extends Model
 	 * Returns the value of a field. If a field is not set it uses the $default value. Automatically uses magic
 	 * getter variables if required.
 	 *
-	 * @param   string $name    The name of the field to retrieve
-	 * @param   mixed  $default Default value, if the field is not set and doesn't have a getter method
+	 * @param   string  $name     The name of the field to retrieve
+	 * @param   mixed   $default  Default value, if the field is not set and doesn't have a getter method
 	 *
 	 * @return  mixed  The value of the field
 	 */
@@ -738,8 +739,8 @@ class DataModel extends Model
 	/**
 	 * Sets the value of a field.
 	 *
-	 * @param   string $name  The name of the field to set
-	 * @param   mixed  $value The value to set it to
+	 * @param   string  $name   The name of the field to set
+	 * @param   mixed   $value  The value to set it to
 	 *
 	 * @return  void
 	 */
@@ -765,7 +766,7 @@ class DataModel extends Model
 	/**
 	 * Does this model know about a field called $fieldName? Automatically uses aliases when necessary.
 	 *
-	 * @param   string $fieldName Field name to check
+	 * @param   string  $fieldName  Field name to check
 	 *
 	 * @return  boolean  True if the field exists
 	 */
@@ -777,9 +778,31 @@ class DataModel extends Model
 	}
 
 	/**
+	 * Is this field known to the model and marked as nullable in the database?
+	 *
+	 * Automatically uses aliases when necessary.
+	 *
+	 * @param   string  $fieldName  Field name to check
+	 *
+	 * @return  bool  True if the field is nullable or doesn't exist
+	 */
+	public function isNullableField($fieldName)
+	{
+		if (!$this->hasField($fieldName))
+		{
+			return true;
+		}
+
+		$realFieldName = $this->getFieldAlias($fieldName);
+		$nullState     = property_exists($this->knownFields[$realFieldName], 'Null') ? $this->knownFields[$realFieldName]->Null : 'YES';
+
+		return strtolower($nullState) == 'yes';
+	}
+
+	/**
 	 * Get the real name of a field name based on its alias. If the field is not aliased $alias is returned
 	 *
-	 * @param   string $alias The field to get an alias for
+	 * @param   string  $alias  The field to get an alias for
 	 *
 	 * @return  string  The real name of the field
 	 */
@@ -799,9 +822,9 @@ class DataModel extends Model
 	 * Save a record, creating it if it doesn't exist or updating it if it exists. By default it uses the currently set
 	 * data, unless you provide a $data array.
 	 *
-	 * @param   null|array $data           [Optional] Data to bind
-	 * @param   string     $orderingFilter A WHERE clause used to apply table item reordering
-	 * @param   array      $ignore         A list of fields to ignore when binding $data
+	 * @param   null|array  $data            [Optional] Data to bind
+	 * @param   string      $orderingFilter  A WHERE clause used to apply table item reordering
+	 * @param   array       $ignore          A list of fields to ignore when binding $data
 	 *
 	 * @return   DataModel  Self, for chaining
 	 */
@@ -816,7 +839,7 @@ class DataModel extends Model
 			$this->onBeforeSave($data);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeSave', array(&$this, &$data));
+		$this->behavioursDispatcher->trigger('onBeforeSave', [&$this, &$data]);
 
 		// Bind any (optional) data. If no data is provided, the current record data is used
 		if (!is_null($data))
@@ -838,9 +861,9 @@ class DataModel extends Model
 		$this->check();
 
 		// Get the database object
-		$db = $this->getDbo();
+		$db       = $this->getDbo();
 		$nullDate = $db->getNullDate();
-		$date = new Date();
+		$date     = new Date();
 
 		// Update the created_on / modified_on
 		if ($isNewRecord && $this->hasField('created_on'))
@@ -860,7 +883,7 @@ class DataModel extends Model
 
 		// Get the user manager for this application and retrieve the user
 		$userManager = $this->container->userManager;
-		$userId = $userManager->getUser()->getId();
+		$userId      = $userManager->getUser()->getId();
 
 		// Update the created_by / modified_by values if necessary
 		if ($isNewRecord && $this->hasField('created_by'))
@@ -888,11 +911,11 @@ class DataModel extends Model
 		if ($this->hasField('locked_on'))
 		{
 			$locked_on        = $this->getFieldAlias('locked_on');
-			$this->$locked_on = $nullDate;
+			$this->$locked_on = $this->isNullableField('locked_on') ? null : $db->getNullDate();
 		}
 
 		// Insert or update the record
-		$dataObject = (object)$this->recordData;
+		$dataObject = (object) $this->recordData;
 
 		if ($isNewRecord)
 		{
@@ -901,7 +924,7 @@ class DataModel extends Model
 				$this->onBeforeCreate($dataObject);
 			}
 
-			$this->behavioursDispatcher->trigger('onBeforeCreate', array(&$this, &$dataObject));
+			$this->behavioursDispatcher->trigger('onBeforeCreate', [&$this, &$dataObject]);
 
 			// Insert the new record
 			$db->insertObject($this->tableName, $dataObject, $this->idFieldName);
@@ -914,7 +937,7 @@ class DataModel extends Model
 				$this->onAfterCreate();
 			}
 
-			$this->behavioursDispatcher->trigger('onAfterCreate', array(&$this));
+			$this->behavioursDispatcher->trigger('onAfterCreate', [&$this]);
 		}
 		else
 		{
@@ -923,7 +946,7 @@ class DataModel extends Model
 				$this->onBeforeUpdate($dataObject);
 			}
 
-			$this->behavioursDispatcher->trigger('onBeforeUpdate', array(&$this, &$dataObject));
+			$this->behavioursDispatcher->trigger('onBeforeUpdate', [&$this, &$dataObject]);
 
 			$db->updateObject($this->tableName, $dataObject, $this->idFieldName, true);
 
@@ -932,7 +955,7 @@ class DataModel extends Model
 				$this->onAfterUpdate();
 			}
 
-			$this->behavioursDispatcher->trigger('onAfterUpdate', array(&$this));
+			$this->behavioursDispatcher->trigger('onAfterUpdate', [&$this]);
 		}
 
 		// If an ordering filter is set, attempt reorder the rows in the table based on the filter and value.
@@ -953,7 +976,7 @@ class DataModel extends Model
 				{
 					if ($records instanceof DataModel)
 					{
-						$records = array($records);
+						$records = [$records];
 					}
 
 					/** @var DataModel $record */
@@ -971,7 +994,7 @@ class DataModel extends Model
 			$this->onAfterSave();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterSave', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterSave', [&$this]);
 
 		return $this;
 	}
@@ -981,10 +1004,11 @@ class DataModel extends Model
 	 * data, unless you provide a $data array. On top of that, it also saves all specified relations. If $relations is
 	 * null it will save all relations known to this model.
 	 *
-	 * @param   null|array $data           [Optional] Data to bind
-	 * @param   string     $orderingFilter A WHERE clause used to apply table item reordering
-	 * @param   array      $ignore         A list of fields to ignore when binding $data
-	 * @param   array      $relations      Which relations to save with the model's record. Leave null for all relations
+	 * @param   null|array  $data            [Optional] Data to bind
+	 * @param   string      $orderingFilter  A WHERE clause used to apply table item reordering
+	 * @param   array       $ignore          A list of fields to ignore when binding $data
+	 * @param   array       $relations       Which relations to save with the model's record. Leave null for all
+	 *                                       relations
 	 *
 	 * @return $this Self, for chaining
 	 */
@@ -1002,7 +1026,7 @@ class DataModel extends Model
 		// Otherwise empty $this->touches completely as we'll be pushing all relations
 		else
 		{
-			$this->touches = array();
+			$this->touches = [];
 		}
 
 		// Save this record
@@ -1036,22 +1060,22 @@ class DataModel extends Model
 	 * Method to bind an associative array or object to the DataModel instance. This
 	 * method optionally takes an array of properties to ignore when binding.
 	 *
-	 * @param   mixed $data   An associative array or object to bind to the DataModel instance.
-	 * @param   mixed $ignore An optional array or space separated list of properties to ignore while binding.
+	 * @param   mixed  $data    An associative array or object to bind to the DataModel instance.
+	 * @param   mixed  $ignore  An optional array or space separated list of properties to ignore while binding.
 	 *
 	 * @return  static  Self, for chaining
 	 *
 	 * @throws  \InvalidArgumentException
 	 * @throws    \Exception
 	 */
-	public function bind($data, $ignore = array())
+	public function bind($data, $ignore = [])
 	{
 		if (method_exists($this, 'onBeforeBind'))
 		{
 			$this->onBeforeBind($data);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeBind', array(&$this, &$data));
+		$this->behavioursDispatcher->trigger('onBeforeBind', [&$this, &$data]);
 
 		// If the source value is not an array or object return false.
 		if (!is_object($data) && !is_array($data))
@@ -1087,7 +1111,7 @@ class DataModel extends Model
 			$this->onAfterBind($data);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterBind', array(&$this, &$data));
+		$this->behavioursDispatcher->trigger('onAfterBind', [&$this, &$data]);
 
 		return $this;
 	}
@@ -1131,7 +1155,7 @@ class DataModel extends Model
 	/**
 	 * Change the ordering of the records of the table
 	 *
-	 * @param   string $where The WHERE clause of the SQL used to fetch the order
+	 * @param   string  $where  The WHERE clause of the SQL used to fetch the order
 	 *
 	 * @return  static  Self, for chaining
 	 *
@@ -1150,7 +1174,7 @@ class DataModel extends Model
 			$this->onBeforeReorder($where);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeReorder', array(&$this, &$where));
+		$this->behavioursDispatcher->trigger('onBeforeReorder', [&$this, &$where]);
 
 		$order_field = $this->getFieldAlias('ordering');
 		$k           = $this->getIdFieldName();
@@ -1158,10 +1182,10 @@ class DataModel extends Model
 
 		// Get the primary keys and ordering values for the selection.
 		$query = $db->getQuery(true)
-					->select($db->qn($k) . ', ' . $db->qn($order_field))
-					->from($db->qn($this->getTableName()))
-					->where($db->qn($order_field) . ' >= ' . $db->q(0))
-					->order($db->qn($order_field));
+			->select($db->qn($k) . ', ' . $db->qn($order_field))
+			->from($db->qn($this->getTableName()))
+			->where($db->qn($order_field) . ' >= ' . $db->q(0))
+			->order($db->qn($order_field));
 
 		// Setup the extra where and ordering clause data.
 		if ($where)
@@ -1182,9 +1206,9 @@ class DataModel extends Model
 				{
 					// Update the row ordering field.
 					$query = $db->getQuery(true)
-								->update($db->qn($this->getTableName()))
-								->set($db->qn($order_field) . ' = ' . $db->q($i + 1))
-								->where($db->qn($k) . ' = ' . $db->q($row->$k));
+						->update($db->qn($this->getTableName()))
+						->set($db->qn($order_field) . ' = ' . $db->q($i + 1))
+						->where($db->qn($k) . ' = ' . $db->q($row->$k));
 					$db->setQuery($query)->execute();
 				}
 			}
@@ -1195,7 +1219,7 @@ class DataModel extends Model
 			$this->onAfterReorder();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterReorder', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterReorder', [&$this]);
 
 		return $this;
 	}
@@ -1204,8 +1228,8 @@ class DataModel extends Model
 	 * Method to move a row in the ordering sequence of a group of rows defined by an SQL WHERE clause.
 	 * Negative numbers move the row up in the sequence and positive numbers move it down.
 	 *
-	 * @param   integer $delta   The direction and magnitude to move the row in the ordering sequence.
-	 * @param   string  $where   WHERE clause to use for limiting the selection of rows to compact the
+	 * @param   integer  $delta  The direction and magnitude to move the row in the ordering sequence.
+	 * @param   string   $where  WHERE clause to use for limiting the selection of rows to compact the
 	 *                           ordering values.
 	 *
 	 * @return  static  Self, for chaining
@@ -1225,7 +1249,7 @@ class DataModel extends Model
 			$this->onBeforeMove($delta, $where);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeMove', array(&$this, &$delta, &$where));
+		$this->behavioursDispatcher->trigger('onBeforeMove', [&$this, &$delta, &$where]);
 
 		$ordering_field = $this->getFieldAlias('ordering');
 
@@ -1237,14 +1261,14 @@ class DataModel extends Model
 				$this->onAfterMove();
 			}
 
-			$this->behavioursDispatcher->trigger('onAfterMove', array(&$this));
+			$this->behavioursDispatcher->trigger('onAfterMove', [&$this]);
 
 			return $this;
 		}
 
-		$k = $this->idFieldName;
-		$row = null;
-		$db = $this->getDbo();
+		$k     = $this->idFieldName;
+		$row   = null;
+		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
 
 		// If the table is not loaded, return false
@@ -1254,21 +1278,21 @@ class DataModel extends Model
 		}
 
 		// Select the primary key and ordering values from the table.
-		$query->select(array(
-				$db->qn($this->idFieldName), $db->qn($ordering_field)
-			)
+		$query->select([
+				$db->qn($this->idFieldName), $db->qn($ordering_field),
+			]
 		)->from($db->qn($this->tableName));
 
 		// If the movement delta is negative move the row up.
 		if ($delta < 0)
 		{
-			$query->where($db->qn($ordering_field) . ' < ' . $db->q((int)$this->$ordering_field));
+			$query->where($db->qn($ordering_field) . ' < ' . $db->q((int) $this->$ordering_field));
 			$query->order($db->qn($ordering_field) . ' DESC');
 		}
 		// If the movement delta is positive move the row down.
 		elseif ($delta > 0)
 		{
-			$query->where($db->qn($ordering_field) . ' > ' . $db->q((int)$this->$ordering_field));
+			$query->where($db->qn($ordering_field) . ' > ' . $db->q((int) $this->$ordering_field));
 			$query->order($db->qn($ordering_field) . ' ASC');
 		}
 
@@ -1287,14 +1311,14 @@ class DataModel extends Model
 			// Update the ordering field for this instance to the row's ordering value.
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($db->qn($ordering_field) . ' = ' . $db->q((int)$row->$ordering_field))
+				->set($db->qn($ordering_field) . ' = ' . $db->q((int) $row->$ordering_field))
 				->where($db->qn($k) . ' = ' . $db->q($this->$k));
 			$db->setQuery($query)->execute();
 
 			// Update the ordering field for the row to this instance's ordering value.
 			$query = $db->getQuery(true)
 				->update($db->qn($this->tableName))
-				->set($db->qn($ordering_field) . ' = ' . $db->q((int)$this->$ordering_field))
+				->set($db->qn($ordering_field) . ' = ' . $db->q((int) $this->$ordering_field))
 				->where($db->qn($k) . ' = ' . $db->q($row->$k));
 			$db->setQuery($query)->execute();
 
@@ -1307,7 +1331,7 @@ class DataModel extends Model
 			$this->onAfterMove();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterMove', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterMove', [&$this]);
 
 		return $this;
 	}
@@ -1315,8 +1339,8 @@ class DataModel extends Model
 	/**
 	 * Process a large collection of records a few at a time.
 	 *
-	 * @param   integer   $chunkSize How many records to process at once
-	 * @param   callable  $callback  A callable to process each record
+	 * @param   integer   $chunkSize  How many records to process at once
+	 * @param   callable  $callback   A callable to process each record
 	 *
 	 * @return  $this  Self, for chaining
 	 */
@@ -1349,7 +1373,7 @@ class DataModel extends Model
 	public function count()
 	{
 		// Get a "count all" query
-		$db = $this->getDbo();
+		$db    = $this->getDbo();
 		$query = $this->buildQuery(true);
 		$query->select(null)->select('COUNT(*)');
 
@@ -1359,7 +1383,7 @@ class DataModel extends Model
 			$this->buildCountQuery($query);
 		}
 
-		$this->behavioursDispatcher->trigger('buildCountQuery', array(&$this, &$query));
+		$this->behavioursDispatcher->trigger('buildCountQuery', [&$this, &$query]);
 
 		$total = $db->setQuery($query)->loadResult();
 
@@ -1369,14 +1393,14 @@ class DataModel extends Model
 	/**
 	 * Build the query to fetch data from the database
 	 *
-	 * @param   boolean $overrideLimits Should I override limits
+	 * @param   boolean  $overrideLimits  Should I override limits
 	 *
 	 * @return  Query  The database query to use
 	 */
 	public function buildQuery($overrideLimits = false)
 	{
 		// Get a "select all" query
-		$db = $this->getDbo();
+		$db    = $this->getDbo();
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($this->getTableName());
@@ -1387,7 +1411,7 @@ class DataModel extends Model
 			$this->onBeforeBuildQuery($query);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeBuildQuery', array(&$this, &$query));
+		$this->behavioursDispatcher->trigger('onBeforeBuildQuery', [&$this, &$query]);
 
 		// Apply custom WHERE clauses
 		if (count($this->whereClauses))
@@ -1412,7 +1436,7 @@ class DataModel extends Model
 
 			$dir = strtoupper($this->getState('filter_order_Dir', 'ASC', 'cmd'));
 
-			if(!in_array($dir, array('ASC', 'DESC')))
+			if (!in_array($dir, ['ASC', 'DESC']))
 			{
 				$dir = 'ASC';
 			}
@@ -1426,7 +1450,7 @@ class DataModel extends Model
 			$this->onAfterBuildQuery($query);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterBuildQuery', array(&$this, &$query));
+		$this->behavioursDispatcher->trigger('onAfterBuildQuery', [&$this, &$query]);
 
 		return $query;
 	}
@@ -1434,9 +1458,9 @@ class DataModel extends Model
 	/**
 	 * Returns a DataCollection iterator based on your currently set Model state
 	 *
-	 * @param   boolean $overrideLimits Should I ignore limits set in the Model?
-	 * @param   integer $limitstart     How many items to skip from the start, only when $overrideLimits = true
-	 * @param   integer $limit          How many items to return, only when $overrideLimits = true
+	 * @param   boolean  $overrideLimits  Should I ignore limits set in the Model?
+	 * @param   integer  $limitstart      How many items to skip from the start, only when $overrideLimits = true
+	 * @param   integer  $limit           How many items to return, only when $overrideLimits = true
 	 *
 	 * @return  DataCollection  The data collection
 	 */
@@ -1445,7 +1469,7 @@ class DataModel extends Model
 		if (!$overrideLimits)
 		{
 			$limitstart = $this->getState('limitstart', 0);
-			$limit = $this->getState('limit', 0);
+			$limit      = $this->getState('limit', 0);
 		}
 
 		$dataCollection = DataCollection::make($this->getItemsArray($limitstart, $limit));
@@ -1458,15 +1482,15 @@ class DataModel extends Model
 	/**
 	 * Returns a raw array of DataModel instances based on your currently set Model state
 	 *
-	 * @param   integer $limitstart How many items from the start to skip (0 = do not skip)
-	 * @param   integer $limit      How many items to return (0 = all)
+	 * @param   integer  $limitstart  How many items from the start to skip (0 = do not skip)
+	 * @param   integer  $limit       How many items to return (0 = all)
 	 *
 	 * @return  array  Array of DataModel objects
 	 */
 	public function &getItemsArray($limitstart = 0, $limit = 0)
 	{
-		$limitstart = max($limitstart, 0);
-		$limit = max($limit, 0);
+		$limitstart     = max($limitstart, 0);
+		$limit          = max($limit, 0);
 		$overrideLimits = ($limitstart == 0) && ($limit == 0);
 
 		$query = $this->buildQuery($overrideLimits);
@@ -1475,7 +1499,7 @@ class DataModel extends Model
 		$db->setQuery($query, $limitstart, $limit);
 
 		$itemsTemp = $db->loadAssocList();
-		$items = array();
+		$items     = [];
 		$className = get_class($this);
 
 		while (!empty($itemsTemp))
@@ -1494,7 +1518,7 @@ class DataModel extends Model
 			$this->onAfterGetItemsArray($items);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterGetItemsArray', array(&$this, &$items));
+		$this->behavioursDispatcher->trigger('onAfterGetItemsArray', [&$this, &$items]);
 
 		return $items;
 	}
@@ -1502,8 +1526,9 @@ class DataModel extends Model
 	/**
 	 * Eager loads the provided relations and assigns their data to a data collection
 	 *
-	 * @param Collection $dataCollection The data collection on which the eager loaded relations will be applied
-	 * @param array|null $relations      The relations to eager load. Leave empty to use the already defined relations
+	 * @param   Collection  $dataCollection  The data collection on which the eager loaded relations will be applied
+	 * @param   array|null  $relations       The relations to eager load. Leave empty to use the already defined
+	 *                                       relations
 	 *
 	 * @return $this for chaining
 	 */
@@ -1549,7 +1574,7 @@ class DataModel extends Model
 	 */
 	public function archive()
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new RecordNotLoaded("Can't archive a not loaded DataModel");
 		}
@@ -1564,7 +1589,7 @@ class DataModel extends Model
 			$this->onBeforeArchive();
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeArchive', array(&$this));
+		$this->behavioursDispatcher->trigger('onBeforeArchive', [&$this]);
 
 		$enabled = $this->getFieldAlias('enabled');
 
@@ -1576,7 +1601,7 @@ class DataModel extends Model
 			$this->onAfterArchive();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterArchive', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterArchive', [&$this]);
 
 		return $this;
 	}
@@ -1586,7 +1611,7 @@ class DataModel extends Model
 	 * is loaded before trying to trash it. Unlike a hard delete, trashing is a "soft delete", only setting the enabled
 	 * field to -2.
 	 *
-	 * @param   mixed $id Primary key (id field) value
+	 * @param   mixed  $id  Primary key (id field) value
 	 *
 	 * @return  $this  for chaining
 	 */
@@ -1599,7 +1624,7 @@ class DataModel extends Model
 
 		$id = $this->getId();
 
-		if(!$id)
+		if (!$id)
 		{
 			throw new RecordNotLoaded("Can't trash a not loaded DataModel");
 		}
@@ -1614,9 +1639,9 @@ class DataModel extends Model
 			$this->onBeforeTrash($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeTrash', array(&$this, &$id));
+		$this->behavioursDispatcher->trigger('onBeforeTrash', [&$this, &$id]);
 
-		$enabled = $this->getFieldAlias('enabled');
+		$enabled        = $this->getFieldAlias('enabled');
 		$this->$enabled = -2;
 		$this->save();
 
@@ -1625,7 +1650,7 @@ class DataModel extends Model
 			$this->onAfterTrash($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterTrash', array(&$this, $id));
+		$this->behavioursDispatcher->trigger('onAfterTrash', [&$this, $id]);
 
 		return $this;
 	}
@@ -1634,13 +1659,13 @@ class DataModel extends Model
 	 * Change the publish state of a record. By default it will set it to 1 (published) unless you specify a different
 	 * value.
 	 *
-	 * @param int $state The publish state. Default: 1 (published).
+	 * @param   int  $state  The publish state. Default: 1 (published).
 	 *
 	 * @return   $this  For chaining
 	 */
 	public function publish($state = 1)
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new RecordNotLoaded("Can't change the state of a not loaded DataModel");
 		}
@@ -1655,7 +1680,7 @@ class DataModel extends Model
 			$this->onBeforePublish();
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforePublish', array(&$this));
+		$this->behavioursDispatcher->trigger('onBeforePublish', [&$this]);
 
 		$enabled = $this->getFieldAlias('enabled');
 
@@ -1667,7 +1692,7 @@ class DataModel extends Model
 			$this->onAfterPublish();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterPublish', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterPublish', [&$this]);
 
 		return $this;
 	}
@@ -1679,7 +1704,7 @@ class DataModel extends Model
 	 */
 	public function unpublish()
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new RecordNotLoaded("Can't unlock a not loaded DataModel");
 		}
@@ -1694,7 +1719,7 @@ class DataModel extends Model
 			$this->onBeforeUnpublish();
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeUnpublish', array(&$this));
+		$this->behavioursDispatcher->trigger('onBeforeUnpublish', [&$this]);
 
 		$enabled = $this->getFieldAlias('enabled');
 
@@ -1706,7 +1731,7 @@ class DataModel extends Model
 			$this->onAfterUnpublish();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterUnpublish', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterUnpublish', [&$this]);
 
 		return $this;
 	}
@@ -1716,7 +1741,7 @@ class DataModel extends Model
 	 * record is loaded before trying to untrash it. Please note that enabled is set to 0 (unpublished) when you untrash
 	 * an item.
 	 *
-	 * @param   mixed $id Primary key (id field) value
+	 * @param   mixed  $id  Primary key (id field) value
 	 *
 	 * @return  $this  for chaining
 	 */
@@ -1734,7 +1759,7 @@ class DataModel extends Model
 
 		$id = $this->getId();
 
-		if(!$id)
+		if (!$id)
 		{
 			throw new RecordNotLoaded("Can't change the state of a not loaded DataModel");
 		}
@@ -1744,7 +1769,7 @@ class DataModel extends Model
 			$this->onBeforeRestore($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeRestore', array(&$this, &$id));
+		$this->behavioursDispatcher->trigger('onBeforeRestore', [&$this, &$id]);
 
 		$enabled = $this->getFieldAlias('enabled');
 
@@ -1756,7 +1781,7 @@ class DataModel extends Model
 			$this->onAfterRestore($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterRestore', array(&$this, $id));
+		$this->behavioursDispatcher->trigger('onAfterRestore', [&$this, $id]);
 
 		return $this;
 	}
@@ -1777,14 +1802,14 @@ class DataModel extends Model
 	/**
 	 * Reset the record data
 	 *
-	 * @param   boolean $useDefaults    Should I use the default values? Default: yes
-	 * @param   boolean $resetRelations Should I reset the relations too? Default: no
+	 * @param   boolean  $useDefaults     Should I use the default values? Default: yes
+	 * @param   boolean  $resetRelations  Should I reset the relations too? Default: no
 	 *
 	 * @return  static  Self, for chaining
 	 */
 	public function reset($useDefaults = true, $resetRelations = false)
 	{
-		$this->recordData = array();
+		$this->recordData = [];
 
 		foreach ($this->knownFields as $fieldName => $information)
 		{
@@ -1801,10 +1826,10 @@ class DataModel extends Model
 		if ($resetRelations)
 		{
 			$this->relationManager->resetRelations();
-			$this->eagerRelations = array();
+			$this->eagerRelations = [];
 		}
 
-		$this->relationFilters = array();
+		$this->relationFilters = [];
 
 		return $this;
 	}
@@ -1814,7 +1839,7 @@ class DataModel extends Model
 	 * enabled to -2 whereas a hard delete removes the data from the database. If you want to force a specific behaviour
 	 * directly call trash() for a soft delete or forceDelete() for a hard delete.
 	 *
-	 * @param   mixed $id Primary key (id field) value
+	 * @param   mixed  $id  Primary key (id field) value
 	 *
 	 * @return  $this  for chaining
 	 */
@@ -1834,7 +1859,7 @@ class DataModel extends Model
 	 * Delete a record, either the currently loaded one or the one specified in $id. If an $id is specified that record
 	 * is loaded before trying to delete it. In the end the data model is reset.
 	 *
-	 * @param   mixed $id Primary key (id field) value
+	 * @param   mixed  $id  Primary key (id field) value
 	 *
 	 * @return  $this  for chaining
 	 */
@@ -1847,7 +1872,7 @@ class DataModel extends Model
 
 		$id = $this->getId();
 
-		if(!$id)
+		if (!$id)
 		{
 			throw new RecordNotLoaded("Can't delete a not loaded DataModel object");
 		}
@@ -1857,7 +1882,7 @@ class DataModel extends Model
 			$this->onBeforeDelete($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeDelete', array(&$this, &$id));
+		$this->behavioursDispatcher->trigger('onBeforeDelete', [&$this, &$id]);
 
 		$db = $this->getDbo();
 
@@ -1872,7 +1897,7 @@ class DataModel extends Model
 			$this->onAfterDelete($id);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterDelete', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterDelete', [&$this]);
 
 		$this->reset();
 
@@ -1882,7 +1907,7 @@ class DataModel extends Model
 	/**
 	 * Find and load a single record based on the provided key values. If the record is not found an exception is thrown
 	 *
-	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
+	 * @param   array|mixed  $keys  An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
 	 * @return  static  Self, for chaining
@@ -1893,9 +1918,9 @@ class DataModel extends Model
 	{
 		$this->find($keys);
 
-        // We have to assign the value, since empty() is not triggering the __get magic method
-        // http://stackoverflow.com/questions/2045791/php-empty-on-get-accessor
-        $value = $this->getId();
+		// We have to assign the value, since empty() is not triggering the __get magic method
+		// http://stackoverflow.com/questions/2045791/php-empty-on-get-accessor
+		$value = $this->getId();
 
 		if (empty($value))
 		{
@@ -1908,7 +1933,7 @@ class DataModel extends Model
 	/**
 	 * Find and load a single record based on the provided key values
 	 *
-	 * @param   array|mixed $keys   An optional primary key value to load the row by, or an array of fields to match.
+	 * @param   array|mixed  $keys  An optional primary key value to load the row by, or an array of fields to match.
 	 *                              If not set the "id" state variable or, if empty, the identity column's value is used
 	 *
 	 * @return  static  Self, for chaining
@@ -1921,7 +1946,7 @@ class DataModel extends Model
 			$this->onBeforeLoad($keys);
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeLoad', array(&$this, &$keys));
+		$this->behavioursDispatcher->trigger('onBeforeLoad', [&$this, &$keys]);
 
 		// If we are not given any keys, try to get the ID from the state or the table data
 		if (empty($keys))
@@ -1940,14 +1965,14 @@ class DataModel extends Model
 					$this->onAfterLoad(false);
 				}
 
-				$this->behavioursDispatcher->trigger('onAfterLoad', array(&$this, false, $keys));
+				$this->behavioursDispatcher->trigger('onAfterLoad', [&$this, false, $keys]);
 
 				$this->reset();
 
 				return $this;
 			}
 
-			$keys = array($this->idFieldName => $id);
+			$keys = [$this->idFieldName => $id];
 		}
 		elseif (!is_array($keys))
 		{
@@ -1958,21 +1983,21 @@ class DataModel extends Model
 					$this->onAfterLoad(false);
 				}
 
-				$this->behavioursDispatcher->trigger('onAfterLoad', array(&$this, false, $keys));
+				$this->behavioursDispatcher->trigger('onAfterLoad', [&$this, false, $keys]);
 
 				$this->reset();
 
 				return $this;
 			}
 
-			$keys = array($this->idFieldName => $keys);
+			$keys = [$this->idFieldName => $keys];
 		}
 
 		// Reset the table
 		$this->reset();
 
 		// Get the query
-		$db = $this->getDbo();
+		$db    = $this->getDbo();
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($db->qn($this->tableName));
@@ -2010,7 +2035,7 @@ class DataModel extends Model
 				$this->onAfterLoad(false, $keys);
 			}
 
-			$this->behavioursDispatcher->trigger('onAfterLoad', array(&$this, false, $keys));
+			$this->behavioursDispatcher->trigger('onAfterLoad', [&$this, false, $keys]);
 
 			return $this;
 		}
@@ -2024,7 +2049,7 @@ class DataModel extends Model
 			$this->onAfterLoad(true, $keys);
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterLoad', array(&$this, true, $keys));
+		$this->behavioursDispatcher->trigger('onAfterLoad', [&$this, true, $keys]);
 
 		return $this;
 	}
@@ -2032,7 +2057,7 @@ class DataModel extends Model
 	/**
 	 * Create a new record with the provided data
 	 *
-	 * @param   array $data The data to use in the new record
+	 * @param   array  $data  The data to use in the new record
 	 *
 	 * @return  static  Self, for chaining
 	 */
@@ -2044,7 +2069,7 @@ class DataModel extends Model
 	/**
 	 * Return the first item found or create a new one based on the provided $data
 	 *
-	 * @param   array $data Data for the newly created item
+	 * @param   array  $data  Data for the newly created item
 	 *
 	 * @return  static
 	 */
@@ -2108,17 +2133,17 @@ class DataModel extends Model
 	 * modelName        is the model's name, first character uppercase, e.g. Baz
 	 * behaviourName    is the $behaviour parameter, first character uppercase, e.g. Something
 	 *
-	 * @param   string $behaviour The behaviour's name
+	 * @param   string  $behaviour  The behaviour's name
 	 *
 	 * @return  $this  Self, for chaining
 	 */
 	public function addBehaviour($behaviour)
 	{
-		$prefixes = array(
+		$prefixes = [
 			'\\' . ucfirst($this->container->application->getName()) . '\\Model\\' . ucfirst($this->getName()) . '\\Behaviour',
 			'\\' . ucfirst($this->container->application->getName()) . '\\Model\\DataModel\\Behaviour',
 			'\\Awf\\Mvc\\DataModel\\Behaviour',
-		);
+		];
 
 		foreach ($prefixes as $prefix)
 		{
@@ -2151,8 +2176,8 @@ class DataModel extends Model
 	 * Set the field and direction of ordering for the query returned by buildQuery.
 	 * Alias of $this->setState('filter_order', $fieldName) and $this->setState('filter_order_Dir', $direction)
 	 *
-	 * @param   string $fieldName The field name to order by
-	 * @param   string $direction The direction to order by (ASC for ascending or DESC for descending)
+	 * @param   string  $fieldName  The field name to order by
+	 * @param   string  $direction  The direction to order by (ASC for ascending or DESC for descending)
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2160,7 +2185,7 @@ class DataModel extends Model
 	{
 		$direction = strtoupper($direction);
 
-		if (!in_array($direction, array('ASC', 'DESC')))
+		if (!in_array($direction, ['ASC', 'DESC']))
 		{
 			$direction = 'ASC';
 		}
@@ -2175,14 +2200,14 @@ class DataModel extends Model
 	 * Set the limitStart for the query, i.e. how many records to skip.
 	 * Alias of $this->setState('limitstart', $limitStart);
 	 *
-	 * @param   integer $limitStart Records to skip from the start
+	 * @param   integer  $limitStart  Records to skip from the start
 	 *
 	 * @return  $this  For chaining
 	 */
 	public function skip($limitStart = null)
 	{
 		// Only positive integers are allowed
-		if(!is_int($limitStart) || $limitStart < 0 || !$limitStart)
+		if (!is_int($limitStart) || $limitStart < 0 || !$limitStart)
 		{
 			$limitStart = 0;
 		}
@@ -2196,14 +2221,14 @@ class DataModel extends Model
 	 * Set the limit for the query, i.e. how many records to return.
 	 * Alias of $this->setState('limit', $limit);
 	 *
-	 * @param   integer $limit Maximum number of records to return
+	 * @param   integer  $limit  Maximum number of records to return
 	 *
 	 * @return  $this  For chaining
 	 */
 	public function take($limit = null)
 	{
 		// Only positive integers are allowed
-		if(!is_int($limit) || $limit < 0 || !$limit)
+		if (!is_int($limit) || $limit < 0 || !$limit)
 		{
 			$limit = 0;
 		}
@@ -2226,7 +2251,7 @@ class DataModel extends Model
 	/**
 	 * Returns the record's data as a JSON string
 	 *
-	 * @param   boolean $prettyPrint Should I format the JSON for pretty printing
+	 * @param   boolean  $prettyPrint  Should I format the JSON for pretty printing
 	 *
 	 * @return  string
 	 */
@@ -2247,13 +2272,13 @@ class DataModel extends Model
 	/**
 	 * Touch a record, updating its modified_on and/or modified_by columns
 	 *
-	 * @param   integer $userId Optional user ID of the user touching the record
+	 * @param   integer  $userId  Optional user ID of the user touching the record
 	 *
 	 * @return  $this  Self, for chaining
 	 */
 	public function touch($userId = null)
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new RecordNotLoaded("Can't touch a not loaded DataModel");
 		}
@@ -2263,7 +2288,7 @@ class DataModel extends Model
 			return $this;
 		}
 
-		$db = $this->getDbo();
+		$db   = $this->getDbo();
 		$date = new Date();
 
 		// Update the created_on / modified_on
@@ -2279,7 +2304,7 @@ class DataModel extends Model
 			if (empty($userId))
 			{
 				$userManager = $this->container->userManager;
-				$userId = $userManager->getUser()->getId();
+				$userId      = $userManager->getUser()->getId();
 			}
 
 			$modified_by        = $this->getFieldAlias('modified_by');
@@ -2294,13 +2319,13 @@ class DataModel extends Model
 	/**
 	 * Lock a record by setting its locked_on and/or locked_by columns
 	 *
-	 * @param   integer $userId
+	 * @param   integer  $userId
 	 *
 	 * @return  $this  Self, for chaining
 	 */
 	public function lock($userId = null)
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new \RuntimeException("Can't lock a not loaded DataModel");
 		}
@@ -2315,7 +2340,7 @@ class DataModel extends Model
 			$this->onBeforeLock();
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeLock', array(&$this));
+		$this->behavioursDispatcher->trigger('onBeforeLock', [&$this]);
 
 		$db = $this->getDbo();
 
@@ -2331,7 +2356,7 @@ class DataModel extends Model
 			if (empty($userId))
 			{
 				$userManager = $this->container->userManager;
-				$userId = $userManager->getUser()->getId();
+				$userId      = $userManager->getUser()->getId();
 			}
 
 			$locked_by        = $this->getFieldAlias('locked_by');
@@ -2345,7 +2370,7 @@ class DataModel extends Model
 			$this->onAfterLock();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterLock', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterLock', [&$this]);
 
 		return $this;
 	}
@@ -2357,7 +2382,7 @@ class DataModel extends Model
 	 */
 	public function unlock()
 	{
-		if(!$this->getId())
+		if (!$this->getId())
 		{
 			throw new RecordNotLoaded("Can't unlock a not loaded DataModel");
 		}
@@ -2372,14 +2397,14 @@ class DataModel extends Model
 			$this->onBeforeUnlock();
 		}
 
-		$this->behavioursDispatcher->trigger('onBeforeUnlock', array(&$this));
+		$this->behavioursDispatcher->trigger('onBeforeUnlock', [&$this]);
 
 		$db = $this->getDbo();
 
 		if ($this->hasField('locked_on'))
 		{
 			$locked_on        = $this->getFieldAlias('locked_on');
-			$this->$locked_on = $db->getNullDate();
+			$this->$locked_on = $this->isNullableField('locked_on') ? null : $db->getNullDate();
 		}
 
 		if ($this->hasField('locked_by'))
@@ -2395,7 +2420,7 @@ class DataModel extends Model
 			$this->onAfterUnlock();
 		}
 
-		$this->behavioursDispatcher->trigger('onAfterUnlock', array(&$this));
+		$this->behavioursDispatcher->trigger('onAfterUnlock', [&$this]);
 
 		return $this;
 	}
@@ -2403,9 +2428,10 @@ class DataModel extends Model
 	/**
 	 * Automatically uses the Filters behaviour to filter records in the model based on your criteria.
 	 *
-	 * @param   string $fieldName The field name to filter on
-	 * @param   string $method    The filtering method, e.g. <>, =, != and so on
-	 * @param   mixed  $values    The value you're filtering on. Some filters (e.g. interval or between) require an array of values
+	 * @param   string  $fieldName  The field name to filter on
+	 * @param   string  $method     The filtering method, e.g. <>, =, != and so on
+	 * @param   mixed   $values     The value you're filtering on. Some filters (e.g. interval or between) require an
+	 *                              array of values
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2424,47 +2450,47 @@ class DataModel extends Model
 			$fieldName = 'id';
 		}
 
-		$options = array(
+		$options = [
 			'method' => $method,
-			'value'  => $values
-		);
+			'value'  => $values,
+		];
 
 		// Handle method aliases
 		switch ($method)
 		{
 			case '<>':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '!=';
 				break;
 
 			case 'lt':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '<';
 				break;
 
 			case 'le':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '<=';
 				break;
 
 			case 'gt':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '>';
 				break;
 
 			case 'ge':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '>=';
 				break;
 
 			case 'eq':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '=';
 				break;
 
 			case 'neq':
 			case 'ne':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = '!=';
 				break;
 
@@ -2478,7 +2504,7 @@ class DataModel extends Model
 			case '!>=':
 			case '!=':
 			case '=':
-				$options['method'] = 'search';
+				$options['method']   = 'search';
 				$options['operator'] = $method;
 				break;
 
@@ -2520,7 +2546,7 @@ class DataModel extends Model
 
 			default:
 
-				throw new InvalidSearchMethod('Method '.$method.' is unsupported');
+				throw new InvalidSearchMethod('Method ' . $method . ' is unsupported');
 
 				break;
 		}
@@ -2536,12 +2562,12 @@ class DataModel extends Model
 					if (isset($values['from']) && isset($values['to']))
 					{
 						$options['from'] = $values['from'];
-						$options['to'] = $values['to'];
+						$options['to']   = $values['to'];
 					}
 					else
 					{
 						$options['from'] = array_shift($values);
-						$options['to'] = array_shift($values);
+						$options['to']   = array_shift($values);
 					}
 
 					unset($options['value']);
@@ -2567,12 +2593,12 @@ class DataModel extends Model
 					// Get the value and interval from the $values array
 					if (isset($values['value']) && isset($values['interval']))
 					{
-						$options['value'] = $values['value'];
+						$options['value']    = $values['value'];
 						$options['interval'] = $values['interval'];
 					}
 					else
 					{
-						$options['value'] = array_shift($values);
+						$options['value']    = array_shift($values);
 						$options['interval'] = array_shift($values);
 					}
 				}
@@ -2584,8 +2610,8 @@ class DataModel extends Model
 						$values = array_shift($values);
 					}
 
-					$options['value'] = $values;
-					$options['method'] = 'search';
+					$options['value']    = $values;
+					$options['method']   = 'search';
 					$options['operator'] = '=';
 				}
 				break;
@@ -2603,12 +2629,12 @@ class DataModel extends Model
 					if (isset($values['operator']) && isset($values['value']))
 					{
 						$options['operator'] = $values['operator'];
-						$options['value'] = $values['value'];
+						$options['value']    = $values['value'];
 					}
 					else
 					{
 						$options['operator'] = array_shift($values);
-						$options['value'] = array_shift($values);
+						$options['value']    = array_shift($values);
 					}
 				}
 				break;
@@ -2629,7 +2655,7 @@ class DataModel extends Model
 	 * business logic with raw SQL makes your application harder to maintain and refactor as dependencies to your
 	 * database schema creep in areas of your code that should have nothing to do with it.
 	 *
-	 * @param   string $rawWhereClause The raw WHERE clause to add
+	 * @param   string  $rawWhereClause  The raw WHERE clause to add
 	 *
 	 * @return  $this  For chaining
 	 */
@@ -2656,7 +2682,7 @@ class DataModel extends Model
 	 * Please note that eager loaded relations produce their queries without going through the respective model. Instead
 	 * they generate a SQL query directly, then map the loaded results into a DataCollection.
 	 *
-	 * @param array $relations The relations to eager load. See above for more information.
+	 * @param   array  $relations  The relations to eager load. See above for more information.
 	 *
 	 * @return $this For chaining
 	 */
@@ -2664,7 +2690,7 @@ class DataModel extends Model
 	{
 		if (empty($relations))
 		{
-			$this->eagerRelations = array();
+			$this->eagerRelations = [];
 
 			return $this;
 		}
@@ -2675,12 +2701,12 @@ class DataModel extends Model
 		{
 			if (is_callable($v))
 			{
-				$relName = $k;
+				$relName  = $k;
 				$callback = $v;
 			}
 			else
 			{
-				$relName = $v;
+				$relName  = $v;
 				$callback = null;
 			}
 
@@ -2698,10 +2724,11 @@ class DataModel extends Model
 	 * $posts->has('comments', '>=', 10)->get();
 	 * will return all posts with at least 10 comments.
 	 *
-	 * @param string $relation The relation to query
-	 * @param string $operator The comparison operator. Same operators as the where() method.
-	 * @param mixed  $value    The value(s) to compare against.
-	 * @param bool   $replace  When true (default) any existing relation filters for the same relation will be replaced
+	 * @param   string  $relation  The relation to query
+	 * @param   string  $operator  The comparison operator. Same operators as the where() method.
+	 * @param   mixed   $value     The value(s) to compare against.
+	 * @param   bool    $replace   When true (default) any existing relation filters for the same relation will be
+	 *                             replaced
 	 *
 	 * @return $this
 	 */
@@ -2713,49 +2740,49 @@ class DataModel extends Model
 			$this->addBehaviour('relationFilters');
 		}
 
-		$filter = array(
+		$filter = [
 			'relation' => $relation,
 			'method'   => $operator,
 			'operator' => $operator,
-			'value'    => $value
-		);
+			'value'    => $value,
+		];
 
 		// Handle method aliases
 		switch ($operator)
 		{
 			case '<>':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '!=';
 				break;
 
 			case 'lt':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '<';
 				break;
 
 			case 'le':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '<=';
 				break;
 
 			case 'gt':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '>';
 				break;
 
 			case 'ge':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '>=';
 				break;
 
 			case 'eq':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '=';
 				break;
 
 			case 'neq':
 			case 'ne':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = '!=';
 				break;
 
@@ -2769,7 +2796,7 @@ class DataModel extends Model
 			case '!>=':
 			case '!=':
 			case '=':
-				$filter['method'] = 'search';
+				$filter['method']   = 'search';
 				$filter['operator'] = $operator;
 				break;
 
@@ -2810,12 +2837,12 @@ class DataModel extends Model
 				break;
 
 			case 'callback':
-				$filter['method'] = 'callback';
+				$filter['method']   = 'callback';
 				$filter['operator'] = 'callback';
 				break;
 
 			default:
-				throw new InvalidSearchMethod('Operator '.$operator.' is unsupported');
+				throw new InvalidSearchMethod('Operator ' . $operator . ' is unsupported');
 				break;
 		}
 
@@ -2830,12 +2857,12 @@ class DataModel extends Model
 					if (isset($value['from']) && isset($value['to']))
 					{
 						$filter['from'] = $value['from'];
-						$filter['to'] = $value['to'];
+						$filter['to']   = $value['to'];
 					}
 					else
 					{
 						$filter['from'] = array_shift($value);
-						$filter['to'] = array_shift($value);
+						$filter['to']   = array_shift($value);
 					}
 
 					unset($filter['value']);
@@ -2849,8 +2876,8 @@ class DataModel extends Model
 					}
 
 					$filter['operator'] = ($filter['method'] == 'between') ? '=' : '!=';
-					$filter['value'] = $value;
-					$filter['method'] = 'search';
+					$filter['value']    = $value;
+					$filter['method']   = 'search';
 				}
 
 				break;
@@ -2861,12 +2888,12 @@ class DataModel extends Model
 					// Get the value and interval from the $value array
 					if (isset($value['value']) && isset($value['interval']))
 					{
-						$filter['value'] = $value['value'];
+						$filter['value']    = $value['value'];
 						$filter['interval'] = $value['interval'];
 					}
 					else
 					{
-						$filter['value'] = array_shift($value);
+						$filter['value']    = array_shift($value);
 						$filter['interval'] = array_shift($value);
 					}
 				}
@@ -2878,8 +2905,8 @@ class DataModel extends Model
 						$value = array_shift($value);
 					}
 
-					$filter['value'] = $value;
-					$filter['method'] = 'search';
+					$filter['value']    = $value;
+					$filter['method']   = 'search';
 					$filter['operator'] = '=';
 				}
 				break;
@@ -2897,12 +2924,12 @@ class DataModel extends Model
 					if (isset($value['operator']) && isset($value['value']))
 					{
 						$filter['operator'] = $value['operator'];
-						$filter['value'] = $value['value'];
+						$filter['value']    = $value['value'];
 					}
 					else
 					{
 						$filter['operator'] = array_shift($value);
-						$filter['value'] = array_shift($value);
+						$filter['value']    = array_shift($value);
 					}
 				}
 				break;
@@ -2910,9 +2937,9 @@ class DataModel extends Model
 			case 'callback':
 				if (!is_callable($filter['value']))
 				{
-					$filter['method'] = 'search';
+					$filter['method']   = 'search';
 					$filter['operator'] = '=';
-					$filter['value'] = 1;
+					$filter['value']    = 1;
 				}
 				break;
 		}
@@ -2942,9 +2969,10 @@ class DataModel extends Model
 	 * You have to return a WHERE clause for the model's query, e.g.
 	 * (SELECT COUNT(*) FROM #__comments AS reltbl WHERE reltbl.user_id = user_id) BETWEEN 1 AND 20
 	 *
-	 * @param string   $relation The relation to query against
-	 * @param callable $callBack The callback to use for filtering
-	 * @param bool     $replace  When true (default) any existing relation filters for the same relation will be replaced
+	 * @param   string    $relation  The relation to query against
+	 * @param   callable  $callBack  The callback to use for filtering
+	 * @param   bool      $replace   When true (default) any existing relation filters for the same relation will be
+	 *                               replaced
 	 *
 	 * @return $this
 	 */
@@ -3004,13 +3032,13 @@ class DataModel extends Model
 			}
 
 			$letters      = str_split($prefix, 1);
-			$permutations = array('');
+			$permutations = [''];
 
 			foreach ($letters as $nextLetter)
 			{
 				$lower = strtolower($nextLetter);
 				$upper = strtoupper($nextLetter);
-				$ret = array();
+				$ret   = [];
 
 				foreach ($permutations as $perm)
 				{
@@ -3025,12 +3053,11 @@ class DataModel extends Model
 				}
 			}
 
-			$permutations = array_merge(array(
+			$permutations = array_merge([
 				strtolower($prefix),
 				strtoupper($prefix),
-			), $permutations);
-			$permutations = array_map(function ($x) use ($suffix)
-			{
+			], $permutations);
+			$permutations = array_map(function ($x) use ($suffix) {
 				return $x . $suffix;
 			}, $permutations);
 
