@@ -441,6 +441,25 @@ class Installer
 
                 break;
 
+			// Check if a column is nullable
+		    case 'nullable':
+			    try
+			    {
+				    $tableColumns = $this->db->getTableColumns($tableNormal, true);
+			    }
+			    catch (Exception $e)
+			    {
+				    $tableColumns = [];
+			    }
+
+			    $condition = false;
+
+			    if (array_key_exists($value, $tableColumns))
+			    {
+				    $condition = (is_string($tableColumns[$value]) ? 'YES' : strtolower($tableColumns[$value]->Null)) == 'yes';
+			    }
+
+			    break;
             // Check if the result of a query matches our expectation
             case 'equals':
                 $query = (string)$node;
