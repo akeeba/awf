@@ -447,7 +447,7 @@ class Installer
 			    {
 				    $tableColumns = $this->db->getTableColumns($tableNormal, true);
 			    }
-			    catch (Exception $e)
+			    catch (\Exception $e)
 			    {
 				    $tableColumns = [];
 			    }
@@ -460,6 +460,7 @@ class Installer
 			    }
 
 			    break;
+
             // Check if the result of a query matches our expectation
             case 'equals':
                 $query = (string)$node;
