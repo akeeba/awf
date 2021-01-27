@@ -20,28 +20,6 @@ class CsrfTokenFactory
 {
 	/**
 	 *
-	 * A cryptographically-secure random value generator.
-	 *
-	 * @var RandvalInterface
-	 *
-	 */
-	protected $randval;
-
-	/**
-	 *
-	 * Constructor.
-	 *
-	 * @param RandvalInterface $randval A cryptographically-secure random
-	 *                                  value generator.
-	 *
-	 */
-	public function __construct(RandvalInterface $randval)
-	{
-		$this->randval = $randval;
-	}
-
-	/**
-	 *
 	 * Creates a CsrfToken object.
 	 *
 	 * @param Manager $manager The session manager.
@@ -53,6 +31,6 @@ class CsrfTokenFactory
 	{
 		$segment = $manager->newSegment('Awf\Session\CsrfToken');
 
-		return new CsrfToken($segment, $this->randval);
+		return new CsrfToken($segment);
 	}
 }

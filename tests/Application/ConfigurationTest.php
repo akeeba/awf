@@ -11,7 +11,6 @@ use Awf\Application\Configuration;
 use Awf\Tests\Helpers\AwfTestCase;
 use Awf\Tests\Helpers\ReflectionHelper;
 use Awf\Tests\Stubs\Application\MockFilesystem;
-use Awf\Tests\Stubs\Application\MockPhpfuncConfig;
 
 /**
  * Class ConfigurationTest
@@ -102,22 +101,20 @@ class ConfigurationTest extends AwfTestCase
 
 	public function testLoadConfiguration()
 	{
-		$phpfunc = new MockPhpfuncConfig();
-
 		$this->config->set('no', 'I said no');
-		$this->config->loadConfiguration('/dev/false', $phpfunc);
+		$this->config->loadConfiguration('/dev/false');
 		$this->assertEquals(new \stdClass(), ReflectionHelper::getValue($this->config, 'data'));
 
 		$this->config->set('no', 'I said no');
-		$this->config->loadConfiguration('/dev/trash', $phpfunc);
+		$this->config->loadConfiguration('/dev/trash');
 		$this->assertEquals(new \stdClass(), ReflectionHelper::getValue($this->config, 'data'));
 
 		$this->config->set('no', 'I said no');
-		$this->config->loadConfiguration('/dev/invalid', $phpfunc);
+		$this->config->loadConfiguration('/dev/invalid');
 		$this->assertEquals(new \stdClass(), ReflectionHelper::getValue($this->config, 'data'));
 
 		$this->config->set('no', 'I said no');
-		$this->config->loadConfiguration('/dev/fake', $phpfunc);
+		$this->config->loadConfiguration('/dev/fake');
 		$this->assertEquals('bar', $this->config->get('foo'));
 	}
 

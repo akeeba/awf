@@ -9,10 +9,8 @@ namespace Awf\Tests\Session;
 
 use Awf\Session\CsrfTokenFactory;
 use Awf\Session\Manager;
-use Awf\Session\Randval;
 use Awf\Session\SegmentFactory;
 use Awf\Tests\Stubs\Session\MockSessionHandler;
-use Awf\Utils\Phpfunc;
 
 /**
  * @coversDefaultTestClass \Awf\Session\Manager
@@ -42,7 +40,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase
 	{
 		return new Manager(
 			new SegmentFactory(),
-			new CsrfTokenFactory(new Randval(new Phpfunc())),
+			new CsrfTokenFactory(),
 			$cookies
 		);
 	}
