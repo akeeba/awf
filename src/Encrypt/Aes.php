@@ -10,8 +10,6 @@ namespace Awf\Encrypt;
 use Awf\Encrypt\AesAdapter\AdapterInterface;
 use Awf\Encrypt\AesAdapter\Mcrypt;
 use Awf\Encrypt\AesAdapter\OpenSSL;
-use Awf\Session\Randval;
-use Awf\Utils\Phpfunc;
 
 /**
  * A simple abstraction to AES encryption
@@ -52,13 +50,12 @@ class Aes
 	 * @param   string   $key       The encryption key (password). It can be a raw key (16 bytes) or a passphrase.
 	 * @param   int      $strength  Bit strength (128, 192 or 256) – ALWAYS USE 128 BITS. THIS PARAMETER IS DEPRECATED.
 	 * @param   string   $mode      Encryption mode. Can be ebc or cbc. We recommend using cbc.
-	 * @param   Phpfunc  $phpfunc   For testing
 	 */
-	public function __construct($key, $strength = 128, $mode = 'cbc', Phpfunc $phpfunc = null)
+	public function __construct($key, $strength = 128, $mode = 'cbc')
 	{
 		$this->adapter = new OpenSSL();
 
-		if (!$this->adapter->isSupported($phpfunc))
+		if (!$this->adapter->isSupported())
 		{
 			$this->adapter = new Mcrypt();
 		}
@@ -109,9 +106,7 @@ class Aes
 	public function encryptString($stringToEncrypt, $base64encoded = true)
 	{
 		$blockSize = $this->adapter->getBlockSize();
-		$phpfunc   = new Phpfunc();
-		$randVal   = new Randval($phpfunc);
-		$iv        = $randVal->generate($blockSize);
+		$iv        = random_bytes($blockSize);
 
 		$key        = $this->getExpandedKey($blockSize, $iv);
 		$cipherText = $this->adapter->encrypt($stringToEncrypt, $key, $iv);
@@ -158,41 +153,36 @@ class Aes
 	 *
 	 * @return boolean
 	 */
-	public static function isSupported(Phpfunc $phpfunc = null)
+	public static function isSupported()
 	{
-		if (!is_object($phpfunc) || !($phpfunc instanceof $phpfunc))
-		{
-			$phpfunc = new Phpfunc();
-		}
-
 		$adapter = new Mcrypt();
 
-		if (!$adapter->isSupported($phpfunc))
+		if (!$adapter->isSupported())
 		{
 			$adapter = new OpenSSL();
 		}
 
-		if (!$adapter->isSupported($phpfunc))
+		if (!$adapter->isSupported())
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('base64_encode'))
+		if (!\function_exists('base64_encode'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('base64_decode'))
+		if (!\function_exists('base64_decode'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('hash_algos'))
+		if (!\function_exists('hash_algos'))
 		{
 			return false;
 		}
 
-		$algorightms = $phpfunc->hash_algos();
+		$algorightms = \hash_algos();
 
 		if (!in_array('sha256', $algorightms))
 		{

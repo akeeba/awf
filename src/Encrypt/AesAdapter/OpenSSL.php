@@ -7,9 +7,6 @@
 
 namespace Awf\Encrypt\AesAdapter;
 
-use Awf\Session\Randval;
-use Awf\Utils\Phpfunc;
-
 class OpenSSL extends AbstractAdapter implements AdapterInterface
 {
 	/**
@@ -82,9 +79,7 @@ class OpenSSL extends AbstractAdapter implements AdapterInterface
 
 		if (empty($iv))
 		{
-			$phpfunc   = new Phpfunc();
-			$randVal   = new Randval($phpfunc);
-			$iv        = $randVal->generate($iv_size);
+			$iv        = random_bytes($iv_size);
 		}
 
 		$plainText .= $this->getZeroPadding($plainText, $iv_size);
@@ -105,56 +100,51 @@ class OpenSSL extends AbstractAdapter implements AdapterInterface
 		return $plainText;
 	}
 
-	public function isSupported(Phpfunc $phpfunc = null)
+	public function isSupported()
 	{
-		if (!is_object($phpfunc) || !($phpfunc instanceof $phpfunc))
-		{
-			$phpfunc = new Phpfunc();
-		}
-
-		if (!$phpfunc->function_exists('openssl_get_cipher_methods'))
+		if (!\function_exists('openssl_get_cipher_methods'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('openssl_random_pseudo_bytes'))
+		if (!\function_exists('openssl_random_pseudo_bytes'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('openssl_cipher_iv_length'))
+		if (!\function_exists('openssl_cipher_iv_length'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('openssl_encrypt'))
+		if (!\function_exists('openssl_encrypt'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('openssl_decrypt'))
+		if (!\function_exists('openssl_decrypt'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('hash'))
+		if (!\function_exists('hash'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('hash_algos'))
+		if (!\function_exists('hash_algos'))
 		{
 			return false;
 		}
 
-		$algorightms = $phpfunc->openssl_get_cipher_methods();
+		$algorightms = \openssl_get_cipher_methods();
 
 		if (!in_array('aes-128-cbc', $algorightms))
 		{
 			return false;
 		}
 
-		$algorightms = $phpfunc->hash_algos();
+		$algorightms = \hash_algos();
 
 		if (!in_array('sha256', $algorightms))
 		{

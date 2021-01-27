@@ -10,9 +10,7 @@ namespace Awf\Tests\Session;
 
 use Awf\Session\CsrfTokenFactory;
 use Awf\Session\Manager;
-use Awf\Session\Randval;
 use Awf\Session\SegmentFactory;
-use Awf\Utils\Phpfunc;
 
 class SegmentTest extends \PHPUnit_Framework_TestCase
 {
@@ -32,7 +30,7 @@ class SegmentTest extends \PHPUnit_Framework_TestCase
 	{
 		return new Manager(
 			new SegmentFactory(),
-			new CsrfTokenFactory(new Randval(new Phpfunc())),
+			new CsrfTokenFactory(),
 			$cookies
 		);
 	}

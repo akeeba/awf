@@ -7,8 +7,6 @@
 
 namespace Awf\Encrypt\AesAdapter;
 
-use Awf\Utils\Phpfunc;
-
 /**
  * Interface for AES encryption adapters
  */
@@ -77,5 +75,5 @@ interface AdapterInterface
 	 *
 	 * @return  bool
 	 */
-	public function isSupported(Phpfunc $phpfunc = null);
+	public function isSupported();
 }

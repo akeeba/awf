@@ -12,7 +12,6 @@ use Awf\Database\Driver;
 use Awf\Mvc\Compiler\Blade;
 use Awf\Pimple\Pimple;
 use Awf\Session;
-use Awf\Utils\Phpfunc;
 
 /**
  * Dependency injection container for Awf's Application
@@ -172,11 +171,7 @@ class Container extends Pimple
 			{
 				return new Session\Manager(
 					new Session\SegmentFactory,
-					new Session\CsrfTokenFactory(
-						new Session\Randval(
-							new Phpfunc()
-						)
-					),
+					new Session\CsrfTokenFactory(),
 					$_COOKIE
 				);
 			};

@@ -9,7 +9,6 @@ namespace Awf\Tests\Encrypt;
 
 use Awf\Encrypt\Aes;
 use Awf\Tests\Helpers\AwfTestCase;
-use Awf\Tests\Stubs\Session\MockPhpfunc;
 
 /**
  * @coversDefaultClass Awf\Encrypt\Aes
@@ -65,54 +64,11 @@ class AesTest extends AwfTestCase
 			'sha256'
 		);
 
-		// Create a mock php function with all prerequisites met
-		$phpfunc = new MockPhpfunc();
-		$phpfunc->setFunctions($functions_enabled);
-		$phpfunc->setMcryptAlgorithms($algorithms);
-		$phpfunc->setHashAlgorithms($hashAlgos);
-
 		// Just for code coverage
 		$this->assertNotNull(Aes::isSupported());
 
 		// All prerequisites met = supported
-		$this->assertTrue(Aes::isSupported($phpfunc));
-
-		// No hash algorithms = not supported
-		$phpfunc->setHashAlgorithms(array());
-		$this->assertFalse(Aes::isSupported($phpfunc));
-		$phpfunc->setHashAlgorithms($hashAlgos);
-
-		// No mcrypt algorithms = not supported
-		$phpfunc->setMcryptAlgorithms(array());
-		$this->assertFalse(Aes::isSupported($phpfunc));
-		$phpfunc->setMcryptAlgorithms($algorithms);
-
-		// No required functions available = not supported
-		$phpfunc->setFunctions(array());
-		$this->assertFalse(Aes::isSupported($phpfunc));
-		$phpfunc->setFunctions($functions_enabled);
-
-		// Test with diminishing amounts of supported mcrypt algos (=not supported) – for code coverage
-		$temp = $algorithms;
-
-		while (!empty($temp))
-		{
-			array_pop($temp);
-			$phpfunc->setMcryptAlgorithms($temp);
-			$this->assertFalse(Aes::isSupported($phpfunc));
-		}
-
-		$phpfunc->setMcryptAlgorithms($algorithms);
-
-		// Test with diminishing amounts of supported functions (=not supported) – for code coverage
-		$temp = $functions_enabled;
-
-		while (!empty($temp))
-		{
-			array_pop($temp);
-			$phpfunc->setFunctions($temp);
-			$this->assertFalse(Aes::isSupported($phpfunc));
-		}
+		$this->assertTrue(Aes::isSupported());
 	}
 
 	/**

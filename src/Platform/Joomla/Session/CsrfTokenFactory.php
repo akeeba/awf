@@ -7,7 +7,6 @@
 
 namespace Awf\Platform\Joomla\Session;
 
-use Awf\Session\RandvalInterface;
 use Awf\Session\Manager as SessionManager;
 
 /**
@@ -16,28 +15,6 @@ use Awf\Session\Manager as SessionManager;
  */
 class CsrfTokenFactory extends \Awf\Session\CsrfTokenFactory
 {
-	/**
-	 *
-	 * A cryptographically-secure random value generator.
-	 *
-	 * @var RandvalInterface
-	 *
-	 */
-	protected $randval;
-
-	/**
-	 *
-	 * Constructor.
-	 *
-	 * @param RandvalInterface $randval A cryptographically-secure random
-	 *                                  value generator. IGNORED IN JOOMLA!.
-	 *
-	 */
-	public function __construct(RandvalInterface $randval = null)
-	{
-
-	}
-
 	/**
 	 *
 	 * Creates a CsrfToken object.

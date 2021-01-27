@@ -7,8 +7,6 @@
 
 namespace Awf\Platform\Joomla\Application;
 
-use Awf\Utils\Phpfunc;
-
 /**
  * @property   \Awf\Platform\Joomla\Container\Container $container
  */
@@ -19,11 +17,10 @@ class Configuration extends \Awf\Application\Configuration
 	 * the options key. For example, an option called foobar is accessible as $config->get('options.foobar');
 	 *
 	 * @param string  $filePath Ignored
-	 * @param Phpfunc $phpfunc  Ignored
 	 *
 	 * @return  void
 	 */
-	public function loadConfiguration($filePath = null, Phpfunc $phpfunc = null)
+	public function loadConfiguration($filePath = null)
 	{
 		// Get the Joomla! configuration object
 		$jConfig = \JFactory::getConfig();

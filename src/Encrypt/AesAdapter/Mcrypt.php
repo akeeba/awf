@@ -7,9 +7,6 @@
 
 namespace Awf\Encrypt\AesAdapter;
 
-use Awf\Session\Randval;
-use Awf\Utils\Phpfunc;
-
 class Mcrypt extends AbstractAdapter implements AdapterInterface
 {
 	protected $cipherType = MCRYPT_RIJNDAEL_128;
@@ -56,9 +53,7 @@ class Mcrypt extends AbstractAdapter implements AdapterInterface
 
 		if (empty($iv))
 		{
-			$phpfunc   = new Phpfunc();
-			$randVal   = new Randval($phpfunc);
-			$iv        = $randVal->generate($iv_size);
+			$iv        = random_bytes($iv_size);
 		}
 
 		$cipherText = mcrypt_encrypt($this->cipherType, $key, $plainText, $this->cipherMode, $iv);
@@ -78,54 +73,49 @@ class Mcrypt extends AbstractAdapter implements AdapterInterface
 		return $plainText;
 	}
 
-	public function isSupported(Phpfunc $phpfunc = null)
+	public function isSupported()
 	{
-		if (!is_object($phpfunc) || !($phpfunc instanceof $phpfunc))
-		{
-			$phpfunc = new Phpfunc();
-		}
-
-		if (!$phpfunc->function_exists('mcrypt_get_key_size'))
+		if (!\function_exists('mcrypt_get_key_size'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('mcrypt_get_iv_size'))
+		if (!\function_exists('mcrypt_get_iv_size'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('mcrypt_create_iv'))
+		if (!\function_exists('mcrypt_create_iv'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('mcrypt_encrypt'))
+		if (!\function_exists('mcrypt_encrypt'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('mcrypt_decrypt'))
+		if (!\function_exists('mcrypt_decrypt'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('mcrypt_list_algorithms'))
+		if (!\function_exists('mcrypt_list_algorithms'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('hash'))
+		if (!\function_exists('hash'))
 		{
 			return false;
 		}
 
-		if (!$phpfunc->function_exists('hash_algos'))
+		if (!\function_exists('hash_algos'))
 		{
 			return false;
 		}
 
-		$algorightms = $phpfunc->mcrypt_list_algorithms();
+		$algorightms = \mcrypt_list_algorithms();
 
 		if (!in_array('rijndael-128', $algorightms))
 		{
@@ -142,7 +132,7 @@ class Mcrypt extends AbstractAdapter implements AdapterInterface
 			return false;
 		}
 
-		$algorightms = $phpfunc->hash_algos();
+		$algorightms = \hash_algos();
 
 		if (!in_array('sha256', $algorightms))
 		{
