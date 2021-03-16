@@ -87,7 +87,7 @@ abstract class Document
 	 *
 	 * @return  \Awf\Document\Document
 	 */
-	public static function getInstance($type = 'html', Container $container, $classPrefix = '\\Awf')
+	public static function getInstance($type, Container $container, $classPrefix = '\\Awf')
 	{
 		if (!array_key_exists($type, self::$instances))
 		{

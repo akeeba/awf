@@ -137,7 +137,7 @@ abstract class Select
 	 *
 	 * @return  string  HTML for the select list
 	 */
-	public static function suggestionList($data, $optKey = 'value', $optText = 'text', $idTag, $translate = false)
+	public static function suggestionList($data, $optKey = 'value', $optText = 'text', $idTag = '', $translate = false)
 	{
 		// Set default options
 		$options = array_merge(Html::$formatOptions, array('format.depth' => 0, 'id' => false));

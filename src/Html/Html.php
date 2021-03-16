@@ -284,7 +284,7 @@ abstract class Html
 	 *
 	 * @return  string
 	 */
-	public static function tooltip($tooltip, $title = '', $image = 'images/tooltip.png', $text = '', $href = '', $alt = 'Tooltip', $class = 'hasTooltip', Application $app)
+	public static function tooltip($tooltip, $title = '', $image = 'images/tooltip.png', $text = '', $href = '', $alt = 'Tooltip', $class = 'hasTooltip', Application $app = null)
 	{
 		if (!is_object($app))
 		{
