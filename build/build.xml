@@ -44,6 +44,11 @@
 
     <target name="package-lib" description="Library package build"
             depends="new-release,setup-properties">
+        <!-- Copy the always updated cacert.pem pulled in with Composer into the AWF package -->
+        <copy file="${dirs.root}/vendor/composer/ca-bundle/res/cacert.pem"
+              tofile="${dirs.root}/src/Download/Adapter/cacert.pem"
+              overwrite="true" />
+
         <zipme basedir="${dirs.library}" destfile="${dirs.release}/awf-${version}.zip" includeemptydirs="true">
             <fileset refid="library" />
         </zipme>
