@@ -101,6 +101,27 @@ class Curl extends AbstractAdapter implements DownloadInterface
 			$patched_accept_encoding = true;
 		}
 
+		if (isset($params['proxy']))
+		{
+			$proxyParams = $params['proxy'];
+			unset($params['proxy']);
+			$host = isset($proxyParams['host']) ? trim($proxyParams['host']) : '';
+			$port = isset($proxyParams['port']) ? (int) $proxyParams['port'] : 0;
+			$user = isset($proxyParams['user']) ? trim($proxyParams['user']) : '';
+			$pass = isset($proxyParams['pass']) ? trim($proxyParams['pass']) : '';
+			$enabled = !empty($host) && !empty($port) && ($port > 0) && ($port < 65536);
+
+			if ($enabled)
+			{
+				curl_setopt($ch, CURLOPT_PROXY, $host . ':' . $port);
+
+				if (!empty($user))
+				{
+					curl_setopt($ch, CURLOPT_PROXYUSERPWD, $user . ':' . $pass);
+				}
+			}
+		}
+
         if (!empty($params))
         {
             foreach ($params as $k => $v)
@@ -171,7 +192,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 	 *
 	 * @return  integer  The file size, or -1 if the remote server doesn't support this feature
 	 */
-	public function getFileSize($url)
+	public function getFileSize($url, array $params = array())
 	{
 		$result = -1;
 
@@ -188,6 +209,62 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
 		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+
+		$patched_accept_encoding = false;
+
+		// Work around LiteSpeed sending compressed output under HTTP/2 when no encoding was requested
+		// See https://github.com/joomla/joomla-cms/issues/21423#issuecomment-410941000
+		if (defined('CURLOPT_ACCEPT_ENCODING'))
+		{
+			if (!array_key_exists(CURLOPT_ACCEPT_ENCODING, $params))
+			{
+				$params[CURLOPT_ACCEPT_ENCODING] = 'identity';
+			}
+
+			$patched_accept_encoding = true;
+		}
+
+		if (isset($params['proxy']))
+		{
+			$proxyParams = $params['proxy'];
+			unset($params['proxy']);
+			$host = isset($proxyParams['host']) ? trim($proxyParams['host']) : '';
+			$port = isset($proxyParams['port']) ? (int) $proxyParams['port'] : 0;
+			$user = isset($proxyParams['user']) ? trim($proxyParams['user']) : '';
+			$pass = isset($proxyParams['pass']) ? trim($proxyParams['pass']) : '';
+			$enabled = !empty($host) && !empty($port) && ($port > 0) && ($port < 65536);
+
+			if ($enabled)
+			{
+				curl_setopt($ch, CURLOPT_PROXY, $host . ':' . $port);
+
+				if (!empty($user))
+				{
+					curl_setopt($ch, CURLOPT_PROXYUSERPWD, $user . ':' . $pass);
+				}
+			}
+		}
+
+		if (!empty($params))
+		{
+			foreach ($params as $k => $v)
+			{
+				// I couldn't patch the accept encoding header (missing constant), so I'll check if we manually set it
+				if (!$patched_accept_encoding && $k == CURLOPT_HTTPHEADER)
+				{
+					foreach ($v as $custom_header)
+					{
+						// Ok, we explicitly set the Accept-Encoding header, so we consider it patched
+						if (stripos($custom_header, 'Accept-Encoding') !== false)
+						{
+							$patched_accept_encoding = true;
+						}
+					}
+				}
+
+				@curl_setopt($ch, $k, $v);
+			}
+		}
 
 		$data = curl_exec($ch);
 		curl_close($ch);
@@ -222,7 +299,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 			{
 				if (!empty($redirection))
 				{
-					return $this->getFileSize($redirection);
+					return $this->getFileSize($redirection, $params);
 				}
 
 				return -1;

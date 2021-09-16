@@ -266,7 +266,7 @@ class Download
                     // Init
                     $frag = 0;
 
-                    $retArray['totalSize'] = $this->adapter->getFileSize($url);
+                    $retArray['totalSize'] = $this->adapter->getFileSize($url, $this->adapterOptions);
 
                     if ($retArray['totalSize'] <= 0)
                     {

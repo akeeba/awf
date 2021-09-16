@@ -72,13 +72,12 @@ class Fopen extends AbstractAdapter implements DownloadInterface
 			unset($temp);
 		}
 
-
 		if (!(empty($from) && empty($to)))
 		{
             $options = array(
                 'http'	=> array(
                     'method'	=> 'GET',
-                    'header'	=> "Range: bytes=$from-$to\r\n"
+                    'header'	=> ["Range: bytes=$from-$to\r\n"]
                 ),
                 'ssl' => array(
                     'verify_peer'   => true,
@@ -86,11 +85,6 @@ class Fopen extends AbstractAdapter implements DownloadInterface
                     'verify_depth'  => 5,
                 )
             );
-
-            $options = array_merge($options, $params);
-
-			$context = stream_context_create($options);
-			$result  = @file_get_contents($url, false, $context, $from - $to + 1);
 		}
 		else
 		{
@@ -104,10 +98,46 @@ class Fopen extends AbstractAdapter implements DownloadInterface
                     'verify_depth'  => 5,
                 )
             );
+		}
 
-            $options = array_merge($options, $params);
+		if (isset($params['proxy']))
+		{
+			$proxyParams = $params['proxy'];
+			unset($params['proxy']);
+			$host = isset($proxyParams['host']) ? trim($proxyParams['host']) : '';
+			$port = isset($proxyParams['port']) ? (int) $proxyParams['port'] : 0;
+			$user = isset($proxyParams['user']) ? trim($proxyParams['user']) : '';
+			$pass = isset($proxyParams['pass']) ? trim($proxyParams['pass']) : '';
+			$enabled = !empty($host) && !empty($port) && ($port > 0) && ($port < 65536);
 
-			$context = stream_context_create($options);
+			if ($enabled)
+			{
+				if (!isset($params['http']))
+				{
+					$params['http'] = [];
+				}
+
+				$params['http']['proxy'] = $host . ':' . $port;
+				$params['http']['request_fulluri'] = true;
+
+				if (!empty($user))
+				{
+					$params['http']['header'] = [
+						'Proxy-Authorization: Basic ' . base64_encode($user . ':' . $pass)
+					];
+				}
+			}
+		}
+
+		$options = array_merge_recursive($options, $params);
+		$context = stream_context_create($options);
+
+		if (!(empty($from) && empty($to)))
+		{
+			$result  = @file_get_contents($url, false, $context, $from - $to + 1);
+		}
+		else
+		{
 			$result  = @file_get_contents($url, false, $context);
 		}
 
