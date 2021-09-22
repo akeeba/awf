@@ -95,6 +95,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 * @link    http://php.net/manual/en/countable.count.php
 	 * @since   1.3.0
 	 */
+	#[ReturnTypeWillChange]
 	public function count()
 	{
 		return count(get_object_vars($this->data));
@@ -108,6 +109,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @note    The interface is only present in PHP 5.4 and up.
 	 */
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return $this->data;
@@ -262,6 +264,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 * @see     IteratorAggregate::getIterator()
 	 * @since   1.3.0
 	 */
+	#[ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new \ArrayIterator($this->data);
@@ -403,6 +406,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return (boolean) ($this->get($offset) !== null);
@@ -417,6 +421,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		return $this->get($offset);
@@ -432,6 +437,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		$this->set($offset, $value);
@@ -446,6 +452,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		$this->set($offset, null);
