@@ -456,7 +456,7 @@ abstract class Restore
 		}
 		$this->filename = $this->partsMap[$this->currentPart];
 
-		if (!$this->file = @fopen($this->filename, "rt"))
+		if (!$this->file = @fopen($this->filename, "r"))
 		{
 			throw new \Exception(Text::sprintf('AWF_RESTORE_ERROR_CANTOPENDUMPFILE', $this->filename));
 		}
