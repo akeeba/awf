@@ -20,6 +20,16 @@ use Awf\Database\Query;
 class Postgresql extends Driver
 {
 	/**
+	 * @var    string  The database technology family supported, e.g. mysql, mssql
+	 */
+	public static $dbtech = 'postgresql';
+
+	/**
+	 * @var    string  The minimum supported database version.
+	 */
+	protected static $dbMinimum = '8.3.18';
+
+	/**
 	 * The database driver name
 	 *
 	 * @var string
@@ -27,9 +37,11 @@ class Postgresql extends Driver
 	public $name = 'postgresql';
 
 	/**
-	 * @var    string  The database technology family supported, e.g. mysql, mssql
+	 * Operator used for concatenation
+	 *
+	 * @var string
 	 */
-	public static $dbtech = 'postgresql';
+	protected $concat_operator = '||';
 
 	/**
 	 * Quote for named objects
@@ -46,23 +58,13 @@ class Postgresql extends Driver
 	protected $nullDate = '1970-01-01 00:00:00';
 
 	/**
-	 * @var    string  The minimum supported database version.
-	 */
-	protected static $dbMinimum = '8.3.18';
-
-	/**
-	 * Operator used for concatenation
-	 *
-	 * @var string
-	 */
-	protected $concat_operator = '||';
-
-	/**
 	 * PostgresqlQuery object returned by getQuery
 	 *
 	 * @var PostgresqlQuery
 	 */
 	protected $queryObject = null;
+
+	private $isReconnecting = false;
 
 	/**
 	 * Database object constructor
@@ -70,15 +72,36 @@ class Postgresql extends Driver
 	 * @param   array  $options  List of options used to configure the connection
 	 *
 	 */
-	public function __construct( $options )
+	public function __construct($options)
 	{
-		$options['host'] = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['user'] = (isset($options['user'])) ? $options['user'] : '';
+		$options['host']     = (isset($options['host'])) ? $options['host'] : 'localhost';
+		$options['user']     = (isset($options['user'])) ? $options['user'] : '';
 		$options['password'] = (isset($options['password'])) ? $options['password'] : '';
 		$options['database'] = (isset($options['database'])) ? $options['database'] : '';
 
 		// Finalize initialization
 		parent::__construct($options);
+	}
+
+	/**
+	 * Test to see if the PostgreSQL connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 */
+	public static function isSupported()
+	{
+		return (function_exists('pg_connect'));
+	}
+
+	/**
+	 * Test to see if the PostgreSQL connector is available
+	 *
+	 * @return boolean  True on success, false otherwise.
+	 */
+	public static function test()
+	{
+		return (function_exists('pg_connect'));
 	}
 
 	/**
@@ -127,6 +150,24 @@ class Postgresql extends Driver
 	}
 
 	/**
+	 * Determines if the connection to the server is active.
+	 *
+	 * @return    boolean
+	 *
+	 */
+	public function connected()
+	{
+		$this->connect();
+
+		if (is_resource($this->connection))
+		{
+			return pg_ping($this->connection);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Disconnects the database.
 	 *
 	 * @return  void
@@ -141,6 +182,26 @@ class Postgresql extends Driver
 		}
 
 		$this->connection = null;
+	}
+
+	/**
+	 * Drops a table from the database.
+	 *
+	 * @param   string   $tableName  The name of the database table to drop.
+	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
+	 *
+	 * @return  boolean    true
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function dropTable($tableName, $ifExists = true)
+	{
+		$this->connect();
+
+		$this->setQuery('DROP TABLE ' . ($ifExists ? 'IF EXISTS ' : '') . $this->quoteName($tableName));
+		$this->execute();
+
+		return true;
 	}
 
 	/**
@@ -167,51 +228,91 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * Test to see if the PostgreSQL connector is available
+	 * Execute the SQL statement.
 	 *
-	 * @return boolean  True on success, false otherwise.
-	 */
-	public static function test()
-	{
-		return (function_exists('pg_connect'));
-	}
-
-	/**
-	 * Determines if the connection to the server is active.
-	 *
-	 * @return	boolean
-	 *
-	 */
-	public function connected()
-	{
-		$this->connect();
-
-		if (is_resource($this->connection))
-		{
-			return pg_ping($this->connection);
-		}
-
-		return false;
-	}
-
-	/**
-	 * Drops a table from the database.
-	 *
-	 * @param   string   $tableName  The name of the database table to drop.
-	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
-	 *
-	 * @return  boolean	true
+	 * @return  mixed  A database cursor resource on success, boolean false on failure.
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function dropTable($tableName, $ifExists = true)
+	public function execute()
 	{
 		$this->connect();
 
-		$this->setQuery('DROP TABLE ' . ($ifExists ? 'IF EXISTS ' : '') . $this->quoteName($tableName));
-		$this->execute();
+		if (!is_resource($this->connection))
+		{
+			throw new \RuntimeException($this->errorMsg, $this->errorNum);
+		}
 
-		return true;
+		// Take a local copy so that we don't modify the original query and cause issues later
+		$query = $this->replacePrefix((string) $this->sql);
+		if ($this->limit > 0 || $this->offset > 0)
+		{
+			$query .= ' LIMIT ' . $this->limit . ' OFFSET ' . $this->offset;
+		}
+
+		// Increment the query counter.
+		$this->count++;
+
+		// If debugging is enabled then let's log the query.
+		if ($this->debug)
+		{
+			// Add the query to the object queue.
+			$this->log[] = $query;
+		}
+
+		// Reset the error values.
+		$this->errorNum = 0;
+		$this->errorMsg = '';
+
+		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
+		$this->cursor = @pg_query($this->connection, $query);
+
+		// If an error occurred handle it.
+		if (!$this->cursor)
+		{
+			// Get any potential error message before we end up overwriting it
+			$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
+			$this->errorMsg = pg_last_error($this->connection) . " SQL=" . $query;
+
+			// Check if the server was disconnected.
+			if (!$this->connected() && !$this->isReconnecting)
+			{
+				$this->isReconnecting = true;
+
+				try
+				{
+					// Attempt to reconnect.
+					$this->connection = null;
+					$this->connect();
+				}
+					// If connect fails, ignore that exception and throw the normal exception.
+				catch (\RuntimeException $e)
+				{
+					// Get the error number and message.
+					$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
+					$this->errorMsg = pg_last_error($this->connection);
+
+					// Throw the normal query exception.
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				}
+
+				// Since we were able to reconnect, run the query again.
+				$result               = $this->execute();
+				$this->isReconnecting = false;
+
+				return $result;
+			}
+			// The server was not disconnected.
+			else
+			{
+				// Throw the normal query exception.
+				throw new \RuntimeException($this->errorMsg);
+			}
+		}
+
+		unset($query);
+
+		return $this->cursor;
 	}
 
 	/**
@@ -240,6 +341,7 @@ class Postgresql extends Driver
 
 		$this->setQuery('SHOW LC_COLLATE');
 		$array = $this->loadAssocList();
+
 		return $array[0]['lc_collate'];
 	}
 
@@ -251,7 +353,7 @@ class Postgresql extends Driver
 	 * @return  integer   The number of returned rows.
 	 *
 	 */
-	public function getNumRows( $cur = null )
+	public function getNumRows($cur = null)
 	{
 		$this->connect();
 
@@ -279,6 +381,7 @@ class Postgresql extends Driver
 			}
 
 			$this->queryObject = new Query\Postgresql($this);
+
 			return $this->queryObject;
 		}
 		else
@@ -295,19 +398,37 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * Shows the table CREATE statement that creates the given tables.
+	 * Generate a random value
 	 *
-	 * This is unsuported by PostgreSQL.
-	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
-	 *
-	 * @return  char  An empty char because this function is not supported by PostgreSQL.
-	 *
-	 * @throws  \RuntimeException
+	 * @return float The random generated number
 	 */
-	public function getTableCreate($tables)
+	public function getRandom()
 	{
-		return '';
+		$this->connect();
+
+		$this->setQuery('SELECT RANDOM()');
+		$random = $this->loadAssoc();
+
+		return $random['random'];
+	}
+
+	/**
+	 * Get the substring position inside a string
+	 *
+	 * @param   string  $substring  The string being sought
+	 * @param   string  $string     The string/column being searched
+	 *
+	 * @return int   The position of $substring in $string
+	 */
+	public function getStringPositionSQL($substring, $string)
+	{
+		$this->connect();
+
+		$query = "SELECT POSITION( $substring IN $string )";
+		$this->setQuery($query);
+		$position = $this->loadRow();
+
+		return $position['position'];
 	}
 
 	/**
@@ -324,7 +445,7 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 
-		$result = array();
+		$result = [];
 
 		$tableSub = $this->replacePrefix($table);
 
@@ -384,6 +505,22 @@ class Postgresql extends Driver
 	}
 
 	/**
+	 * Shows the table CREATE statement that creates the given tables.
+	 *
+	 * This is unsuported by PostgreSQL.
+	 *
+	 * @param   mixed  $tables  A table name or a list of table names.
+	 *
+	 * @return  char  An empty char because this function is not supported by PostgreSQL.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function getTableCreate($tables)
+	{
+		return '';
+	}
+
+	/**
 	 * Get the details list of keys for a table.
 	 *
 	 * @param   string  $table  The name of the table.
@@ -399,7 +536,7 @@ class Postgresql extends Driver
 		// To check if table exists and prevent SQL injection
 		$tableList = $this->getTableList();
 
-		if ( in_array($table, $tableList) )
+		if (in_array($table, $tableList))
 		{
 			// Get the details columns information.
 			$this->setQuery('
@@ -418,6 +555,7 @@ class Postgresql extends Driver
 
 			return $keys;
 		}
+
 		return false;
 	}
 
@@ -434,12 +572,12 @@ class Postgresql extends Driver
 
 		$query = $this->getQuery(true)
 			->select('table_name')
-				->from('information_schema.tables')
-				->where('table_type=' . $this->quote('BASE TABLE'))
-				->where(
-					'table_schema NOT IN (' . $this->quote('pg_catalog') . ', ' . $this->quote('information_schema') . ')'
-				)
-				->order('table_name ASC');
+			->from('information_schema.tables')
+			->where('table_type=' . $this->quote('BASE TABLE'))
+			->where(
+				'table_schema NOT IN (' . $this->quote('pg_catalog') . ', ' . $this->quote('information_schema') . ')'
+			)
+			->order('table_name ASC');
 
 		$this->setQuery($query);
 		$tables = $this->loadColumn();
@@ -463,34 +601,39 @@ class Postgresql extends Driver
 		// To check if table exists and prevent SQL injection
 		$tableList = $this->getTableList();
 
-		if ( in_array($table, $tableList) )
+		if (in_array($table, $tableList))
 		{
-			$name = array('s.relname', 'n.nspname', 't.relname', 'a.attname', 'info.data_type',
-							'info.minimum_value', 'info.maximum_value', 'info.increment', 'info.cycle_option');
-			$as = array('sequence', 'schema', 'table', 'column', 'data_type',
-							'minimum_value', 'maximum_value', 'increment', 'cycle_option');
+			$name = [
+				's.relname', 'n.nspname', 't.relname', 'a.attname', 'info.data_type',
+				'info.minimum_value', 'info.maximum_value', 'info.increment', 'info.cycle_option',
+			];
+			$as   = [
+				'sequence', 'schema', 'table', 'column', 'data_type',
+				'minimum_value', 'maximum_value', 'increment', 'cycle_option',
+			];
 
 			if (version_compare($this->getVersion(), '9.1.0') >= 0)
 			{
 				$name[] .= 'info.start_value';
-				$as[] .= 'start_value';
+				$as[]   .= 'start_value';
 			}
 
 			// Get the details columns information.
 			$query = $this->getQuery(true)
 				->select($this->quoteName($name, $as))
-					->from('pg_class AS s')
-					->join('LEFT', "pg_depend d ON d.objid=s.oid AND d.classid='pg_class'::regclass AND d.refclassid='pg_class'::regclass")
-					->join('LEFT', 'pg_class t ON t.oid=d.refobjid')
-					->join('LEFT', 'pg_namespace n ON n.oid=t.relnamespace')
-					->join('LEFT', 'pg_attribute a ON a.attrelid=t.oid AND a.attnum=d.refobjsubid')
-					->join('LEFT', 'information_schema.sequences AS info ON info.sequence_name=s.relname')
-					->where("s.relkind='S' AND d.deptype='a' AND t.relname=" . $this->quote($table));
+				->from('pg_class AS s')
+				->join('LEFT', "pg_depend d ON d.objid=s.oid AND d.classid='pg_class'::regclass AND d.refclassid='pg_class'::regclass")
+				->join('LEFT', 'pg_class t ON t.oid=d.refobjid')
+				->join('LEFT', 'pg_namespace n ON n.oid=t.relnamespace')
+				->join('LEFT', 'pg_attribute a ON a.attrelid=t.oid AND a.attnum=d.refobjsubid')
+				->join('LEFT', 'information_schema.sequences AS info ON info.sequence_name=s.relname')
+				->where("s.relkind='S' AND d.deptype='a' AND t.relname=" . $this->quote($table));
 			$this->setQuery($query);
 			$seq = $this->loadObjectList();
 
 			return $seq;
 		}
+
 		return false;
 	}
 
@@ -504,7 +647,82 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 		$version = pg_version($this->connection);
+
 		return $version['server'];
+	}
+
+	/**
+	 * Inserts a row into a table based on an object's properties.
+	 *
+	 * @param   string   $table   The name of the database table to insert into.
+	 * @param   object  &$object  A reference to an object whose public properties match the table fields.
+	 * @param   string   $key     The name of the primary key. If provided the object property is updated.
+	 *
+	 * @return  boolean    True on success.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function insertObject($table, &$object, $key = null)
+	{
+		$columns = $this->getTableColumns($table);
+
+		$fields = [];
+		$values = [];
+
+		// Iterate over the object variables to build the query fields and values.
+		foreach (get_object_vars($object) as $k => $v)
+		{
+			// Only process non-null scalars.
+			if (is_array($v) or is_object($v) or $v === null)
+			{
+				continue;
+			}
+
+			// Ignore any internal fields.
+			if ($k[0] == '_')
+			{
+				continue;
+			}
+
+			// Prepare and sanitize the fields and values for the database query.
+			$fields[] = $this->quoteName($k);
+			$values[] = $this->sqlValue($columns, $k, $v);
+		}
+
+		// Create the base insert statement.
+		$query = $this->getQuery(true)
+			->insert($this->quoteName($table))
+			->columns($fields)
+			->values(implode(',', $values));
+
+		$retVal = false;
+
+		if ($key)
+		{
+			$query->returning($key);
+
+			// Set the query and execute the insert.
+			$this->setQuery($query);
+
+			$id = $this->loadResult();
+			if ($id)
+			{
+				$object->$key = $id;
+				$retVal       = true;
+			}
+		}
+		else
+		{
+			// Set the query and execute the insert.
+			$this->setQuery($query);
+
+			if ($this->execute())
+			{
+				$retVal = true;
+			}
+		}
+
+		return $retVal;
 	}
 
 	/**
@@ -515,46 +733,46 @@ class Postgresql extends Driver
 	 * To get the auto incremented value it's possible to call this function after
 	 * INSERT INTO query, or use INSERT INTO with RETURNING clause.
 	 *
-	 * @example with insertid() call:
-	 *		$query = $this->getQuery(true);
-	 *		$query->insert('jos_dbtest')
-	 *				->columns('title,start_date,description')
-	 *				->values("'testTitle2nd','1971-01-01','testDescription2nd'");
-	 *		$this->setQuery($query);
-	 *		$this->execute();
-	 *		$id = $this->insertid();
-	 *
-	 * @example with RETURNING clause:
-	 *		$query = $this->getQuery(true);
-	 *		$query->insert('jos_dbtest')
-	 *				->columns('title,start_date,description')
-	 *				->values("'testTitle2nd','1971-01-01','testDescription2nd'")
-	 *				->returning('id');
-	 *		$this->setQuery($query);
-	 *		$id = $this->loadResult();
-	 *
 	 * @return  integer  The value of the auto-increment field from the last inserted row.
+	 *
+	 * @example       with RETURNING clause:
+	 *                $query = $this->getQuery(true);
+	 *                $query->insert('jos_dbtest')
+	 *                ->columns('title,start_date,description')
+	 *                ->values("'testTitle2nd','1971-01-01','testDescription2nd'")
+	 *                ->returning('id');
+	 *                $this->setQuery($query);
+	 *                $id = $this->loadResult();
+	 *
+	 * @example       with insertid() call:
+	 *        $query = $this->getQuery(true);
+	 *        $query->insert('jos_dbtest')
+	 *                ->columns('title,start_date,description')
+	 *                ->values("'testTitle2nd','1971-01-01','testDescription2nd'");
+	 *        $this->setQuery($query);
+	 *        $this->execute();
+	 *        $id = $this->insertid();
 	 *
 	 */
 	public function insertid()
 	{
 		$this->connect();
 		$insertQuery = $this->getQuery(false, true);
-		$table = $insertQuery->__get('insert')->getElements();
+		$table       = $insertQuery->__get('insert')->getElements();
 
 		/* find sequence column name */
 		$colNameQuery = $this->getQuery(true);
 		$colNameQuery->select('column_default')
-						->from('information_schema.columns')
-						->where(
-								"table_name=" . $this->quote(
-									$this->replacePrefix(str_replace('"', '', $table[0]))
-								), 'AND'
-						)
-						->where("column_default LIKE '%nextval%'");
+			->from('information_schema.columns')
+			->where(
+				"table_name=" . $this->quote(
+					$this->replacePrefix(str_replace('"', '', $table[0]))
+				), 'AND'
+			)
+			->where("column_default LIKE '%nextval%'");
 
 		$this->setQuery($colNameQuery);
-		$colName = $this->loadRow();
+		$colName        = $this->loadRow();
 		$changedColName = str_replace('nextval', 'currval', $colName);
 
 		$insertidQuery = $this->getQuery(true);
@@ -583,93 +801,18 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * Execute the SQL statement.
+	 * Method to release a savepoint.
 	 *
-	 * @return  mixed  A database cursor resource on success, boolean false on failure.
+	 * @param   string  $savepointName  Savepoint's name to release
 	 *
-	 * @throws  \RuntimeException
+	 * @return  void
+	 *
 	 */
-	public function execute()
+	public function releaseTransactionSavepoint($savepointName)
 	{
-		static $isReconnecting = false;
-
 		$this->connect();
-
-		if (!is_resource($this->connection))
-		{
-			throw new \RuntimeException($this->errorMsg, $this->errorNum);
-		}
-
-		// Take a local copy so that we don't modify the original query and cause issues later
-		$query = $this->replacePrefix((string) $this->sql);
-		if ($this->limit > 0 || $this->offset > 0)
-		{
-			$query .= ' LIMIT ' . $this->limit . ' OFFSET ' . $this->offset;
-		}
-
-		// Increment the query counter.
-		$this->count++;
-
-		// If debugging is enabled then let's log the query.
-		if ($this->debug)
-		{
-			// Add the query to the object queue.
-			$this->log[] = $query;
-		}
-
-		// Reset the error values.
-		$this->errorNum = 0;
-		$this->errorMsg = '';
-
-		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
-		$this->cursor = @pg_query($this->connection, $query);
-
-		// If an error occurred handle it.
-		if (!$this->cursor)
-		{
-			// Get any potential error message before we end up overwriting it
-			$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
-			$this->errorMsg = pg_last_error($this->connection) . " SQL=" . $query;
-
-			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
-			{
-				$isReconnecting = true;
-
-				try
-				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
-				}
-				// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
-				{
-					// Get the error number and message.
-					$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
-					$this->errorMsg = pg_last_error($this->connection);
-
-					// Throw the normal query exception.
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
-				}
-
-				// Since we were able to reconnect, run the query again.
-				$result = $this->execute();
-				$isReconnecting = false;
-
-				return $result;
-			}
-			// The server was not disconnected.
-			else
-			{
-				// Throw the normal query exception.
-				throw new \RuntimeException($this->errorMsg);
-			}
-		}
-
-		unset($query);
-
-		return $this->cursor;
+		$this->setQuery('RELEASE SAVEPOINT ' . $this->escape($savepointName));
+		$this->execute();
 	}
 
 	/**
@@ -692,7 +835,7 @@ class Postgresql extends Driver
 		$tableList = $this->getTableList();
 
 		// Origin Table does not exist
-		if ( !in_array($oldTable, $tableList) )
+		if (!in_array($oldTable, $tableList))
 		{
 			// Origin Table not found
 			throw new \RuntimeException('Table not found in Postgresql database.');
@@ -701,7 +844,7 @@ class Postgresql extends Driver
 		{
 			/* Rename indexes */
 			$this->setQuery(
-							'SELECT relname
+				'SELECT relname
 								FROM pg_class
 								WHERE oid IN (
 									SELECT indexrelid
@@ -720,7 +863,7 @@ class Postgresql extends Driver
 
 			/* Rename sequence */
 			$this->setQuery(
-							'SELECT relname
+				'SELECT relname
 								FROM pg_class
 								WHERE relkind = \'S\'
 								AND relnamespace IN (
@@ -746,6 +889,76 @@ class Postgresql extends Driver
 		}
 
 		return true;
+	}
+
+	/**
+	 * This function replaces a string identifier <var>$prefix</var> with the string held is the
+	 * <var>tablePrefix</var> class variable.
+	 *
+	 * @param   string  $query   The SQL statement to prepare.
+	 * @param   string  $prefix  The common table prefix.
+	 *
+	 * @return  string  The processed SQL statement.
+	 *
+	 */
+	public function replacePrefix($query, $prefix = '#__')
+	{
+		$query         = trim($query);
+		$replacedQuery = '';
+
+		if (strpos($query, '\''))
+		{
+			// Sequence name quoted with ' ' but need to be replaced
+			if (strpos($query, 'currval'))
+			{
+				$query = explode('currval', $query);
+				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
+				{
+					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+				}
+				$query = implode('currval', $query);
+			}
+
+			// Sequence name quoted with ' ' but need to be replaced
+			if (strpos($query, 'nextval'))
+			{
+				$query = explode('nextval', $query);
+				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
+				{
+					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+				}
+				$query = implode('nextval', $query);
+			}
+
+			// Sequence name quoted with ' ' but need to be replaced
+			if (strpos($query, 'setval'))
+			{
+				$query = explode('setval', $query);
+				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
+				{
+					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+				}
+				$query = implode('setval', $query);
+			}
+
+			$explodedQuery = explode('\'', $query);
+
+			for ($nIndex = 0; $nIndex < count($explodedQuery); $nIndex = $nIndex + 2)
+			{
+				if (strpos($explodedQuery[$nIndex], $prefix))
+				{
+					$explodedQuery[$nIndex] = str_replace($prefix, $this->tablePrefix, $explodedQuery[$nIndex]);
+				}
+			}
+
+			$replacedQuery = implode('\'', $explodedQuery);
+		}
+		else
+		{
+			$replacedQuery = str_replace($prefix, $this->tablePrefix, $query);
+		}
+
+		return $replacedQuery;
 	}
 
 	/**
@@ -776,53 +989,26 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * This function return a field value as a prepared string to be used in a SQL statement.
+	 * Returns an array containing database's table list.
 	 *
-	 * @param   array   $columns      Array of table's column returned by ::getTableColumns.
-	 * @param   string  $field_name   The table field's name.
-	 * @param   string  $field_value  The variable value to quote and return.
-	 *
-	 * @return  string  The quoted string.
-	 *
+	 * @return    array    The database's table list.
 	 */
-	protected function sqlValue($columns, $field_name, $field_value)
+	public function showTables()
 	{
-		switch ($columns[$field_name])
-		{
-			case 'boolean':
-				$val = 'NULL';
-				if ($field_value == 't')
-				{
-					$val = 'TRUE';
-				}
-				elseif ($field_value == 'f')
-				{
-					$val = 'FALSE';
-				}
-				break;
-			case 'bigint':
-			case 'bigserial':
-			case 'integer':
-			case 'money':
-			case 'numeric':
-			case 'real':
-			case 'smallint':
-			case 'serial':
-			case 'numeric,':
-				$val = strlen($field_value) == 0 ? 'NULL' : $field_value;
-				break;
-			case 'date':
-			case 'timestamp without time zone':
-				if (empty($field_value))
-				{
-					$field_value = $this->getNullDate();
-				}
-			default:
-				$val = $this->quote($field_value);
-				break;
-		}
+		$this->connect();
 
-		return $val;
+		$query = $this->getQuery(true)
+			->select('table_name')
+			->from('information_schema.tables')
+			->where('table_type=' . $this->quote('BASE TABLE'))
+			->where(
+				'table_schema NOT IN (' . $this->quote('pg_catalog') . ', ' . $this->quote('information_schema') . ' )'
+			);
+
+		$this->setQuery($query);
+		$tableList = $this->loadColumn();
+
+		return $tableList;
 	}
 
 	/**
@@ -864,6 +1050,21 @@ class Postgresql extends Driver
 	}
 
 	/**
+	 * Method to create a savepoint.
+	 *
+	 * @param   string  $savepointName  Savepoint's name to create
+	 *
+	 * @return  void
+	 *
+	 */
+	public function transactionSavepoint($savepointName)
+	{
+		$this->connect();
+		$this->setQuery('SAVEPOINT ' . $this->escape($savepointName));
+		$this->execute();
+	}
+
+	/**
 	 * Method to initialize a transaction.
 	 *
 	 * @return  void
@@ -875,6 +1076,98 @@ class Postgresql extends Driver
 		$this->connect();
 		$this->setQuery('START TRANSACTION');
 		$this->execute();
+	}
+
+	/**
+	 * Unlocks tables in the database, this command does not exist in PostgreSQL,
+	 * it is automatically done on commit or rollback.
+	 *
+	 * @return  Postgresql  Returns this object to support chaining.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function unlockTables()
+	{
+		$this->transactionCommit();
+
+		return $this;
+	}
+
+	/**
+	 * Updates a row in a table based on an object's properties.
+	 *
+	 * @param   string    $table   The name of the database table to update.
+	 * @param   object   &$object  A reference to an object whose public properties match the table fields.
+	 * @param   string    $key     The name of the primary key.
+	 * @param   boolean   $nulls   True to update null fields or false to ignore them.
+	 *
+	 * @return  boolean  True on success.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function updateObject($table, &$object, $key, $nulls = false)
+	{
+		$columns = $this->getTableColumns($table);
+		$fields  = [];
+		$where   = '';
+
+		// Create the base update statement.
+		$query = $this->getQuery(true)
+			->update($table);
+		$stmt  = '%s WHERE %s';
+
+		// Iterate over the object variables to build the query fields/value pairs.
+		foreach (get_object_vars($object) as $k => $v)
+		{
+			// Only process scalars that are not internal fields.
+			if (is_array($v) or is_object($v) or $k[0] == '_')
+			{
+				continue;
+			}
+
+			// Set the primary key to the WHERE clause instead of a field to update.
+			if ($k == $key)
+			{
+				$key_val = $this->sqlValue($columns, $k, $v);
+				$where   = $this->quoteName($k) . '=' . $key_val;
+				continue;
+			}
+
+			// Prepare and sanitize the fields and values for the database query.
+			if ($v === null)
+			{
+				// If the value is null and we want to update nulls then set it.
+				if ($nulls)
+				{
+					$val = 'NULL';
+				}
+				// If the value is null and we do not want to update nulls then ignore this field.
+				else
+				{
+					continue;
+				}
+			}
+			// The field is not null so we prep it for update.
+			else
+			{
+				$val = $this->sqlValue($columns, $k, $v);
+			}
+
+			// Add the field to be updated.
+			$fields[] = $this->quoteName($k) . '=' . $val;
+		}
+
+		// We don't have any fields to update.
+		if (empty($fields))
+		{
+			return true;
+		}
+
+		// Set the query and execute the update.
+		$query->set(sprintf($stmt, implode(",", $fields), $where));
+		$this->setQuery($query);
+
+		return $this->execute();
 	}
 
 	/**
@@ -931,147 +1224,6 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * Inserts a row into a table based on an object's properties.
-	 *
-	 * @param   string  $table    The name of the database table to insert into.
-	 * @param   object  &$object  A reference to an object whose public properties match the table fields.
-	 * @param   string  $key      The name of the primary key. If provided the object property is updated.
-	 *
-	 * @return  boolean    True on success.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function insertObject($table, &$object, $key = null)
-	{
-		$columns = $this->getTableColumns($table);
-
-		$fields = array();
-		$values = array();
-
-		// Iterate over the object variables to build the query fields and values.
-		foreach (get_object_vars($object) as $k => $v)
-		{
-			// Only process non-null scalars.
-			if (is_array($v) or is_object($v) or $v === null)
-			{
-				continue;
-			}
-
-			// Ignore any internal fields.
-			if ($k[0] == '_')
-			{
-				continue;
-			}
-
-			// Prepare and sanitize the fields and values for the database query.
-			$fields[] = $this->quoteName($k);
-			$values[] = $this->sqlValue($columns, $k, $v);
-		}
-
-		// Create the base insert statement.
-		$query = $this->getQuery(true)
-			->insert($this->quoteName($table))
-				->columns($fields)
-				->values(implode(',', $values));
-
-		$retVal = false;
-
-		if ($key)
-		{
-			$query->returning($key);
-
-			// Set the query and execute the insert.
-			$this->setQuery($query);
-
-			$id = $this->loadResult();
-			if ($id)
-			{
-				$object->$key = $id;
-				$retVal = true;
-			}
-		}
-		else
-		{
-			// Set the query and execute the insert.
-			$this->setQuery($query);
-
-			if ($this->execute())
-			{
-				$retVal = true;
-			}
-		}
-
-		return $retVal;
-	}
-
-	/**
-	 * Test to see if the PostgreSQL connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 */
-	public static function isSupported()
-	{
-		return (function_exists('pg_connect'));
-	}
-
-	/**
-	 * Returns an array containing database's table list.
-	 *
-	 * @return	array	The database's table list.
-	 */
-	public function showTables()
-	{
-		$this->connect();
-
-		$query = $this->getQuery(true)
-			->select('table_name')
-				->from('information_schema.tables')
-				->where('table_type=' . $this->quote('BASE TABLE'))
-				->where(
-					'table_schema NOT IN (' . $this->quote('pg_catalog') . ', ' . $this->quote('information_schema') . ' )'
-				);
-
-		$this->setQuery($query);
-		$tableList = $this->loadColumn();
-		return $tableList;
-	}
-
-	/**
-	 * Get the substring position inside a string
-	 *
-	 * @param   string  $substring  The string being sought
-	 * @param   string  $string     The string/column being searched
-	 *
-	 * @return int   The position of $substring in $string
-	 */
-	public function getStringPositionSQL( $substring, $string )
-	{
-		$this->connect();
-
-		$query = "SELECT POSITION( $substring IN $string )";
-		$this->setQuery($query);
-		$position = $this->loadRow();
-
-		return $position['position'];
-	}
-
-	/**
-	 * Generate a random value
-	 *
-	 * @return float The random generated number
-	 */
-	public function getRandom()
-	{
-		$this->connect();
-
-		$this->setQuery('SELECT RANDOM()');
-		$random = $this->loadAssoc();
-
-		return $random['random'];
-	}
-
-	/**
 	 * Return the query string to alter the database character set.
 	 *
 	 * @param   string  $dbName  The database name
@@ -1089,9 +1241,9 @@ class Postgresql extends Driver
 	/**
 	 * Return the query string to create new Database using PostgreSQL's syntax
 	 *
-	 * @param   stdClass  $options  Object used to pass user and database name to database driver.
-	 * 									This object must have "db_name" and "db_user" set.
-	 * @param   boolean   $utf      True if the database supports the UTF-8 character set.
+	 * @param   stdClass  $options        Object used to pass user and database name to database driver.
+	 *                                    This object must have "db_name" and "db_user" set.
+	 * @param   boolean   $utf            True if the database supports the UTF-8 character set.
 	 *
 	 * @return  string  The query that creates database, owned by $options['user']
 	 *
@@ -1109,193 +1261,52 @@ class Postgresql extends Driver
 	}
 
 	/**
-	 * This function replaces a string identifier <var>$prefix</var> with the string held is the
-	 * <var>tablePrefix</var> class variable.
+	 * This function return a field value as a prepared string to be used in a SQL statement.
 	 *
-	 * @param   string  $query   The SQL statement to prepare.
-	 * @param   string  $prefix  The common table prefix.
+	 * @param   array   $columns      Array of table's column returned by ::getTableColumns.
+	 * @param   string  $field_name   The table field's name.
+	 * @param   string  $field_value  The variable value to quote and return.
 	 *
-	 * @return  string  The processed SQL statement.
+	 * @return  string  The quoted string.
 	 *
 	 */
-	public function replacePrefix($query, $prefix = '#__')
+	protected function sqlValue($columns, $field_name, $field_value)
 	{
-		$query = trim($query);
-		$replacedQuery = '';
-
-		if ( strpos($query, '\'') )
+		switch ($columns[$field_name])
 		{
-			// Sequence name quoted with ' ' but need to be replaced
-			if ( strpos($query, 'currval') )
-			{
-				$query = explode('currval', $query);
-				for ( $nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2 )
+			case 'boolean':
+				$val = 'NULL';
+				if ($field_value == 't')
 				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+					$val = 'TRUE';
 				}
-				$query = implode('currval', $query);
-			}
-
-			// Sequence name quoted with ' ' but need to be replaced
-			if ( strpos($query, 'nextval') )
-			{
-				$query = explode('nextval', $query);
-				for ( $nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2 )
+				elseif ($field_value == 'f')
 				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+					$val = 'FALSE';
 				}
-				$query = implode('nextval', $query);
-			}
-
-			// Sequence name quoted with ' ' but need to be replaced
-			if ( strpos($query, 'setval') )
-			{
-				$query = explode('setval', $query);
-				for ( $nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2 )
+				break;
+			case 'bigint':
+			case 'bigserial':
+			case 'integer':
+			case 'money':
+			case 'numeric':
+			case 'real':
+			case 'smallint':
+			case 'serial':
+			case 'numeric,':
+				$val = strlen($field_value) == 0 ? 'NULL' : $field_value;
+				break;
+			case 'date':
+			case 'timestamp without time zone':
+				if (empty($field_value))
 				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+					$field_value = $this->getNullDate();
 				}
-				$query = implode('setval', $query);
-			}
-
-			$explodedQuery = explode('\'', $query);
-
-			for ( $nIndex = 0; $nIndex < count($explodedQuery); $nIndex = $nIndex + 2 )
-			{
-				if ( strpos($explodedQuery[$nIndex], $prefix) )
-				{
-					$explodedQuery[$nIndex] = str_replace($prefix, $this->tablePrefix, $explodedQuery[$nIndex]);
-				}
-			}
-
-			$replacedQuery = implode('\'', $explodedQuery);
-		}
-		else
-		{
-			$replacedQuery = str_replace($prefix, $this->tablePrefix, $query);
+			default:
+				$val = $this->quote($field_value);
+				break;
 		}
 
-		return $replacedQuery;
-	}
-
-	/**
-	 * Method to release a savepoint.
-	 *
-	 * @param   string  $savepointName  Savepoint's name to release
-	 *
-	 * @return  void
-	 *
-	 */
-	public function releaseTransactionSavepoint( $savepointName )
-	{
-		$this->connect();
-		$this->setQuery('RELEASE SAVEPOINT ' . $this->escape($savepointName));
-		$this->execute();
-	}
-
-	/**
-	 * Method to create a savepoint.
-	 *
-	 * @param   string  $savepointName  Savepoint's name to create
-	 *
-	 * @return  void
-	 *
-	 */
-	public function transactionSavepoint( $savepointName )
-	{
-		$this->connect();
-		$this->setQuery('SAVEPOINT ' . $this->escape($savepointName));
-		$this->execute();
-	}
-
-	/**
-	 * Unlocks tables in the database, this command does not exist in PostgreSQL,
-	 * it is automatically done on commit or rollback.
-	 *
-	 * @return  Postgresql  Returns this object to support chaining.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function unlockTables()
-	{
-		$this->transactionCommit();
-		return $this;
-	}
-
-	/**
-	 * Updates a row in a table based on an object's properties.
-	 *
-	 * @param   string   $table    The name of the database table to update.
-	 * @param   object   &$object  A reference to an object whose public properties match the table fields.
-	 * @param   string   $key      The name of the primary key.
-	 * @param   boolean  $nulls    True to update null fields or false to ignore them.
-	 *
-	 * @return  boolean  True on success.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function updateObject($table, &$object, $key, $nulls = false)
-	{
-		$columns = $this->getTableColumns($table);
-		$fields = array();
-		$where = '';
-
-		// Create the base update statement.
-		$query = $this->getQuery(true)
-			->update($table);
-		$stmt = '%s WHERE %s';
-
-		// Iterate over the object variables to build the query fields/value pairs.
-		foreach (get_object_vars($object) as $k => $v)
-		{
-			// Only process scalars that are not internal fields.
-			if (is_array($v) or is_object($v) or $k[0] == '_')
-			{
-				continue;
-			}
-
-			// Set the primary key to the WHERE clause instead of a field to update.
-			if ($k == $key)
-			{
-				$key_val = $this->sqlValue($columns, $k, $v);
-				$where = $this->quoteName($k) . '=' . $key_val;
-				continue;
-			}
-
-			// Prepare and sanitize the fields and values for the database query.
-			if ($v === null)
-			{
-				// If the value is null and we want to update nulls then set it.
-				if ($nulls)
-				{
-					$val = 'NULL';
-				}
-				// If the value is null and we do not want to update nulls then ignore this field.
-				else
-				{
-					continue;
-				}
-			}
-			// The field is not null so we prep it for update.
-			else
-			{
-				$val = $this->sqlValue($columns, $k, $v);
-			}
-
-			// Add the field to be updated.
-			$fields[] = $this->quoteName($k) . '=' . $val;
-		}
-
-		// We don't have any fields to update.
-		if (empty($fields))
-		{
-			return true;
-		}
-
-		// Set the query and execute the update.
-		$query->set(sprintf($stmt, implode(",", $fields), $where));
-		$this->setQuery($query);
-
-		return $this->execute();
+		return $val;
 	}
 }

@@ -16,7 +16,7 @@ final class Factory
 	 *
 	 * @var  array[FilesystemInterface]
 	 */
-	static $instances = array();
+	private static $instances = array();
 
 	private function __construct()
 	{
