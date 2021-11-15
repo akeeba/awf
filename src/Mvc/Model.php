@@ -81,6 +81,8 @@ class Model
 	 */
 	protected $config = array();
 
+	private $hash;
+
 
 	/**
 	 * Returns a new model object. Unless overridden by the $config array, it will
@@ -341,14 +343,12 @@ class Model
 	 */
 	public function getHash()
 	{
-		static $hash = null;
-
-		if (is_null($hash))
+		if (is_null($this->hash))
 		{
-			$hash = ucfirst($this->container->application->getName()) . '.' . $this->getName() . '.';
+			$this->hash = ucfirst($this->container->application->getName()) . '.' . $this->getName() . '.';
 		}
 
-		return $hash;
+		return $this->hash;
 	}
 
 	/**

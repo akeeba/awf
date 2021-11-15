@@ -408,16 +408,11 @@ abstract class Html
 	 */
 	public static function calendar($value, $name, $id, $format = 'yyyy-mm-dd', $attribs = null, Application $app = null)
 	{
-		static $done;
+		static $done = [];
 
 		if (!is_object($app))
 		{
 			$app = Application::getInstance();
-		}
-
-		if ($done === null)
-		{
-			$done = array();
 		}
 
 		$attribs['class'] = isset($attribs['class']) ? $attribs['class'] : 'form-control';

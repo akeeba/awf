@@ -8,7 +8,6 @@
 namespace Awf\Database\Driver;
 
 use Awf\Database\Driver;
-use Awf\Database\Query;
 
 
 /**
@@ -19,16 +18,21 @@ use Awf\Database\Query;
 class Sqlsrv extends Driver
 {
 	/**
+	 * @var    string  The database technology family supported, e.g. mysql, mssql
+	 */
+	public static $dbtech = 'mssql';
+
+	/**
+	 * @var    string  The minimum supported database version.
+	 */
+	protected static $dbMinimum = '10.50.1600.1';
+
+	/**
 	 * The name of the database driver.
 	 *
 	 * @var    string
 	 */
 	public $name = 'sqlsrv';
-
-	/**
-	 * @var    string  The database technology family supported, e.g. mysql, mssql
-	 */
-	public static $dbtech = 'mssql';
 
 	/**
 	 * The character(s) used to quote SQL statement names such as table names or field names,
@@ -48,21 +52,7 @@ class Sqlsrv extends Driver
 	 */
 	protected $nullDate = '1900-01-01 00:00:00';
 
-	/**
-	 * @var    string  The minimum supported database version.
-	 */
-	protected static $dbMinimum = '10.50.1600.1';
-
-	/**
-	 * Test to see if the SQLSRV connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 */
-	public static function isSupported()
-	{
-		return (function_exists('sqlsrv_connect'));
-	}
+	private $isReconnecting = false;
 
 	/**
 	 * Constructor.
@@ -73,14 +63,25 @@ class Sqlsrv extends Driver
 	public function __construct($options)
 	{
 		// Get some basic values from the options.
-		$options['host'] = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['user'] = (isset($options['user'])) ? $options['user'] : '';
+		$options['host']     = (isset($options['host'])) ? $options['host'] : 'localhost';
+		$options['user']     = (isset($options['user'])) ? $options['user'] : '';
 		$options['password'] = (isset($options['password'])) ? $options['password'] : '';
 		$options['database'] = (isset($options['database'])) ? $options['database'] : '';
-		$options['select'] = (isset($options['select'])) ? (bool) $options['select'] : true;
+		$options['select']   = (isset($options['select'])) ? (bool) $options['select'] : true;
 
 		// Finalize initialisation
 		parent::__construct($options);
+	}
+
+	/**
+	 * Test to see if the SQLSRV connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 */
+	public static function isSupported()
+	{
+		return (function_exists('sqlsrv_connect'));
 	}
 
 	/**
@@ -110,12 +111,13 @@ class Sqlsrv extends Driver
 		}
 
 		// Build the connection configuration array.
-		$config = array(
-			'Database' => $this->options['database'],
-			'uid' => $this->options['user'],
-			'pwd' => $this->options['password'],
-			'CharacterSet' => 'UTF-8',
-			'ReturnDatesAsStrings' => true);
+		$config = [
+			'Database'             => $this->options['database'],
+			'uid'                  => $this->options['user'],
+			'pwd'                  => $this->options['password'],
+			'CharacterSet'         => 'UTF-8',
+			'ReturnDatesAsStrings' => true,
+		];
 
 		// Make sure the SQLSRV extension for PHP is installed and enabled.
 		if (!function_exists('sqlsrv_connect'))
@@ -140,6 +142,18 @@ class Sqlsrv extends Driver
 	}
 
 	/**
+	 * Determines if the connection to the server is active.
+	 *
+	 * @return  boolean  True if connected to the database engine.
+	 *
+	 */
+	public function connected()
+	{
+		// @TODO: Run a blank query here
+		return true;
+	}
+
+	/**
 	 * Disconnects the database.
 	 *
 	 * @return  void
@@ -154,88 +168,6 @@ class Sqlsrv extends Driver
 		}
 
 		$this->connection = null;
-	}
-
-	/**
-	 * Get table constraints
-	 *
-	 * @param   string  $tableName  The name of the database table.
-	 *
-	 * @return  array  Any constraints available for the table.
-	 *
-	 */
-	protected function getTableConstraints($tableName)
-	{
-		$this->connect();
-
-		$query = $this->getQuery(true);
-
-		$this->setQuery(
-			'SELECT CONSTRAINT_NAME FROM' . ' INFORMATION_SCHEMA.TABLE_CONSTRAINTS' . ' WHERE TABLE_NAME = ' . $query->quote($tableName)
-		);
-
-		return $this->loadColumn();
-	}
-
-	/**
-	 * Rename constraints.
-	 *
-	 * @param   array   $constraints  Array(strings) of table constraints
-	 * @param   string  $prefix       A string
-	 * @param   string  $backup       A string
-	 *
-	 * @return  void
-	 *
-	 */
-	protected function renameConstraints($constraints = array(), $prefix = null, $backup = null)
-	{
-		$this->connect();
-
-		foreach ($constraints as $constraint)
-		{
-			$this->setQuery('sp_rename ' . $constraint . ',' . str_replace($prefix, $backup, $constraint));
-			$this->execute();
-		}
-	}
-
-	/**
-	 * Method to escape a string for usage in an SQL statement.
-	 *
-	 * The escaping for MSSQL isn't handled in the driver though that would be nice.  Because of this we need
-	 * to handle the escaping ourselves.
-	 *
-	 * @param   string   $text   The string to be escaped.
-	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
-	 *
-	 * @return  string  The escaped string.
-	 *
-	 */
-	public function escape($text, $extra = false)
-	{
-		$result = addslashes($text);
-		$result = str_replace("\'", "''", $result);
-		$result = str_replace('\"', '"', $result);
-		$result = str_replace('\/', '/', $result);
-
-		if ($extra)
-		{
-			// We need the below str_replace since the search in sql server doesn't recognize _ character.
-			$result = str_replace('_', '[_]', $result);
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Determines if the connection to the server is active.
-	 *
-	 * @return  boolean  True if connected to the database engine.
-	 *
-	 */
-	public function connected()
-	{
-		// @TODO: Run a blank query here
-		return true;
 	}
 
 	/**
@@ -267,6 +199,136 @@ class Sqlsrv extends Driver
 		$this->execute();
 
 		return $this;
+	}
+
+	/**
+	 * Method to escape a string for usage in an SQL statement.
+	 *
+	 * The escaping for MSSQL isn't handled in the driver though that would be nice.  Because of this we need
+	 * to handle the escaping ourselves.
+	 *
+	 * @param   string   $text   The string to be escaped.
+	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
+	 *
+	 * @return  string  The escaped string.
+	 *
+	 */
+	public function escape($text, $extra = false)
+	{
+		$result = addslashes($text);
+		$result = str_replace("\'", "''", $result);
+		$result = str_replace('\"', '"', $result);
+		$result = str_replace('\/', '/', $result);
+
+		if ($extra)
+		{
+			// We need the below str_replace since the search in sql server doesn't recognize _ character.
+			$result = str_replace('_', '[_]', $result);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Execute the SQL statement.
+	 *
+	 * @return  mixed  A database cursor resource on success, boolean false on failure.
+	 *
+	 * @throws  \RuntimeException
+	 *
+	 * @throws  \Exception
+	 */
+	public function execute()
+	{
+		$this->connect();
+
+		if (!is_resource($this->connection))
+		{
+			throw new \RuntimeException($this->errorMsg, $this->errorNum);
+		}
+
+		// Take a local copy so that we don't modify the original query and cause issues later
+		$sql = $this->replacePrefix((string) $this->sql);
+		if ($this->limit > 0 || $this->offset > 0)
+		{
+			$sql = $this->limit($sql, $this->limit, $this->offset);
+		}
+
+		// Increment the query counter.
+		$this->count++;
+
+		// If debugging is enabled then let's log the query.
+		if ($this->debug)
+		{
+			// Add the query to the object queue.
+			$this->log[] = $sql;
+		}
+
+		// Reset the error values.
+		$this->errorNum = 0;
+		$this->errorMsg = '';
+
+		// SQLSrv_num_rows requires a static or keyset cursor.
+		if (strncmp(ltrim(strtoupper($sql)), 'SELECT', strlen('SELECT')) == 0)
+		{
+			$array = ['Scrollable' => SQLSRV_CURSOR_KEYSET];
+		}
+		else
+		{
+			$array = [];
+		}
+
+		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
+		$this->cursor = @sqlsrv_query($this->connection, $sql, [], $array);
+
+		// If an error occurred handle it.
+		if (!$this->cursor)
+		{
+			// Check if the server was disconnected.
+			if (!$this->connected() && !$this->isReconnecting)
+			{
+				$this->isReconnecting = true;
+
+				try
+				{
+					// Attempt to reconnect.
+					$this->connection = null;
+					$this->connect();
+				}
+					// If connect fails, ignore that exception and throw the normal exception.
+				catch (\RuntimeException $e)
+				{
+					// Get the error number and message.
+					$errors         = sqlsrv_errors();
+					$this->errorNum = $errors[0]['SQLSTATE'];
+					$this->errorMsg = $errors[0]['message'] . 'SQL=' . $sql;
+
+					// Throw the normal query exception.
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				}
+
+				// Since we were able to reconnect, run the query again.
+				$result               = $this->execute();
+				$this->isReconnecting = false;
+
+				return $result;
+			}
+			// The server was not disconnected.
+			else
+			{
+				// Get the error number and message.
+				$errors         = sqlsrv_errors();
+				$this->errorNum = $errors[0]['SQLSTATE'];
+				$this->errorMsg = $errors[0]['message'] . 'SQL=' . $sql;
+
+				// Throw the normal query exception.
+				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+			}
+		}
+
+		unset ($sql);
+
+		return $this->cursor;
 	}
 
 	/**
@@ -321,7 +383,7 @@ class Sqlsrv extends Driver
 	 */
 	public function getTableColumns($table, $typeOnly = true)
 	{
-		$result = array();
+		$result = [];
 
 		$table_temp = $this->replacePrefix((string) $table);
 
@@ -384,7 +446,7 @@ class Sqlsrv extends Driver
 		$this->connect();
 
 		// @TODO To implement.
-		return array();
+		return [];
 	}
 
 	/**
@@ -416,15 +478,16 @@ class Sqlsrv extends Driver
 		$this->connect();
 
 		$version = sqlsrv_server_info($this->connection);
+
 		return $version['SQLServerVersion'];
 	}
 
 	/**
 	 * Inserts a row into a table based on an object's properties.
 	 *
-	 * @param   string  $table    The name of the database table to insert into.
+	 * @param   string   $table   The name of the database table to insert into.
 	 * @param   object  &$object  A reference to an object whose public properties match the table fields.
-	 * @param   string  $key      The name of the primary key. If provided the object property is updated.
+	 * @param   string   $key     The name of the primary key. If provided the object property is updated.
 	 *
 	 * @return  boolean    True on success.
 	 *
@@ -432,8 +495,8 @@ class Sqlsrv extends Driver
 	 */
 	public function insertObject($table, &$object, $key = null)
 	{
-		$fields = array();
-		$values = array();
+		$fields    = [];
+		$values    = [];
 		$statement = 'INSERT INTO ' . $this->quoteName($table) . ' (%s) VALUES (%s)';
 		foreach (get_object_vars($object) as $k => $v)
 		{
@@ -468,6 +531,7 @@ class Sqlsrv extends Driver
 		{
 			$object->$key = $id;
 		}
+
 		return true;
 	}
 
@@ -482,6 +546,7 @@ class Sqlsrv extends Driver
 		$this->connect();
 
 		$this->setQuery('SELECT @@IDENTITY');
+
 		return (int) $this->loadResult();
 	}
 
@@ -517,107 +582,47 @@ class Sqlsrv extends Driver
 	}
 
 	/**
-	 * Execute the SQL statement.
+	 * Locks a table in the database.
 	 *
-	 * @return  mixed  A database cursor resource on success, boolean false on failure.
+	 * @param   string  $tableName  The name of the table to lock.
+	 *
+	 * @return  Sqlsrv  Returns this object to support chaining.
 	 *
 	 * @throws  \RuntimeException
-	 *
-	 * @throws  \Exception
 	 */
-	public function execute()
+	public function lockTable($tableName)
 	{
-		static $isReconnecting = false;
+		return $this;
+	}
 
-		$this->connect();
+	/**
+	 * Renames a table in the database.
+	 *
+	 * @param   string  $oldTable  The name of the table to be renamed
+	 * @param   string  $newTable  The new name for the table.
+	 * @param   string  $backup    Table prefix
+	 * @param   string  $prefix    For the table - used to rename constraints in non-mysql databases
+	 *
+	 * @return  Sqlsrv  Returns this object to support chaining.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function renameTable($oldTable, $newTable, $backup = null, $prefix = null)
+	{
+		$constraints = [];
 
-		if (!is_resource($this->connection))
+		if (!is_null($prefix) && !is_null($backup))
 		{
-			throw new \RuntimeException($this->errorMsg, $this->errorNum);
+			$constraints = $this->getTableConstraints($oldTable);
+		}
+		if (!empty($constraints))
+		{
+			$this->renameConstraints($constraints, $prefix, $backup);
 		}
 
-		// Take a local copy so that we don't modify the original query and cause issues later
-		$sql = $this->replacePrefix((string) $this->sql);
-		if ($this->limit > 0 || $this->offset > 0)
-		{
-			$sql = $this->limit($sql, $this->limit, $this->offset);
-		}
+		$this->setQuery("sp_rename '" . $oldTable . "', '" . $newTable . "'");
 
-		// Increment the query counter.
-		$this->count++;
-
-		// If debugging is enabled then let's log the query.
-		if ($this->debug)
-		{
-			// Add the query to the object queue.
-			$this->log[] = $sql;
-		}
-
-		// Reset the error values.
-		$this->errorNum = 0;
-		$this->errorMsg = '';
-
-		// SQLSrv_num_rows requires a static or keyset cursor.
-		if (strncmp(ltrim(strtoupper($sql)), 'SELECT', strlen('SELECT')) == 0)
-		{
-			$array = array('Scrollable' => SQLSRV_CURSOR_KEYSET);
-		}
-		else
-		{
-			$array = array();
-		}
-
-		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
-		$this->cursor = @sqlsrv_query($this->connection, $sql, array(), $array);
-
-		// If an error occurred handle it.
-		if (!$this->cursor)
-		{
-			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
-			{
-				$isReconnecting = true;
-
-				try
-				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
-				}
-				// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
-				{
-					// Get the error number and message.
-					$errors = sqlsrv_errors();
-					$this->errorNum = $errors[0]['SQLSTATE'];
-					$this->errorMsg = $errors[0]['message'] . 'SQL=' . $sql;
-
-					// Throw the normal query exception.
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
-				}
-
-				// Since we were able to reconnect, run the query again.
-				$result = $this->execute();
-				$isReconnecting = false;
-
-				return $result;
-			}
-			// The server was not disconnected.
-			else
-			{
-				// Get the error number and message.
-				$errors = sqlsrv_errors();
-				$this->errorNum = $errors[0]['SQLSTATE'];
-				$this->errorMsg = $errors[0]['message'] . 'SQL=' . $sql;
-
-				// Throw the normal query exception.
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
-			}
-		}
-
-		unset ($sql);
-
-		return $this->cursor;
+		return $this->execute();
 	}
 
 	/**
@@ -632,13 +637,13 @@ class Sqlsrv extends Driver
 	 */
 	public function replacePrefix($sql, $prefix = '#__')
 	{
-		$escaped = false;
-		$startPos = 0;
+		$escaped   = false;
+		$startPos  = 0;
 		$quoteChar = '';
-		$literal = '';
+		$literal   = '';
 
 		$sql = trim($sql);
-		$n = strlen($sql);
+		$n   = strlen($sql);
 
 		while ($startPos < $n)
 		{
@@ -653,7 +658,7 @@ class Sqlsrv extends Driver
 			if (($k !== false) && (($k < $j) || ($j === false)))
 			{
 				$quoteChar = '"';
-				$j = $k;
+				$j         = $k;
 			}
 			else
 			{
@@ -665,7 +670,7 @@ class Sqlsrv extends Driver
 				$j = $n;
 			}
 
-			$literal .= str_replace($prefix, $this->tablePrefix, substr($sql, $startPos, $j - $startPos));
+			$literal  .= str_replace($prefix, $this->tablePrefix, substr($sql, $startPos, $j - $startPos));
 			$startPos = $j;
 
 			$j = $startPos + 1;
@@ -678,7 +683,7 @@ class Sqlsrv extends Driver
 			// Quote comes first, find end of quote
 			while (true)
 			{
-				$k = strpos($sql, $quoteChar, $j);
+				$k       = strpos($sql, $quoteChar, $j);
 				$escaped = false;
 				if ($k === false)
 				{
@@ -702,7 +707,7 @@ class Sqlsrv extends Driver
 				// Error in the query - no end quote; ignore it
 				break;
 			}
-			$literal .= substr($sql, $startPos, $k - $startPos + 1);
+			$literal  .= substr($sql, $startPos, $k - $startPos + 1);
 			$startPos = $k + 1;
 		}
 		if ($startPos < $n)
@@ -731,7 +736,7 @@ class Sqlsrv extends Driver
 			return false;
 		}
 
-		if (!sqlsrv_query($this->connection, 'USE ' . $database, null, array('scrollable' => SQLSRV_CURSOR_STATIC)))
+		if (!sqlsrv_query($this->connection, 'USE ' . $database, null, ['scrollable' => SQLSRV_CURSOR_STATIC]))
 		{
 			throw new \RuntimeException('Could not connect to database');
 		}
@@ -798,6 +803,46 @@ class Sqlsrv extends Driver
 	}
 
 	/**
+	 * Unlocks tables in the database.
+	 *
+	 * @return  Sqlsrv  Returns this object to support chaining.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function unlockTables()
+	{
+		return $this;
+	}
+
+	/**
+	 * Method to check and see if a field exists in a table.
+	 *
+	 * @param   string  $table  The table in which to verify the field.
+	 * @param   string  $field  The field to verify.
+	 *
+	 * @return  boolean  True if the field exists in the table.
+	 *
+	 */
+	protected function checkFieldExists($table, $field)
+	{
+		$this->connect();
+
+		$table = $this->replacePrefix((string) $table);
+		$sql   = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS" . " WHERE TABLE_NAME = '$table' AND COLUMN_NAME = '$field'" .
+			" ORDER BY ORDINAL_POSITION";
+		$this->setQuery($sql);
+
+		if ($this->loadResult())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Method to fetch a row from the result set cursor as an array.
 	 *
 	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
@@ -851,31 +896,24 @@ class Sqlsrv extends Driver
 	}
 
 	/**
-	 * Method to check and see if a field exists in a table.
+	 * Get table constraints
 	 *
-	 * @param   string  $table  The table in which to verify the field.
-	 * @param   string  $field  The field to verify.
+	 * @param   string  $tableName  The name of the database table.
 	 *
-	 * @return  boolean  True if the field exists in the table.
+	 * @return  array  Any constraints available for the table.
 	 *
 	 */
-	protected function checkFieldExists($table, $field)
+	protected function getTableConstraints($tableName)
 	{
 		$this->connect();
 
-		$table = $this->replacePrefix((string) $table);
-		$sql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS" . " WHERE TABLE_NAME = '$table' AND COLUMN_NAME = '$field'" .
-			" ORDER BY ORDINAL_POSITION";
-		$this->setQuery($sql);
+		$query = $this->getQuery(true);
 
-		if ($this->loadResult())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		$this->setQuery(
+			'SELECT CONSTRAINT_NAME FROM' . ' INFORMATION_SCHEMA.TABLE_CONSTRAINTS' . ' WHERE TABLE_NAME = ' . $query->quote($tableName)
+		);
+
+		return $this->loadColumn();
 	}
 
 	/**
@@ -906,58 +944,23 @@ class Sqlsrv extends Driver
 	}
 
 	/**
-	 * Renames a table in the database.
+	 * Rename constraints.
 	 *
-	 * @param   string  $oldTable  The name of the table to be renamed
-	 * @param   string  $newTable  The new name for the table.
-	 * @param   string  $backup    Table prefix
-	 * @param   string  $prefix    For the table - used to rename constraints in non-mysql databases
+	 * @param   array   $constraints  Array(strings) of table constraints
+	 * @param   string  $prefix       A string
+	 * @param   string  $backup       A string
 	 *
-	 * @return  Sqlsrv  Returns this object to support chaining.
+	 * @return  void
 	 *
-	 * @throws  \RuntimeException
 	 */
-	public function renameTable($oldTable, $newTable, $backup = null, $prefix = null)
+	protected function renameConstraints($constraints = [], $prefix = null, $backup = null)
 	{
-		$constraints = array();
+		$this->connect();
 
-		if (!is_null($prefix) && !is_null($backup))
+		foreach ($constraints as $constraint)
 		{
-			$constraints = $this->getTableConstraints($oldTable);
+			$this->setQuery('sp_rename ' . $constraint . ',' . str_replace($prefix, $backup, $constraint));
+			$this->execute();
 		}
-		if (!empty($constraints))
-		{
-			$this->renameConstraints($constraints, $prefix, $backup);
-		}
-
-		$this->setQuery("sp_rename '" . $oldTable . "', '" . $newTable . "'");
-
-		return $this->execute();
-	}
-
-	/**
-	 * Locks a table in the database.
-	 *
-	 * @param   string  $tableName  The name of the table to lock.
-	 *
-	 * @return  Sqlsrv  Returns this object to support chaining.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function lockTable($tableName)
-	{
-		return $this;
-	}
-
-	/**
-	 * Unlocks tables in the database.
-	 *
-	 * @return  Sqlsrv  Returns this object to support chaining.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function unlockTables()
-	{
-		return $this;
 	}
 }

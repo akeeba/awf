@@ -19,15 +19,6 @@ use Awf\Database\Query\Pgsql as QueryBase;
  */
 class Pgsql extends Postgresql
 {
-	/** @var \PDO The db connection resource */
-	protected $connection = null;
-
-	/** @var \PDOStatement The database connection cursor from the last query. */
-	protected $cursor;
-
-	/** @var array Driver options for PDO */
-	protected $driverOptions = array();
-
 	/**
 	 * The database driver name
 	 *
@@ -35,10 +26,21 @@ class Pgsql extends Postgresql
 	 */
 	public $name = 'pgsql';
 
+	/** @var \PDO The db connection resource */
+	protected $connection = null;
+
+	/** @var \PDOStatement The database connection cursor from the last query. */
+	protected $cursor;
+
+	/** @var array Driver options for PDO */
+	protected $driverOptions = [];
+
+	private $isReconnecting = false;
+
 	/**
 	 * Database object constructor
 	 *
-	 * @param   array $options List of options used to configure the connection
+	 * @param   array  $options  List of options used to configure the connection
 	 *
 	 */
 	public function __construct($options)
@@ -58,6 +60,16 @@ class Pgsql extends Postgresql
 	}
 
 	/**
+	 * Test to see if the PostgreSQL connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 */
+	public static function isSupported()
+	{
+		return defined('PDO::ATTR_DRIVER_NAME');
+	}
+
+	/**
 	 * Database object destructor
 	 *
 	 */
@@ -73,6 +85,45 @@ class Pgsql extends Postgresql
 		{
 			$this->connection = null;
 		}
+	}
+
+	/**
+	 * PDO does not support serialize
+	 *
+	 * @return  array
+	 *
+	 * @throws  \ReflectionException
+	 */
+	public function __sleep()
+	{
+		$serializedProperties = [];
+
+		$reflect = new \ReflectionClass($this);
+
+		// Get properties of the current class
+		$properties = $reflect->getProperties();
+
+		foreach ($properties as $property)
+		{
+			// Do not serialize properties that are \PDO
+			if ($property->isStatic() == false && !($this->{$property->name} instanceof \PDO))
+			{
+				array_push($serializedProperties, $property->name);
+			}
+		}
+
+		return $serializedProperties;
+	}
+
+	/**
+	 * Wake up after serialization
+	 *
+	 * @return  void
+	 */
+	public function __wakeup()
+	{
+		// Get connection back
+		$this->__construct($this->options);
 	}
 
 	/**
@@ -142,47 +193,6 @@ class Pgsql extends Postgresql
 	}
 
 	/**
-	 * Disconnects the database.
-	 *
-	 * @return  void
-	 *
-	 */
-	public function disconnect()
-	{
-		if (is_object($this->cursor))
-		{
-			$this->cursor->closeCursor();
-		}
-
-		$this->connection = null;
-	}
-
-	/**
-	 * Method to escape a string for usage in an SQL statement.
-	 *
-	 * @param   string  $text  The string to be escaped.
-	 * @param   boolean $extra Optional parameter to provide extra escaping.
-	 *
-	 * @return  string  The escaped string.
-	 */
-	public function escape($text, $extra = false)
-	{
-		if (is_int($text) || is_float($text))
-		{
-			return $text;
-		}
-
-		$result = substr($this->connection->quote($text), 1, -1);
-
-		if ($extra)
-		{
-			$result = addcslashes($result, '%_');
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Determines if the connection to the server is active.
 	 *
 	 * @return    boolean
@@ -228,6 +238,231 @@ class Pgsql extends Postgresql
 	}
 
 	/**
+	 * Disconnects the database.
+	 *
+	 * @return  void
+	 *
+	 */
+	public function disconnect()
+	{
+		if (is_object($this->cursor))
+		{
+			$this->cursor->closeCursor();
+		}
+
+		$this->connection = null;
+	}
+
+	/**
+	 * Method to escape a string for usage in an SQL statement.
+	 *
+	 * @param   string   $text   The string to be escaped.
+	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
+	 *
+	 * @return  string  The escaped string.
+	 */
+	public function escape($text, $extra = false)
+	{
+		if (is_int($text) || is_float($text))
+		{
+			return $text;
+		}
+
+		$result = substr($this->connection->quote($text), 1, -1);
+
+		if ($extra)
+		{
+			$result = addcslashes($result, '%_');
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Execute the SQL statement.
+	 *
+	 * @return  mixed  A database cursor resource on success, boolean false on failure.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function execute()
+	{
+		if (!is_object($this->connection))
+		{
+			$this->connect();
+		}
+
+		$this->freeResult();
+
+		// Take a local copy so that we don't modify the original query and cause issues later
+		$query = $this->replacePrefix((string) $this->sql);
+
+		if ($this->limit > 0)
+		{
+			$query .= ' LIMIT ' . $this->limit;
+		}
+
+		if ($this->offset > 0)
+		{
+			$query .= ' OFFSET ' . $this->offset;
+		}
+
+		// Increment the query counter.
+		$this->count++;
+
+		// If debugging is enabled then let's log the query.
+		if ($this->debug)
+		{
+			// Add the query to the object queue.
+			$this->log[] = $query;
+		}
+
+		// Reset the error values.
+		$this->errorNum = 0;
+		$this->errorMsg = '';
+
+		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
+		try
+		{
+			$this->cursor = $this->connection->query($query);
+		}
+		catch (\Exception $e)
+		{
+		}
+
+		// If an error occurred handle it.
+		if (!$this->cursor)
+		{
+			$errorInfo      = $this->connection->errorInfo();
+			$this->errorNum = $errorInfo[1];
+			$this->errorMsg = $errorInfo[2] . ' SQL=' . $query;
+
+			// Check if the server was disconnected.
+			if (!$this->connected() && !$this->isReconnecting)
+			{
+				$this->isReconnecting = true;
+
+				try
+				{
+					// Attempt to reconnect.
+					$this->connection = null;
+					$this->connect();
+				}
+					// If connect fails, ignore that exception and throw the normal exception.
+				catch (\RuntimeException $e)
+				{
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				}
+
+				// Since we were able to reconnect, run the query again.
+				$result               = $this->execute();
+				$this->isReconnecting = false;
+
+				return $result;
+			}
+			// The server was not disconnected.
+			else
+			{
+				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+			}
+		}
+
+		return $this->cursor;
+	}
+
+	/**
+	 * Method to fetch a row from the result set cursor as an array.
+	 *
+	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 *
+	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
+	 */
+	public function fetchArray($cursor = null)
+	{
+		$ret = null;
+
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
+		{
+			$ret = $cursor->fetch(\PDO::FETCH_NUM);
+		}
+		elseif ($this->cursor instanceof \PDOStatement)
+		{
+			$ret = $this->cursor->fetch(\PDO::FETCH_NUM);
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Method to fetch a row from the result set cursor as an associative array.
+	 *
+	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 *
+	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
+	 */
+	public function fetchAssoc($cursor = null)
+	{
+		$ret = null;
+
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
+		{
+			$ret = $cursor->fetch(\PDO::FETCH_ASSOC);
+		}
+		elseif ($this->cursor instanceof \PDOStatement)
+		{
+			$ret = $this->cursor->fetch(\PDO::FETCH_ASSOC);
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Method to fetch a row from the result set cursor as an object.
+	 *
+	 * @param   mixed   $cursor  The optional result set cursor from which to fetch the row.
+	 * @param   string  $class   The class name to use for the returned row object.
+	 *
+	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
+	 */
+	public function fetchObject($cursor = null, $class = 'stdClass')
+	{
+		$ret = null;
+
+		if (!empty($cursor) && $cursor instanceof \PDOStatement)
+		{
+			$ret = $cursor->fetchObject($class);
+		}
+		elseif ($this->cursor instanceof \PDOStatement)
+		{
+			$ret = $this->cursor->fetchObject($class);
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Method to free up the memory used for the result set.
+	 *
+	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.
+	 *
+	 * @return  void
+	 */
+	public function freeResult($cursor = null)
+	{
+		if ($cursor instanceof \PDOStatement)
+		{
+			$cursor->closeCursor();
+			$cursor = null;
+		}
+
+		if ($this->cursor instanceof \PDOStatement)
+		{
+			$this->cursor->closeCursor();
+			$this->cursor = null;
+		}
+	}
+
+	/**
 	 * Get the number of affected rows for the previous executed SQL statement.
 	 *
 	 * @return int The number of affected rows in the previous operation
@@ -245,7 +480,7 @@ class Pgsql extends Postgresql
 	/**
 	 * Get the number of returned rows for the previous executed SQL statement.
 	 *
-	 * @param   resource $cur An optional database cursor resource to extract the row count from.
+	 * @param   resource  $cur  An optional database cursor resource to extract the row count from.
 	 *
 	 * @return  integer   The number of returned rows.
 	 */
@@ -306,103 +541,9 @@ class Pgsql extends Postgresql
 	}
 
 	/**
-	 * Execute the SQL statement.
-	 *
-	 * @return  mixed  A database cursor resource on success, boolean false on failure.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function execute()
-	{
-		static $isReconnecting = false;
-
-		if (!is_object($this->connection))
-		{
-			$this->connect();
-		}
-
-		$this->freeResult();
-
-		// Take a local copy so that we don't modify the original query and cause issues later
-		$query = $this->replacePrefix((string) $this->sql);
-
-		if ($this->limit > 0)
-		{
-			$query .= ' LIMIT ' . $this->limit;
-		}
-
-		if ($this->offset > 0)
-		{
-			$query .= ' OFFSET ' . $this->offset;
-		}
-
-		// Increment the query counter.
-		$this->count++;
-
-		// If debugging is enabled then let's log the query.
-		if ($this->debug)
-		{
-			// Add the query to the object queue.
-			$this->log[] = $query;
-		}
-
-		// Reset the error values.
-		$this->errorNum = 0;
-		$this->errorMsg = '';
-
-		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
-		try
-		{
-			$this->cursor = $this->connection->query($query);
-		}
-		catch (\Exception $e)
-		{
-		}
-
-		// If an error occurred handle it.
-		if (!$this->cursor)
-		{
-			$errorInfo      = $this->connection->errorInfo();
-			$this->errorNum = $errorInfo[1];
-			$this->errorMsg = $errorInfo[2] . ' SQL=' . $query;
-
-			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
-			{
-				$isReconnecting = true;
-
-				try
-				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
-				}
-					// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
-				{
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
-				}
-
-				// Since we were able to reconnect, run the query again.
-				$result         = $this->execute();
-				$isReconnecting = false;
-
-				return $result;
-			}
-			// The server was not disconnected.
-			else
-			{
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
-			}
-		}
-
-		return $this->cursor;
-	}
-
-	/**
 	 * Selects the database for use
 	 *
-	 * @param   string $database Database name to select.
+	 * @param   string  $database  Database name to select.
 	 *
 	 * @return  boolean  Always true
 	 */
@@ -422,11 +563,49 @@ class Pgsql extends Postgresql
 	}
 
 	/**
+	 * Method to commit a transaction.
+	 *
+	 * @return  void
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function transactionCommit()
+	{
+		$this->connection->commit();
+	}
+
+	/**
+	 * Method to roll back a transaction.
+	 *
+	 * @param   string  $toSavepoint  If present rollback transaction to this savepoint
+	 *
+	 * @return  void
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function transactionRollback($toSavepoint = null)
+	{
+		$this->connection->rollBack();
+	}
+
+	/**
+	 * Method to initialize a transaction.
+	 *
+	 * @return  void
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function transactionStart()
+	{
+		$this->connection->beginTransaction();
+	}
+
+	/**
 	 * This function return a field value as a prepared string to be used in a SQL statement.
 	 *
-	 * @param   array  $columns     Array of table's column returned by ::getTableColumns.
-	 * @param   string $field_name  The table field's name.
-	 * @param   string $field_value The variable value to quote and return.
+	 * @param   array   $columns      Array of table's column returned by ::getTableColumns.
+	 * @param   string  $field_name   The table field's name.
+	 * @param   string  $field_value  The variable value to quote and return.
 	 *
 	 * @return  string  The quoted string.
 	 */
@@ -475,184 +654,5 @@ class Pgsql extends Postgresql
 		}
 
 		return $val;
-	}
-
-	/**
-	 * Method to commit a transaction.
-	 *
-	 * @return  void
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function transactionCommit()
-	{
-		$this->connection->commit();
-	}
-
-	/**
-	 * Method to roll back a transaction.
-	 *
-	 * @param   string $toSavepoint If present rollback transaction to this savepoint
-	 *
-	 * @return  void
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function transactionRollback($toSavepoint = null)
-	{
-		$this->connection->rollBack();
-	}
-
-	/**
-	 * Method to initialize a transaction.
-	 *
-	 * @return  void
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function transactionStart()
-	{
-		$this->connection->beginTransaction();
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an array.
-	 *
-	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
-	 *
-	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
-	 */
-	public function fetchArray($cursor = null)
-	{
-		$ret = null;
-
-		if (!empty($cursor) && $cursor instanceof \PDOStatement)
-		{
-			$ret = $cursor->fetch(\PDO::FETCH_NUM);
-		}
-		elseif ($this->cursor instanceof \PDOStatement)
-		{
-			$ret = $this->cursor->fetch(\PDO::FETCH_NUM);
-		}
-
-		return $ret;
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an associative array.
-	 *
-	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
-	 *
-	 * @return  mixed  Either the next row from the result set or false if there are no more rows.
-	 */
-	public function fetchAssoc($cursor = null)
-	{
-		$ret = null;
-
-		if (!empty($cursor) && $cursor instanceof \PDOStatement)
-		{
-			$ret = $cursor->fetch(\PDO::FETCH_ASSOC);
-		}
-		elseif ($this->cursor instanceof \PDOStatement)
-		{
-			$ret = $this->cursor->fetch(\PDO::FETCH_ASSOC);
-		}
-
-		return $ret;
-	}
-
-	/**
-	 * Method to fetch a row from the result set cursor as an object.
-	 *
-	 * @param   mixed  $cursor The optional result set cursor from which to fetch the row.
-	 * @param   string $class  The class name to use for the returned row object.
-	 *
-	 * @return  mixed   Either the next row from the result set or false if there are no more rows.
-	 */
-	public function fetchObject($cursor = null, $class = 'stdClass')
-	{
-		$ret = null;
-
-		if (!empty($cursor) && $cursor instanceof \PDOStatement)
-		{
-			$ret =  $cursor->fetchObject($class);
-		}
-		elseif ($this->cursor instanceof \PDOStatement)
-		{
-			$ret = $this->cursor->fetchObject($class);
-		}
-
-		return $ret;
-	}
-
-	/**
-	 * Method to free up the memory used for the result set.
-	 *
-	 * @param   mixed $cursor The optional result set cursor from which to fetch the row.
-	 *
-	 * @return  void
-	 */
-	public function freeResult($cursor = null)
-	{
-		if ($cursor instanceof \PDOStatement)
-		{
-			$cursor->closeCursor();
-			$cursor = null;
-		}
-
-		if ($this->cursor instanceof \PDOStatement)
-		{
-			$this->cursor->closeCursor();
-			$this->cursor = null;
-		}
-	}
-
-	/**
-	 * Test to see if the PostgreSQL connector is available.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 */
-	public static function isSupported()
-	{
-		return defined('PDO::ATTR_DRIVER_NAME');
-	}
-
-	/**
-	 * PDO does not support serialize
-	 *
-	 * @return  array
-	 *
-	 * @throws  \ReflectionException
-	 */
-	public function __sleep()
-	{
-		$serializedProperties = array();
-
-		$reflect = new \ReflectionClass($this);
-
-		// Get properties of the current class
-		$properties = $reflect->getProperties();
-
-		foreach ($properties as $property)
-		{
-			// Do not serialize properties that are \PDO
-			if ($property->isStatic() == false && !($this->{$property->name} instanceof \PDO))
-			{
-				array_push($serializedProperties, $property->name);
-			}
-		}
-
-		return $serializedProperties;
-	}
-
-	/**
-	 * Wake up after serialization
-	 *
-	 * @return  void
-	 */
-	public function __wakeup()
-	{
-		// Get connection back
-		$this->__construct($this->options);
 	}
 }

@@ -28,6 +28,8 @@ class Mysql extends Mysqli
 	 */
 	public static $dbtech = 'mysql';
 
+	private $isReconnecting = false;
+
 	/**
 	 * Constructor.
 	 *
@@ -224,8 +226,6 @@ class Mysql extends Mysqli
 	 */
 	public function execute()
 	{
-		static $isReconnecting = false;
-
 		$this->connect();
 
 		if (!is_resource($this->connection))
@@ -261,9 +261,9 @@ class Mysql extends Mysqli
 		if (!$this->cursor)
 		{
 			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
+			if (!$this->connected() && !$this->isReconnecting)
 			{
-				$isReconnecting = true;
+				$this->isReconnecting = true;
 
 				try
 				{
@@ -284,7 +284,7 @@ class Mysql extends Mysqli
 
 				// Since we were able to reconnect, run the query again.
 				$result = $this->execute();
-				$isReconnecting = false;
+				$this->isReconnecting = false;
 
 				return $result;
 			}
