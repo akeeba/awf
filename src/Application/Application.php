@@ -314,11 +314,11 @@ abstract class Application
 	public function getMessageQueue()
 	{
 		// For empty queue, if messages exists in the session, enqueue them.
-		if (!count($this->messageQueue))
+		if (!count($this->messageQueue ?: []))
 		{
 			if ($this->container->segment->hasFlash('application_queue'))
 			{
-				$this->messageQueue = $this->container->segment->getFlash('application_queue');
+				$this->messageQueue = $this->container->segment->getFlash('application_queue') ?: [];
 			}
 		}
 
