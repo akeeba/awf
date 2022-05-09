@@ -51,7 +51,7 @@ class Configuration extends Registry
 		$this->data = new \stdClass();
 
 		// Try to open the file
-		$fileData = \file_get_contents($filePath);
+		$fileData = @\file_get_contents($filePath);
 
 		if ($fileData !== false)
 		{

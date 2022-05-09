@@ -53,7 +53,7 @@ class Pdomysql extends Pdo
      */
     protected static $dbMinimum = '5.0.4';
 
-    /**
+	/**
      * Constructor.
      *
      * @param   array  $options  Array of database options with keys: host, user, password, database, select.
