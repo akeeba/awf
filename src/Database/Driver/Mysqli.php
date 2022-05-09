@@ -53,7 +53,19 @@ class Mysqli extends Driver
 	 */
 	protected $nullDate = '0000-00-00 00:00:00';
 
+	/**
+	 * Am I in the middle of reconnecting to the database server?
+	 *
+	 * @var  bool
+	 */
 	private $isReconnecting = false;
+
+	/**
+	 * Does this database support UTF8MB4 connections?
+	 *
+	 * @var bool|null
+	 */
+	protected $supportsUTF8MB4 = null;
 
 	/**
 	 * Constructor.
@@ -64,13 +76,30 @@ class Mysqli extends Driver
 	public function __construct($options)
 	{
 		// Get some basic values from the options.
-		$options['host']     = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['user']     = (isset($options['user'])) ? $options['user'] : 'root';
-		$options['password'] = (isset($options['password'])) ? $options['password'] : '';
-		$options['database'] = (isset($options['database'])) ? $options['database'] : '';
-		$options['select']   = (isset($options['select'])) ? (bool) $options['select'] : true;
+		$options['host']     = $options['host'] ?? 'localhost';
+		$options['user']     = $options['user'] ?? 'root';
+		$options['password'] = $options['password'] ?? '';
+		$options['database'] = $options['database'] ?? '';
+		$options['select']   = (bool) ($options['select'] ?? true);
 		$options['port']     = null;
 		$options['socket']   = null;
+
+		$options['ssl'] = $options['ssl'] ?? [];
+		$options['ssl'] = is_array($options['ssl']) ? $options['ssl'] : [];
+
+		if ($options['ssl'] !== [])
+		{
+			$options['ssl']['enable']             = $options['ssl']['enable'] ?? false;
+			$options['ssl']['cipher']             = ($options['ssl']['cipher'] ?? null) ?: null;
+			$options['ssl']['ca']                 = ($options['ssl']['ca'] ?? null) ?: null;
+			$options['ssl']['capath']             = ($options['ssl']['capath'] ?? null) ?: null;
+			$options['ssl']['key']                = ($options['ssl']['key'] ?? null) ?: null;
+			$options['ssl']['cert']               = ($options['ssl']['cert'] ?? null) ?: null;
+			$options['ssl']['verify_server_cert'] = ($options['ssl']['verify_server_cert'] ?? null) ?: false;
+		}
+
+		// Figure out if a port is included in the host name
+		$this->fixHostnamePortSocket($options['host'], $options['port'], $options['socket']);
 
 		// Finalize initialisation.
 		parent::__construct($options);
@@ -113,47 +142,71 @@ class Mysqli extends Driver
 			return;
 		}
 
-		/*
-		 * Unlike mysql_connect(), mysqli_connect() takes the port and socket as separate arguments. Therefore, we
-		 * have to extract them from the host string.
-		 */
-		$tmp = substr(strstr($this->options['host'], ':'), 1);
-		if (!empty($tmp))
-		{
-			// Get the port number or socket name
-			if (is_numeric($tmp))
-			{
-				$this->options['port'] = $tmp;
-			}
-			else
-			{
-				$this->options['socket'] = $tmp;
-			}
-
-			// Extract the host name only
-			$this->options['host'] = substr($this->options['host'], 0, strlen($this->options['host']) - (strlen($tmp) + 1));
-
-			// This will take care of the following notation: ":3306"
-			if ($this->options['host'] == '')
-			{
-				$this->options['host'] = 'localhost';
-			}
-		}
-
 		// Make sure the MySQLi extension for PHP is installed and enabled.
 		if (!function_exists('mysqli_connect'))
 		{
 			throw new \RuntimeException('The MySQL adapter mysqli is not available');
 		}
 
-		$this->connection = @mysqli_connect(
-			$this->options['host'], $this->options['user'], $this->options['password'], null, $this->options['port'], $this->options['socket']
-		);
+		$this->connection = mysqli_init();
+
+		$connectionFlags = 0;
+
+		// For SSL/TLS connection encryption.
+		if ($this->options['ssl'] !== [] && $this->options['ssl']['enable'] === true)
+		{
+			// Verify server certificate is only available in PHP 5.6.16+. See https://www.php.net/ChangeLog-5.php#5.6.16
+			if (isset($this->options['ssl']['verify_server_cert']))
+			{
+				$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL;
+
+				// New constants in PHP 5.6.16+. See https://www.php.net/ChangeLog-5.php#5.6.16
+				if ($this->options['ssl']['verify_server_cert'] === true && defined('MYSQLI_CLIENT_SSL_VERIFY_SERVER_CERT'))
+				{
+					$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL_VERIFY_SERVER_CERT;
+				}
+				elseif ($this->options['ssl']['verify_server_cert'] === false && defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT'))
+				{
+					$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
+				}
+				elseif (defined('MYSQLI_OPT_SSL_VERIFY_SERVER_CERT'))
+				{
+					$this->connection->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->options['ssl']['verify_server_cert']);
+				}
+			}
+
+			// Add SSL/TLS options only if changed.
+			$this->connection->ssl_set(
+				($this->options['ssl']['key'] ?? null) ?: null,
+				($this->options['ssl']['cert'] ?? null) ?: null,
+				($this->options['ssl']['ca'] ?? null) ?: null,
+				($this->options['ssl']['capath'] ?? null) ?: null,
+				($this->options['ssl']['cipher'] ?? null) ?: null
+			);
+		}
+
+		// Attempt to connect to the server, use error suppression to silence warnings and allow us to throw an Exception separately.
+		try
+		{
+			$connected = @$this->connection->real_connect(
+				$this->options['host'],
+				$this->options['user'],
+				$this->options['password'] ?: null,
+				null,
+				$this->options['port'] ?: 3306,
+				$this->options['socket'] ?: null,
+				$connectionFlags
+			);
+		}
+		catch (\Exception $e)
+		{
+			$connected = false;
+		}
 
 		// Attempt to connect to the server.
-		if (!$this->connection)
+		if (!$connected)
 		{
-			throw new \RuntimeException('Could not connect to MySQL.');
+			throw new \RuntimeException('Could not connect to MySQL.', 500, isset($e) ? $e : null);
 		}
 
 		// Set sql_mode to non_strict mode
@@ -592,7 +645,69 @@ class Mysqli extends Driver
 	{
 		$this->connect();
 
-		return $this->connection->set_charset('utf8');
+		$charset = $this->supportsUtf8mb4() ? 'utf8mb4' : 'utf8';
+
+		$result = @$this->connection->set_charset($charset);
+
+		if (!$result)
+		{
+			$this->supportsUTF8MB4 = false;
+			$result                = @$this->connection->set_charset('utf8');
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Does this database server support UTF-8 four byte (utf8mb4) collation?
+	 *
+	 * libmysql supports utf8mb4 since 5.5.3 (same version as the MySQL server). mysqlnd supports utf8mb4 since 5.0.9.
+	 *
+	 * This method's code is based on WordPress' wpdb::has_cap() method
+	 *
+	 * @return  bool
+	 */
+	public function supportsUtf8mb4()
+	{
+		if (is_null($this->supportsUTF8MB4))
+		{
+			$this->supportsUTF8MB4 = $this->serverClaimsUtf8();
+		}
+
+		return $this->supportsUTF8MB4;
+	}
+
+	private function serverClaimsUtf8()
+	{
+		$mariadb = stripos($this->connection->server_info, 'mariadb') !== false;
+		if (version_compare(PHP_VERSION, '8.0.0', 'lt'))
+		{
+			$client_version = mysqli_get_client_info($this->connection);
+		}
+		else
+		{
+			$client_version = mysqli_get_client_info();
+		}
+		$server_version = $this->getVersion();
+
+		if (version_compare($server_version, '5.5.3', '<'))
+		{
+			return false;
+		}
+
+		if ($mariadb && version_compare($server_version, '10.0.0', '<'))
+		{
+			return false;
+		}
+
+		if (strpos($client_version, 'mysqlnd') !== false)
+		{
+			$client_version = preg_replace('/^\D+([\d.]+).*/', '$1', $client_version);
+
+			return version_compare($client_version, '5.0.9', '>=');
+		}
+
+		return version_compare($client_version, '5.5.3', '>=');
 	}
 
 	/**
@@ -705,5 +820,119 @@ class Mysqli extends Driver
 	protected function freeResult($cursor = null)
 	{
 		mysqli_free_result($cursor ? $cursor : $this->cursor);
+	}
+
+	/**
+	 * Tries to parse all the weird hostname definitions and normalize them into something that the MySQLi connector
+	 * will understand. Please note that there are some differences to the old MySQL driver:
+	 *
+	 * * Port and socket MUST be provided separately from the hostname. Hostnames in the form of 127.0.0.1:8336 are no
+	 *   longer acceptable.
+	 *
+	 * * The hostname "localhost" has special meaning. It means "use named pipes / sockets". Anything else uses TCP/IP.
+	 *   This is the ONLY way to specify a. TCP/IP or b. named pipes / sockets connection.
+	 *
+	 * * You SHOULD NOT use a numeric TCP/IP port with hostname localhost. For some strange reason it's still allowed
+	 *   but the manual is self-contradicting over what this really does...
+	 *
+	 * * Likewise you CANNOT use a socket / named pipe path with hostname other than localhost. Named pipes and sockets
+	 *   can only be used with the local machine, therefore the hostname MUST be localhost.
+	 *
+	 * * You cannot give a TCP/IP port number in the socket parameter or a named pipe / socket path to the port
+	 *   parameter. This leads to an error.
+	 *
+	 * * You cannot use an empty string, 0 or any other non-null value when you want to omit either of the port or
+	 *   socket parameters.
+	 *
+	 * * Persistent connections must be prefixed with the string literal 'p:'. Therefore you cannot have a hostname
+	 *   called 'p' (not to mention that'd be daft). You can also not specify something like 'p:1234' to make a
+	 *   persistent connection to a port. This wasn't even supported by the old MySQL driver. As a result we don't even
+	 *   try to catch that degenerate case.
+	 *
+	 * This method will try to apply all of the aforementioned rules with one additional disambiguation rule:
+	 *
+	 * A port / socket set in the hostname overrides a port specified separately. A port specified separately overrides
+	 * a socket specified separately.
+	 *
+	 * @param   string  $host    The hostname. Can contain legacy hostname:port or hostname:sc=ocket definitions.
+	 * @param   int     $port    The port. Alternatively it can contain the path to the socket.
+	 * @param   string  $socket  The path to the socket. You could abuse it to enter the port number. DON'T!
+	 *
+	 * @return  void  All parameters are passed by reference.
+	 */
+	protected function fixHostnamePortSocket(&$host, &$port, &$socket)
+	{
+		// Is this a persistent connection? Persistent connections are indicated by the literal "p:" in front of the hostname
+		$isPersistent = (substr($host, 0, 2) == 'p:');
+		$host         = $isPersistent ? substr($host, 2) : $host;
+
+		/*
+		 * Unlike mysql_connect(), mysqli_connect() takes the port and socket as separate arguments. Therefore, we
+		 * have to extract them from the host string.
+		 */
+		$port = !empty($port) ? $port : 3306;
+
+		// UNIX socket URI, e.g. 'unix:/path/to/unix/socket.sock'
+		if (preg_match('/^unix:(?P<socket>[^:]+)$/', $host, $matches))
+		{
+			$host   = null;
+			$socket = $matches['socket'];
+			$port   = null;
+		}
+		// It's an IPv4 address with or without port
+		elseif (preg_match('/^(?P<host>((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(:(?P<port>.+))?$/', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Square-bracketed IPv6 address with or without port, e.g. [fe80:102::2%eth1]:3306
+		elseif (preg_match('/^(?P<host>\[.*\])(:(?P<port>.+))?$/', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Named host (e.g example.com or localhost) with or without port
+		elseif (preg_match('/^(?P<host>(\w+:\/{2,3})?[a-z0-9\.\-]+)(:(?P<port>[^:]+))?$/i', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Empty host, just port, e.g. ':3306'
+		elseif (preg_match('/^:(?P<port>[^:]+)$/', $host, $matches))
+		{
+			$host = 'localhost';
+			$port = $matches['port'];
+		}
+		// ... else we assume normal (naked) IPv6 address, so host and port stay as they are or default
+
+		// Get the port number or socket name
+		if (is_numeric($port))
+		{
+			$port   = (int) $port;
+			$socket = '';
+		}
+		else
+		{
+			$socket = $port;
+
+			// If we're going to use sockets, port MUST BE null, otherwise mysqli_connect will try to use it ignoring
+			// the socket, causing a connection error
+			$port = null;
+		}
+
+		// Finally, if it's a persistent connection we have to prefix the hostname with 'p:'
+		$host = $isPersistent ? "p:$host" : $host;
 	}
 }

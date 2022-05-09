@@ -25,6 +25,19 @@ abstract class Pdo extends Driver
 	public static $dbtech = 'pdo';
 
 	/**
+	 * The default cipher suite for TLS connections.
+	 *
+	 * @var    array
+	 */
+	protected static $defaultCipherSuite = [
+		'AES128-GCM-SHA256',
+		'AES256-GCM-SHA384',
+		'AES128-CBC-SHA256',
+		'AES256-CBC-SHA384',
+		'DES-CBC3-SHA',
+	];
+
+	/**
 	 * The name of the database driver.
 	 *
 	 * @var    string
@@ -82,13 +95,32 @@ abstract class Pdo extends Driver
 	public function __construct($options)
 	{
 		// Get some basic values from the options.
-		$options['driver']        = (isset($options['driver'])) ? $options['driver'] : 'odbc';
-		$options['dsn']           = (isset($options['dsn'])) ? $options['dsn'] : '';
-		$options['host']          = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['database']      = (isset($options['database'])) ? $options['database'] : '';
-		$options['user']          = (isset($options['user'])) ? $options['user'] : '';
-		$options['password']      = (isset($options['password'])) ? $options['password'] : '';
-		$options['driverOptions'] = (isset($options['driverOptions'])) ? $options['driverOptions'] : [];
+		$options['driver']        = $options['driver'] ?? 'odbc';
+		$options['dsn']           = $options['dsn'] ?? '';
+		$options['host']          = $options['host'] ?? 'localhost';
+		$options['database']      = $options['database'] ?? '';
+		$options['user']          = $options['user'] ?? '';
+		$options['password']      = $options['password'] ?? '';
+		$options['driverOptions'] = $options['driverOptions'] ?? [];
+
+		$options['ssl'] = $options['ssl'] ?? [];
+		$options['ssl'] = is_array($options['ssl']) ? $options['ssl'] : [];
+
+		if ($options['ssl'] !== [])
+		{
+			$options['ssl']['enable']             = $options['ssl']['enable'] ?? false;
+			$options['ssl']['cipher']             = ($options['ssl']['cipher'] ?? null) ?: null;
+			$options['ssl']['ca']                 = ($options['ssl']['ca'] ?? null) ?: null;
+			$options['ssl']['capath']             = ($options['ssl']['capath'] ?? null) ?: null;
+			$options['ssl']['key']                = ($options['ssl']['key'] ?? null) ?: null;
+			$options['ssl']['cert']               = ($options['ssl']['cert'] ?? null) ?: null;
+			$options['ssl']['verify_server_cert'] = ($options['ssl']['verify_server_cert'] ?? false) ?: false;
+		}
+
+		if ($options['driver'] === 'mysql')
+		{
+			$this->fixHostnamePortSocket($options['host'], $options['port'], $options['socket']);
+		}
 
 		// Finalize initialisation
 		parent::__construct($options);
@@ -274,11 +306,45 @@ abstract class Pdo extends Driver
 
 				$format = 'mysql:host=#HOST#;port=#PORT#;dbname=#DBNAME#;charset=#CHARSET#';
 
+				if ($this->options['socket'])
+				{
+					$format = 'mysql:socket=#SOCKET#;dbname=#DBNAME#;charset=#CHARSET#';
+				}
+
 				$replace = ['#HOST#', '#PORT#', '#DBNAME#', '#CHARSET#'];
 				$with    = [
 					$this->options['host'], $this->options['port'], $this->options['database'],
 					$this->options['charset'],
 				];
+
+				// For SSL/TLS connection encryption.
+				if ($this->options['ssl'] !== [] && $this->options['ssl']['enable'] === true)
+				{
+					$sslContextIsNull = true;
+
+					// If customised, add cipher suite, ca file path, ca path, private key file path and certificate file path to PDO driver options.
+					foreach (['cipher', 'ca', 'capath', 'key', 'cert'] as $key => $value)
+					{
+						if ($this->options['ssl'][$value] !== null)
+						{
+							$this->options['driverOptions'][constant('\PDO::MYSQL_ATTR_SSL_' . strtoupper($value))] = $this->options['ssl'][$value];
+
+							$sslContextIsNull = false;
+						}
+					}
+
+					// PDO, if no cipher, ca, capath, cert and key are set, can't start TLS one-way connection, set a common ciphers suite to force it.
+					if ($sslContextIsNull === true)
+					{
+						$this->options['driverOptions'][\PDO::MYSQL_ATTR_SSL_CIPHER] = implode(':', static::$defaultCipherSuite);
+					}
+
+					// If customised, for capable systems (PHP 7.0.14+ and 7.1.4+) verify certificate chain and Common Name to driver options.
+					if ($this->options['ssl']['verify_server_cert'] !== null && defined('\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT'))
+					{
+						$this->options['driverOptions'][\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $this->options['ssl']['verify_server_cert'];
+					}
+				}
 
 				break;
 			// @codeCoverageIgnoreStart
@@ -983,5 +1049,119 @@ abstract class Pdo extends Driver
 			$this->prepared->closeCursor();
 			$this->prepared = null;
 		}
+	}
+
+	/**
+	 * Tries to parse all the weird hostname definitions and normalize them into something that the MySQLi connector
+	 * will understand. Please note that there are some differences to the old MySQL driver:
+	 *
+	 * * Port and socket MUST be provided separately from the hostname. Hostnames in the form of 127.0.0.1:8336 are no
+	 *   longer acceptable.
+	 *
+	 * * The hostname "localhost" has special meaning. It means "use named pipes / sockets". Anything else uses TCP/IP.
+	 *   This is the ONLY way to specify a. TCP/IP or b. named pipes / sockets connection.
+	 *
+	 * * You SHOULD NOT use a numeric TCP/IP port with hostname localhost. For some strange reason it's still allowed
+	 *   but the manual is self-contradicting over what this really does...
+	 *
+	 * * Likewise you CANNOT use a socket / named pipe path with hostname other than localhost. Named pipes and sockets
+	 *   can only be used with the local machine, therefore the hostname MUST be localhost.
+	 *
+	 * * You cannot give a TCP/IP port number in the socket parameter or a named pipe / socket path to the port
+	 *   parameter. This leads to an error.
+	 *
+	 * * You cannot use an empty string, 0 or any other non-null value when you want to omit either of the port or
+	 *   socket parameters.
+	 *
+	 * * Persistent connections must be prefixed with the string literal 'p:'. Therefore you cannot have a hostname
+	 *   called 'p' (not to mention that'd be daft). You can also not specify something like 'p:1234' to make a
+	 *   persistent connection to a port. This wasn't even supported by the old MySQL driver. As a result we don't even
+	 *   try to catch that degenerate case.
+	 *
+	 * This method will try to apply all of the aforementioned rules with one additional disambiguation rule:
+	 *
+	 * A port / socket set in the hostname overrides a port specified separately. A port specified separately overrides
+	 * a socket specified separately.
+	 *
+	 * @param   string  $host    The hostname. Can contain legacy hostname:port or hostname:sc=ocket definitions.
+	 * @param   int     $port    The port. Alternatively it can contain the path to the socket.
+	 * @param   string  $socket  The path to the socket. You could abuse it to enter the port number. DON'T!
+	 *
+	 * @return  void  All parameters are passed by reference.
+	 */
+	protected function fixHostnamePortSocket(&$host, &$port, &$socket)
+	{
+		// Is this a persistent connection? Persistent connections are indicated by the literal "p:" in front of the hostname
+		$isPersistent = (substr($host, 0, 2) == 'p:');
+		$host         = $isPersistent ? substr($host, 2) : $host;
+
+		/*
+		 * Unlike mysql_connect(), mysqli_connect() takes the port and socket as separate arguments. Therefore, we
+		 * have to extract them from the host string.
+		 */
+		$port = !empty($port) ? $port : 3306;
+
+		// UNIX socket URI, e.g. 'unix:/path/to/unix/socket.sock'
+		if (preg_match('/^unix:(?P<socket>[^:]+)$/', $host, $matches))
+		{
+			$host   = null;
+			$socket = $matches['socket'];
+			$port   = null;
+		}
+		// It's an IPv4 address with or without port
+		elseif (preg_match('/^(?P<host>((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(:(?P<port>.+))?$/', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Square-bracketed IPv6 address with or without port, e.g. [fe80:102::2%eth1]:3306
+		elseif (preg_match('/^(?P<host>\[.*\])(:(?P<port>.+))?$/', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Named host (e.g example.com or localhost) with or without port
+		elseif (preg_match('/^(?P<host>(\w+:\/{2,3})?[a-z0-9\.\-]+)(:(?P<port>[^:]+))?$/i', $host, $matches))
+		{
+			$host = $matches['host'];
+
+			if (!empty($matches['port']))
+			{
+				$port = $matches['port'];
+			}
+		}
+		// Empty host, just port, e.g. ':3306'
+		elseif (preg_match('/^:(?P<port>[^:]+)$/', $host, $matches))
+		{
+			$host = 'localhost';
+			$port = $matches['port'];
+		}
+		// ... else we assume normal (naked) IPv6 address, so host and port stay as they are or default
+
+		// Get the port number or socket name
+		if (is_numeric($port))
+		{
+			$port   = (int) $port;
+			$socket = '';
+		}
+		else
+		{
+			$socket = $port;
+
+			// If we're going to use sockets, port MUST BE null, otherwise mysqli_connect will try to use it ignoring
+			// the socket, causing a connection error
+			$port = null;
+		}
+
+		// Finally, if it's a persistent connection we have to prefix the hostname with 'p:'
+		$host = $isPersistent ? "p:$host" : $host;
 	}
 }

@@ -3,11 +3,14 @@
   "type": "library",
   "description": "A framework for single-source standalone apps, Joomla! components and WordPress plugins",
   "require": {
-    "php": ">=7.2.0 <8.1",
+    "php": "^7.2.0|^8.0.0",
+    "composer/ca-bundle": "^1.2"
+  },
+  "suggest": {
     "ext-curl": "*",
     "ext-simplexml": "*",
     "ext-pdo": "*",
-    "composer/ca-bundle": "^1.2"
+    "ext-mysqli": "*"
   },
   "keywords": [
     "framework",

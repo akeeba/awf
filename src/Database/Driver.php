@@ -223,6 +223,7 @@ abstract class Driver implements DatabaseInterface
 				'user'		=> $config->get('dbuser', ''),
 				'password'	=> $config->get('dbpass', ''),
 				'prefix'	=> $config->get('prefix', 'solo_'),
+				'ssl'       => [],
 			);
 
 			$connection = $config->get('connection', null);
@@ -237,6 +238,24 @@ abstract class Driver implements DatabaseInterface
 		$options['driver']   = (isset($options['driver'])) ? preg_replace('/[^A-Z0-9_\.-]/i', '', $options['driver']) : 'mysqli';
 		$options['database'] = (isset($options['database'])) ? $options['database'] : null;
 		$options['select']   = (isset($options['select'])) ? $options['select'] : true;
+
+		// Apply the MySQL SSQL configuration
+		$driverName = strtolower($options['driver']);
+
+		if ($config->get('dbencryption', 0) && in_array($driverName, ['mysqli', 'pdomysql']))
+		{
+			$config = Application::getInstance()->getContainer()->appConfig;
+
+			$options['ssl'] = [
+				'enable'             => true,
+				'cipher'             => $config->get('dbsslcipher', '') ?: '',
+				'ca'                 => $config->get('dbsslca', '') ?: '',
+				'capath'             => '',
+				'key'                => $config->get('dbsslkey', '') ?: '',
+				'cert'               => $config->get('dbsslcert', '') ?: '',
+				'verify_server_cert' => $config->get('dbsslverifyservercert', true) ?: false,
+			];
+		}
 
 		// Get the options signature for the database connector.
 		$signature = md5(serialize($options));
