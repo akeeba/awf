@@ -76,8 +76,12 @@ trait FixMySQLHostname
 		 */
 		$port = !empty($port) ? $port : 3306;
 
+		if ($host === 'localhost')
+		{
+			$port = null;
+		}
 		// UNIX socket URI, e.g. 'unix:/path/to/unix/socket.sock'
-		if (preg_match('/^unix:(?P<socket>[^:]+)$/', $host, $matches))
+		elseif (preg_match('/^unix:(?P<socket>[^:]+)$/', $host, $matches))
 		{
 			$host   = null;
 			$socket = $matches['socket'];
