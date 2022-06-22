@@ -77,6 +77,12 @@ class Curl extends AbstractAdapter implements DownloadInterface
         curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'reponseHeaderCallback'));
 
+		// Some broken cURL versions cause an error. Forcing HTTP/1.1 seems to be fixing it.
+		if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1'))
+		{
+			curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		}
+
 		if (!(empty($from) && empty($to)))
 		{
 			curl_setopt($ch, CURLOPT_RANGE, "$from-$to");
@@ -209,6 +215,12 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
 		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+
+		// Some broken cURL versions cause an error. Forcing HTTP/1.1 seems to be fixing it.
+		if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1'))
+		{
+			curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		}
 
 		$patched_accept_encoding = false;
 
