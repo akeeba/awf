@@ -7,6 +7,8 @@
 
 namespace Awf\Input;
 
+use Awf\Utils\Utf8;
+
 /**
  * Class Filter
  *
@@ -359,14 +361,14 @@ class Filter
 			{
 				// Close Tag
 				$isCloseTag = true;
-				list ($tagName) = explode(' ', $currentTag);
+				[$tagName] = explode(' ', $currentTag);
 				$tagName = substr($tagName, 1);
 			}
 			else
 			{
 				// Open Tag
 				$isCloseTag = false;
-				list ($tagName) = explode(' ', $currentTag);
+				[$tagName] = explode(' ', $currentTag);
 			}
 
 			/*
@@ -630,7 +632,7 @@ class Filter
 			$trans_tbl = get_html_translation_table(HTML_ENTITIES);
 			foreach ($trans_tbl as $k => $v)
 			{
-				$ttr[$v] = utf8_encode($k);
+				$ttr[$v] = Utf8::utf8_encode($k);
 			}
 		}
 		$source = strtr($source, $ttr);
@@ -641,7 +643,7 @@ class Filter
 		// Convert hex
 		$source = preg_replace_callback('/&#x([a-f0-9]+);/mi',
 			function($x) {
-				return utf8_encode(chr('0x' . $x));
+				return Utf8::utf8_encode(chr('0x' . $x));
 			}, $source); // hex notation
 		return $source;
 	}
