@@ -82,7 +82,7 @@ class Pimple implements \ArrayAccess
 	 * @param mixed $value The value of the parameter or a closure to define an object
 	 * @throws \RuntimeException Prevent override of a frozen service
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetSet($id, $value)
 	{
 		if (isset($this->frozen[$id])) {
@@ -102,7 +102,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \InvalidArgumentException if the identifier is not defined
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetGet($id)
 	{
 		if (!isset($this->keys[$id])) {
@@ -135,7 +135,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @return bool
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetExists($id)
 	{
 		return isset($this->keys[$id]);
@@ -146,7 +146,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @param string $id The unique identifier for the parameter or object
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($id)
 	{
 		if (isset($this->keys[$id])) {
