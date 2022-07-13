@@ -626,7 +626,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return array
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return $this->toArray();
@@ -649,7 +649,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return ArrayIterator
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new ArrayIterator($this->items);
@@ -672,7 +672,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return int
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count($this->items);
@@ -685,7 +685,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return bool
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetExists($key)
 	{
 		return array_key_exists($key, $this->items);
@@ -698,7 +698,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return mixed
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key)
 	{
 		return $this->items[$key];
@@ -712,7 +712,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return void
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetSet($key, $value)
 	{
 		if (is_null($key))
@@ -732,7 +732,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return void
 	 */
-	#[ReturnTypeWillChange]
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key)
 	{
 		unset($this->items[$key]);
