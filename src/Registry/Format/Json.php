@@ -26,14 +26,12 @@ class Json extends AbstractRegistryFormat
 	 */
 	public function objectToString($object, $options = array())
 	{
-		$json_format_options = null;
-
 		if (isset($options['pretty_print']) && $options['pretty_print'] && defined('JSON_PRETTY_PRINT'))
 		{
-			$json_format_options = JSON_PRETTY_PRINT;
+			return json_encode($object, JSON_PRETTY_PRINT);
 		}
 
-		return json_encode($object, $json_format_options);
+		return json_encode($object);
 	}
 
 	/**
