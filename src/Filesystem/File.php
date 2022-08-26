@@ -301,7 +301,7 @@ class File implements FilesystemInterface
      */
     protected function folderItems($path, $filter, $recurse, $full, $exclude, $excludefilter_string, $findfiles)
     {
-        @set_time_limit(ini_get('max_execution_time'));
+        @set_time_limit((int) ini_get('max_execution_time'));
 
         // Initialise variables.
         $arr = array();
