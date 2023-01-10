@@ -8,8 +8,6 @@
 namespace Awf\User;
 use Awf\Registry\Registry;
 
-require_once __DIR__ . '/password.php';
-
 class User implements UserInterface
 {
 	/** @var  integer  The numeric ID of the user */
