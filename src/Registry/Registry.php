@@ -9,11 +9,6 @@ namespace Awf\Registry;
 
 use Awf\Utils\ArrayHelper;
 
-if (!interface_exists('\\JsonSerializable'))
-{
-	require_once __DIR__ . '/../Compat/JsonSerializable.php';
-}
-
 /**
  * Registry class
  *

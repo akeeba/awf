@@ -23,11 +23,6 @@ use IteratorAggregate;
 
 require_once __DIR__ . '/helpers.php';
 
-if (!interface_exists('\\JsonSerializable'))
-{
-	require_once __DIR__ . '/../Compat/JsonSerializable.php';
-}
-
 class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
 	/**
