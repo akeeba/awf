@@ -1,13 +1,14 @@
 <?php
 /**
  * @package   awf
- * @copyright Copyright (c)2014-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Download\Adapter;
 use Awf\Download\DownloadInterface;
 use Awf\Text\Text;
+use Composer\CaBundle\CaBundle;
 
 /**
  * A download adapter using the cURL PHP integration
@@ -74,7 +75,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_SSLVERSION, 0);
-        curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+        curl_setopt($ch, CURLOPT_CAINFO, CaBundle::getBundledCaBundlePath());
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'reponseHeaderCallback'));
 
 		// Some broken cURL versions cause an error. Forcing HTTP/1.1 seems to be fixing it.
@@ -214,7 +215,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		curl_setopt($ch, CURLOPT_HEADER, true );
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
 		@curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+		curl_setopt($ch, CURLOPT_CAINFO, CaBundle::getBundledCaBundlePath());
 
 		// Some broken cURL versions cause an error. Forcing HTTP/1.1 seems to be fixing it.
 		if (defined('CURLOPT_HTTP_VERSION') && defined('CURL_HTTP_VERSION_1_1'))
@@ -348,7 +349,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 			return $strlen;
 		}
 
-		list($header, $value) = explode(': ', trim($data), 2);
+		[$header, $value] = explode(': ', trim($data), 2);
 
 		$this->headers[strtolower($header)] = $value;
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   awf
- * @copyright Copyright (c)2014-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU GPL version 3 or later
  */
 
@@ -52,7 +52,7 @@ class Download
         $this->container = $c;
 
 		// Find the best fitting adapter
-        $allAdapters = self::getFiles(__DIR__ . '/Adapter', array(), array('AbstractAdapter.php', 'cacert.pem'));
+		$allAdapters = self::getFiles(__DIR__ . '/Adapter', [], ['AbstractAdapter.php', 'cacert.pem']);
 		$priority = 0;
 
 		foreach ($allAdapters as $adapterInfo)

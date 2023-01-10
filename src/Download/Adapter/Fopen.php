@@ -1,13 +1,14 @@
 <?php
 /**
  * @package   awf
- * @copyright Copyright (c)2014-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Download\Adapter;
 use Awf\Download\DownloadInterface;
 use Awf\Text\Text;
+use Composer\CaBundle\CaBundle;
 
 /**
  * A download adapter using URL fopen() wrappers
@@ -81,7 +82,7 @@ class Fopen extends AbstractAdapter implements DownloadInterface
                 ),
                 'ssl' => array(
                     'verify_peer'   => true,
-                    'cafile'        => __DIR__ . '/cacert.pem',
+                    'cafile'        => CaBundle::getBundledCaBundlePath(),
                     'verify_depth'  => 5,
                 )
             );
@@ -94,7 +95,7 @@ class Fopen extends AbstractAdapter implements DownloadInterface
                 ),
                 'ssl' => array(
                     'verify_peer'   => true,
-                    'cafile'        => __DIR__ . '/cacert.pem',
+                    'cafile'        => CaBundle::getBundledCaBundlePath(),
                     'verify_depth'  => 5,
                 )
             );
