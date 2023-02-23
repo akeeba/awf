@@ -81,7 +81,7 @@ class Input implements \Serializable, \Countable
 		{
 			$magicQuotesWorkaround = $options['magicQuotesWorkaround'];
 		}
-		else
+	else
 		{
 			// If there was no source specified, always try working around magic_quotes_gpc on PHP 5.3
 			$magicQuotesWorkaround = $referenceSuperglobal;
@@ -170,6 +170,7 @@ class Input implements \Serializable, \Countable
 	 *
 	 * @see     \Countable::count()
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count($this->data);
@@ -313,6 +314,7 @@ class Input implements \Serializable, \Countable
 	 * @return  string  The serialized input.
 	 * @deprecated
 	 */
+	#[\ReturnTypeWillChange]
 	public function serialize()
 	{
 		// Load all of the inputs.
@@ -335,6 +337,7 @@ class Input implements \Serializable, \Countable
 	 * @return  \Awf\Input\Input  The input object.
 	 * @deprecated
 	 */
+	#[\ReturnTypeWillChange]
 	public function unserialize($input)
 	{
 		// Unserialize the data, and inputs.
@@ -344,6 +347,7 @@ class Input implements \Serializable, \Countable
 		$this->filter = \Awf\Input\Filter::getInstance();
 	}
 
+	#[\ReturnTypeWillChange]
 	public function __serialize(): array
 	{
 		// Load all of the inputs.
@@ -362,6 +366,7 @@ class Input implements \Serializable, \Countable
 		];
 	}
 
+	#[\ReturnTypeWillChange]
 	public function __unserialize(array $data): void
 	{
 		$this->options = $data['options'];
