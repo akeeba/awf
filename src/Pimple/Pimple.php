@@ -301,6 +301,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \InvalidArgumentException if the identifier is not defined
 	 */
+	#[\ReturnTypeWillChange]
 	function __get($name)
 	{
 		return $this->offsetGet($name);
@@ -314,6 +315,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \RuntimeException Prevent override of a frozen service
 	 */
+	#[\ReturnTypeWillChange]
 	function __set($name, $value)
 	{
 		$this->offsetSet($name, $value);

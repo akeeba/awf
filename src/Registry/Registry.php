@@ -67,6 +67,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  Registry
 	 */
+	#[\ReturnTypeWillChange]
 	public function __clone()
 	{
 		$this->data = unserialize(serialize($this->data));
@@ -77,6 +78,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  string
 	 */
+	#[\ReturnTypeWillChange]
 	public function __toString()
 	{
 		return $this->toString();
@@ -612,9 +614,9 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  array  An associative array holding the namespace data
 	 */
-	public function toArray()
+	public function toArray(): array
 	{
-		return (array) $this->asArray($this->data);
+		return $this->asArray($this->data);
 	}
 
 	/**
@@ -637,7 +639,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
-	public function toString($format = 'JSON', $options = array())
+	public function toString($format = 'JSON', $options = array()): string
 	{
 		// Return a namespace in a given format
 		$handler = AbstractRegistryFormat::getInstance($format, $options);
@@ -696,7 +698,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
-	protected function asArray($data)
+	protected function asArray($data): array
 	{
 		$array = array();
 
