@@ -191,6 +191,7 @@ class Date extends \DateTime
 	 *
 	 * @return  string   The date string in the specified format format.
 	 */
+	#[\ReturnTypeWillChange]
 	public function format($format, $local = false)
 	{
 		// If the returned time should not be local use GMT.
@@ -231,6 +232,7 @@ class Date extends \DateTime
 	 *
 	 * @note    This method can't be type hinted due to a PHP bug: https://bugs.php.net/bug.php?id=61483
 	 */
+	#[\ReturnTypeWillChange]
 	public function setTimezone($tz)
 	{
 		$this->tz = $tz;
