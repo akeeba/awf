@@ -1086,7 +1086,7 @@ class DataModel extends Model
 		// If the ignore value is a string, explode it over spaces.
 		if (!is_array($ignore))
 		{
-			$ignore = explode(' ', $ignore);
+			$ignore = explode(' ', $ignore ?: '');
 		}
 
 		// Bind the source value, excluding the ignored fields.
