@@ -174,7 +174,7 @@ class Uri
 			}
 
 			$config = $container->appConfig;
-			$live_site = $config->get('live_site');
+			$live_site = $config->get('live_site') ?: '';
 
 			if (trim($live_site) != '')
 			{
