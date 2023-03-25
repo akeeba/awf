@@ -131,16 +131,20 @@ abstract class Document
 	/**
 	 * Adds an external script to the page
 	 *
-	 * @param   string  $url    The URL of the script file
-	 * @param   boolean $before (optional) Should I add this before the template's scripts?
-	 * @param   string  $type   (optional) The MIME type of the script file
+	 * @param   string   $url     The URL of the script file
+	 * @param   boolean  $before  (optional) Should I add this before the template's scripts?
+	 * @param   string   $type    (optional) The MIME type of the script file
+	 * @param   bool     $defer   (optional) Should I defer loading the JS file?
+	 * @param   bool     $async   (optional) Should I make the script async?
 	 *
-	 * @return  \Awf\Document\Document
+	 * @return  Document
 	 */
-	public function addScript($url, $before = false, $type = "text/javascript")
+	public function addScript($url, $before = false, $type = "text/javascript", $defer = false, $async = false)
 	{
-		$this->scripts[$url]['mime'] = $type;
+		$this->scripts[$url]['mime']   = $type;
 		$this->scripts[$url]['before'] = $before;
+		$this->scripts[$url]['defer']  = $defer;
+		$this->scripts[$url]['async']  = $async;
 
 		return $this;
 	}
