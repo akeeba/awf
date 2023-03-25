@@ -34,7 +34,7 @@ abstract class Template
 		$app->getDocument()->addStyleSheet($url);
 	}
 
-	public static function addJs($path, $app = null, $useMediaQueryKey = true)
+	public static function addJs($path, $app = null, $useMediaQueryKey = true, $defer = false, $async = false)
 	{
 		if (!is_object($app))
 		{
@@ -52,7 +52,7 @@ abstract class Template
 			$url = $uri->toString();
 		}
 
-		$app->getDocument()->addScript($url);
+		$app->getDocument()->addScript($url, false, 'text/javascript', $defer, $async);
 	}
 
 	/**
