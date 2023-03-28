@@ -60,6 +60,11 @@ abstract class Query
 	protected $insert = null;
 
 	/**
+	 * @var    QueryElement  The replace into element.
+	 */
+	protected $replaceInto = null;
+
+	/**
 	 * @var    QueryElement  The from element.
 	 */
 	protected $from = null;
@@ -90,12 +95,12 @@ abstract class Query
 	protected $having = null;
 
 	/**
-	 * @var    QueryElement  The column list for an INSERT statement.
+	 * @var    QueryElement  The column list for an INSERT or REPLACE INTO statement.
 	 */
 	protected $columns = null;
 
 	/**
-	 * @var    QueryElement  The values list for an INSERT statement.
+	 * @var    QueryElement  The values list for an INSERT or REPLACE INTO statement.
 	 */
 	protected $values = null;
 
@@ -296,6 +301,33 @@ abstract class Query
 
 				break;
 
+			case 'replace':
+				$query .= (string)$this->replaceInto;
+
+				// Set method
+				if ($this->set)
+				{
+					$query .= (string)$this->set;
+				}
+				// Columns-Values method
+				elseif ($this->values)
+				{
+					if ($this->columns)
+					{
+						$query .= (string)$this->columns;
+					}
+
+					$elements = $this->values->getElements();
+					if (!($elements[0] instanceof $this))
+					{
+						$query .= ' VALUES ';
+					}
+
+					$query .= (string)$this->values;
+				}
+
+				break;
+
 			case 'call':
 				$query .= (string)$this->call;
 				break;
@@ -425,6 +457,12 @@ abstract class Query
 				$this->autoIncrementField = null;
 				break;
 
+			case 'replace':
+				$this->replaceInto = null;
+				$this->type = null;
+				$this->autoIncrementField = null;
+				break;
+
 			case 'from':
 				$this->from = null;
 				break;
@@ -486,6 +524,7 @@ abstract class Query
 				$this->delete = null;
 				$this->update = null;
 				$this->insert = null;
+				$this->replaceInto = null;
 				$this->from = null;
 				$this->join = null;
 				$this->set = null;
@@ -508,7 +547,7 @@ abstract class Query
 	}
 
 	/**
-	 * Adds a column, or array of column names that would be used for an INSERT INTO statement.
+	 * Adds a column, or array of column names that would be used for an INSERT INTO / REPLACE INTO statement.
 	 *
 	 * @param   mixed $columns A column name, or array of column names.
 	 *
@@ -908,6 +947,30 @@ abstract class Query
 	}
 
 	/**
+	 * Add a table name to the REPLACE clause of the query.
+	 *
+	 * Note that you must not mix insert, update, delete and select method calls when building a query.
+	 *
+	 * Usage:
+	 * $query->replace('#__a')->set('id = 1');
+	 * $query->replace('#__a)->columns('id, title')->values('1,2')->values->('3,4');
+	 * $query->replace('#__a)->columns('id, title')->values(array('1,2', '3,4'));
+	 *
+	 * @param   mixed   $table          The name of the table to insert data into.
+	 * @param   boolean $incrementField The name of the field to auto increment.
+	 *
+	 * @return  Query  Returns this object to allow chaining.
+	 */
+	public function replacea($table, $incrementField = false)
+	{
+		$this->type = 'replace';
+		$this->insert = new QueryElement('REPLACE INTO', $table);
+		$this->autoIncrementField = $incrementField;
+
+		return $this;
+	}
+
+	/**
 	 * Add a JOIN clause to the query.
 	 *
 	 * Usage:
@@ -1229,7 +1292,7 @@ abstract class Query
 	}
 
 	/**
-	 * Adds a tuple, or array of tuples that would be used as values for an INSERT INTO statement.
+	 * Adds a tuple, or array of tuples that would be used as values for an INSERT INTO / REPLACE INTO statement.
 	 *
 	 * Usage:
 	 * $query->values('1,2,3')->values('4,5,6');
