@@ -961,7 +961,7 @@ abstract class Query
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
-	public function replacea($table, $incrementField = false)
+	public function replaceInto($table, $incrementField = false)
 	{
 		$this->type = 'replace';
 		$this->insert = new QueryElement('REPLACE INTO', $table);
