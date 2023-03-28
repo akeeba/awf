@@ -62,7 +62,7 @@ abstract class Query
 	/**
 	 * @var    QueryElement  The replace into element.
 	 */
-	protected $replaceInto = null;
+	protected $replace = null;
 
 	/**
 	 * @var    QueryElement  The from element.
@@ -302,7 +302,7 @@ abstract class Query
 				break;
 
 			case 'replace':
-				$query .= (string)$this->replaceInto;
+				$query .= (string)$this->replace;
 
 				// Set method
 				if ($this->set)
@@ -458,8 +458,8 @@ abstract class Query
 				break;
 
 			case 'replace':
-				$this->replaceInto = null;
-				$this->type = null;
+				$this->replace = null;
+				$this->type    = null;
 				$this->autoIncrementField = null;
 				break;
 
@@ -524,7 +524,7 @@ abstract class Query
 				$this->delete = null;
 				$this->update = null;
 				$this->insert = null;
-				$this->replaceInto = null;
+				$this->replace = null;
 				$this->from = null;
 				$this->join = null;
 				$this->set = null;
@@ -961,10 +961,10 @@ abstract class Query
 	 *
 	 * @return  Query  Returns this object to allow chaining.
 	 */
-	public function replaceInto($table, $incrementField = false)
+	public function replace($table, $incrementField = false)
 	{
 		$this->type = 'replace';
-		$this->insert = new QueryElement('REPLACE INTO', $table);
+		$this->replace = new QueryElement('REPLACE INTO', $table);
 		$this->autoIncrementField = $incrementField;
 
 		return $this;
