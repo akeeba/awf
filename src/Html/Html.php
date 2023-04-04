@@ -313,7 +313,7 @@ abstract class Html
 
 		if (!$text)
 		{
-			$alt = htmlspecialchars($alt, ENT_COMPAT, 'UTF-8');
+			$alt = htmlspecialchars($alt ?? '', ENT_COMPAT, 'UTF-8');
 			$text = static::image($image, $alt, null, true, $app);
 		}
 
@@ -478,14 +478,14 @@ JS
 			}
 
 			return '<div class="input-group date" id="' . $id . '-container"><input type="text" title="' . (0 !== (int) $value ? static::date($value, null, null) : '')
-			. '" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value, ENT_COMPAT, 'UTF-8') . '" ' . $attribs . ' />'
+			. '" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value ?? '', ENT_COMPAT, 'UTF-8') . '" ' . $attribs . ' />'
 			. '<span class="input-group-btn" id="' . $id . '_img"><span class="btn btn-default"><span class="glyphicon glyphicon-calendar"></span></span></span></div>';
 		}
 		else
 		{
 			return '<input type="text" title="' . (0 !== (int) $value ? static::date($value, null, null) : '')
 			. '" value="' . (0 !== (int) $value ? static::_('date', $value, 'Y-m-d H:i:s', null) : '') . '" ' . $attribs
-			. ' /><input type="hidden" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value, ENT_COMPAT, 'UTF-8') . '" />';
+			. ' /><input type="hidden" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value ?? '', ENT_COMPAT, 'UTF-8') . '" />';
 		}
 	}
 } 
