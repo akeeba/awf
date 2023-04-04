@@ -450,7 +450,7 @@ class View
 	 */
 	public function escape($var)
 	{
-		return htmlspecialchars($var, ENT_COMPAT, 'UTF-8');
+		return htmlspecialchars($var ?? '', ENT_COMPAT, 'UTF-8');
 	}
 
 	/**

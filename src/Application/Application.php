@@ -410,7 +410,7 @@ abstract class Application
 		// so we will output a javascript redirect statement.
 		if (headers_sent())
 		{
-			$url = htmlspecialchars($url);
+			$url = htmlspecialchars($url ?? '');
 			$url = str_replace('&amp;', '&', $url);
 			echo "<script>document.location.href='" . $url . "';</script>\n";
 		}
