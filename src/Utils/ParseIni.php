@@ -54,7 +54,7 @@ abstract class ParseIni
 	 */
 	static function parse_ini_file_php($file, $process_sections = false, $rawdata = false)
 	{
-		$process_sections = ($process_sections !== true) ? false : true;
+		$process_sections = (bool)$process_sections;
 
 		if (!$rawdata)
 		{
@@ -167,24 +167,24 @@ abstract class ParseIni
 			}
 		}
 
-		for ($j = 0; $j < $i; $j++)
+		if ($process_sections)
 		{
-			if ($process_sections === true)
+			for ($j = 0; $j < $i; $j++)
 			{
 				if (isset($sections[$j]) && isset($values[$j]))
 				{
 					$result[$sections[$j]] = $values[$j];
 				}
 			}
-			else
-			{
-				if (isset($values[$j]))
-				{
-					$result[] = $values[$j];
-				}
-			}
+
+			return $result + $globals;
 		}
 
-		return $result + $globals;
+		foreach ($values as $chunk)
+		{
+			$globals = array_merge($globals, $chunk);
+		}
+
+		return $globals;
 	}
 }
