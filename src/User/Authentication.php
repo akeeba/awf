@@ -43,7 +43,7 @@ abstract class Authentication implements AuthenticationInterface
 	 *
 	 * @param   UserInterface  $user  The user object to bind
 	 *
-	 * @return  mixed
+	 * @return  void
 	 */
 	public function setUser(UserInterface &$user)
 	{
