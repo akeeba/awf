@@ -51,7 +51,7 @@ abstract class Privilege implements PrivilegeInterface
 	 *
 	 * @param   UserInterface  $user  The user object to bind
 	 *
-	 * @return  mixed
+	 * @return  void
 	 */
 	public function setUser(UserInterface &$user)
 	{
@@ -92,7 +92,7 @@ abstract class Privilege implements PrivilegeInterface
 	 * @param   string  $privilege  The name of the privilege to set
 	 * @param   mixed   $value      The privilege's value: true to give it, false to deny it
 	 *
-	 * @return  boolean  False if it is not supported
+	 * @return  void
 	 */
 	public function setPrivilege($privilege, $value)
 	{

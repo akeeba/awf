@@ -319,9 +319,9 @@ class User implements UserInterface
 	 * If the object is not found or has no record of the privilege requested it will return the $default value.
 	 *
 	 * @param   string  $privilege  The privilege to check, e.g. foo.bar
-	 * @param   mixed   $default    The default privilege value (true = give access, false = forbid access)
+	 * @param   bool    $default    The default privilege value (true = give access, false = forbid access)
 	 *
-	 * @return  mixed  True if access is granted, false if access is not granted, null if undefined (avoid using null)
+	 * @return  bool  True if access is granted, false if access is not granted, null if undefined (avoid using null)
 	 */
 	public function getPrivilege($privilege, $default = false)
 	{
@@ -478,14 +478,14 @@ class User implements UserInterface
 	 */
 	protected function getSalt($length = 16)
 	{
-		if (function_exists('mcrypt_create_iv'))
-		{
-			$salt = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
-		}
-		elseif (function_exists('openssl_random_pseudo_bytes'))
+		if (function_exists('openssl_random_pseudo_bytes'))
 		{
 			$crypto_strong = null;
 			$salt = openssl_random_pseudo_bytes($length, $crypto_strong);
+		}
+		elseif (function_exists('mcrypt_create_iv') && defined('MCRYPT_DEV_URANDOM'))
+		{
+			$salt = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
 		}
 		else
 		{

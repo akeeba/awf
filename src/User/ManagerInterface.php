@@ -42,7 +42,7 @@ interface ManagerInterface
 	 *
 	 * @return  boolean  True on success
 	 *
-	 * @throws  \AuthenticationException  When the login fails
+	 * @throws  \Exception  When the login fails
 	 */
 	public function loginUser($username, $password, $params = array());
 
