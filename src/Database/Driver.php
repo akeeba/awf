@@ -18,6 +18,7 @@ use Awf\Container\Container;
  * @method      string  q()   q($text, $escape = true)  Alias for quote method
  * @method      string  qn()  qn($name, $as = null)     Alias for quoteName method
  */
+#[\AllowDynamicProperties]
 abstract class Driver implements DatabaseInterface
 {
 	/**
