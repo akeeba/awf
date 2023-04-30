@@ -23,6 +23,7 @@ use RuntimeException;
  *
  * @package Awf\Mvc
  */
+#[\AllowDynamicProperties]
 class Model
 {
 	/**
