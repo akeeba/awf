@@ -325,11 +325,9 @@ class Pdomysql extends Pdo
      */
     public function lockTable($table)
     {
-        $query = $this->getQuery(true);
-
         $this->setQuery('LOCK TABLES ' . $this->quoteName($table) . ' WRITE');
 
-        $this->setQuery($query)->execute();
+        $this->execute();
 
         return $this;
     }
