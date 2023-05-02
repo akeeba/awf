@@ -179,7 +179,7 @@ class Buffer
 			'uid'     => 0,
 			'gid'     => 0,
 			'rdev'    => 0,
-			'size'    => strlen(static::$buffers[$this->name]),
+			'size'    => strlen(static::$buffers[$this->name] ?? ''),
 			'atime'   => 0,
 			'mtime'   => 0,
 			'ctime'   => 0,
@@ -202,7 +202,7 @@ class Buffer
 	 */
 	public function stream_read($count)
 	{
-		$ret            = substr(static::$buffers[$this->name], $this->position, $count);
+		$ret            = substr(static::$buffers[$this->name] ?? '', $this->position, $count);
 		$this->position += strlen($ret);
 
 		return $ret;
@@ -220,8 +220,8 @@ class Buffer
 	 */
 	public function stream_write($data)
 	{
-		$left                         = substr(static::$buffers[$this->name], 0, $this->position);
-		$right                        = substr(static::$buffers[$this->name], $this->position + strlen($data));
+		$left                         = substr(static::$buffers[$this->name] ?? '', 0, $this->position);
+		$right                        = substr(static::$buffers[$this->name] ?? '', $this->position + strlen($data));
 		static::$buffers[$this->name] = $left . $data . $right;
 		$this->position               += strlen($data);
 
@@ -251,7 +251,7 @@ class Buffer
 	 */
 	public function stream_eof()
 	{
-		return $this->position >= strlen(static::$buffers[$this->name]);
+		return $this->position >= strlen(static::$buffers[$this->name] ?? '');
 	}
 
 	/**
@@ -271,7 +271,7 @@ class Buffer
 		switch ($whence)
 		{
 			case SEEK_SET:
-				if ($offset < strlen(static::$buffers[$this->name]) && $offset >= 0)
+				if ($offset < strlen(static::$buffers[$this->name] ?? '') && $offset >= 0)
 				{
 					$this->position = $offset;
 
@@ -297,9 +297,9 @@ class Buffer
 				break;
 
 			case SEEK_END:
-				if (strlen(static::$buffers[$this->name]) + $offset >= 0)
+				if (strlen(static::$buffers[$this->name] ?? '') + $offset >= 0)
 				{
-					$this->position = strlen(static::$buffers[$this->name]) + $offset;
+					$this->position = strlen(static::$buffers[$this->name] ?? '') + $offset;
 
 					return true;
 				}
