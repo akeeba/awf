@@ -13,9 +13,9 @@ namespace Awf\Utils;
  * This class provides a generic buffer stream.  It can be used to store/retrieve/manipulate
  * string buffers with the standard PHP filesystem I/O methods.
  */
+#[\AllowDynamicProperties]
 class Buffer
 {
-
 	/**
 	 * Buffer hash
 	 *
