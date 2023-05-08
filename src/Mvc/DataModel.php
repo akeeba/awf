@@ -905,7 +905,7 @@ class DataModel extends Model
 		if ($this->hasField('locked_by'))
 		{
 			$locked_by        = $this->getFieldAlias('locked_by');
-			$this->$locked_by = 0;
+			$this->$locked_by = $this->isNullableField('locked_by') ? null : 0;
 		}
 
 		if ($this->hasField('locked_on'))
@@ -2410,7 +2410,7 @@ class DataModel extends Model
 		if ($this->hasField('locked_by'))
 		{
 			$locked_by        = $this->getFieldAlias('locked_by');
-			$this->$locked_by = 0;
+			$this->$locked_by = $this->isNullableField('locked_by') ? null : 0;
 		}
 
 		$this->save();
