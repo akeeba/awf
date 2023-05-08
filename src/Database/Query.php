@@ -1344,6 +1344,27 @@ abstract class Query
 		return $this;
 	}
 
+	public function extendWhere($outerGlue, $conditions, $innerGlue = 'AND')
+	{
+		// Replace the current WHERE with a new one which has the old one as an unnamed child.
+		$this->where = new QueryElement('WHERE', $this->where->setName('()'), " $outerGlue ");
+
+		// Append the new conditions as a new unnamed child.
+		$this->where->append(new QueryElement('()', $conditions, " $innerGlue "));
+
+		return $this;
+	}
+
+	public function orWhere($conditions, $glue = 'AND')
+	{
+		return $this->extendWhere('OR', $conditions, $glue);
+	}
+
+	public function andWhere($conditions, $glue = 'OR')
+	{
+		return $this->extendWhere('AND', $conditions, $glue);
+	}
+
 	/**
 	 * Method to provide deep copy support to nested objects and
 	 * arrays when cloning.
