@@ -494,13 +494,13 @@ class Pagination
 	 *
 	 * @return  string  Pagination footer.
 	 */
-	public function getListFooter()
+	public function getListFooter(?array $limitBoxAttributes = null)
 	{
 		$list                 = array();
 		$list['limit']        = $this->limit;
 		$list['limitstart']   = $this->limitStart;
 		$list['total']        = $this->total;
-		$list['limitfield']   = $this->getLimitBox();
+		$list['limitfield']   = $this->getLimitBox($limitBoxAttributes);
 		$list['pagescounter'] = $this->getPagesCounter();
 		$list['pageslinks']   = $this->getPagesLinks();
 
