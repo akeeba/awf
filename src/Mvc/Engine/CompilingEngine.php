@@ -298,7 +298,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	{
 		if (function_exists('opcache_invalidate'))
 		{
-			opcache_invalidate($path);
+			opcache_invalidate($path, true);
 		}
 
 		if (function_exists('apc_compile_file'))
