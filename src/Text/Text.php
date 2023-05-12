@@ -362,6 +362,30 @@ abstract class Text
 		return '';
 	}
 
+	public static function plural($string, $count)
+	{
+		$count = empty($count) ? 0 : (int) $count;
+
+		$possibleKeys = [
+			strtoupper($string) . '_' . $count,
+			strtoupper($string),
+		];
+
+		foreach ($possibleKeys as $key)
+		{
+			$language = self::_($key);
+
+			if ($language === $key)
+			{
+				continue;
+			}
+
+			return sprintf($language, $count);
+		}
+
+		return sprintf(self::_($string), $count);
+	}
+
 	/**
 	 * Does a translation key exist?
 	 *

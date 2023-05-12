@@ -565,7 +565,7 @@ class Blade implements CompilerInterface
 	 */
 	protected function compilePlural($expression)
 	{
-		return "<?php echo \\Awf\\Text\\Text::sprintf$expression; ?>";
+		return "<?php echo \\Awf\\Text\\Text::plural$expression; ?>";
 	}
 
 	/**
