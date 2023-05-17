@@ -124,7 +124,7 @@ class Installer
             }
 
             // Am I allowed to let this action fail?
-            $canFailAction = $attributes->canfail ? $attributes->canfail : 0;
+            $canFailAction = $attributes->canfail ? (string) $attributes->canfail : 0;
 
             // Evaluate conditions
             $shouldExecute = true;
