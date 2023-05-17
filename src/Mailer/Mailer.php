@@ -10,18 +10,15 @@ namespace Awf\Mailer;
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Text\Text;
-
-if (!function_exists('PHPMailerAutoload'))
-{
-	require_once __DIR__ . '/phpmailer/PHPMailerAutoload.php';
-}
+use PHPMailer\PHPMailer\PHPMailer;
+use RuntimeException;
 
 /**
  * A class to abstract email sending
  *
  * This file is a heavily modified version of the JMail class found in Joomla! 3.
  */
-class Mailer extends \PHPMailer
+class Mailer extends PHPMailer
 {
 
 	/**
@@ -84,9 +81,9 @@ class Mailer extends \PHPMailer
 	/**
 	 * Send the mail
 	 *
-	 * @return  mixed  True if successful
+	 * @return  bool  True if successful
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException|\PHPMailer\PHPMailer\Exception
 	 */
 	public function Send()
 	{
@@ -96,14 +93,14 @@ class Mailer extends \PHPMailer
 		{
 			if (($this->Mailer == 'mail') && !function_exists('mail'))
 			{
-				throw new \RuntimeException(sprintf('%s::Send mail not enabled.', get_class($this)));
+				throw new RuntimeException(sprintf('%s::Send mail not enabled.', get_class($this)));
 			}
 
 			@$result = parent::Send();
 
-			if ($result == false)
+			if (!$result)
 			{
-				throw new \RuntimeException(sprintf('%s::Send failed: "%s".', get_class($this), $this->ErrorInfo));
+				throw new RuntimeException(sprintf('%s::Send failed: "%s".', get_class($this), $this->ErrorInfo));
 			}
 
 			return $result;
@@ -149,7 +146,7 @@ class Mailer extends \PHPMailer
 		}
 		else
 		{
-			throw new \UnexpectedValueException(sprintf('Invalid email Sender: %s, Mailer::setSender(%s)', $from));
+			throw new \UnexpectedValueException(sprintf('Invalid email Sender: %s, Mailer::setSender(%1$s)', $from));
 		}
 
 		return $this;
