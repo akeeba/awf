@@ -15,7 +15,7 @@ class Boolean extends Number
 	 *
 	 * @param   mixed  $value  The value to test for emptiness
 	 *
-	 * @return  boolean
+	 * @return  bool
 	 */
 	public function isEmpty($value)
 	{

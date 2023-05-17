@@ -66,6 +66,16 @@ class Text extends AbstractFilter
 			return '';
 		}
 
+		if (is_array($value) || is_object($value))
+		{
+			$value = (array) $value;
+
+			$db    = $this->db;
+			$value = array_map([$db, 'quote'], $value);
+
+			return '(' . $this->getFieldName() . ' IN (' . implode(',', $value) . '))';
+		}
+
 		return '(' . $this->getFieldName() . ' LIKE ' . $this->db->quote($value) . ')';
 	}
 
@@ -107,6 +117,25 @@ class Text extends AbstractFilter
 	 * @return  string  Empty string
 	 */
 	public function interval($value, $interval, $include = true)
+	{
+		return '';
+	}
+
+	public function range($from, $to, $include = false)
+	{
+		return '';
+	}
+
+	/**
+	 * Dummy method; this search makes no sense for text fields
+	 *
+	 * @param   mixed    $from      Ignored
+	 * @param   mixed    $interval  Ignored
+	 * @param   boolean  $include   Ignored
+	 *
+	 * @return  string  Empty string
+	 */
+	public function modulo($from, $interval, $include = false)
 	{
 		return '';
 	}

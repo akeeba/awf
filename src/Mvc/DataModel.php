@@ -104,6 +104,10 @@ class DataModel extends Model
 	/** @var   array  A list of the relations which will be auto-touched by save() and touch() methods */
 	protected $touches = [];
 
+	/** @var  array  Shared parameters for behaviors */
+	protected $behaviorParams = [];
+
+
 	/**
 	 * Public constructor. Overrides the parent constructor, adding support for database-aware models.
 	 *
@@ -3065,5 +3069,76 @@ class DataModel extends Model
 		}
 
 		return self::$prefixCasePermutations;
+	}
+
+	/**
+	 * Set a behavior param
+	 *
+	 * @param   string  $name   The name of the param you want to set
+	 * @param   mixed   $value  The value to set
+	 *
+	 * @return  $this   Self, for chaining
+	 */
+	public function setBehaviorParam($name, $value)
+	{
+		$this->behaviorParams[$name] = $value;
+
+		return $this;
+	}
+
+	/**
+	 * Get a behavior param
+	 *
+	 * @param   string  $name     The name of the param you want to get
+	 * @param   mixed   $default  The default value returned if not set
+	 *
+	 * @return  mixed
+	 */
+	public function getBehaviorParam($name, $default = null)
+	{
+		return $this->behaviorParams[$name] ?? $default;
+	}
+
+	/**
+	 * Set or get the backlisted filters.
+	 *
+	 * Note: passing a null $list to get the filter blacklist is deprecated as of FOF 3.1. Pleas use getBlacklistFilters
+	 *       instead.
+	 *
+	 * @param   mixed    $list   A filter or list of filters to backlist. If null return the list of backlisted filter
+	 * @param   boolean  $reset  Reset the blacklist if true
+	 *
+	 * @return  null|array  Return an array of value if $list is null
+	 */
+	public function blacklistFilters($list = null, $reset = false)
+	{
+		if (!isset($list))
+		{
+			return $this->getBehaviorParam('blacklistFilters', []);
+		}
+
+		if (is_string($list))
+		{
+			$list = (array) $list;
+		}
+
+		if (!$reset)
+		{
+			$list = array_unique(array_merge($this->getBehaviorParam('blacklistFilters', []), $list));
+		}
+
+		$this->setBehaviorParam('blacklistFilters', $list);
+
+		return null;
+	}
+
+	/**
+	 * Get the blacklisted filters.
+	 *
+	 * @return  array
+	 */
+	public function getBlacklistFilters()
+	{
+		return $this->getBehaviorParam('blacklistFilters', []);
 	}
 }
