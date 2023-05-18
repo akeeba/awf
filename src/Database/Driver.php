@@ -223,6 +223,7 @@ abstract class Driver implements DatabaseInterface
 				'host'		=> $config->get('dbhost', 'localhost'),
 				'user'		=> $config->get('dbuser', ''),
 				'password'	=> $config->get('dbpass', ''),
+				'charset'	=> $config->get('dbcharset', 'utf8'),
 				'prefix'	=> $config->get('prefix', 'solo_'),
 				'ssl'       => [],
 			);
