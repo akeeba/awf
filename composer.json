@@ -11,6 +11,7 @@
 		"ext-curl": "*",
 		"ext-simplexml": "*",
 		"ext-pdo": "*",
+		"ext-libxml": "*",
 		"ext-mysqli": "*"
 	},
 	"keywords": [
