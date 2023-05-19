@@ -87,6 +87,8 @@ abstract class Pdo extends Driver
 
 	private $checkingConnected = false;
 
+	protected $transactionDepth = 0;
+
 	/**
 	 * Constructor.
 	 *
