@@ -40,4 +40,9 @@ class CsrfTokenFactory
 
 		return new CsrfToken($segment, $this->algorithm);
 	}
+
+	public function setAlgorithm(string $algorithm): void
+	{
+		$this->algorithm = $algorithm;
+	}
 }
