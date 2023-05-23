@@ -11,6 +11,7 @@ use PDOStatement;
 
 class Pdo extends AbstractIterator
 {
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		if (!empty($this->cursor) && $this->cursor instanceof PDOStatement)

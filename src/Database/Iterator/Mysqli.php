@@ -13,6 +13,15 @@ class Mysqli extends AbstractIterator
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
+	public function count()
+	{
+		return mysqli_num_rows($this->cursor);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	protected function fetchObject()
 	{
 		return mysqli_fetch_object($this->cursor, $this->class);
@@ -24,13 +33,5 @@ class Mysqli extends AbstractIterator
 	protected function freeResult()
 	{
 		mysqli_free_result($this->cursor);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function count()
-	{
-		return mysqli_num_rows($this->cursor);
 	}
 }

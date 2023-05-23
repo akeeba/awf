@@ -13,6 +13,7 @@ class Postgresql extends AbstractIterator
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return pg_num_rows($this->cursor);
