@@ -1,50 +1,52 @@
 {
-	"name": "akeeba/awf",
-	"type": "library",
-	"description": "A tiny MVC web application framework for single source standalone web applications, and WordPress plugins",
-	"require": {
-		"php": "^7.2.0|^8.0.0",
-		"composer/ca-bundle": "^1.2",
-		"phpmailer/phpmailer": "^6.8.0"
-	},
-	"suggest": {
-		"ext-curl": "*",
-		"ext-simplexml": "*",
-		"ext-pdo": "*",
-		"ext-libxml": "*",
-		"ext-mysqli": "*"
-	},
-	"keywords": [
-		"framework",
-		"joomla",
-		"wordpress"
-	],
-	"homepage": "https://github.com/akeeba/awf",
-	"license": "GPL-3.0-or-later",
-	"authors": [
-		{
-			"name": "Nicholas K. Dionysopoulos",
-			"email": "nicholas_NO_SPAM_PLEASE@akeeba.com",
-			"homepage": "http://www.dionysopoulos.me",
-			"role": "Lead Developer"
-		}
-	],
-	"autoload": {
-		"psr-4": {
-			"Awf\\": "src/"
-		},
-		"files": [
-			"src/Utils/helpers.php"
-		]
-	},
-	"archive": {
-		"exclude": [
-			"/tests",
-			"/vendor",
-			".gitattributes",
-			".gitignore",
-			".travis.yml",
-			"phpunit*"
-		]
-	}
+  "name": "akeeba/awf",
+  "type": "library",
+  "description": "A tiny MVC web application framework for single source standalone web applications, and WordPress plugins",
+  "require": {
+    "php": "^7.2.0|^8.0.0",
+    "composer/ca-bundle": "^1.2",
+    "phpmailer/phpmailer": "^6.8.0"
+  },
+  "suggest": {
+    "ext-curl": "*",
+    "ext-simplexml": "*",
+    "ext-pdo": "*",
+    "ext-libxml": "*",
+    "ext-mysqli": "*",
+    "ext-pgsql": "*",
+    "ext-sqlsrv": "*"
+  },
+  "keywords": [
+    "framework",
+    "joomla",
+    "wordpress"
+  ],
+  "homepage": "https://github.com/akeeba/awf",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Nicholas K. Dionysopoulos",
+      "email": "nicholas_NO_SPAM_PLEASE@akeeba.com",
+      "homepage": "http://www.dionysopoulos.me",
+      "role": "Lead Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Awf\\": "src/"
+    },
+    "files": [
+      "src/Utils/helpers.php"
+    ]
+  },
+  "archive": {
+    "exclude": [
+      "/tests",
+      "/vendor",
+      ".gitattributes",
+      ".gitignore",
+      ".travis.yml",
+      "phpunit*"
+    ]
+  }
 }
