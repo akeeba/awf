@@ -18,6 +18,13 @@ namespace Awf\Session;
  */
 class CsrfTokenFactory
 {
+	private $algorithm = 'sha512';
+
+	public function __construct($algorithm = 'sha512')
+	{
+		$this->algorithm = $algorithm;
+	}
+
 	/**
 	 *
 	 * Creates a CsrfToken object.
@@ -31,6 +38,6 @@ class CsrfTokenFactory
 	{
 		$segment = $manager->newSegment('Awf\Session\CsrfToken');
 
-		return new CsrfToken($segment);
+		return new CsrfToken($segment, $this->algorithm);
 	}
 }
