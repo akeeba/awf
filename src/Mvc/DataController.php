@@ -281,6 +281,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		// Redirect to the edit task
 		if (!$this->applySave())
 		{
@@ -309,6 +311,8 @@ class DataController extends Controller
 	{
 		// CSRF prevention
 		$this->csrfProtection();
+
+		$this->container->session->getCsrfToken()->regenerateValue();
 
 		$model = $this->getModel();
 
@@ -360,6 +364,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		if (!$this->applySave())
 		{
 			return;
@@ -386,6 +392,8 @@ class DataController extends Controller
 	{
 		// CSRF prevention
 		$this->csrfProtection();
+
+		$this->container->session->getCsrfToken()->regenerateValue();
 
 		if (!$this->applySave())
 		{
@@ -447,6 +455,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		$model = $this->getModel();
 		$ids   = $this->getIDsFromRequest($model, false);
 
@@ -494,6 +504,8 @@ class DataController extends Controller
 	{
 		// CSRF prevention
 		$this->csrfProtection();
+
+		$this->container->session->getCsrfToken()->regenerateValue();
 
 		$model = $this->getModel();
 		$ids   = $this->getIDsFromRequest($model, false);
@@ -543,6 +555,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		$model = $this->getModel();
 		$ids   = $this->getIDsFromRequest($model, false);
 
@@ -591,6 +605,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		$model = $this->getModel();
 		$ids   = $this->getIDsFromRequest($model, false);
 
@@ -638,6 +654,8 @@ class DataController extends Controller
 	{
 		// CSRF prevention
 		$this->csrfProtection();
+
+		$this->container->session->getCsrfToken()->regenerateValue();
 
 		$type   = null;
 		$msg    = null;
@@ -709,6 +727,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		$model = $this->getModel();
 
 		if (!$model->getId())
@@ -756,6 +776,8 @@ class DataController extends Controller
 		// CSRF prevention
 		$this->csrfProtection();
 
+		$this->container->session->getCsrfToken()->regenerateValue();
+
 		$model = $this->getModel();
 
 		if (!$model->getId())
@@ -802,6 +824,8 @@ class DataController extends Controller
 	{
 		// CSRF prevention
 		$this->csrfProtection();
+
+		$this->container->session->getCsrfToken()->regenerateValue();
 
 		$model = $this->getModel();
 
