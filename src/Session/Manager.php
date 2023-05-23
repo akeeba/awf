@@ -217,6 +217,12 @@ class Manager
 		return $ret;
 	}
 
+	public function setCsrfTokenAlgorithm(string $algorithm)
+	{
+		$this->csrf_token_factory->setAlgorithm($algorithm);
+		$this->csrf_token = null;
+	}
+
 	/**
 	 *
 	 * Returns the CSRF token, creating it if needed (and thereby starting a

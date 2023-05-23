@@ -171,7 +171,7 @@ class Container extends Pimple
 			{
 				return new Session\Manager(
 					new Session\SegmentFactory,
-					new Session\CsrfTokenFactory($this->appConfig->get('session_token_algorithm', 'sha512')),
+					new Session\CsrfTokenFactory(),
 					$_COOKIE
 				);
 			};
