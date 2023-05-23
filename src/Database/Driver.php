@@ -9,6 +9,8 @@ namespace Awf\Database;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Database\Iterator\AbstractIterator;
+use RuntimeException;
 
 /**
  * Database Driver Class
@@ -200,7 +202,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Driver  A database object.
 	 *
-	 * @throws  \RuntimeException  When the driver cannot be instantiated
+	 * @throws  RuntimeException  When the driver cannot be instantiated
 	 */
 	public static function getInstance($options = array())
 	{
@@ -272,7 +274,7 @@ abstract class Driver implements DatabaseInterface
 			// If the class still doesn't exist we have nothing left to do but throw an exception.  We did our best.
 			if (!class_exists($class))
 			{
-				throw new \RuntimeException(sprintf('Unable to load Database Driver: %s', $options['driver']));
+				throw new RuntimeException(sprintf('Unable to load Database Driver: %s', $options['driver']));
 			}
 
 			// Create our new Driver connector based on the options given.
@@ -280,9 +282,9 @@ abstract class Driver implements DatabaseInterface
 			{
 				$instance = new $class($options);
 			}
-			catch (\RuntimeException $e)
+			catch (RuntimeException $e)
 			{
-				throw new \RuntimeException(sprintf('Unable to connect to the Database: %s', $e->getMessage()));
+				throw new RuntimeException(sprintf('Unable to connect to the Database: %s', $e->getMessage()));
 			}
 
 			// Set the new connector to the global instances based on signature.
@@ -406,13 +408,13 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  string  The query that alter the database query string
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function alterDbCharacterSet($dbName)
 	{
 		if (is_null($dbName))
 		{
-			throw new \RuntimeException('Database name must not be null.');
+			throw new RuntimeException('Database name must not be null.');
 		}
 
 		$this->setQuery($this->getAlterDbCharacterSet($dbName));
@@ -425,7 +427,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  void  Returns void if the database connected successfully.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function connect();
 
@@ -446,21 +448,21 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  string  The query that creates database
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function createDatabase($options, $utf = true)
 	{
 		if (is_null($options))
 		{
-			throw new \RuntimeException('$options object must not be null.');
+			throw new RuntimeException('$options object must not be null.');
 		}
 		elseif (empty($options->db_name))
 		{
-			throw new \RuntimeException('$options object must have db_name set.');
+			throw new RuntimeException('$options object must have db_name set.');
 		}
 		elseif (empty($options->db_user))
 		{
-			throw new \RuntimeException('$options object must have db_user set.');
+			throw new RuntimeException('$options object must have db_user set.');
 		}
 
 		$this->setQuery($this->getCreateDatabaseQuery($options, $utf));
@@ -483,7 +485,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Driver     Returns this object to support chaining.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public abstract function dropTable($table, $ifExists = true);
 
@@ -699,7 +701,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Query  The current query object or a new object extending the Query class.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function getQuery($new = false)
 	{
@@ -712,7 +714,7 @@ abstract class Driver implements DatabaseInterface
 			if (!class_exists($class))
 			{
 				// If it doesn't exist we are at an impasse so throw an exception.
-				throw new \RuntimeException('Database Query Class not found.');
+				throw new RuntimeException('Database Query Class not found.');
 			}
 
 			return new $class($this);
@@ -731,7 +733,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  array  An array of fields by table.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function getTableColumns($table, $typeOnly = true);
 
@@ -742,7 +744,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  array  A list of the create SQL for the tables.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function getTableCreate($tables);
 
@@ -753,7 +755,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  array  An array of keys for the table(s).
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function getTableKeys($tables);
 
@@ -762,7 +764,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  array  An array of all the tables in the database.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function getTableList();
 
@@ -799,7 +801,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  boolean    True on success.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function insertObject($table, &$object, $key = null)
 	{
@@ -865,7 +867,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed  The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadAssoc()
 	{
@@ -905,7 +907,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed   The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadAssocList($key = null, $column = null)
 	{
@@ -947,7 +949,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed    The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadColumn($offset = 0)
 	{
@@ -980,7 +982,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed   The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadObject($class = 'stdClass')
 	{
@@ -1018,7 +1020,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed   The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadObjectList($key = '', $class = 'stdClass')
 	{
@@ -1056,7 +1058,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed  The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadResult()
 	{
@@ -1088,7 +1090,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed  The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadRow()
 	{
@@ -1125,7 +1127,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  mixed   The return value or null if the query failed.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function loadRowList($key = null)
 	{
@@ -1165,7 +1167,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Driver     Returns this object to support chaining.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public abstract function lockTable($tableName);
 
@@ -1378,7 +1380,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Driver    Returns this object to support chaining.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public abstract function renameTable($oldTable, $newTable, $backup = null, $prefix = null);
 
@@ -1389,7 +1391,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  boolean  True if the database was successfully selected.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function select($database);
 
@@ -1441,7 +1443,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  void
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function transactionCommit();
 
@@ -1450,7 +1452,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  void
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function transactionRollback();
 
@@ -1459,7 +1461,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  void
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function transactionStart();
 
@@ -1470,7 +1472,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  void
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function truncateTable($table)
 	{
@@ -1488,7 +1490,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  boolean  True on success.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public function updateObject($table, &$object, $key, $nulls = false)
 	{
@@ -1560,11 +1562,38 @@ abstract class Driver implements DatabaseInterface
 	}
 
 	/**
+	 * Get a new iterator on the current query.
+	 *
+	 * @param   string|null  $column  An option column to use as the iterator key.
+	 * @param   string       $class   The class of object that is returned.
+	 *
+	 * @return  AbstractIterator  A new database iterator.
+	 *
+	 * @throws  RuntimeException
+	 */
+	public function getIterator(string $column = null, string $class = 'stdClass'): AbstractIterator
+	{
+		// Derive the class name from the driver.
+		$iteratorClass = __NAMESPACE__ . '\\Iterator\\' . ucfirst($this->name);
+
+		// Make sure we have an iterator class for this driver.
+		if (!class_exists($iteratorClass))
+		{
+			// If it doesn't exist we are at an impasse so throw an exception.
+			throw new RuntimeException(sprintf('Database iterator class ‘%s’ is not defined', $iteratorClass));
+		}
+
+		// Return a new iterator
+		return new $iteratorClass($this->execute(), $column, $class);
+	}
+
+
+	/**
 	 * Execute the SQL statement.
 	 *
 	 * @return  mixed  A database cursor resource on success, boolean false on failure.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	abstract public function execute();
 
@@ -1573,7 +1602,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @return  Driver  Returns this object to support chaining.
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RuntimeException
 	 */
 	public abstract function unlockTables();
 }
