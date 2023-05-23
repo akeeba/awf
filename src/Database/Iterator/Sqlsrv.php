@@ -13,6 +13,7 @@ class Sqlsrv extends AbstractIterator
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return sqlsrv_num_rows($this->cursor);
