@@ -93,7 +93,7 @@ abstract class Application
 		// Set up the temporary path
 		if (empty($container['temporaryPath']))
 		{
-			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP . '/tmp' : $container->filesystemBase . '/tmp';
+			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP : $container->filesystemBase . '/tmp';
 		}
 
 		// Set up the language path
