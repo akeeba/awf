@@ -9,6 +9,7 @@ namespace Awf\Mvc;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Exception\App;
 use Awf\Inflector\Inflector;
 use Awf\Input\Input;
 use Awf\Text\Text;
@@ -233,9 +234,9 @@ class Controller
 	/**
 	 * Public constructor of the Controller class
 	 *
-	 * @param   Container $container The application container
+	 * @param   Container|null  $container  The application container
 	 *
-	 * @return  Controller
+	 * @throws  App
 	 */
 	public function __construct(Container $container = null)
 	{
@@ -251,6 +252,8 @@ class Controller
 		{
 			$container = Application::getInstance()->getContainer();
 		}
+
+		$container->eventDispatcher->trigger('onControllerBeforeConstruct', [$this, $container]);
 
 		if (isset($container['mvc_config']))
 		{
@@ -324,6 +327,8 @@ class Controller
 		{
 			$this->setModelName($config['modelName']);
 		}
+
+		$container->eventDispatcher->trigger('onControllerAfterConstruct', [$this, $container]);
 	}
 
 	/**
@@ -367,6 +372,13 @@ class Controller
 			}
 		}
 
+		$results = $this->container->eventDispatcher->trigger('onControllerBeforeExecute', [$this, $task]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
+		}
+
 		$method_name = 'onBefore' . ucfirst($task);
 
 		if (method_exists($this, $method_name))
@@ -377,6 +389,13 @@ class Controller
 			{
 				return false;
 			}
+		}
+
+		$results = $this->container->eventDispatcher->trigger('onControllerBefore' . ucfirst($task), [$this]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
 		}
 
 		// Do not allow the display task to be directly called
@@ -412,6 +431,13 @@ class Controller
 			}
 		}
 
+		$results = $this->container->eventDispatcher->trigger('onControllerAfter' . ucfirst($task), [$this, $result]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
+		}
+
 		$method_name = 'onAfterExecute';
 
 		if (method_exists($this, $method_name))
@@ -422,6 +448,13 @@ class Controller
 			{
 				return false;
 			}
+		}
+
+		$results = $this->container->eventDispatcher->trigger('onControllerAfterExecute', [$this, $task, $result]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
 		}
 
 		return $ret;

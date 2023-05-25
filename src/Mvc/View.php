@@ -259,6 +259,8 @@ class View
 			$container = Application::getInstance()->getContainer();
 		}
 
+		$container->eventDispatcher->trigger('onViewBeforeConstruct', [$this, $container]);
+
 		// Cache some useful references in the class
 		$this->input = $container->input;
 
@@ -345,6 +347,8 @@ class View
 		$this->viewFinder->setExtensions(array_keys($this->viewEngineMap));
 
 		$this->baseurl = Uri::base(true, $this->container);
+
+		$container->eventDispatcher->trigger('onViewAfterConstruct', [$this, $container]);
 	}
 
 	/**
@@ -619,9 +623,17 @@ class View
 			}
 		}
 
+		$results = $this->container->eventDispatcher->trigger('onViewBefore' . ucfirst($this->doTask), [$this]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
+		}
+
 		$result = $this->loadTemplate($tpl);
 
 		$method = 'onAfter' . ucfirst($this->doTask);
+
 		if (method_exists($this, $method))
 		{
 			$result = $this->$method($tpl);
@@ -630,6 +642,13 @@ class View
 			{
 				throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
+		}
+
+		$results = $this->container->eventDispatcher->trigger('onViewAfter' . ucfirst($this->doTask), [$this, &$result]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
 		}
 
 		if (is_object($result) && ($result instanceof \Exception))
