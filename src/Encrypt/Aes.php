@@ -8,7 +8,6 @@
 namespace Awf\Encrypt;
 
 use Awf\Encrypt\AesAdapter\AdapterInterface;
-use Awf\Encrypt\AesAdapter\Mcrypt;
 use Awf\Encrypt\AesAdapter\OpenSSL;
 
 /**
@@ -54,11 +53,6 @@ class Aes
 	public function __construct($key, $strength = 128, $mode = 'cbc')
 	{
 		$this->adapter = new OpenSSL();
-
-		if (!$this->adapter->isSupported())
-		{
-			$this->adapter = new Mcrypt();
-		}
 
 		$this->adapter->setEncryptionMode($mode, $strength);
 		$this->setPassword($key, true);
@@ -155,12 +149,7 @@ class Aes
 	 */
 	public static function isSupported()
 	{
-		$adapter = new Mcrypt();
-
-		if (!$adapter->isSupported())
-		{
-			$adapter = new OpenSSL();
-		}
+		$adapter = new OpenSSL();
 
 		if (!$adapter->isSupported())
 		{
