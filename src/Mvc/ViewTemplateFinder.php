@@ -239,7 +239,7 @@ class ViewTemplateFinder
 		// Add extra paths
 		if (!empty($extraPaths))
 		{
-			$paths = array_merge($paths, $extraPaths);
+			$paths = array_merge($extraPaths, $paths);
 		}
 
 		// Remove duplicate paths
