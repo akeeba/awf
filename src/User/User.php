@@ -478,14 +478,14 @@ class User implements UserInterface
 	 */
 	protected function getSalt($length = 16)
 	{
-		if (function_exists('openssl_random_pseudo_bytes'))
+		if (\function_exists('random_bytes'))
+		{
+			$salt = random_bytes($length);
+		}
+		elseif (function_exists('openssl_random_pseudo_bytes'))
 		{
 			$crypto_strong = null;
 			$salt = openssl_random_pseudo_bytes($length, $crypto_strong);
-		}
-		elseif (function_exists('mcrypt_create_iv') && defined('MCRYPT_DEV_URANDOM'))
-		{
-			$salt = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
 		}
 		else
 		{
