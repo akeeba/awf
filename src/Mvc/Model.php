@@ -225,6 +225,8 @@ class Model
 			$container = Application::getInstance()->getContainer();
 		}
 
+		$container->eventDispatcher->trigger('onModelBeforeConstruct', [$this, $container]);
+
 		$this->input = $container->input;
 
 		$this->container = $container;
@@ -267,6 +269,8 @@ class Model
 		{
 			$this->_ignoreRequest = true;
 		}
+
+		$container->eventDispatcher->trigger('onModelAfterConstruct', [$this, $container]);
 	}
 
 	/**
