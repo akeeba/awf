@@ -431,7 +431,7 @@ class Controller
 			}
 		}
 
-		$results = $this->container->eventDispatcher->trigger('onControllerAfter' . ucfirst($task), [$this, $result]) ?: [];
+		$results = $this->container->eventDispatcher->trigger('onControllerAfter' . ucfirst($task), [$this, $ret]) ?: [];
 
 		if (in_array(false, $results, true))
 		{
@@ -450,7 +450,7 @@ class Controller
 			}
 		}
 
-		$results = $this->container->eventDispatcher->trigger('onControllerAfterExecute', [$this, $task, $result]) ?: [];
+		$results = $this->container->eventDispatcher->trigger('onControllerAfterExecute', [$this, $task, $ret]) ?: [];
 
 		if (in_array(false, $results, true))
 		{
