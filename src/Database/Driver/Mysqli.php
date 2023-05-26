@@ -124,9 +124,25 @@ class Mysqli extends Driver
 	 */
 	public function __destruct()
 	{
-		if (is_callable($this->connection, 'close'))
+		if (!is_resource($this->connection) && !(class_exists(\mysqli::class) && $this->connection instanceof \mysqli))
 		{
-			mysqli_close($this->connection);
+			return;
+		}
+
+		try
+		{
+			if (is_object($this->connection))
+			{
+				$this->connection->close();
+			}
+			else
+			{
+				mysqli_close($this->connection);
+			}
+		}
+		catch (\Throwable $e)
+		{
+			// We expect an ErrorException under PHP 8 is the connection is already closed
 		}
 	}
 
@@ -248,13 +264,26 @@ class Mysqli extends Driver
 	 */
 	public function disconnect()
 	{
-		// Close the connection.
-		if (is_callable($this->connection, 'close'))
+		if (!is_resource($this->connection) && !(class_exists(\mysqli::class) && $this->connection instanceof \mysqli))
 		{
-			mysqli_close($this->connection);
+			return;
 		}
 
-		$this->connection = null;
+		try
+		{
+			if (is_object($this->connection))
+			{
+				$this->connection->close();
+			}
+			else
+			{
+				mysqli_close($this->connection);
+			}
+		}
+		catch (\Throwable $e)
+		{
+			// We expect an ErrorException under PHP 8 is the connection is already closed
+		}
 	}
 
 	/**
