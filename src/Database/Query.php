@@ -1538,6 +1538,11 @@ abstract class Query
 
 	public function extendWhere($outerGlue, $conditions, $innerGlue = 'AND')
 	{
+		if (empty($this->where))
+		{
+			$this->where = new QueryElement('WHERE', '(TRUE)', ' AND ');
+		}
+
 		// Replace the current WHERE with a new one which has the old one as an unnamed child.
 		$this->where = new QueryElement('WHERE', $this->where->setName('()'), " $outerGlue ");
 
