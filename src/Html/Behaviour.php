@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is based on the JHtml package of Joomla! 3 but heavily modified
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Html;
@@ -15,6 +13,8 @@ use Awf\Utils\Template;
 
 /**
  * Javascript behaviours abstraction class
+ *
+ * This class is based on the JHtml package of Joomla! 3 but heavily modified
  */
 abstract class Behaviour
 {

@@ -1,16 +1,16 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Database;
 
 /**
  * Query Element Class.
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @property-read    string  $name      The name of the element.
  * @property-read    array   $elements  An array of elements.
@@ -95,6 +95,23 @@ class QueryElement
 		return $this->elements;
 	}
 
+	public function getGlue()
+	{
+		return $this->glue;
+	}
+
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	public function setName($name)
+	{
+		$this->name = $name;
+
+		return $this;
+	}
+
 	/**
 	 * Method to provide deep copy support to nested objects and arrays
 	 * when cloning.
@@ -105,9 +122,19 @@ class QueryElement
 	{
 		foreach ($this as $k => $v)
 		{
-			if (is_object($v) || is_array($v))
+			if (\is_object($v))
 			{
-				$this->{$k} = unserialize(serialize($v));
+				$this->{$k} = clone $v;
+			}
+			elseif (\is_array($v))
+			{
+				foreach ($v as $i => $element)
+				{
+					if (\is_object($element))
+					{
+						$this->{$k}[$i] = clone $element;
+					}
+				}
 			}
 		}
 	}

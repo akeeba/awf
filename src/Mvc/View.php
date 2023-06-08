@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc;
@@ -22,6 +22,7 @@ use RuntimeException;
  *
  * @package Awf\Mvc
  */
+#[\AllowDynamicProperties]
 class View
 {
 	/**
@@ -214,10 +215,10 @@ class View
 		}
 
 		$classNames = array(
-			'\\' . ucfirst($appName) . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
-			'\\' . ucfirst($appName) . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
-			'\\' . ucfirst($appName) . '\\View\\Default\\' . ucfirst($viewType),
-			'\\' . ucfirst($appName) . '\\View\\DefaultView'
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
+			$container->applicationNamespace . '\\View\\Default\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\DefaultView'
 		);
 
 		foreach ($classNames as $className)
@@ -257,6 +258,8 @@ class View
 		{
 			$container = Application::getInstance()->getContainer();
 		}
+
+		$container->eventDispatcher->trigger('onViewBeforeConstruct', [$this, $container]);
 
 		// Cache some useful references in the class
 		$this->input = $container->input;
@@ -344,6 +347,8 @@ class View
 		$this->viewFinder->setExtensions(array_keys($this->viewEngineMap));
 
 		$this->baseurl = Uri::base(true, $this->container);
+
+		$container->eventDispatcher->trigger('onViewAfterConstruct', [$this, $container]);
 	}
 
 	/**
@@ -422,7 +427,7 @@ class View
 	 *
 	 * @return  string  The name of the model
 	 *
-	 * @throws  \Exception
+	 * @throws  RuntimeException
 	 */
 	public function getName()
 	{
@@ -432,10 +437,10 @@ class View
 
 			if (!preg_match('/(.*)\\\\View\\\\(.*)\\\\(.*)/i', get_class($this), $r))
 			{
-				throw new \Exception(\Awf\Text\Text::_('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
+				throw new RuntimeException(Text::_('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
 			}
 
-			$this->name = strtolower($r[2]);
+			$this->name = $r[2];
 		}
 
 		return $this->name;
@@ -450,7 +455,7 @@ class View
 	 */
 	public function escape($var)
 	{
-		return htmlspecialchars($var, ENT_COMPAT, 'UTF-8');
+		return htmlspecialchars($var ?? '', ENT_COMPAT, 'UTF-8');
 	}
 
 	/**
@@ -592,7 +597,7 @@ class View
 	 */
 	public function setModel($modelName, Model &$model)
 	{
-		$this->modelInstances[$modelName] = $model;
+		$this->modelInstances[strtolower($modelName)] = $model;
 	}
 
 	/**
@@ -618,9 +623,17 @@ class View
 			}
 		}
 
+		$results = $this->container->eventDispatcher->trigger('onViewBefore' . ucfirst($this->doTask), [$this]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
+		}
+
 		$result = $this->loadTemplate($tpl);
 
 		$method = 'onAfter' . ucfirst($this->doTask);
+
 		if (method_exists($this, $method))
 		{
 			$result = $this->$method($tpl);
@@ -629,6 +642,13 @@ class View
 			{
 				throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
+		}
+
+		$results = $this->container->eventDispatcher->trigger('onViewAfter' . ucfirst($this->doTask), [$this, &$result]) ?: [];
+
+		if (in_array(false, $results, true))
+		{
+			return false;
 		}
 
 		if (is_object($result) && ($result instanceof \Exception))
@@ -671,6 +691,8 @@ class View
 				$basePath . 'default',
 			);
 		}
+
+		$paths = array_unique($paths);
 
 		foreach ($paths as $path)
 		{
@@ -835,9 +857,9 @@ class View
 	{
 		$extensions = array_keys($this->viewEngineMap);
 
-		return array_first($extensions, function($key, $value) use ($path)
+		return akeeba_array_first($extensions, function($key, $value) use ($path)
 		{
-			return ends_with($path, $value);
+			return akeeba_ends_with($path, $value);
 		});
 	}
 
@@ -905,11 +927,11 @@ class View
 		// a language string starting with text|.
 		else
 		{
-			if (starts_with($empty, 'raw|'))
+			if (akeeba_starts_with($empty, 'raw|'))
 			{
 				$result = substr($empty, 4);
 			}
-			elseif (starts_with($empty, 'text|'))
+			elseif (akeeba_starts_with($empty, 'text|'))
 			{
 				$result = Text::_(substr($empty, 5));
 			}

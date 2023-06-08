@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		kaas
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel\Filter;
@@ -48,9 +48,8 @@ class Date extends Text
 		}
 
 		$sql = '((' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($from) . ') AND ';
-		$sql .= '(' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($to) . '))';
 
-		return $sql;
+		return $sql . ('(' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($to) . '))');
 	}
 
 	/**
@@ -81,16 +80,16 @@ class Date extends Text
 		}
 
 		$sql = '((' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($from) . ') AND ';
-		$sql .= '(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($to) . '))';
 
-		return $sql;
+		return $sql . ('(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($to) . '))');
 	}
 
 	/**
 	 * Interval date search
 	 *
 	 * @param   string               $value     The value to search
-	 * @param   string|array|object  $interval  The interval. Can be (+1 MONTH or array('value' => 1, 'unit' => 'MONTH', 'sign' => '+'))
+	 * @param   string|array|object  $interval  The interval. Can be (+1 MONTH or array('value' => 1, 'unit' =>
+	 *                                          'MONTH', 'sign' => '+'))
 	 * @param   boolean              $include   If the borders should be included
 	 *
 	 * @return  string  the sql string
@@ -105,19 +104,12 @@ class Date extends Text
 		$interval = $this->getInterval($interval);
 
 		// Sanity check on $interval array
-		if(!isset($interval['sign']) || !isset($interval['value']) || !isset($interval['unit']))
+		if (!isset($interval['sign']) || !isset($interval['value']) || !isset($interval['unit']))
 		{
 			return '';
 		}
 
-		if ($interval['sign'] == '+')
-		{
-			$function = 'DATE_ADD';
-		}
-		else
-		{
-			$function = 'DATE_SUB';
-		}
+		$function = $interval['sign'] == '+' ? 'DATE_ADD' : 'DATE_SUB';
 
 		$extra = '';
 
@@ -127,9 +119,49 @@ class Date extends Text
 		}
 
 		$sql = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $function;
-		$sql .= '(' . $this->getFieldName() . ', INTERVAL ' . $interval['value'] . ' ' . $interval['unit'] . '))';
 
-		return $sql;
+		return $sql . ('(' . $this->getFieldName() . ', INTERVAL ' . $interval['value'] . ' ' . $interval['unit'] . '))');
+	}
+
+	/**
+	 * Perform a between limits match. When $include is true
+	 * the condition tested is:
+	 * $from <= VALUE <= $to
+	 * When $include is false the condition tested is:
+	 * $from < VALUE < $to
+	 *
+	 * @param   mixed    $from     The lowest value to compare to
+	 * @param   mixed    $to       The highest value to compare to
+	 * @param   boolean  $include  Should we include the boundaries in the search?
+	 *
+	 * @return  string  The SQL where clause for this search
+	 */
+	public function range($from, $to, $include = true)
+	{
+		if ($this->isEmpty($from) && $this->isEmpty($to))
+		{
+			return '';
+		}
+
+		$extra = '';
+
+		if ($include)
+		{
+			$extra = '=';
+		}
+
+		$sql = [];
+
+		if ($from)
+		{
+			$sql[] = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->db->q($from) . ')';
+		}
+		if ($to)
+		{
+			$sql[] = '(' . $this->getFieldName() . ' <' . $extra . ' ' . $this->db->q($to) . ')';
+		}
+
+		return '(' . implode(' AND ', $sql) . ')';
 	}
 
 	/**
@@ -147,22 +179,22 @@ class Date extends Text
 			if (strlen($interval) > 2)
 			{
 				$interval = explode(" ", $interval);
-				$sign = ($interval[0] == '-') ? '-' : '+';
-				$value = (int) substr($interval[0], 1);
+				$sign     = ($interval[0] == '-') ? '-' : '+';
+				$value    = (int) substr($interval[0], 1);
 
-				$interval = array(
-					'unit' => $interval[1],
+				$interval = [
+					'unit'  => $interval[1],
 					'value' => $value,
-					'sign' => $sign
-				);
+					'sign'  => $sign,
+				];
 			}
 			else
 			{
-				$interval = array(
-					'unit' => 'MONTH',
+				$interval = [
+					'unit'  => 'MONTH',
 					'value' => 1,
-					'sign' => '+'
-				);
+					'sign'  => '+',
+				];
 			}
 		}
 		else

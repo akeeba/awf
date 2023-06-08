@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\User;
@@ -43,7 +43,7 @@ abstract class Authentication implements AuthenticationInterface
 	 *
 	 * @param   UserInterface  $user  The user object to bind
 	 *
-	 * @return  mixed
+	 * @return  void
 	 */
 	public function setUser(UserInterface &$user)
 	{

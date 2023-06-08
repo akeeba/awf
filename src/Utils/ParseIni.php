@@ -1,23 +1,22 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Utils;
 
 /**
- * PHP has a very strange way of handling INI files, thoroughly undocumented. For example, using ${bollocks}
- * in a value will replace that string with the php.ini setting or an environment variable of the same name.
- * Of course this kind of asshattery completely breaks parsing when you have the character sequence ${ in,
- * let's say, a password. In fact it will throw a warning and stop parsing the file. Same applies if you include
- * special characters without enclosing them in double quotes – despite that something like that is perfectly
- * allowed in INI files and even supported in php.ini itself.
+ * PHP will, by default, parse INI files and INI strings in the default mode, i.e. allowing variable interpolation and
+ * requiring wrapping the value in double quotes.
  *
- * Basically, PHP's handling of INI is a massive pile of undocumented crap and WTF. So despite the native
- * functions being faster we will NOT use them as they are also completely broken in too many ways. And then you
- * wonder why PHP developers drink to oblivion in conferences... Sigh...
+ * For example, ${foo} will be replaced with the contents of the variable $foo in the current context.
+ *
+ * This is problematic when you have passwords where such special characters are very likely to occur.
+ *
+ * Since ANGIE will only parse a small amount of INI data and is used infrequently we bypass the problem by using a much
+ * slower, but safe, parser written entirely in PHP instead of the native functions.
  */
 abstract class ParseIni
 {
@@ -55,7 +54,7 @@ abstract class ParseIni
 	 */
 	static function parse_ini_file_php($file, $process_sections = false, $rawdata = false)
 	{
-		$process_sections = ($process_sections !== true) ? false : true;
+		$process_sections = (bool)$process_sections;
 
 		if (!$rawdata)
 		{
@@ -65,6 +64,11 @@ abstract class ParseIni
 		{
 			$file = str_replace("\r", "", $file);
 			$ini = explode("\n", $file);
+		}
+
+		if (!is_array($ini))
+		{
+			return array();
 		}
 
 		if (count($ini) == 0)
@@ -81,8 +85,6 @@ abstract class ParseIni
 		{
 			$line = trim($line);
 			$line = str_replace("\t", " ", $line);
-			$line = str_replace('\"', '"', $line);
-			$line = str_replace('""', '"', $line);
 
 			// Comments
 			if (!preg_match('/^[a-zA-Z0-9[]/', $line))
@@ -91,7 +93,7 @@ abstract class ParseIni
 			}
 
 			// Sections
-			if ($line{0} == '[')
+			if ($line[0] == '[')
 			{
 				$tmp = explode(']', $line);
 				$sections[] = trim(substr($tmp[0], 1));
@@ -114,7 +116,7 @@ abstract class ParseIni
 				$tmp = explode(';', $value);
 				if (count($tmp) == 2)
 				{
-					if ((($value{0} != '"') && ($value{0} != "'")) ||
+					if ((($value[0] != '"') && ($value[0] != "'")) ||
 						preg_match('/^".*"\s*;/', $value) || preg_match('/^".*;[^"]*$/', $value) ||
 						preg_match("/^'.*'\s*;/", $value) || preg_match("/^'.*;[^']*$/", $value)
 					)
@@ -124,11 +126,11 @@ abstract class ParseIni
 				}
 				else
 				{
-					if ($value{0} == '"')
+					if ($value[0] == '"')
 					{
 						$value = preg_replace('/^"(.*)".*/', '$1', $value);
 					}
-					elseif ($value{0} == "'")
+					elseif ($value[0] == "'")
 					{
 						$value = preg_replace("/^'(.*)'.*/", '$1', $value);
 					}
@@ -165,24 +167,24 @@ abstract class ParseIni
 			}
 		}
 
-		for ($j = 0; $j < $i; $j++)
+		if ($process_sections)
 		{
-			if ($process_sections === true)
+			for ($j = 0; $j < $i; $j++)
 			{
 				if (isset($sections[$j]) && isset($values[$j]))
 				{
 					$result[$sections[$j]] = $values[$j];
 				}
 			}
-			else
-			{
-				if (isset($values[$j]))
-				{
-					$result[] = $values[$j];
-				}
-			}
+
+			return $result + $globals;
 		}
 
-		return $result + $globals;
+		foreach ($values as $chunk)
+		{
+			$globals = array_merge($globals, $chunk);
+		}
+
+		return $globals;
 	}
 }

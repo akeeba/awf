@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is based on the JHtml package of Joomla! 3 but is heavily modified
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Html;
@@ -14,6 +12,8 @@ use Awf\Utils\ArrayHelper;
 
 /**
  * An abstraction to creating HTML select elements and related widgets
+ *
+ * This class is based on the JHtml package of Joomla! 3 but heavily modified
  */
 abstract class Select
 {
@@ -137,7 +137,7 @@ abstract class Select
 	 *
 	 * @return  string  HTML for the select list
 	 */
-	public static function suggestionList($data, $optKey = 'value', $optText = 'text', $idTag, $translate = false)
+	public static function suggestionList($data, $optKey = 'value', $optText = 'text', $idTag = '', $translate = false)
 	{
 		// Set default options
 		$options = array_merge(Html::$formatOptions, array('format.depth' => 0, 'id' => false));
@@ -290,7 +290,7 @@ abstract class Select
 			else
 			{
 				$html .= $groupIndent . '<optgroup' . (empty($id) ? '' : ' id="' . $id . '"') . ' label="'
-					. ($options['group.label.toHtml'] ? htmlspecialchars($label, ENT_COMPAT, 'UTF-8') : $label) . '">' . $options['format.eol']
+					. ($options['group.label.toHtml'] ? htmlspecialchars($label ?? '', ENT_COMPAT, 'UTF-8') : $label) . '">' . $options['format.eol']
 					. static::options($subList, $options) . $groupIndent . '</optgroup>' . $options['format.eol'];
 			}
 		}
@@ -628,7 +628,7 @@ abstract class Select
 			}
 
 			// Generate the option, encoding as required
-			$html .= $baseIndent . '<option value="' . ($options['option.key.toHtml'] ? htmlspecialchars($key, ENT_COMPAT, 'UTF-8') : $key) . '"'
+			$html .= $baseIndent . '<option value="' . ($options['option.key.toHtml'] ? htmlspecialchars($key ?? '', ENT_COMPAT, 'UTF-8') : $key) . '"'
 				. $extra . '>';
 			$html .= $options['option.text.toHtml'] ? htmlentities(html_entity_decode($text, ENT_COMPAT, 'UTF-8'), ENT_COMPAT, 'UTF-8') : $text;
 			$html .= '</option>' . $options['format.eol'];

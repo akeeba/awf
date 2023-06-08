@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\DataModel\Behaviour;
@@ -25,21 +25,49 @@ class Filters extends Observer
 	 */
 	public function onAfterBuildQuery(&$model, &$query)
 	{
-		$tableName = $model->getTableName();
 		$tableKey = $model->getIdFieldName();
 		$db = $model->getDbo();
 
 		$fields = $model->getTableFields();
+		$blacklist  = $model->getBlacklistFilters();
+		$filterZero = $model->getBehaviorParam('filterZero', null);
+		$tableAlias = $model->getBehaviorParam('tableAlias', null);
 
 		foreach ($fields as $fieldname => $fieldmeta)
 		{
+			if (in_array($fieldname, $blacklist))
+			{
+				continue;
+			}
+
 			$fieldInfo = (object)array(
 				'name'	=> $fieldname,
 				'type'	=> $fieldmeta->Type,
+				'filterZero' => $filterZero,
+				'tableAlias' => $tableAlias,
 			);
 
 			$filterName = ($fieldInfo->name == $tableKey) ? 'id' : $fieldInfo->name;
 			$filterState = $model->getState($filterName, null);
+
+			// Special primary key handling: if ignore request is set we'll also look for an 'id' state variable if a
+			// state variable by the same name as the key doesn't exist. If ignore request is not set in the model we
+			// do not filter by 'id' since this interferes with going from an edit page to a browse page (the list is
+			// filtered by id without user controls to unset it).
+			if ($fieldInfo->name == $tableKey)
+			{
+				$filterState = $model->getState($filterName, null);
+
+				if (!$model->getIgnoreRequest())
+				{
+					continue;
+				}
+
+				if (empty($filterState))
+				{
+					$filterState = $model->getState('id', null);
+				}
+			}
 
 			$field = DataModel\Filter\AbstractFilter::getField($fieldInfo, array('dbo' => $db));
 
@@ -74,10 +102,12 @@ class Filters extends Observer
 			{
 				case 'between':
 				case 'outside':
+				case 'range':
 					$sql = $field->$method($options->get('from', null), $options->get('to'));
 					break;
 
 				case 'interval':
+				case 'modulo':
 					$sql = $field->$method($options->get('value', null), $options->get('interval'));
 					break;
 

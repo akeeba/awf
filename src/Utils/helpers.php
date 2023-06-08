@@ -1,15 +1,17 @@
 <?php
 /**
- * @package		awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+/**
  * This is a modified copy of Laravel 4's "helpers.php"
  *
  * Laravel 4 is distributed under the MIT license, see https://github.com/laravel/framework/blob/master/LICENSE.txt
  */
 
-if ( ! function_exists('array_add'))
+if ( ! function_exists('akeeba_array_add'))
 {
 	/**
 	 * Add an element to an array if it doesn't exist.
@@ -19,7 +21,7 @@ if ( ! function_exists('array_add'))
 	 * @param  mixed   $value
 	 * @return array
 	 */
-	function array_add($array, $key, $value)
+	function akeeba_array_add($array, $key, $value)
 	{
 		if ( ! isset($array[$key])) $array[$key] = $value;
 
@@ -27,7 +29,7 @@ if ( ! function_exists('array_add'))
 	}
 }
 
-if ( ! function_exists('array_build'))
+if ( ! function_exists('akeeba_array_build'))
 {
 	/**
 	 * Build a new array using a callback.
@@ -36,7 +38,7 @@ if ( ! function_exists('array_build'))
 	 * @param  \Closure  $callback
 	 * @return array
 	 */
-	function array_build($array, Closure $callback)
+	function akeeba_array_build($array, Closure $callback)
 	{
 		$results = array();
 
@@ -51,7 +53,7 @@ if ( ! function_exists('array_build'))
 	}
 }
 
-if ( ! function_exists('array_divide'))
+if ( ! function_exists('akeeba_array_divide'))
 {
 	/**
 	 * Divide an array into two arrays. One with keys and the other with values.
@@ -59,13 +61,13 @@ if ( ! function_exists('array_divide'))
 	 * @param  array  $array
 	 * @return array
 	 */
-	function array_divide($array)
+	function akeeba_array_divide($array)
 	{
 		return array(array_keys($array), array_values($array));
 	}
 }
 
-if ( ! function_exists('array_dot'))
+if ( ! function_exists('akeeba_array_dot'))
 {
 	/**
 	 * Flatten a multi-dimensional associative array with dots.
@@ -74,7 +76,7 @@ if ( ! function_exists('array_dot'))
 	 * @param  string  $prepend
 	 * @return array
 	 */
-	function array_dot($array, $prepend = '')
+	function akeeba_array_dot($array, $prepend = '')
 	{
 		$results = array();
 
@@ -82,7 +84,7 @@ if ( ! function_exists('array_dot'))
 		{
 			if (is_array($value))
 			{
-				$results = array_merge($results, array_dot($value, $prepend.$key.'.'));
+				$results = array_merge($results, akeeba_array_dot($value, $prepend.$key.'.'));
 			}
 			else
 			{
@@ -94,7 +96,7 @@ if ( ! function_exists('array_dot'))
 	}
 }
 
-if ( ! function_exists('array_except'))
+if ( ! function_exists('akeeba_array_except'))
 {
 	/**
 	 * Get all of the given array except for a specified array of items.
@@ -103,13 +105,13 @@ if ( ! function_exists('array_except'))
 	 * @param  array  $keys
 	 * @return array
 	 */
-	function array_except($array, $keys)
+	function akeeba_array_except($array, $keys)
 	{
 		return array_diff_key($array, array_flip((array) $keys));
 	}
 }
 
-if ( ! function_exists('array_fetch'))
+if ( ! function_exists('akeeba_array_fetch'))
 {
 	/**
 	 * Fetch a flattened array of a nested array element.
@@ -118,7 +120,7 @@ if ( ! function_exists('array_fetch'))
 	 * @param  string  $key
 	 * @return array
 	 */
-	function array_fetch($array, $key)
+	function akeeba_array_fetch($array, $key)
 	{
 		foreach (explode('.', $key) as $segment)
 		{
@@ -138,7 +140,7 @@ if ( ! function_exists('array_fetch'))
 	}
 }
 
-if ( ! function_exists('array_first'))
+if ( ! function_exists('akeeba_array_first'))
 {
 	/**
 	 * Return the first element in an array passing a given truth test.
@@ -148,18 +150,18 @@ if ( ! function_exists('array_first'))
 	 * @param  mixed    $default
 	 * @return mixed
 	 */
-	function array_first($array, $callback, $default = null)
+	function akeeba_array_first($array, $callback, $default = null)
 	{
 		foreach ($array as $key => $value)
 		{
 			if (call_user_func($callback, $key, $value)) return $value;
 		}
 
-		return value($default);
+		return akeeba_value($default);
 	}
 }
 
-if ( ! function_exists('array_last'))
+if ( ! function_exists('akeeba_array_last'))
 {
 	/**
 	 * Return the last element in an array passing a given truth test.
@@ -169,13 +171,13 @@ if ( ! function_exists('array_last'))
 	 * @param  mixed    $default
 	 * @return mixed
 	 */
-	function array_last($array, $callback, $default = null)
+	function akeeba_array_last($array, $callback, $default = null)
 	{
-		return array_first(array_reverse($array), $callback, $default);
+		return akeeba_array_first(array_reverse($array), $callback, $default);
 	}
 }
 
-if ( ! function_exists('array_flatten'))
+if ( ! function_exists('akeeba_array_flatten'))
 {
 	/**
 	 * Flatten a multi-dimensional array into a single level.
@@ -183,7 +185,7 @@ if ( ! function_exists('array_flatten'))
 	 * @param  array  $array
 	 * @return array
 	 */
-	function array_flatten($array)
+	function akeeba_array_flatten($array)
 	{
 		$return = array();
 
@@ -193,7 +195,7 @@ if ( ! function_exists('array_flatten'))
 	}
 }
 
-if ( ! function_exists('array_forget'))
+if ( ! function_exists('akeeba_array_forget'))
 {
 	/**
 	 * Remove an array item from a given array using "dot" notation.
@@ -202,7 +204,7 @@ if ( ! function_exists('array_forget'))
 	 * @param  string  $key
 	 * @return void
 	 */
-	function array_forget(&$array, $key)
+	function akeeba_array_forget(&$array, $key)
 	{
 		$keys = explode('.', $key);
 
@@ -222,7 +224,7 @@ if ( ! function_exists('array_forget'))
 	}
 }
 
-if ( ! function_exists('array_get'))
+if ( ! function_exists('akeeba_array_get'))
 {
 	/**
 	 * Get an item from an array using "dot" notation.
@@ -232,7 +234,7 @@ if ( ! function_exists('array_get'))
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	function array_get($array, $key, $default = null)
+	function akeeba_array_get($array, $key, $default = null)
 	{
 		if (is_null($key)) return $array;
 
@@ -242,7 +244,7 @@ if ( ! function_exists('array_get'))
 		{
 			if ( ! is_array($array) || ! array_key_exists($segment, $array))
 			{
-				return value($default);
+				return akeeba_value($default);
 			}
 
 			$array = $array[$segment];
@@ -252,7 +254,7 @@ if ( ! function_exists('array_get'))
 	}
 }
 
-if ( ! function_exists('array_only'))
+if ( ! function_exists('akeeba_array_only'))
 {
 	/**
 	 * Get a subset of the items from the given array.
@@ -261,13 +263,13 @@ if ( ! function_exists('array_only'))
 	 * @param  array  $keys
 	 * @return array
 	 */
-	function array_only($array, $keys)
+	function akeeba_array_only($array, $keys)
 	{
 		return array_intersect_key($array, array_flip((array) $keys));
 	}
 }
 
-if ( ! function_exists('array_pluck'))
+if ( ! function_exists('akeeba_array_pluck'))
 {
 	/**
 	 * Pluck an array of values from an array.
@@ -277,7 +279,7 @@ if ( ! function_exists('array_pluck'))
 	 * @param  string  $key
 	 * @return array
 	 */
-	function array_pluck($array, $value, $key = null)
+	function akeeba_array_pluck($array, $value, $key = null)
 	{
 		$results = array();
 
@@ -304,7 +306,7 @@ if ( ! function_exists('array_pluck'))
 	}
 }
 
-if ( ! function_exists('array_pull'))
+if ( ! function_exists('akeeba_array_pull'))
 {
 	/**
 	 * Get a value from the array, and remove it.
@@ -313,17 +315,17 @@ if ( ! function_exists('array_pull'))
 	 * @param  string  $key
 	 * @return mixed
 	 */
-	function array_pull(&$array, $key)
+	function akeeba_array_pull(&$array, $key)
 	{
-		$value = array_get($array, $key);
+		$value = akeeba_array_get($array, $key);
 
-		array_forget($array, $key);
+		akeeba_array_forget($array, $key);
 
 		return $value;
 	}
 }
 
-if ( ! function_exists('array_set'))
+if ( ! function_exists('akeeba_array_set'))
 {
 	/**
 	 * Set an array item to a given value using "dot" notation.
@@ -335,7 +337,7 @@ if ( ! function_exists('array_set'))
 	 * @param  mixed   $value
 	 * @return array
 	 */
-	function array_set(&$array, $key, $value)
+	function akeeba_array_set(&$array, $key, $value)
 	{
 		if (is_null($key)) return $array = $value;
 
@@ -362,7 +364,7 @@ if ( ! function_exists('array_set'))
 	}
 }
 
-if ( ! function_exists('array_sort'))
+if ( ! function_exists('akeeba_array_sort'))
 {
 	/**
 	 * Sort the array using the given Closure.
@@ -371,13 +373,13 @@ if ( ! function_exists('array_sort'))
 	 * @param  \Closure  $callback
 	 * @return array
 	 */
-	function array_sort($array, Closure $callback)
+	function akeeba_array_sort($array, Closure $callback)
 	{
 		return Awf\Utils\Collection::make($array)->sortBy($callback)->all();
 	}
 }
 
-if ( ! function_exists('array_where'))
+if ( ! function_exists('akeeba_array_where'))
 {
 	/**
 	 * Filter the array using the given Closure.
@@ -386,7 +388,7 @@ if ( ! function_exists('array_where'))
 	 * @param  \Closure  $callback
 	 * @return array
 	 */
-	function array_where($array, Closure $callback)
+	function akeeba_array_where($array, Closure $callback)
 	{
 		$filtered = array();
 
@@ -399,7 +401,7 @@ if ( ! function_exists('array_where'))
 	}
 }
 
-if ( ! function_exists('ends_with'))
+if ( ! function_exists('akeeba_ends_with'))
 {
 	/**
 	 * Determine if a given string ends with a given substring.
@@ -408,7 +410,7 @@ if ( ! function_exists('ends_with'))
 	 * @param  string|array  $needles
 	 * @return bool
 	 */
-	function ends_with($haystack, $needles)
+	function akeeba_ends_with($haystack, $needles)
 	{
 		foreach ((array) $needles as $needle)
 		{
@@ -419,7 +421,7 @@ if ( ! function_exists('ends_with'))
 	}
 }
 
-if ( ! function_exists('last'))
+if ( ! function_exists('akeeba_last'))
 {
 	/**
 	 * Get the last element from an array.
@@ -427,13 +429,13 @@ if ( ! function_exists('last'))
 	 * @param  array  $array
 	 * @return mixed
 	 */
-	function last($array)
+	function akeeba_last($array)
 	{
 		return end($array);
 	}
 }
 
-if ( ! function_exists('object_get'))
+if ( ! function_exists('akeeba_object_get'))
 {
 	/**
 	 * Get an item from an object using "dot" notation.
@@ -443,7 +445,7 @@ if ( ! function_exists('object_get'))
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	function object_get($object, $key, $default = null)
+	function akeeba_object_get($object, $key, $default = null)
 	{
 		if (is_null($key) or trim($key) == '') return $object;
 
@@ -451,7 +453,7 @@ if ( ! function_exists('object_get'))
 		{
 			if ( ! is_object($object) || ! isset($object->{$segment}))
 			{
-				return value($default);
+				return akeeba_value($default);
 			}
 
 			$object = $object->{$segment};
@@ -461,7 +463,7 @@ if ( ! function_exists('object_get'))
 	}
 }
 
-if ( ! function_exists('preg_replace_sub'))
+if ( ! function_exists('akeeba_preg_replace_sub'))
 {
 	/**
 	 * Replace a given pattern with each value in the array in sequentially.
@@ -471,7 +473,7 @@ if ( ! function_exists('preg_replace_sub'))
 	 * @param  string  $subject
 	 * @return string
 	 */
-	function preg_replace_sub($pattern, &$replacements, $subject)
+	function akeeba_preg_replace_sub($pattern, &$replacements, $subject)
 	{
 		return preg_replace_callback($pattern, function($match) use (&$replacements)
 		{
@@ -481,7 +483,7 @@ if ( ! function_exists('preg_replace_sub'))
 	}
 }
 
-if ( ! function_exists('starts_with'))
+if ( ! function_exists('akeeba_starts_with'))
 {
 	/**
 	 * Determine if a given string starts with a given substring.
@@ -490,7 +492,7 @@ if ( ! function_exists('starts_with'))
 	 * @param  string|array  $needles
 	 * @return bool
 	 */
-	function starts_with($haystack, $needles)
+	function akeeba_starts_with($haystack, $needles)
 	{
 		foreach ((array) $needles as $needle)
 		{
@@ -501,7 +503,7 @@ if ( ! function_exists('starts_with'))
 	}
 }
 
-if ( ! function_exists('value'))
+if ( ! function_exists('akeeba_value'))
 {
 	/**
 	 * Return the default value of the given value.
@@ -509,13 +511,13 @@ if ( ! function_exists('value'))
 	 * @param  mixed  $value
 	 * @return mixed
 	 */
-	function value($value)
+	function akeeba_value($value)
 	{
 		return $value instanceof Closure ? $value() : $value;
 	}
 }
 
-if ( ! function_exists('with'))
+if ( ! function_exists('akeeba_with'))
 {
 	/**
 	 * Return the given object. Useful for chaining.
@@ -523,7 +525,7 @@ if ( ! function_exists('with'))
 	 * @param  mixed  $object
 	 * @return mixed
 	 */
-	function with($object)
+	function akeeba_with($object)
 	{
 		return $object;
 	}

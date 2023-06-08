@@ -1,14 +1,15 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc;
 
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
+use Awf\Utils\Path;
 
 /**
  * Locates the appropriate template file for a view
@@ -238,17 +239,20 @@ class ViewTemplateFinder
 		// Add extra paths
 		if (!empty($extraPaths))
 		{
-			$paths = array_merge($paths, $extraPaths);
+			$paths = array_merge($extraPaths, $paths);
 		}
 
 		// Remove duplicate paths
+		$paths = array_map(function ($path) {
+			return rtrim($path, '/' . DIRECTORY_SEPARATOR);
+		}, $paths);
 		$paths = array_unique($paths);
 
 		foreach ($this->extensions as $extension)
 		{
 			$filenameToFind = $parts['template'] . $extension;
 
-			$fileName = \Awf\Utils\Path::find($paths, $filenameToFind);
+			$fileName = Path::find($paths, $filenameToFind);
 
 			if ($fileName)
 			{

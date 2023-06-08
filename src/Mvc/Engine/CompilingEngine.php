@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Mvc\Engine;
@@ -28,39 +28,6 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	 */
 	public function get($path, array $forceParams = array())
 	{
-		/**
-		 * If the PHP Tokenizer extension is disabled or not present we try to fall back to precompiled templates.
-		 *
-		 * As we found out the hard way, there are still some hosts which disable / don't load the Tokenizer citing
-		 * "security concerns". What they don't understand is that the tokenizer is basically a read-only extension. It
-		 * can only read PHP code and break it into tokens, it cannot execute it. In fact, you can't easily convert
-		 * tokenizer results back into executable PHP. In fact, you'd need https://github.com/nikic/PHP-Parser which is
-		 * by no means trivial. Then again, it STILL cannot execute the PHP without either using 3v4l (sorry for the
-		 * leetspeak, we have to deal with broken hosts killing our file due to this comment!) or writing to a PHP file
-		 * and executing it. In short, the hosts which disable tokenizer don't know how PHP works, don't know the first
-		 * thing about security and must NOT be trusted! If you are on such a host, run away fast, don't look back!
-		 */
-		if (!function_exists('token_get_all'))
-		{
-			$precompiledPath = $this->getPrecompiledPath($path);
-
-			if (($precompiledPath !== false) && @file_exists($precompiledPath))
-			{
-				return array(
-					'type'    => 'path',
-					'content' => $precompiledPath,
-				);
-			}
-
-			/**
-			 * No precompiled templates and tokenized missing, i.e. I can't compile anything. Instead of throwing a
-			 * fatal error I will throw a catchable runtime error explaining the error condition and how to solve it.
-			 * If your extension does not trap the exception it will bubble up to Joomla's error handler which will
-			 * display this message.
-			 */
-			throw new \RuntimeException("Your hosting provider has disabled the <code>token_get_all()</code> PHP function or they have not installed the Tokenizer extension for PHP. This is a safe and <em>secure</em> function of modern PHP, required to convert template files into HTML code your browser can display. Please ask them to enable it. This error occurred trying to render the template file <code>$path</code>", 500);
-		}
-
 		// If it's cached return the path to the cached file's path
 		if ($this->isCached($path))
 		{
@@ -70,14 +37,28 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			);
 		}
 
-		// Compile it and cache it.
-		$content        = $this->compile($path, $forceParams);
+		/**
+		 * Compile and cache the file. We also add the file path in a comment at the top of the file so phpStorm can
+		 * debug it.
+		 *
+		 * @see https://blog.jetbrains.com/phpstorm/2019/02/phpstorm-2019-1-eap-191-5849-26/
+		 * @see https://laravel-news.com/laravel-5-8-blade-template-file-path
+		 */
+		$content        = "<?php /* $path */ ?>\n";
+		$content        .= $this->compile($path, $forceParams);
 		$cacheFolder    = $this->view->getContainer()->temporaryPath;
 		$cachedFilePath = $this->putToCache($path, $content);
+		$isPHPFile = substr($path, -4) == '.php';
 
 		// If we could cache it, return the cached file's path
 		if ($cachedFilePath !== false)
 		{
+			// Bust the opcode cache for .php files
+			if ($isPHPFile)
+			{
+				$this->bustOpCache($path);
+			}
+
 			return array(
 				'type'    => 'path',
 				'content' => $cachedFilePath,
@@ -93,6 +74,12 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			$streamPath   = 'awf://' . $this->view->getContainer()->application_name . '/compiled_templates/' . $id . '.php';
 
 			file_put_contents($streamPath, $content);
+
+			// Bust the opcode cache for .php files
+			if ($isPHPFile)
+			{
+				$this->bustOpCache($path);
+			}
 
 			return array(
 				'type'    => 'path',
@@ -292,5 +279,41 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		$precompiledRelativePath = implode(DIRECTORY_SEPARATOR, $pathParts);
 
 		return $componentPath . DIRECTORY_SEPARATOR . 'PrecompiledTemplates' . DIRECTORY_SEPARATOR . $precompiledRelativePath;
+	}
+
+	/**
+	 * Bust the opcode cache for a given .php file
+	 *
+	 * This method can address opcode caching with:
+	 * - Zend OPcache
+	 * - Alternative PHP Cache (now defunct)
+	 * - Windows Cache Extension for PHP (versions lower than 2.0.0)
+	 * - XCache (now defunct)
+	 *
+	 * @param   string  $path  The file to bus the cache for
+	 *
+	 * @return  void
+	 */
+	private function bustOpCache($path)
+	{
+		if (function_exists('opcache_invalidate'))
+		{
+			opcache_invalidate($path, true);
+		}
+
+		if (function_exists('apc_compile_file'))
+		{
+			apc_compile_file($path);
+		}
+
+		if (function_exists('wincache_refresh_if_changed'))
+		{
+			wincache_refresh_if_changed([$path]);
+		}
+
+		if (function_exists('xcache_asm'))
+		{
+			xcache_asm($path);
+		}
 	}
 }

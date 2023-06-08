@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Utils;
@@ -34,7 +34,7 @@ abstract class Template
 		$app->getDocument()->addStyleSheet($url);
 	}
 
-	public static function addJs($path, $app = null, $useMediaQueryKey = true)
+	public static function addJs($path, $app = null, $useMediaQueryKey = true, $defer = false, $async = false)
 	{
 		if (!is_object($app))
 		{
@@ -52,7 +52,7 @@ abstract class Template
 			$url = $uri->toString();
 		}
 
-		$app->getDocument()->addScript($url);
+		$app->getDocument()->addScript($url, false, 'text/javascript', $defer, $async);
 	}
 
 	/**
@@ -75,12 +75,12 @@ abstract class Template
 	 */
 	public static function parsePath($path, $localFile = false, $app = null)
 	{
-		$rootPath = $app->getContainer()->filesystemBase;
-
 		if (!is_object($app))
 		{
 			$app = Application::getInstance();
 		}
+
+		$rootPath = $app->getContainer()->filesystemBase;
 
 		if ($localFile)
 		{

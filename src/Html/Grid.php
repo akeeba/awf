@@ -1,10 +1,8 @@
 <?php
 /**
- * @package        awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
- * This class is based on the JHtml package of Joomla! 3
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Html;
@@ -12,6 +10,8 @@ use Awf\Text\Text;
 
 /**
  * Administration grid actions abstraction
+ *
+ * This class is based on the JHtml package of Joomla! 3
  */
 abstract class Grid
 {

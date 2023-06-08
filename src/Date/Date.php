@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Date;
@@ -26,6 +24,8 @@ use Awf\Database\Driver;
  * @property-read  string   $ordinal       S - English ordinal suffix for the day of the month, 2 characters.
  * @property-read  string   $week          W - Numeric representation of the day of the week.
  * @property-read  string   $year          Y - A full numeric representation of a year, 4 digits.
+ *
+ * This class is adapted from the Joomla! Framework
  */
 class Date extends \DateTime
 {
@@ -191,6 +191,7 @@ class Date extends \DateTime
 	 *
 	 * @return  string   The date string in the specified format format.
 	 */
+	#[\ReturnTypeWillChange]
 	public function format($format, $local = false)
 	{
 		// If the returned time should not be local use GMT.
@@ -231,6 +232,7 @@ class Date extends \DateTime
 	 *
 	 * @note    This method can't be type hinted due to a PHP bug: https://bugs.php.net/bug.php?id=61483
 	 */
+	#[\ReturnTypeWillChange]
 	public function setTimezone($tz)
 	{
 		$this->tz = $tz;

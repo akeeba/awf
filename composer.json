@@ -1,10 +1,20 @@
 {
   "name": "akeeba/awf",
   "type": "library",
-  "description": "A framework for single-source standalone apps, Joomla! components and WordPress plugins",
+  "description": "A tiny MVC web application framework for single source standalone web applications, and WordPress plugins",
   "require": {
-    "php": ">=5.3.4",
-    "ext-curl": "*"
+    "php": "^7.2.0|^8.0.0",
+    "composer/ca-bundle": "^1.2",
+    "phpmailer/phpmailer": "^6.8.0"
+  },
+  "suggest": {
+    "ext-curl": "*",
+    "ext-simplexml": "*",
+    "ext-pdo": "*",
+    "ext-libxml": "*",
+    "ext-mysqli": "*",
+    "ext-pgsql": "*",
+    "ext-sqlsrv": "*"
   },
   "keywords": [
     "framework",
@@ -16,7 +26,7 @@
   "authors": [
     {
       "name": "Nicholas K. Dionysopoulos",
-      "email": "nicholas_NO_SPAM_PLEASE@akeebabackup.com",
+      "email": "nicholas_NO_SPAM_PLEASE@akeeba.com",
       "homepage": "http://www.dionysopoulos.me",
       "role": "Lead Developer"
     }
@@ -24,13 +34,19 @@
   "autoload": {
     "psr-4": {
       "Awf\\": "src/"
-    }
+    },
+    "files": [
+      "src/Utils/helpers.php"
+    ]
   },
-  "version": "0.0.1",
-  "require-dev": {
-    "mikey179/vfsStream": "v1.2.0",
-    "phpunit/phpunit": "4.2.*",
-    "phpunit/dbunit": "1.3.*",
-    "fiunchinho/phpunit-randomizer": "1.0.*"
+  "archive": {
+    "exclude": [
+      "/.idea",
+      "/vendor",
+      ".gitattributes",
+      ".gitignore",
+      ".travis.yml",
+      "phpunit*"
+    ]
   }
 }

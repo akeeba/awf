@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\User;
@@ -221,7 +221,7 @@ class Manager implements ManagerInterface
 	 * @param   string  $password  The (unhashed) password of the user to log in
 	 * @param   array   $params    [optional] Any additional parameters you may want to pass to the user object, e.g. 2FA
 	 *
-	 * @return  boolean  True on success
+	 * @return  void
 	 *
 	 * @throws  \Exception  When the login fails
 	 */
@@ -259,7 +259,7 @@ class Manager implements ManagerInterface
 	 *
 	 * @param   UserInterface  $user  The user to save
 	 *
-	 * @return  boolean  True on success
+	 * @return  void
 	 *
 	 * @throws  \RuntimeException  If an error occurs when saving the user
 	 */
@@ -379,7 +379,7 @@ class Manager implements ManagerInterface
 	 *
 	 * @param   string  $name       The name of the user authentication object to unregister
 	 *
-	 * @return  mixed
+	 * @return  void
 	 */
 	public function unregisterAuthenticationPlugin($name)
 	{

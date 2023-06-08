@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is based on the JHtml package of Joomla! 3 but heavily modified
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Html;
@@ -18,6 +16,8 @@ use Awf\Utils\ArrayHelper;
 
 /**
  * Generic HTML output abstraction class
+ *
+ * This class is based on the JHtml package of Joomla! 3 but heavily modified
  */
 abstract class Html
 {
@@ -284,7 +284,7 @@ abstract class Html
 	 *
 	 * @return  string
 	 */
-	public static function tooltip($tooltip, $title = '', $image = 'images/tooltip.png', $text = '', $href = '', $alt = 'Tooltip', $class = 'hasTooltip', Application $app)
+	public static function tooltip($tooltip, $title = '', $image = 'images/tooltip.png', $text = '', $href = '', $alt = 'Tooltip', $class = 'hasTooltip', Application $app = null)
 	{
 		if (!is_object($app))
 		{
@@ -313,7 +313,7 @@ abstract class Html
 
 		if (!$text)
 		{
-			$alt = htmlspecialchars($alt, ENT_COMPAT, 'UTF-8');
+			$alt = htmlspecialchars($alt ?? '', ENT_COMPAT, 'UTF-8');
 			$text = static::image($image, $alt, null, true, $app);
 		}
 
@@ -394,6 +394,9 @@ abstract class Html
 	/**
 	 * Displays a calendar control field
 	 *
+	 * This field can use either jQuery DatePicker (default) or Pikaday. This is controlled by the application Container,
+	 * namely its awf_date_picker field. It can be either "jQuery" or "Pikaday".
+	 *
 	 * @param   string       $value    The date value
 	 * @param   string       $name     The name of the text field
 	 * @param   string       $id       The id of the text field
@@ -405,16 +408,11 @@ abstract class Html
 	 */
 	public static function calendar($value, $name, $id, $format = 'yyyy-mm-dd', $attribs = null, Application $app = null)
 	{
-		static $done;
+		static $done = [];
 
 		if (!is_object($app))
 		{
 			$app = Application::getInstance();
-		}
-
-		if ($done === null)
-		{
-			$done = array();
 		}
 
 		$attribs['class'] = isset($attribs['class']) ? $attribs['class'] : 'form-control';
@@ -436,12 +434,20 @@ abstract class Html
 			// Only display the triggers once for each control.
 			if (!in_array($id, $done))
 			{
+				// Do I use jQuery date picker or Pikaday?
+				$container = $app->getContainer();
+				$pickerType = isset($container['awf_date_picker']) ? $container['awf_date_picker'] : 'jQuery';
+				$pickerType = !in_array($pickerType, ['jQuery', 'Pikaday']) ? 'jQuery' : $pickerType;
+
 				// @todo Implement a way for the application to override the language
 				$lang = Text::detectLanguage($app->getName());
 
 				$document = $app->getDocument();
-				$document
-					->addScriptDeclaration( <<< JS
+
+				if ($pickerType === 'jQuery')
+				{
+					$document
+						->addScriptDeclaration( <<< JS
 akeeba.jQuery(document).ready(function(){
 	akeeba.jQuery('#$id-container').datepicker({
 		format: "$format",
@@ -452,19 +458,34 @@ akeeba.jQuery(document).ready(function(){
 })
 JS
 
-					);
+						);
+				}
+				else
+				{
+					$document
+						->addScriptDeclaration( <<< JS
+akeeba.System.documentReady(function() {
+   new Pikaday({
+   		field: document.getElementById('$id-container'),
+   		format: "$format",
+   }); 
+});
+JS
+						);
+
+				}
 				$done[] = $id;
 			}
 
 			return '<div class="input-group date" id="' . $id . '-container"><input type="text" title="' . (0 !== (int) $value ? static::date($value, null, null) : '')
-			. '" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value, ENT_COMPAT, 'UTF-8') . '" ' . $attribs . ' />'
+			. '" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value ?? '', ENT_COMPAT, 'UTF-8') . '" ' . $attribs . ' />'
 			. '<span class="input-group-btn" id="' . $id . '_img"><span class="btn btn-default"><span class="glyphicon glyphicon-calendar"></span></span></span></div>';
 		}
 		else
 		{
 			return '<input type="text" title="' . (0 !== (int) $value ? static::date($value, null, null) : '')
 			. '" value="' . (0 !== (int) $value ? static::_('date', $value, 'Y-m-d H:i:s', null) : '') . '" ' . $attribs
-			. ' /><input type="hidden" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value, ENT_COMPAT, 'UTF-8') . '" />';
+			. ' /><input type="hidden" name="' . $name . '" id="' . $id . '" value="' . htmlspecialchars($value ?? '', ENT_COMPAT, 'UTF-8') . '" />';
 		}
 	}
 } 
