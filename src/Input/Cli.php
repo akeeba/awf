@@ -1,14 +1,17 @@
 <?php
 /**
- * @package		solo
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
- * Based on the Joomla! Platform and FOF
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Input;
 
+/**
+ * CLI input class
+ *
+ * Based on the Joomla! Platform and FOF
+ */
 class Cli extends Input
 {
 	/**

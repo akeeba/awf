@@ -1,8 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Download;
@@ -52,11 +52,16 @@ class Download
         $this->container = $c;
 
 		// Find the best fitting adapter
-        $allAdapters = self::getFiles(__DIR__ . '/Adapter', array(), array('AbstractAdapter.php', 'cacert.pem'));
+		$allAdapters = self::getFiles(__DIR__ . '/Adapter', [], ['AbstractAdapter.php', 'cacert.pem']);
 		$priority = 0;
 
 		foreach ($allAdapters as $adapterInfo)
 		{
+			if (!class_exists($adapterInfo['classname'], true))
+			{
+				continue;
+			}
+
 			/** @var Adapter\AbstractAdapter $adapter */
 			$adapter = new $adapterInfo['classname'];
 
@@ -251,7 +256,7 @@ class Download
                     }
 
                     // Delete and touch the output file
-                    $fp = @fopen($localFilename, 'wb');
+                    $fp = @fopen($localFilename, 'w');
 
                     if ($fp !== false)
                     {
@@ -261,7 +266,7 @@ class Download
                     // Init
                     $frag = 0;
 
-                    $retArray['totalSize'] = $this->adapter->getFileSize($url);
+                    $retArray['totalSize'] = $this->adapter->getFileSize($url, $this->adapterOptions);
 
                     if ($retArray['totalSize'] <= 0)
                     {
@@ -317,7 +322,7 @@ class Download
                     $doneSize += $fileSize;
 
                     // Append the file
-                    $fp = @fopen($localFilename, 'ab');
+                    $fp = @fopen($localFilename, 'a');
 
                     if ($fp === false)
                     {

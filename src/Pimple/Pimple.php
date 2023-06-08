@@ -1,9 +1,11 @@
 <?php
 /**
- * @package		solo
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+/**
  * This file contains a namespaced but otherwise unmodified copy of Pimple, the DI
  * container by Fabien Potencier. The following notice accompanies the original
  * file:
@@ -80,6 +82,7 @@ class Pimple implements \ArrayAccess
 	 * @param mixed $value The value of the parameter or a closure to define an object
 	 * @throws \RuntimeException Prevent override of a frozen service
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($id, $value)
 	{
 		if (isset($this->frozen[$id])) {
@@ -99,6 +102,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \InvalidArgumentException if the identifier is not defined
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($id)
 	{
 		if (!isset($this->keys[$id])) {
@@ -131,6 +135,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @return bool
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($id)
 	{
 		return isset($this->keys[$id]);
@@ -141,6 +146,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @param string $id The unique identifier for the parameter or object
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($id)
 	{
 		if (isset($this->keys[$id])) {
@@ -295,6 +301,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \InvalidArgumentException if the identifier is not defined
 	 */
+	#[\ReturnTypeWillChange]
 	function __get($name)
 	{
 		return $this->offsetGet($name);
@@ -308,6 +315,7 @@ class Pimple implements \ArrayAccess
 	 *
 	 * @throws \RuntimeException Prevent override of a frozen service
 	 */
+	#[\ReturnTypeWillChange]
 	function __set($name, $value)
 	{
 		$this->offsetSet($name, $value);

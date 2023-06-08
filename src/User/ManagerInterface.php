@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\User;
@@ -42,7 +42,7 @@ interface ManagerInterface
 	 *
 	 * @return  boolean  True on success
 	 *
-	 * @throws  \AuthenticationException  When the login fails
+	 * @throws  \Exception  When the login fails
 	 */
 	public function loginUser($username, $password, $params = array());
 

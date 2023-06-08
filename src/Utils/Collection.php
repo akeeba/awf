@@ -1,15 +1,17 @@
 <?php
 /**
- * @package        awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
- *
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+namespace Awf\Utils;
+
+/**
  * Based on Laravel 4's Illuminate\Support\Collection with minimal changes
  *
  * Laravel 4 is distributed under the MIT license, see https://github.com/laravel/framework/blob/master/LICENSE.txt
  */
-
-namespace Awf\Utils;
 
 use Closure;
 use Countable;
@@ -20,11 +22,6 @@ use JsonSerializable;
 use IteratorAggregate;
 
 require_once __DIR__ . '/helpers.php';
-
-if (!interface_exists('\\JsonSerializable'))
-{
-	require_once __DIR__ . '/../Compat/JsonSerializable.php';
-}
 
 class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -129,7 +126,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function fetch($key)
 	{
-		return new static(array_fetch($this->items, $key));
+		return new static(akeeba_array_fetch($this->items, $key));
 	}
 
 	/**
@@ -160,7 +157,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 		}
 		else
 		{
-			return array_first($this->items, $callback, $default);
+			return akeeba_array_first($this->items, $callback, $default);
 		}
 	}
 
@@ -171,7 +168,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function flatten()
 	{
-		return new static(array_flatten($this->items));
+		return new static(akeeba_array_flatten($this->items));
 	}
 
 	/**
@@ -201,7 +198,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 			return $this->items[$key];
 		}
 
-		return value($default);
+		return akeeba_value($default);
 	}
 
 	/**
@@ -217,7 +214,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 
 		foreach ($this->items as $key => $value)
 		{
-			$key = is_callable($groupBy) ? $groupBy($value, $key) : array_get($value, $groupBy);
+			$key = is_callable($groupBy) ? $groupBy($value, $key) : akeeba_array_get($value, $groupBy);
 
 			$results[$key][] = $value;
 		}
@@ -297,7 +294,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 */
 	public function lists($value, $key = null)
 	{
-		return array_pluck($this->items, $value, $key);
+		return akeeba_array_pluck($this->items, $value, $key);
 	}
 
 	/**
@@ -601,7 +598,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	{
 		return function ($item) use ($value)
 		{
-			return is_object($item) ? $item->{$value} : array_get($item, $value);
+			return is_object($item) ? $item->{$value} : akeeba_array_get($item, $value);
 		};
 	}
 
@@ -624,6 +621,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return array
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return $this->toArray();
@@ -646,6 +644,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return ArrayIterator
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new ArrayIterator($this->items);
@@ -668,6 +667,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return int
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count($this->items);
@@ -680,6 +680,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return bool
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($key)
 	{
 		return array_key_exists($key, $this->items);
@@ -692,6 +693,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return mixed
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($key)
 	{
 		return $this->items[$key];
@@ -705,6 +707,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return void
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($key, $value)
 	{
 		if (is_null($key))
@@ -724,6 +727,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return void
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($key)
 	{
 		unset($this->items[$key]);
@@ -734,6 +738,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return string
 	 */
+	#[\ReturnTypeWillChange]
 	public function __toString()
 	{
 		return $this->toJson();

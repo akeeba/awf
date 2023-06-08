@@ -1,35 +1,41 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Database\Driver;
 
 use Awf\Database\Driver;
-use Awf\Database\Query;
 
 /**
  * MySQLi database driver
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @see         http://php.net/manual/en/book.mysqli.php
  */
 class Mysqli extends Driver
 {
+	use FixMySQLHostname;
+
+	/**
+	 * @var    string  The database technology family supported, e.g. mysql, mssql
+	 */
+	public static $dbtech = 'mysql';
+
+	/**
+	 * @var    string  The minimum supported database version.
+	 */
+	protected static $dbMinimum = '5.0.4';
+
 	/**
 	 * The name of the database driver.
 	 *
 	 * @var    string
 	 */
 	public $name = 'mysqli';
-
-	/**
-	 * @var    string  The database technology family supported, e.g. mysql, mssql
-	 */
-	public static $dbtech = 'mysql';
 
 	/**
 	 * The character(s) used to quote SQL statement names such as table names or field names,
@@ -50,9 +56,18 @@ class Mysqli extends Driver
 	protected $nullDate = '0000-00-00 00:00:00';
 
 	/**
-	 * @var    string  The minimum supported database version.
+	 * Am I in the middle of reconnecting to the database server?
+	 *
+	 * @var  bool
 	 */
-	protected static $dbMinimum = '5.0.4';
+	private $isReconnecting = false;
+
+	/**
+	 * Does this database support UTF8MB4 connections?
+	 *
+	 * @var bool|null
+	 */
+	protected $supportsUTF8MB4 = null;
 
 	/**
 	 * Constructor.
@@ -63,16 +78,44 @@ class Mysqli extends Driver
 	public function __construct($options)
 	{
 		// Get some basic values from the options.
-		$options['host'] = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['user'] = (isset($options['user'])) ? $options['user'] : 'root';
-		$options['password'] = (isset($options['password'])) ? $options['password'] : '';
-		$options['database'] = (isset($options['database'])) ? $options['database'] : '';
-		$options['select'] = (isset($options['select'])) ? (bool) $options['select'] : true;
-		$options['port'] = null;
-		$options['socket'] = null;
+		$options['host']     = $options['host'] ?? 'localhost';
+		$options['user']     = $options['user'] ?? 'root';
+		$options['password'] = $options['password'] ?? '';
+		$options['database'] = $options['database'] ?? '';
+		$options['select']   = (bool) ($options['select'] ?? true);
+		$options['port']     = null;
+		$options['socket']   = null;
+
+		$options['ssl'] = $options['ssl'] ?? [];
+		$options['ssl'] = is_array($options['ssl']) ? $options['ssl'] : [];
+
+		if ($options['ssl'] !== [])
+		{
+			$options['ssl']['enable']             = $options['ssl']['enable'] ?? false;
+			$options['ssl']['cipher']             = ($options['ssl']['cipher'] ?? null) ?: null;
+			$options['ssl']['ca']                 = ($options['ssl']['ca'] ?? null) ?: null;
+			$options['ssl']['capath']             = ($options['ssl']['capath'] ?? null) ?: null;
+			$options['ssl']['key']                = ($options['ssl']['key'] ?? null) ?: null;
+			$options['ssl']['cert']               = ($options['ssl']['cert'] ?? null) ?: null;
+			$options['ssl']['verify_server_cert'] = ($options['ssl']['verify_server_cert'] ?? null) ?: false;
+		}
+
+		// Figure out if a port is included in the host name
+		$this->fixHostnamePortSocket($options['host'], $options['port'], $options['socket']);
 
 		// Finalize initialisation.
 		parent::__construct($options);
+	}
+
+	/**
+	 * Test to see if the MySQL connector is available.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 */
+	public static function isSupported()
+	{
+		return (function_exists('mysqli_connect'));
 	}
 
 	/**
@@ -81,9 +124,25 @@ class Mysqli extends Driver
 	 */
 	public function __destruct()
 	{
-		if (is_callable($this->connection, 'close'))
+		if (!is_resource($this->connection) && !(class_exists(\mysqli::class) && $this->connection instanceof \mysqli))
 		{
-			mysqli_close($this->connection);
+			return;
+		}
+
+		try
+		{
+			if (is_object($this->connection))
+			{
+				$this->connection->close();
+			}
+			else
+			{
+				mysqli_close($this->connection);
+			}
+		}
+		catch (\Throwable $e)
+		{
+			// We expect an ErrorException under PHP 8 is the connection is already closed
 		}
 	}
 
@@ -101,47 +160,71 @@ class Mysqli extends Driver
 			return;
 		}
 
-		/*
-		 * Unlike mysql_connect(), mysqli_connect() takes the port and socket as separate arguments. Therefore, we
-		 * have to extract them from the host string.
-		 */
-		$tmp = substr(strstr($this->options['host'], ':'), 1);
-		if (!empty($tmp))
-		{
-			// Get the port number or socket name
-			if (is_numeric($tmp))
-			{
-				$this->options['port'] = $tmp;
-			}
-			else
-			{
-				$this->options['socket'] = $tmp;
-			}
-
-			// Extract the host name only
-			$this->options['host'] = substr($this->options['host'], 0, strlen($this->options['host']) - (strlen($tmp) + 1));
-
-			// This will take care of the following notation: ":3306"
-			if ($this->options['host'] == '')
-			{
-				$this->options['host'] = 'localhost';
-			}
-		}
-
 		// Make sure the MySQLi extension for PHP is installed and enabled.
 		if (!function_exists('mysqli_connect'))
 		{
 			throw new \RuntimeException('The MySQL adapter mysqli is not available');
 		}
 
-		$this->connection = @mysqli_connect(
-			$this->options['host'], $this->options['user'], $this->options['password'], null, $this->options['port'], $this->options['socket']
-		);
+		$this->connection = mysqli_init();
+
+		$connectionFlags = 0;
+
+		// For SSL/TLS connection encryption.
+		if ($this->options['ssl'] !== [] && $this->options['ssl']['enable'] === true)
+		{
+			// Verify server certificate is only available in PHP 5.6.16+. See https://www.php.net/ChangeLog-5.php#5.6.16
+			if (isset($this->options['ssl']['verify_server_cert']))
+			{
+				$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL;
+
+				// New constants in PHP 5.6.16+. See https://www.php.net/ChangeLog-5.php#5.6.16
+				if ($this->options['ssl']['verify_server_cert'] === true && defined('MYSQLI_CLIENT_SSL_VERIFY_SERVER_CERT'))
+				{
+					$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL_VERIFY_SERVER_CERT;
+				}
+				elseif ($this->options['ssl']['verify_server_cert'] === false && defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT'))
+				{
+					$connectionFlags = $connectionFlags | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
+				}
+				elseif (defined('MYSQLI_OPT_SSL_VERIFY_SERVER_CERT'))
+				{
+					$this->connection->options(MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, $this->options['ssl']['verify_server_cert']);
+				}
+			}
+
+			// Add SSL/TLS options only if changed.
+			$this->connection->ssl_set(
+				($this->options['ssl']['key'] ?? null) ?: null,
+				($this->options['ssl']['cert'] ?? null) ?: null,
+				($this->options['ssl']['ca'] ?? null) ?: null,
+				($this->options['ssl']['capath'] ?? null) ?: null,
+				($this->options['ssl']['cipher'] ?? null) ?: null
+			);
+		}
+
+		// Attempt to connect to the server, use error suppression to silence warnings and allow us to throw an Exception separately.
+		try
+		{
+			$connected = @$this->connection->real_connect(
+				$this->options['host'],
+				$this->options['user'],
+				$this->options['password'] ?: null,
+				null,
+				$this->options['port'] ?: 3306,
+				$this->options['socket'] ?: null,
+				$connectionFlags
+			);
+		}
+		catch (\Exception $e)
+		{
+			$connected = false;
+		}
 
 		// Attempt to connect to the server.
-		if (!$this->connection)
+		if (!$connected)
 		{
-			throw new \RuntimeException('Could not connect to MySQL.');
+			throw new \RuntimeException('Could not connect to MySQL.', 500, isset($e) ? $e : null);
 		}
 
 		// Set sql_mode to non_strict mode
@@ -158,6 +241,22 @@ class Mysqli extends Driver
 	}
 
 	/**
+	 * Determines if the connection to the server is active.
+	 *
+	 * @return  boolean  True if connected to the database engine.
+	 *
+	 */
+	public function connected()
+	{
+		if (is_object($this->connection))
+		{
+			return mysqli_ping($this->connection);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Disconnects the database.
 	 *
 	 * @return  void
@@ -165,13 +264,49 @@ class Mysqli extends Driver
 	 */
 	public function disconnect()
 	{
-		// Close the connection.
-		if (is_callable($this->connection, 'close'))
+		if (!is_resource($this->connection) && !(class_exists(\mysqli::class) && $this->connection instanceof \mysqli))
 		{
-			mysqli_close($this->connection);
+			return;
 		}
 
-		$this->connection = null;
+		try
+		{
+			if (is_object($this->connection))
+			{
+				$this->connection->close();
+			}
+			else
+			{
+				mysqli_close($this->connection);
+			}
+		}
+		catch (\Throwable $e)
+		{
+			// We expect an ErrorException under PHP 8 is the connection is already closed
+		}
+	}
+
+	/**
+	 * Drops a table from the database.
+	 *
+	 * @param   string   $tableName  The name of the database table to drop.
+	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
+	 *
+	 * @return  Mysqli  Returns this object to support chaining.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function dropTable($tableName, $ifExists = true)
+	{
+		$this->connect();
+
+		$query = $this->getQuery(true);
+
+		$this->setQuery('DROP TABLE ' . ($ifExists ? 'IF EXISTS ' : '') . $query->quoteName($tableName));
+
+		$this->execute();
+
+		return $this;
 	}
 
 	/**
@@ -198,53 +333,87 @@ class Mysqli extends Driver
 	}
 
 	/**
-	 * Test to see if the MySQL connector is available.
+	 * Execute the SQL statement.
 	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 */
-	public static function isSupported()
-	{
-		return (function_exists('mysqli_connect'));
-	}
-
-	/**
-	 * Determines if the connection to the server is active.
-	 *
-	 * @return  boolean  True if connected to the database engine.
-	 *
-	 */
-	public function connected()
-	{
-		if (is_object($this->connection))
-		{
-			return mysqli_ping($this->connection);
-		}
-
-		return false;
-	}
-
-	/**
-	 * Drops a table from the database.
-	 *
-	 * @param   string   $tableName  The name of the database table to drop.
-	 * @param   boolean  $ifExists   Optionally specify that the table must exist before it is dropped.
-	 *
-	 * @return  Mysqli  Returns this object to support chaining.
+	 * @return  mixed  A database cursor resource on success, boolean false on failure.
 	 *
 	 * @throws  \RuntimeException
 	 */
-	public function dropTable($tableName, $ifExists = true)
+	public function execute()
 	{
 		$this->connect();
 
-		$query = $this->getQuery(true);
+		if (!is_object($this->connection))
+		{
+			throw new \RuntimeException($this->errorMsg, $this->errorNum);
+		}
 
-		$this->setQuery('DROP TABLE ' . ($ifExists ? 'IF EXISTS ' : '') . $query->quoteName($tableName));
+		// Take a local copy so that we don't modify the original query and cause issues later
+		$sql = $this->replacePrefix((string) $this->sql);
+		if ($this->limit > 0 || $this->offset > 0)
+		{
+			$sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
+		}
 
-		$this->execute();
+		// Increment the query counter.
+		$this->count++;
 
-		return $this;
+		// If debugging is enabled then let's log the query.
+		if ($this->debug)
+		{
+			// Add the query to the object queue.
+			$this->log[] = $sql;
+		}
+
+		// Reset the error values.
+		$this->errorNum = 0;
+		$this->errorMsg = '';
+
+		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
+		$this->cursor = @mysqli_query($this->connection, $sql);
+
+		// If an error occurred handle it.
+		if (!$this->cursor)
+		{
+			$this->errorNum = (int) mysqli_errno($this->connection);
+			$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
+
+			// Check if the server was disconnected.
+			if (!$this->connected() && !$this->isReconnecting)
+			{
+				$this->isReconnecting = true;
+
+				try
+				{
+					// Attempt to reconnect.
+					$this->connection = null;
+					$this->connect();
+				}
+					// If connect fails, ignore that exception and throw the normal exception.
+				catch (\RuntimeException $e)
+				{
+					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				}
+
+				$this->errorNum = null;
+				$this->errorMsg = null;
+
+				// Since we were able to reconnect, run the query again.
+				$result               = $this->execute();
+				$this->isReconnecting = false;
+
+				return $result;
+			}
+			// The server was not disconnected.
+			else
+			{
+				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+			}
+		}
+
+		unset($sql);
+
+		return $this->cursor;
 	}
 
 	/**
@@ -301,36 +470,6 @@ class Mysqli extends Driver
 	}
 
 	/**
-	 * Shows the table CREATE statement that creates the given tables.
-	 *
-	 * @param   mixed  $tables  A table name or a list of table names.
-	 *
-	 * @return  array  A list of the create SQL for the tables.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function getTableCreate($tables)
-	{
-		$this->connect();
-
-		$result = array();
-
-		// Sanitize input to an array and iterate over the list.
-		settype($tables, 'array');
-		foreach ($tables as $table)
-		{
-			// Set the query to get the table CREATE statement.
-			$this->setQuery('SHOW CREATE table ' . $this->quoteName($this->escape($table)));
-			$row = $this->loadRow();
-
-			// Populate the result array based on the create statements.
-			$result[$table] = $row[1];
-		}
-
-		return $result;
-	}
-
-	/**
 	 * Retrieves field information about a given table.
 	 *
 	 * @param   string   $table     The name of the database table.
@@ -344,7 +483,7 @@ class Mysqli extends Driver
 	{
 		$this->connect();
 
-		$result = array();
+		$result = [];
 
 		// Set the query to get the table fields statement.
 		$this->setQuery('SHOW FULL COLUMNS FROM ' . $this->quoteName($this->escape($table)));
@@ -365,6 +504,36 @@ class Mysqli extends Driver
 			{
 				$result[$field->Field] = $field;
 			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Shows the table CREATE statement that creates the given tables.
+	 *
+	 * @param   mixed  $tables  A table name or a list of table names.
+	 *
+	 * @return  array  A list of the create SQL for the tables.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function getTableCreate($tables)
+	{
+		$this->connect();
+
+		$result = [];
+
+		// Sanitize input to an array and iterate over the list.
+		settype($tables, 'array');
+		foreach ($tables as $table)
+		{
+			// Set the query to get the table CREATE statement.
+			$this->setQuery('SHOW CREATE table ' . $this->quoteName($this->escape($table)));
+			$row = $this->loadRow();
+
+			// Populate the result array based on the create statements.
+			$result[$table] = $row[1];
 		}
 
 		return $result;
@@ -451,92 +620,6 @@ class Mysqli extends Driver
 	}
 
 	/**
-	 * Execute the SQL statement.
-	 *
-	 * @return  mixed  A database cursor resource on success, boolean false on failure.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function execute()
-	{
-		static $isReconnecting = false;
-
-		$this->connect();
-
-		if (!is_object($this->connection))
-		{
-			throw new \RuntimeException($this->errorMsg, $this->errorNum);
-		}
-
-		// Take a local copy so that we don't modify the original query and cause issues later
-		$sql = $this->replacePrefix((string) $this->sql);
-		if ($this->limit > 0 || $this->offset > 0)
-		{
-			$sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
-		}
-
-		// Increment the query counter.
-		$this->count++;
-
-		// If debugging is enabled then let's log the query.
-		if ($this->debug)
-		{
-			// Add the query to the object queue.
-			$this->log[] = $sql;
-		}
-
-		// Reset the error values.
-		$this->errorNum = 0;
-		$this->errorMsg = '';
-
-		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
-		$this->cursor = @mysqli_query($this->connection, $sql);
-
-		// If an error occurred handle it.
-		if (!$this->cursor)
-		{
-			$this->errorNum = (int) mysqli_errno($this->connection);
-			$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
-
-			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
-			{
-				$isReconnecting = true;
-
-				try
-				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
-				}
-				// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
-				{
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
-				}
-
-				$this->errorNum = null;
-				$this->errorMsg = null;
-
-				// Since we were able to reconnect, run the query again.
-				$result = $this->execute();
-				$isReconnecting = false;
-
-				return $result;
-			}
-			// The server was not disconnected.
-			else
-			{
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
-			}
-		}
-
-		unset($sql);
-
-		return $this->cursor;
-	}
-
-	/**
 	 * Renames a table in the database.
 	 *
 	 * @param   string  $oldTable  The name of the table to be renamed
@@ -593,7 +676,69 @@ class Mysqli extends Driver
 	{
 		$this->connect();
 
-		return $this->connection->set_charset('utf8');
+		$charset = $this->supportsUtf8mb4() ? 'utf8mb4' : 'utf8';
+
+		$result = @$this->connection->set_charset($charset);
+
+		if (!$result)
+		{
+			$this->supportsUTF8MB4 = false;
+			$result                = @$this->connection->set_charset('utf8');
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Does this database server support UTF-8 four byte (utf8mb4) collation?
+	 *
+	 * libmysql supports utf8mb4 since 5.5.3 (same version as the MySQL server). mysqlnd supports utf8mb4 since 5.0.9.
+	 *
+	 * This method's code is based on WordPress' wpdb::has_cap() method
+	 *
+	 * @return  bool
+	 */
+	public function supportsUtf8mb4()
+	{
+		if (is_null($this->supportsUTF8MB4))
+		{
+			$this->supportsUTF8MB4 = $this->serverClaimsUtf8();
+		}
+
+		return $this->supportsUTF8MB4;
+	}
+
+	private function serverClaimsUtf8()
+	{
+		$mariadb = stripos($this->connection->server_info, 'mariadb') !== false;
+		if (version_compare(PHP_VERSION, '8.0.0', 'lt'))
+		{
+			$client_version = mysqli_get_client_info($this->connection);
+		}
+		else
+		{
+			$client_version = mysqli_get_client_info();
+		}
+		$server_version = $this->getVersion();
+
+		if (version_compare($server_version, '5.5.3', '<'))
+		{
+			return false;
+		}
+
+		if ($mariadb && version_compare($server_version, '10.0.0', '<'))
+		{
+			return false;
+		}
+
+		if (strpos($client_version, 'mysqlnd') !== false)
+		{
+			$client_version = preg_replace('/^\D+([\d.]+).*/', '$1', $client_version);
+
+			return version_compare($client_version, '5.0.9', '>=');
+		}
+
+		return version_compare($client_version, '5.5.3', '>=');
 	}
 
 	/**
@@ -639,6 +784,20 @@ class Mysqli extends Driver
 
 		$this->setQuery('START TRANSACTION');
 		$this->execute();
+	}
+
+	/**
+	 * Unlocks tables in the database.
+	 *
+	 * @return  Mysqli  Returns this object to support chaining.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function unlockTables()
+	{
+		$this->setQuery('UNLOCK TABLES')->execute();
+
+		return $this;
 	}
 
 	/**
@@ -692,19 +851,5 @@ class Mysqli extends Driver
 	protected function freeResult($cursor = null)
 	{
 		mysqli_free_result($cursor ? $cursor : $this->cursor);
-	}
-
-	/**
-	 * Unlocks tables in the database.
-	 *
-	 * @return  Mysqli  Returns this object to support chaining.
-	 *
-	 * @throws  \RuntimeException
-	 */
-	public function unlockTables()
-	{
-		$this->setQuery('UNLOCK TABLES')->execute();
-
-		return $this;
 	}
 }

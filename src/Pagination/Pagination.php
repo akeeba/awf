@@ -1,10 +1,8 @@
 <?php
 /**
- * @package		awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license		GNU GPL version 3 or later
- *
- * This class is based on the JPagination class found in Joomla! 3
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Pagination;
@@ -496,13 +494,13 @@ class Pagination
 	 *
 	 * @return  string  Pagination footer.
 	 */
-	public function getListFooter()
+	public function getListFooter(?array $limitBoxAttributes = null)
 	{
 		$list                 = array();
 		$list['limit']        = $this->limit;
 		$list['limitstart']   = $this->limitStart;
 		$list['total']        = $this->total;
-		$list['limitfield']   = $this->getLimitBox();
+		$list['limitfield']   = $this->getLimitBox($limitBoxAttributes);
 		$list['pagescounter'] = $this->getPagesCounter();
 		$list['pageslinks']   = $this->getPagesLinks();
 

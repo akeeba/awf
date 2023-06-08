@@ -1,8 +1,8 @@
 <?php
 /**
- * @package        solo
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Application;
@@ -10,7 +10,6 @@ namespace Awf\Application;
 
 use Awf\Container\Container;
 use Awf\Registry\Registry;
-use Awf\Utils\Phpfunc;
 
 class Configuration extends Registry
 {
@@ -38,19 +37,11 @@ class Configuration extends Registry
 	 * Loads the configuration off a JSON file
 	 *
 	 * @param string  $filePath The path to the JSON file (optional)
-	 * @param Phpfunc $phpfunc  The PHP function abstraction, used for testing
 	 *
 	 * @return  void
 	 */
-	public function loadConfiguration($filePath = null, Phpfunc $phpfunc = null)
+	public function loadConfiguration($filePath = null)
 	{
-		// @codeCoverageIgnoreStart
-		if (!is_object($phpfunc))
-		{
-			$phpfunc = new Phpfunc();
-		}
-		// @codeCoverageIgnoreEnd
-
 		if (empty($filePath))
 		{
 			$filePath = $this->getDefaultPath();
@@ -60,7 +51,7 @@ class Configuration extends Registry
 		$this->data = new \stdClass();
 
 		// Try to open the file
-		$fileData = @$phpfunc->file_get_contents($filePath);
+		$fileData = @\file_get_contents($filePath);
 
 		if ($fileData !== false)
 		{

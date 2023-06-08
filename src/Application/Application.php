@@ -1,25 +1,17 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Application;
 
 use Awf\Container\Container;
-use Awf\Dispatcher\Dispatcher;
 use Awf\Document\Document;
 use Awf\Exception;
-use Awf\Input\Input;
-use Awf\Registry\Registry;
-use Awf\Router\Router;
-use Awf\Session;
-use Awf\Session\Manager;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
-use Awf\User;
-use Awf\Event;
 
 
 /**
@@ -55,9 +47,9 @@ abstract class Application
 	/**
 	 * Public constructor
 	 *
-	 * @param Container $container Configuration parameters
+	 * @param   Container  $container  Configuration parameters
 	 *
-	 * @return Application
+	 * @return  void
 	 */
 	public function __construct(Container $container = null)
 	{
@@ -101,7 +93,7 @@ abstract class Application
 		// Set up the temporary path
 		if (empty($container['temporaryPath']))
 		{
-			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP . '/tmp' : $container->filesystemBase . '/tmp';
+			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP : $container->filesystemBase . '/tmp';
 		}
 
 		// Set up the language path
@@ -126,34 +118,34 @@ abstract class Application
 		$this->setTemplate();
 
 		// Load the translation strings
-		Text::addIniProcessCallback(array($this, 'processLanguageIniFile'));
+		Text::addIniProcessCallback([$this, 'processLanguageIniFile']);
 		$languagePath = $container->languagePath;
 		Text::loadLanguage(null, $this->name, '.ini', true, $languagePath);
 		Text::loadLanguage('en-GB', $this->name, '.ini', false, $languagePath);
 	}
 
 	/**
-	 * Gets the name of the application by breaking down the application class'
-	 * name. For example, FooApplication returns "foo".
+	 * Gets the name of the application by breaking down the application class' name. For example, FooApplication
+	 * returns "Foo".
 	 *
-	 * @return  string  The application name, all lowercase
+	 * @return  string  The application name, case respected
 	 */
 	public function getName()
 	{
-		if (empty($this->name))
-		{
-			$class = get_class($this);
-			$class = preg_replace('/(\s)+/', '_', $class);
-			$class = strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $class));
-			$class = str_replace('\\', '_', $class);
-			$class = explode('_', $class);
-
-			return array_shift($class);
-		}
-		else
+		if (!empty($this->name))
 		{
 			return $this->name;
 		}
+
+		$class = get_class($this);
+		$class = preg_replace('/(\s)+/', '_', $class);
+		$class = preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $class);
+		$class = str_replace('\\', '_', $class);
+		$class = explode('_', $class);
+
+		$this->name = array_shift($class);
+
+		return $this->name;
 	}
 
 	/**
@@ -182,7 +174,13 @@ abstract class Application
 
 		if (!array_key_exists($name, self::$instances))
 		{
-			$className = '\\' . ucfirst($name) . '\\Application';
+			$className = $container->applicationNamespace . '\\Application';
+
+			if (!class_exists($className, true))
+			{
+				$className = '\\' . ucfirst($name) . '\\Application';
+			}
+
 
 			if (!class_exists($className))
 			{
@@ -316,11 +314,11 @@ abstract class Application
 	public function getMessageQueue()
 	{
 		// For empty queue, if messages exists in the session, enqueue them.
-		if (!count($this->messageQueue))
+		if (!count($this->messageQueue ?: []))
 		{
 			if ($this->container->segment->hasFlash('application_queue'))
 			{
-				$this->messageQueue = $this->container->segment->getFlash('application_queue');
+				$this->messageQueue = $this->container->segment->getFlash('application_queue') ?: [];
 			}
 		}
 
@@ -412,7 +410,7 @@ abstract class Application
 		// so we will output a javascript redirect statement.
 		if (headers_sent())
 		{
-			$url = htmlspecialchars($url);
+			$url = htmlspecialchars($url ?? '');
 			$url = str_replace('&amp;', '&', $url);
 			echo "<script>document.location.href='" . $url . "';</script>\n";
 		}

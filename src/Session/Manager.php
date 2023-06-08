@@ -1,9 +1,11 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+/**
  * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
  * Awf\Session package for copyright and license information.
  */
@@ -215,6 +217,12 @@ class Manager
 		return $ret;
 	}
 
+	public function setCsrfTokenAlgorithm(string $algorithm)
+	{
+		$this->csrf_token_factory->setAlgorithm($algorithm);
+		$this->csrf_token = null;
+	}
+
 	/**
 	 *
 	 * Returns the CSRF token, creating it if needed (and thereby starting a
@@ -326,7 +334,7 @@ class Manager
 	public function setCookieParams(array $params)
 	{
 		$this->cookie_params = array_merge($this->cookie_params, $params);
-		session_set_cookie_params(
+		@session_set_cookie_params(
 			$this->cookie_params['lifetime'],
 			$this->cookie_params['path'],
 			$this->cookie_params['domain'],

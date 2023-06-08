@@ -1,23 +1,18 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is a derivative from a class found in the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Registry;
 
 use Awf\Utils\ArrayHelper;
 
-if (!interface_exists('\\JsonSerializable'))
-{
-	require_once __DIR__ . '/../Compat/JsonSerializable.php';
-}
-
 /**
  * Registry class
+ *
+ * This class is adapted from the Joomla! Framework
  */
 class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \Countable
 {
@@ -72,6 +67,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  Registry
 	 */
+	#[\ReturnTypeWillChange]
 	public function __clone()
 	{
 		$this->data = unserialize(serialize($this->data));
@@ -82,6 +78,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  string
 	 */
+	#[\ReturnTypeWillChange]
 	public function __toString()
 	{
 		return $this->toString();
@@ -95,6 +92,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 * @link    http://php.net/manual/en/countable.count.php
 	 * @since   1.3.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count(get_object_vars($this->data));
@@ -108,6 +106,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @note    The interface is only present in PHP 5.4 and up.
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return $this->data;
@@ -262,6 +261,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 * @see     IteratorAggregate::getIterator()
 	 * @since   1.3.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
 		return new \ArrayIterator($this->data);
@@ -403,6 +403,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return (boolean) ($this->get($offset) !== null);
@@ -417,6 +418,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		return $this->get($offset);
@@ -432,6 +434,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		$this->set($offset, $value);
@@ -446,6 +449,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		$this->set($offset, null);
@@ -610,9 +614,9 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @return  array  An associative array holding the namespace data
 	 */
-	public function toArray()
+	public function toArray(): array
 	{
-		return (array) $this->asArray($this->data);
+		return $this->asArray($this->data);
 	}
 
 	/**
@@ -635,7 +639,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
-	public function toString($format = 'JSON', $options = array())
+	public function toString($format = 'JSON', $options = array()): string
 	{
 		// Return a namespace in a given format
 		$handler = AbstractRegistryFormat::getInstance($format, $options);
@@ -694,7 +698,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	 *
 	 * @since   1.0
 	 */
-	protected function asArray($data)
+	protected function asArray($data): array
 	{
 		$array = array();
 

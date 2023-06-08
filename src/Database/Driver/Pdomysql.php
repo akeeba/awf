@@ -1,16 +1,16 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Database\Driver;
 
 /**
  * MySQL database driver supporting PDO based connections
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @see    http://php.net/manual/en/ref.pdo-mysql.php
  * @since  1.0
@@ -53,7 +53,7 @@ class Pdomysql extends Pdo
      */
     protected static $dbMinimum = '5.0.4';
 
-    /**
+	/**
      * Constructor.
      *
      * @param   array  $options  Array of database options with keys: host, user, password, database, select.
@@ -63,8 +63,11 @@ class Pdomysql extends Pdo
     public function __construct($options)
     {
         // Get some basic values from the options.
-        $options['driver']	= 'mysql';
-        $options['charset'] = (isset($options['charset'])) ? $options['charset'] : 'utf8';
+        $options['driver']        = 'mysql';
+        $options['charset']       = (isset($options['charset'])) ? $options['charset'] : 'utf8';
+
+        // As soon as PDO connect set the sql_mode to '' (avoids issues with the date being NULL/zero
+        $options['driverOptions'] = [\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode=""'];
 
         $this->charset = $options['charset'];
 
@@ -322,11 +325,9 @@ class Pdomysql extends Pdo
      */
     public function lockTable($table)
     {
-        $query = $this->getQuery(true);
-
         $this->setQuery('LOCK TABLES ' . $this->quoteName($table) . ' WRITE');
 
-        $this->setQuery($query)->execute();
+        $this->execute();
 
         return $this;
     }

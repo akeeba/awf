@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Utils;
@@ -50,7 +50,7 @@ abstract class StringHandling
 	 */
 	public static function toASCII($value)
 	{
-		$string = htmlentities(utf8_decode($value), null, 'ISO-8859-1');
+		$string = htmlentities(Utf8::utf8_decode($value), null, 'ISO-8859-1');
 		$string = preg_replace(
 			array('/&szlig;/', '/&(..)lig;/', '/&([aouAOU])uml;/', '/&(.)[^;]*;/'), array('ss', "$1", "$1" . 'e', "$1"), $string
 		);

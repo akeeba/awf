@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Document;
@@ -35,6 +35,13 @@ abstract class Document
 
 	/** @var   array  An array of all inline CSS styles */
 	protected $styleDeclarations = array();
+
+	/**
+	 * Array of scripts options
+	 *
+	 * @var    array
+	 */
+	protected $scriptOptions = array();
 
 	/** @var   array  Cache of all document instances known to us */
 	private static $instances = array();
@@ -80,7 +87,7 @@ abstract class Document
 	 *
 	 * @return  \Awf\Document\Document
 	 */
-	public static function getInstance($type = 'html', Container $container, $classPrefix = '\\Awf')
+	public static function getInstance($type, Container $container, $classPrefix = '\\Awf')
 	{
 		if (!array_key_exists($type, self::$instances))
 		{
@@ -124,16 +131,20 @@ abstract class Document
 	/**
 	 * Adds an external script to the page
 	 *
-	 * @param   string  $url    The URL of the script file
-	 * @param   boolean $before (optional) Should I add this before the template's scripts?
-	 * @param   string  $type   (optional) The MIME type of the script file
+	 * @param   string   $url     The URL of the script file
+	 * @param   boolean  $before  (optional) Should I add this before the template's scripts?
+	 * @param   string   $type    (optional) The MIME type of the script file
+	 * @param   bool     $defer   (optional) Should I defer loading the JS file?
+	 * @param   bool     $async   (optional) Should I make the script async?
 	 *
-	 * @return  \Awf\Document\Document
+	 * @return  Document
 	 */
-	public function addScript($url, $before = false, $type = "text/javascript")
+	public function addScript($url, $before = false, $type = "text/javascript", $defer = false, $async = false)
 	{
-		$this->scripts[$url]['mime'] = $type;
+		$this->scripts[$url]['mime']   = $type;
 		$this->scripts[$url]['before'] = $before;
+		$this->scripts[$url]['defer']  = $defer;
+		$this->scripts[$url]['async']  = $async;
 
 		return $this;
 	}
@@ -158,6 +169,53 @@ abstract class Document
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Add option for script
+	 *
+	 * @param   string  $key      Name in Storage
+	 * @param   mixed   $options  Scrip options as array or string
+	 * @param   bool    $merge    Whether merge with existing (true) or replace (false)
+	 *
+	 * @return  Document instance of $this to allow chaining
+	 */
+	public function addScriptOptions($key, $options, $merge = true)
+	{
+		if (empty($this->scriptOptions[$key]))
+		{
+			$this->scriptOptions[$key] = array();
+		}
+
+		if ($merge && is_array($options))
+		{
+			$this->scriptOptions[$key] = array_replace_recursive($this->scriptOptions[$key], $options);
+		}
+		else
+		{
+			$this->scriptOptions[$key] = $options;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Get script(s) options
+	 *
+	 * @param   string  $key  Name in Storage
+	 *
+	 * @return  array  Options for given $key, or all script options
+	 */
+	public function getScriptOptions($key = null)
+	{
+		if ($key)
+		{
+			return (empty($this->scriptOptions[$key])) ? array() : $this->scriptOptions[$key];
+		}
+		else
+		{
+			return $this->scriptOptions;
+		}
 	}
 
 	/**

@@ -1,27 +1,44 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * This class is adapted from the Joomla! Framework
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Database\Driver;
 
-use Awf\Database\QueryLimitable;
-use Awf\Database\QueryPreparable;
 use Awf\Database\Driver;
 use Awf\Database\Query;
+use Awf\Database\QueryLimitable;
+use Awf\Database\QueryPreparable;
 
 /**
  * PDO Database Driver Class
+ *
+ * This class is adapted from the Joomla! Framework
  *
  * @see    http://php.net/pdo
  * @since  1.0
  */
 abstract class Pdo extends Driver
 {
+	use FixMySQLHostname;
+
+	public static $dbtech = 'pdo';
+
+	/**
+	 * The default cipher suite for TLS connections.
+	 *
+	 * @var    array
+	 */
+	protected static $defaultCipherSuite = [
+		'AES128-GCM-SHA256',
+		'AES256-GCM-SHA384',
+		'AES128-CBC-SHA256',
+		'AES256-CBC-SHA384',
+		'DES-CBC3-SHA',
+	];
+
 	/**
 	 * The name of the database driver.
 	 *
@@ -29,6 +46,14 @@ abstract class Pdo extends Driver
 	 * @since  1.0
 	 */
 	public $name = 'pdo';
+
+	/**
+	 * Contains the current query execution status
+	 *
+	 * @var    array
+	 * @since  1.0
+	 */
+	protected $executed = false;
 
 	/**
 	 * The character(s) used to quote SQL statement names such as table names or field names,
@@ -58,15 +83,11 @@ abstract class Pdo extends Driver
 	 */
 	protected $prepared;
 
-	/**
-	 * Contains the current query execution status
-	 *
-	 * @var    array
-	 * @since  1.0
-	 */
-	protected $executed = false;
+	private $isReconnecting = false;
 
-	public static $dbtech = 'pdo';
+	private $checkingConnected = false;
+
+	protected $transactionDepth = 0;
 
 	/**
 	 * Constructor.
@@ -78,16 +99,48 @@ abstract class Pdo extends Driver
 	public function __construct($options)
 	{
 		// Get some basic values from the options.
-		$options['driver'] = (isset($options['driver'])) ? $options['driver'] : 'odbc';
-		$options['dsn'] = (isset($options['dsn'])) ? $options['dsn'] : '';
-		$options['host'] = (isset($options['host'])) ? $options['host'] : 'localhost';
-		$options['database'] = (isset($options['database'])) ? $options['database'] : '';
-		$options['user'] = (isset($options['user'])) ? $options['user'] : '';
-		$options['password'] = (isset($options['password'])) ? $options['password'] : '';
-		$options['driverOptions'] = (isset($options['driverOptions'])) ? $options['driverOptions'] : array();
+		$options['driver']        = $options['driver'] ?? 'odbc';
+		$options['dsn']           = $options['dsn'] ?? '';
+		$options['host']          = $options['host'] ?? 'localhost';
+		$options['database']      = $options['database'] ?? '';
+		$options['user']          = $options['user'] ?? '';
+		$options['password']      = $options['password'] ?? '';
+		$options['driverOptions'] = $options['driverOptions'] ?? [];
+
+		$options['ssl'] = $options['ssl'] ?? [];
+		$options['ssl'] = is_array($options['ssl']) ? $options['ssl'] : [];
+
+		if ($options['ssl'] !== [])
+		{
+			$options['ssl']['enable']             = $options['ssl']['enable'] ?? false;
+			$options['ssl']['cipher']             = ($options['ssl']['cipher'] ?? null) ?: null;
+			$options['ssl']['ca']                 = ($options['ssl']['ca'] ?? null) ?: null;
+			$options['ssl']['capath']             = ($options['ssl']['capath'] ?? null) ?: null;
+			$options['ssl']['key']                = ($options['ssl']['key'] ?? null) ?: null;
+			$options['ssl']['cert']               = ($options['ssl']['cert'] ?? null) ?: null;
+			$options['ssl']['verify_server_cert'] = ($options['ssl']['verify_server_cert'] ?? false) ?: false;
+		}
+
+		if ($options['driver'] === 'mysql')
+		{
+			$this->fixHostnamePortSocket($options['host'], $options['port'], $options['socket']);
+		}
 
 		// Finalize initialisation
 		parent::__construct($options);
+	}
+
+	/**
+	 * Test to see if the PDO extension is available.
+	 * Override as needed to check for specific PDO Drivers.
+	 *
+	 * @return  boolean  True on success, false otherwise.
+	 *
+	 * @since   1.0
+	 */
+	public static function isSupported()
+	{
+		return defined('\\PDO::ATTR_DRIVER_NAME');
 	}
 
 	/**
@@ -102,13 +155,54 @@ abstract class Pdo extends Driver
 	}
 
 	/**
+	 * PDO does not support serialize
+	 *
+	 * @return  array
+	 *
+	 * @since   1.0
+	 */
+	public function __sleep()
+	{
+		$serializedProperties = [];
+
+		$reflect = new \ReflectionClass($this);
+
+		// Get properties of the current class
+		$properties = $reflect->getProperties();
+
+		foreach ($properties as $property)
+		{
+			// Do not serialize properties that are PDO
+			if ($property->isStatic() == false && !($this->{$property->name} instanceof \PDO))
+			{
+				array_push($serializedProperties, $property->name);
+			}
+		}
+
+		return $serializedProperties;
+	}
+
+	/**
+	 * Wake up after serialization
+	 *
+	 * @return  array
+	 *
+	 * @since   1.0
+	 */
+	public function __wakeup()
+	{
+		// Get connection back
+		$this->__construct($this->options);
+	}
+
+	/**
 	 * Connects to the database if needed.
 	 *
 	 * @return  void  Returns void if the database connected successfully.
 	 *
-	 * @since   1.0
 	 * @throws  \RuntimeException
 	 * @throws  \UnexpectedValueException
+	 * @since   1.0
 	 */
 	public function connect()
 	{
@@ -126,14 +220,14 @@ abstract class Pdo extends Driver
 		// Find the correct PDO DSN Format to use:
 		switch (strtolower($this->options['driver']))
 		{
-            // @codeCoverageIgnoreStart
+			// @codeCoverageIgnoreStart
 			case 'cubrid':
 				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 33000;
 
 				$format = 'cubrid:host=#HOST#;port=#PORT#;dbname=#DBNAME#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+				$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 
 				break;
 
@@ -142,8 +236,8 @@ abstract class Pdo extends Driver
 
 				$format = 'dblib:host=#HOST#;port=#PORT#;dbname=#DBNAME#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+				$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 
 				break;
 
@@ -152,8 +246,8 @@ abstract class Pdo extends Driver
 
 				$format = 'firebird:dbname=#DBNAME#';
 
-				$replace = array('#DBNAME#');
-				$with = array($this->options['database']);
+				$replace = ['#DBNAME#'];
+				$with    = [$this->options['database']];
 
 				break;
 
@@ -164,36 +258,39 @@ abstract class Pdo extends Driver
 				{
 					$format = 'ibm:DSN=#DSN#';
 
-					$replace = array('#DSN#');
-					$with = array($this->options['dsn']);
+					$replace = ['#DSN#'];
+					$with    = [$this->options['dsn']];
 				}
 				else
 				{
 					$format = 'ibm:hostname=#HOST#;port=#PORT#;database=#DBNAME#';
 
-					$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-					$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+					$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+					$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 				}
 
 				break;
 
 			case 'informix':
-				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 1526;
+				$this->options['port']     = (isset($this->options['port'])) ? $this->options['port'] : 1526;
 				$this->options['protocol'] = (isset($this->options['protocol'])) ? $this->options['protocol'] : 'onsoctcp';
 
 				if (!empty($this->options['dsn']))
 				{
 					$format = 'informix:DSN=#DSN#';
 
-					$replace = array('#DSN#');
-					$with = array($this->options['dsn']);
+					$replace = ['#DSN#'];
+					$with    = [$this->options['dsn']];
 				}
 				else
 				{
 					$format = 'informix:host=#HOST#;service=#PORT#;database=#DBNAME#;server=#SERVER#;protocol=#PROTOCOL#';
 
-					$replace = array('#HOST#', '#PORT#', '#DBNAME#', '#SERVER#', '#PROTOCOL#');
-					$with = array($this->options['host'], $this->options['port'], $this->options['database'], $this->options['server'], $this->options['protocol']);
+					$replace = ['#HOST#', '#PORT#', '#DBNAME#', '#SERVER#', '#PROTOCOL#'];
+					$with    = [
+						$this->options['host'], $this->options['port'], $this->options['database'],
+						$this->options['server'], $this->options['protocol'],
+					];
 				}
 
 				break;
@@ -203,38 +300,75 @@ abstract class Pdo extends Driver
 
 				$format = 'mssql:host=#HOST#;port=#PORT#;dbname=#DBNAME#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+				$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 
 				break;
-            // @codeCoverageIgnoreEnd
+			// @codeCoverageIgnoreEnd
 			case 'mysql':
 				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 3306;
 
 				$format = 'mysql:host=#HOST#;port=#PORT#;dbname=#DBNAME#;charset=#CHARSET#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#', '#CHARSET#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database'], $this->options['charset']);
+				if ($this->options['socket'])
+				{
+					$format = 'mysql:socket=#SOCKET#;dbname=#DBNAME#;charset=#CHARSET#';
+				}
+
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#', '#CHARSET#'];
+				$with    = [
+					$this->options['host'], $this->options['port'], $this->options['database'],
+					$this->options['charset'],
+				];
+
+				// For SSL/TLS connection encryption.
+				if ($this->options['ssl'] !== [] && $this->options['ssl']['enable'] === true)
+				{
+					$sslContextIsNull = true;
+
+					// If customised, add cipher suite, ca file path, ca path, private key file path and certificate file path to PDO driver options.
+					foreach (['cipher', 'ca', 'capath', 'key', 'cert'] as $key => $value)
+					{
+						if ($this->options['ssl'][$value] !== null)
+						{
+							$this->options['driverOptions'][constant('\PDO::MYSQL_ATTR_SSL_' . strtoupper($value))] = $this->options['ssl'][$value];
+
+							$sslContextIsNull = false;
+						}
+					}
+
+					// PDO, if no cipher, ca, capath, cert and key are set, can't start TLS one-way connection, set a common ciphers suite to force it.
+					if ($sslContextIsNull === true)
+					{
+						$this->options['driverOptions'][\PDO::MYSQL_ATTR_SSL_CIPHER] = implode(':', static::$defaultCipherSuite);
+					}
+
+					// If customised, for capable systems (PHP 7.0.14+ and 7.1.4+) verify certificate chain and Common Name to driver options.
+					if ($this->options['ssl']['verify_server_cert'] !== null && defined('\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT'))
+					{
+						$this->options['driverOptions'][\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = $this->options['ssl']['verify_server_cert'];
+					}
+				}
 
 				break;
-            // @codeCoverageIgnoreStart
+			// @codeCoverageIgnoreStart
 			case 'oci':
-				$this->options['port'] = (isset($this->options['port'])) ? $this->options['port'] : 1521;
+				$this->options['port']    = (isset($this->options['port'])) ? $this->options['port'] : 1521;
 				$this->options['charset'] = (isset($this->options['charset'])) ? $this->options['charset'] : 'AL32UTF8';
 
 				if (!empty($this->options['dsn']))
 				{
 					$format = 'oci:dbname=#DSN#';
 
-					$replace = array('#DSN#');
-					$with = array($this->options['dsn']);
+					$replace = ['#DSN#'];
+					$with    = [$this->options['dsn']];
 				}
 				else
 				{
 					$format = 'oci:dbname=//#HOST#:#PORT#/#DBNAME#';
 
-					$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-					$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+					$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+					$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 				}
 
 				$format .= ';charset=' . $this->options['charset'];
@@ -244,8 +378,8 @@ abstract class Pdo extends Driver
 			case 'odbc':
 				$format = 'odbc:DSN=#DSN#;UID:#USER#;PWD=#PASSWORD#';
 
-				$replace = array('#DSN#', '#USER#', '#PASSWORD#');
-				$with = array($this->options['dsn'], $this->options['user'], $this->options['password']);
+				$replace = ['#DSN#', '#USER#', '#PASSWORD#'];
+				$with    = [$this->options['dsn'], $this->options['user'], $this->options['password']];
 
 				break;
 
@@ -254,8 +388,8 @@ abstract class Pdo extends Driver
 
 				$format = 'pgsql:host=#HOST#;port=#PORT#;dbname=#DBNAME#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+				$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 
 				break;
 
@@ -269,8 +403,8 @@ abstract class Pdo extends Driver
 					$format = 'sqlite:#DBNAME#';
 				}
 
-				$replace = array('#DBNAME#');
-				$with = array($this->options['database']);
+				$replace = ['#DBNAME#'];
+				$with    = [$this->options['database']];
 
 				break;
 
@@ -279,11 +413,11 @@ abstract class Pdo extends Driver
 
 				$format = 'mssql:host=#HOST#;port=#PORT#;dbname=#DBNAME#';
 
-				$replace = array('#HOST#', '#PORT#', '#DBNAME#');
-				$with = array($this->options['host'], $this->options['port'], $this->options['database']);
+				$replace = ['#HOST#', '#PORT#', '#DBNAME#'];
+				$with    = [$this->options['host'], $this->options['port'], $this->options['database']];
 
 				break;
-            // @codeCoverageIgnoreEnd
+			// @codeCoverageIgnoreEnd
 			default:
 				throw new \UnexpectedValueException('The ' . $this->options['driver'] . ' driver is not supported.');
 		}
@@ -304,6 +438,53 @@ abstract class Pdo extends Driver
 		{
 			throw new \RuntimeException('Could not connect to PDO' . ': ' . $e->getMessage(), 2, $e);
 		}
+	}
+
+	/**
+	 * Determines if the connection to the server is active.
+	 *
+	 * @return  boolean  True if connected to the database engine.
+	 *
+	 * @since   1.0
+	 */
+	public function connected()
+	{
+		if ($this->checkingConnected)
+		{
+			// Reset this flag and throw an exception.
+			$this->checkingConnected = true;
+			throw new \RuntimeException('Recursion trying to check if connected.', 500);
+		}
+
+		// Backup the query state.
+		$sql      = $this->sql;
+		$limit    = $this->limit;
+		$offset   = $this->offset;
+		$prepared = $this->prepared;
+
+		try
+		{
+			// Set the checking connection flag.
+			$this->checkingConnected = true;
+
+			// Run a simple query to check the connection.
+			$this->setQuery($this->getConnectedQuery());
+			$status = (bool) $this->loadResult();
+		}
+		catch (\Exception $e)
+			// If we catch an exception here, we must not be connected.
+		{
+			$status = false;
+		}
+
+		// Restore the query state.
+		$this->sql               = $sql;
+		$this->limit             = $limit;
+		$this->offset            = $offset;
+		$this->prepared          = $prepared;
+		$this->checkingConnected = false;
+
+		return $status;
 	}
 
 	/**
@@ -357,14 +538,12 @@ abstract class Pdo extends Driver
 	 *
 	 * @return  mixed  A database cursor resource on success, boolean false on failure.
 	 *
-	 * @since   1.0
 	 * @throws  \Exception
 	 * @throws  \RuntimeException
+	 * @since   1.0
 	 */
 	public function execute()
 	{
-		static $isReconnecting = false;
-
 		$this->connect();
 
 		if (!is_object($this->connection))
@@ -422,9 +601,9 @@ abstract class Pdo extends Driver
 			$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
 
 			// Check if the server was disconnected.
-			if (!$this->connected() && !$isReconnecting)
+			if (!$this->connected() && !$this->isReconnecting)
 			{
-				$isReconnecting = true;
+				$this->isReconnecting = true;
 
 				try
 				{
@@ -444,8 +623,8 @@ abstract class Pdo extends Driver
 				}
 
 				// Since we were able to reconnect, run the query again.
-				$result = $this->execute();
-				$isReconnecting = false;
+				$result               = $this->execute();
+				$this->isReconnecting = false;
 
 				return $result;
 			}
@@ -462,122 +641,6 @@ abstract class Pdo extends Driver
 		}
 
 		return $this->prepared;
-	}
-
-	/**
-	 * Retrieve a PDO database connection attribute
-	 * http://www.php.net/manual/en/pdo.getattribute.php
-	 *
-	 * Usage: $db->getOption(PDO::ATTR_CASE);
-	 *
-	 * @param   mixed  $key  One of the PDO::ATTR_* Constants
-	 *
-	 * @return  mixed
-	 *
-	 * @since   1.0
-	 */
-	public function getOption($key)
-	{
-		$this->connect();
-
-		return $this->connection->getAttribute($key);
-	}
-
-	/**
-	 * Get a query to run and verify the database is operational.
-	 *
-	 * @return  string  The query to check the health of the DB.
-	 *
-	 * @since   1.0
-	 */
-	public function getConnectedQuery()
-	{
-		return 'SELECT 1';
-	}
-
-	/**
-	 * Sets an attribute on the PDO database handle.
-	 * http://www.php.net/manual/en/pdo.setattribute.php
-	 *
-	 * Usage: $db->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
-	 *
-	 * @param   integer  $key    One of the PDO::ATTR_* Constants
-	 * @param   mixed    $value  One of the associated PDO Constants
-	 *                           related to the particular attribute
-	 *                           key.
-	 *
-	 * @return boolean
-	 *
-	 * @since  1.0
-	 */
-	public function setOption($key, $value)
-	{
-		$this->connect();
-
-		return $this->connection->setAttribute($key, $value);
-	}
-
-	/**
-	 * Test to see if the PDO extension is available.
-	 * Override as needed to check for specific PDO Drivers.
-	 *
-	 * @return  boolean  True on success, false otherwise.
-	 *
-	 * @since   1.0
-	 */
-	public static function isSupported()
-	{
-		return defined('\\PDO::ATTR_DRIVER_NAME');
-	}
-
-	/**
-	 * Determines if the connection to the server is active.
-	 *
-	 * @return  boolean  True if connected to the database engine.
-	 *
-	 * @since   1.0
-	 */
-	public function connected()
-	{
-		// Flag to prevent recursion into this function.
-		static $checkingConnected = false;
-
-		if ($checkingConnected)
-		{
-			// Reset this flag and throw an exception.
-			$checkingConnected = true;
-			throw new \RuntimeException('Recursion trying to check if connected.', 500);
-		}
-
-		// Backup the query state.
-		$sql = $this->sql;
-		$limit = $this->limit;
-		$offset = $this->offset;
-		$prepared = $this->prepared;
-
-		try
-		{
-			// Set the checking connection flag.
-			$checkingConnected = true;
-
-			// Run a simple query to check the connection.
-			$this->setQuery($this->getConnectedQuery());
-			$status = (bool) $this->loadResult();
-		}
-		catch (\Exception $e)
-			// If we catch an exception here, we must not be connected.
-		{
-			$status = false;
-		}
-
-		// Restore the query state.
-		$this->sql = $sql;
-		$this->limit = $limit;
-		$this->offset = $offset;
-		$this->prepared = $prepared;
-		$checkingConnected = false;
-
-		return $status;
 	}
 
 	/**
@@ -600,6 +663,18 @@ abstract class Pdo extends Driver
 		{
 			return 0;
 		}
+	}
+
+	/**
+	 * Get a query to run and verify the database is operational.
+	 *
+	 * @return  string  The query to check the health of the DB.
+	 *
+	 * @since   1.0
+	 */
+	public function getConnectedQuery()
+	{
+		return 'SELECT 1';
 	}
 
 	/**
@@ -630,6 +705,56 @@ abstract class Pdo extends Driver
 	}
 
 	/**
+	 * Retrieve a PDO database connection attribute
+	 * http://www.php.net/manual/en/pdo.getattribute.php
+	 *
+	 * Usage: $db->getOption(PDO::ATTR_CASE);
+	 *
+	 * @param   mixed  $key  One of the PDO::ATTR_* Constants
+	 *
+	 * @return  mixed
+	 *
+	 * @since   1.0
+	 */
+	public function getOption($key)
+	{
+		$this->connect();
+
+		return $this->connection->getAttribute($key);
+	}
+
+	/**
+	 * Get the current query object or a new Query object.
+	 *
+	 * @param   boolean  $new  False to return the current query object, True to return a new Query object.
+	 *
+	 * @return  Query  The current query object or a new object extending the Query class.
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function getQuery($new = false)
+	{
+		if ($new)
+		{
+			// We are going to use the generic PDO driver not matter what
+			$class = '\\Awf\\Database\\Query\\Pdo';
+
+			// Make sure we have a query class for this driver.
+			if (!class_exists($class))
+			{
+				// If it doesn't exist we are at an impasse so throw an exception.
+				throw new \RuntimeException('Database Query Class not found.');
+			}
+
+			return new $class($this);
+		}
+		else
+		{
+			return $this->sql;
+		}
+	}
+
+	/**
 	 * Method to get the auto-incremented value from the last INSERT statement.
 	 *
 	 * @return  string  The value of the auto-increment field from the last inserted row.
@@ -645,14 +770,49 @@ abstract class Pdo extends Driver
 	}
 
 	/**
+	 * Method to get the next row in the result set from the database query as an array.
+	 *
+	 * @return  mixed  The result of the query as an array, false if there are no more rows.
+	 *
+	 * @throws  \RuntimeException
+	 * @since   1.0
+	 */
+	public function loadNextAssoc()
+	{
+		$this->connect();
+
+		// Execute the query and get the result set cursor.
+		if (!$this->executed)
+		{
+			if (!($this->execute()))
+			{
+				return $this->errorNum ? null : false;
+			}
+		}
+
+		// Get the next row from the result set as an object of type $class.
+		$row = $this->fetchAssoc();
+
+		if ($row)
+		{
+			return $row;
+		}
+
+		// Free up system resources and return.
+		$this->freeResult();
+
+		return false;
+	}
+
+	/**
 	 * Select a database for use.
 	 *
 	 * @param   string  $database  The name of the database to select for use.
 	 *
 	 * @return  boolean  True if the database was successfully selected.
 	 *
-	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @since   1.0
 	 */
 	public function select($database)
 	{
@@ -661,6 +821,28 @@ abstract class Pdo extends Driver
 		$this->_database = $database;
 
 		return true;
+	}
+
+	/**
+	 * Sets an attribute on the PDO database handle.
+	 * http://www.php.net/manual/en/pdo.setattribute.php
+	 *
+	 * Usage: $db->setOption(PDO::ATTR_CASE, PDO::CASE_UPPER);
+	 *
+	 * @param   integer  $key    One of the PDO::ATTR_* Constants
+	 * @param   mixed    $value  One of the associated PDO Constants
+	 *                           related to the particular attribute
+	 *                           key.
+	 *
+	 * @return boolean
+	 *
+	 * @since  1.0
+	 */
+	public function setOption($key, $value)
+	{
+		$this->connect();
+
+		return $this->connection->setAttribute($key, $value);
 	}
 
 	/**
@@ -675,7 +857,7 @@ abstract class Pdo extends Driver
 	 *
 	 * @since   1.0
 	 */
-	public function setQuery($query, $offset = null, $limit = null, $driverOptions = array())
+	public function setQuery($query, $offset = null, $limit = null, $driverOptions = [])
 	{
 		$this->connect();
 
@@ -721,8 +903,8 @@ abstract class Pdo extends Driver
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @since   1.0
 	 */
 	public function transactionCommit($toSavepoint = false)
 	{
@@ -743,8 +925,8 @@ abstract class Pdo extends Driver
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @since   1.0
 	 */
 	public function transactionRollback($toSavepoint = false)
 	{
@@ -765,8 +947,8 @@ abstract class Pdo extends Driver
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0
 	 * @throws  \RuntimeException
+	 * @since   1.0
 	 */
 	public function transactionStart($asSavepoint = false)
 	{
@@ -872,111 +1054,4 @@ abstract class Pdo extends Driver
 			$this->prepared = null;
 		}
 	}
-
-	/**
-	 * Method to get the next row in the result set from the database query as an array.
-	 *
-	 * @return  mixed  The result of the query as an array, false if there are no more rows.
-	 *
-	 * @since   1.0
-	 * @throws  \RuntimeException
-	 */
-	public function loadNextAssoc()
-	{
-		$this->connect();
-
-		// Execute the query and get the result set cursor.
-		if (!$this->executed)
-		{
-			if (!($this->execute()))
-			{
-				return $this->errorNum ? null : false;
-			}
-		}
-
-		// Get the next row from the result set as an object of type $class.
-		$row = $this->fetchAssoc();
-
-		if ($row)
-		{
-			return $row;
-		}
-
-		// Free up system resources and return.
-		$this->freeResult();
-
-		return false;
-	}
-
-	/**
-	 * PDO does not support serialize
-	 *
-	 * @return  array
-	 *
-	 * @since   1.0
-	 */
-	public function __sleep()
-	{
-		$serializedProperties = array();
-
-		$reflect = new \ReflectionClass($this);
-
-		// Get properties of the current class
-		$properties = $reflect->getProperties();
-
-		foreach ($properties as $property)
-		{
-			// Do not serialize properties that are PDO
-			if ($property->isStatic() == false && !($this->{$property->name} instanceof \PDO))
-			{
-				array_push($serializedProperties, $property->name);
-			}
-		}
-
-		return $serializedProperties;
-	}
-
-	/**
-	 * Wake up after serialization
-	 *
-	 * @return  array
-	 *
-	 * @since   1.0
-	 */
-	public function __wakeup()
-	{
-		// Get connection back
-		$this->__construct($this->options);
-	}
-
-    /**
-     * Get the current query object or a new Query object.
-     *
-     * @param   boolean  $new  False to return the current query object, True to return a new Query object.
-     *
-     * @return  Query  The current query object or a new object extending the Query class.
-     *
-     * @throws  \RuntimeException
-     */
-    public function getQuery($new = false)
-    {
-        if ($new)
-        {
-            // We are going to use the generic PDO driver not matter what
-            $class = '\\Awf\\Database\\Query\\Pdo';
-
-            // Make sure we have a query class for this driver.
-            if (!class_exists($class))
-            {
-                // If it doesn't exist we are at an impasse so throw an exception.
-                throw new \RuntimeException('Database Query Class not found.');
-            }
-
-            return new $class($this);
-        }
-        else
-        {
-            return $this->sql;
-        }
-    }
 }

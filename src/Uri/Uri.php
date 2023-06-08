@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Uri;
@@ -174,7 +174,7 @@ class Uri
 			}
 
 			$config = $container->appConfig;
-			$live_site = $config->get('live_site');
+			$live_site = $config->get('live_site') ?: '';
 
 			if (trim($live_site) != '')
 			{
@@ -726,7 +726,13 @@ class Uri
 		$base = $uri->toString(array('scheme', 'host', 'port', 'path'));
 		$host = $uri->toString(array('scheme', 'host', 'port'));
 
-		if (stripos($base, self::base()) !== 0 && !empty($host))
+		// We have to get current HOST only, not the path. Otherwise in WordPress we could have issues, since Akeeba Backup
+		// is installed in a nested folder that is recognized as "base" or "root" from URI. So we assume that the link
+		// is internal if they share the same host
+		$site = self::getInstance();
+		$root = $site->toString(array('scheme', 'host', 'port'));
+
+		if (stripos($base, $root) !== 0 && !empty($host))
 		{
 			return false;
 		}

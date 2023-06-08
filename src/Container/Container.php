@@ -1,8 +1,8 @@
 <?php
 /**
- * @package        solo
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license        GNU GPL version 3 or later
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Container;
@@ -12,7 +12,6 @@ use Awf\Database\Driver;
 use Awf\Mvc\Compiler\Blade;
 use Awf\Pimple\Pimple;
 use Awf\Session;
-use Awf\Utils\Phpfunc;
 
 /**
  * Dependency injection container for Awf's Application
@@ -26,6 +25,7 @@ use Awf\Utils\Phpfunc;
  * @property  string                                         $filesystemBase        The base path of your web root (for use by Awf\Filesystem)
  * @property  string                                         $sqlPath               The path to the SQL files restored by Awf\Database\Restore
  * @property  string                                         $mediaQueryKey         The query string parameter to append to media added through the Template class
+ * @property  string                                         $applicationNamespace  Namespace for the application classes, defaults to \\{$application_name}
  *
  * @property-read  \Awf\Application\Application              $application           The application instance
  * @property-read  \Awf\Application\Configuration            $appConfig             The application configuration registry
@@ -56,6 +56,12 @@ class Container extends Pimple
 		$this->mediaQueryKey = null;
 
 		parent::__construct($values);
+
+		// Application namespace
+		if (!isset($this['applicationNamespace']))
+		{
+			$this['applicationNamespace'] = '\\' . $this->application_name;
+		}
 
 		// Application service
 		if (!isset($this['application']))
@@ -96,9 +102,13 @@ class Container extends Pimple
 		// Application Dispatcher service
 		if (!isset($this['dispatcher']))
 		{
-			$this['dispatcher'] = function (Container $c)
-			{
-				$className = '\\' . ucfirst($c->application_name) . '\Dispatcher';
+			$this['dispatcher'] = function (Container $c) {
+				$className = $this->applicationNamespace . '\\Dispatcher';
+
+				if (!class_exists($className))
+				{
+					$className = '\\' . ucfirst($c->application_name) . '\Dispatcher';
+				}
 
 				if (!class_exists($className))
 				{
@@ -161,11 +171,7 @@ class Container extends Pimple
 			{
 				return new Session\Manager(
 					new Session\SegmentFactory,
-					new Session\CsrfTokenFactory(
-						new Session\Randval(
-							new Phpfunc()
-						)
-					),
+					new Session\CsrfTokenFactory(),
 					$_COOKIE
 				);
 			};

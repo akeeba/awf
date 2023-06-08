@@ -1,9 +1,11 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
+ */
+
+/**
  * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
  * Awf\Session package for copyright and license information.
  */
@@ -16,26 +18,11 @@ namespace Awf\Session;
  */
 class CsrfTokenFactory
 {
-	/**
-	 *
-	 * A cryptographically-secure random value generator.
-	 *
-	 * @var RandvalInterface
-	 *
-	 */
-	protected $randval;
+	private $algorithm = 'sha512';
 
-	/**
-	 *
-	 * Constructor.
-	 *
-	 * @param RandvalInterface $randval A cryptographically-secure random
-	 *                                  value generator.
-	 *
-	 */
-	public function __construct(RandvalInterface $randval)
+	public function __construct($algorithm = 'sha512')
 	{
-		$this->randval = $randval;
+		$this->algorithm = $algorithm;
 	}
 
 	/**
@@ -51,6 +38,11 @@ class CsrfTokenFactory
 	{
 		$segment = $manager->newSegment('Awf\Session\CsrfToken');
 
-		return new CsrfToken($segment, $this->randval);
+		return new CsrfToken($segment, $this->algorithm);
+	}
+
+	public function setAlgorithm(string $algorithm): void
+	{
+		$this->algorithm = $algorithm;
 	}
 }

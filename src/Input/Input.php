@@ -1,10 +1,8 @@
 <?php
 /**
- * @package     Awf
- * @copyright Copyright (c)2014-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license     GNU GPL version 3 or later
- *
- * Based on the Joomla! Platform and FOF
+ * @package   awf
+ * @copyright Copyright (c)2014-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU GPL version 3 or later
  */
 
 namespace Awf\Input;
@@ -20,18 +18,22 @@ namespace Awf\Input;
  * @method    integer    getInt($name, $default)
  * @method    integer    getInteger($name, $default)
  * @method    integer    getUint($name, $default)
- * @method    float    getFloat($name, $default)
- * @method    float    getDouble($name, $default)
- * @method    boolean getBool($name, $default)
+ * @method    float      getFloat($name, $default)
+ * @method    float      getDouble($name, $default)
+ * @method    boolean    getBool($name, $default)
  * @method    boolean    getBoolean($name, $default)
- * @method    string    getWord($name, $default)
- * @method    string    getAlnum($name, $default)
- * @method    string    getCmd($name, $default)
- * @method    string    getBase64($name, $default)
- * @method    string    getString($name, $default)
- * @method    string    getHtml($name, $default)
- * @method    string    getPath($name, $default)
- * @method    string    getUsername($name, $default)
+ * @method    string     getWord($name, $default)
+ * @method    string     getAlnum($name, $default)
+ * @method    string     getCmd($name, $default)
+ * @method    string     getBase64($name, $default)
+ * @method    string     getString($name, $default)
+ * @method    string     getHtml($name, $default)
+ * @method    string     getPath($name, $default)
+ * @method    string     getUsername($name, $default)
+ *
+ * Based on the Joomla! Platform and FOF
+ *
+ * TODO Remove the Serializable interface which will be removed in PHP 9
  */
 class Input implements \Serializable, \Countable
 {
@@ -39,13 +41,13 @@ class Input implements \Serializable, \Countable
 	protected $filter = null;
 
 	/** @var   array  Input data */
-	protected $data = array();
+	protected $data = [];
 
 	/** @var   array  Input objects */
-	protected $inputs = array();
+	protected $inputs = [];
 
 	/** @var   array  Input options */
-	protected $options = array();
+	protected $options = [];
 
 	/** @var bool Flag to detect if I already imported all the inputs */
 	private static $inputsLoaded = false;
@@ -53,12 +55,12 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Constructor
 	 *
-	 * @param   array $source  Source data (Optional, default is $_REQUEST)
-	 * @param   array $options Options for the Input object
+	 * @param   array  $source   Source data (Optional, default is $_REQUEST)
+	 * @param   array  $options  Options for the Input object
 	 *
 	 * @return  \Awf\Input\Input
 	 */
-	public function __construct($source = null, $options = array())
+	public function __construct($source = null, $options = [])
 	{
 		$this->options = $options;
 
@@ -79,7 +81,7 @@ class Input implements \Serializable, \Countable
 		{
 			$magicQuotesWorkaround = $options['magicQuotesWorkaround'];
 		}
-		else
+	else
 		{
 			// If there was no source specified, always try working around magic_quotes_gpc on PHP 5.3
 			$magicQuotesWorkaround = $referenceSuperglobal;
@@ -111,7 +113,7 @@ class Input implements \Serializable, \Countable
 
 	public static function cleanMagicQuotes(array $source)
 	{
-		$temp = array();
+		$temp = [];
 
 		foreach ($source as $k => $v)
 		{
@@ -133,7 +135,7 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Magic method to get an input object
 	 *
-	 * @param   mixed $name Name of the input object to retrieve.
+	 * @param   mixed  $name  Name of the input object to retrieve.
 	 *
 	 * @return  \Awf\Input\Input  The request input object
 	 */
@@ -168,6 +170,7 @@ class Input implements \Serializable, \Countable
 	 *
 	 * @see     \Countable::count()
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count($this->data);
@@ -176,9 +179,9 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Gets a value from the input data.
 	 *
-	 * @param   string $name    Name of the value to get.
-	 * @param   mixed  $default Default value to return if variable does not exist.
-	 * @param   string $filter  Filter to apply to the value.
+	 * @param   string  $name     Name of the value to get.
+	 * @param   mixed   $default  Default value to return if variable does not exist.
+	 * @param   string  $filter   Filter to apply to the value.
 	 *
 	 * @return  mixed  The filtered input value.
 	 */
@@ -195,14 +198,14 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Gets an array of values from the request.
 	 *
-	 * @param   array $vars       Associative array of keys and filter types to apply.
-	 * @param   mixed $datasource Array to retrieve data from, or null
+	 * @param   array  $vars        Associative array of keys and filter types to apply.
+	 * @param   mixed  $datasource  Array to retrieve data from, or null
 	 *
 	 * @return  mixed  The filtered input data.
 	 */
 	public function getArray(array $vars, $datasource = null)
 	{
-		$results = array();
+		$results = [];
 
 		foreach ($vars as $k => $v)
 		{
@@ -240,8 +243,8 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Sets a value
 	 *
-	 * @param   string $name  Name of the value to set.
-	 * @param   mixed  $value Value to assign to the input.
+	 * @param   string  $name   Name of the value to set.
+	 * @param   mixed   $value  Value to assign to the input.
 	 *
 	 * @return  void
 	 */
@@ -253,8 +256,8 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Define a value. The value will only be set if there's no value for the name or if it is null.
 	 *
-	 * @param   string $name  Name of the value to define.
-	 * @param   mixed  $value Value to assign to the input.
+	 * @param   string  $name   Name of the value to define.
+	 * @param   mixed   $value  Value to assign to the input.
 	 *
 	 * @return  void
 	 */
@@ -271,8 +274,8 @@ class Input implements \Serializable, \Countable
 	/**
 	 * Magic method to get filtered input data.
 	 *
-	 * @param   string $name      Name of the filter type prefixed with 'get'.
-	 * @param   array  $arguments [0] The name of the variable [1] The default value.
+	 * @param   string  $name       Name of the filter type prefixed with 'get'.
+	 * @param   array   $arguments  [0] The name of the variable [1] The default value.
 	 *
 	 * @return  mixed   The filtered input value.
 	 */
@@ -309,7 +312,9 @@ class Input implements \Serializable, \Countable
 	 * Method to serialize the input.
 	 *
 	 * @return  string  The serialized input.
+	 * @deprecated
 	 */
+	#[\ReturnTypeWillChange]
 	public function serialize()
 	{
 		// Load all of the inputs.
@@ -321,16 +326,18 @@ class Input implements \Serializable, \Countable
 		unset($inputs['server']);
 
 		// Serialize the data and inputs.
-		return serialize(array($this->options, $this->data, $inputs));
+		return serialize([$this->options, $this->data, $inputs]);
 	}
 
 	/**
 	 * Method to unserialize the input.
 	 *
-	 * @param   string $input The serialized input.
+	 * @param   string  $input  The serialized input.
 	 *
 	 * @return  \Awf\Input\Input  The input object.
+	 * @deprecated
 	 */
+	#[\ReturnTypeWillChange]
 	public function unserialize($input)
 	{
 		// Unserialize the data, and inputs.
@@ -340,6 +347,33 @@ class Input implements \Serializable, \Countable
 		$this->filter = \Awf\Input\Filter::getInstance();
 	}
 
+	#[\ReturnTypeWillChange]
+	public function __serialize(): array
+	{
+		// Load all of the inputs.
+		$this->loadAllInputs();
+
+		// Remove $_ENV and $_SERVER from the inputs.
+		$inputs = $this->inputs;
+		unset($inputs['env']);
+		unset($inputs['server']);
+
+		// Serialize the data and inputs.
+		return [
+			'options' => $this->options,
+			'data'    => $this->data,
+			'inputs'  => $inputs,
+		];
+	}
+
+	#[\ReturnTypeWillChange]
+	public function __unserialize(array $data): void
+	{
+		$this->options = $data['options'];
+		$this->data    = $data['data'];
+		$this->inputs  = $data['inputs'];
+	}
+
 	/**
 	 * Method to load all of the global inputs.
 	 *
@@ -347,7 +381,7 @@ class Input implements \Serializable, \Countable
 	 */
 	protected function loadAllInputs()
 	{
-		if ( !self::$inputsLoaded)
+		if (!self::$inputsLoaded)
 		{
 			// Load up all the globals.
 			foreach ($GLOBALS as $global => $data)
@@ -375,18 +409,18 @@ class Input implements \Serializable, \Countable
 	 */
 	public function getData()
 	{
-		return (array)$this->data;
+		return (array) $this->data;
 	}
 
 	/**
 	 * Replaces the (raw) input data with the given array
 	 *
-	 * @param   array|object $data The raw input data to use
+	 * @param   array|object  $data  The raw input data to use
 	 *
 	 * @return  void
 	 */
 	public function setData($data)
 	{
-		$this->data = (array)$data;
+		$this->data = (array) $data;
 	}
 }
