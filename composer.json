@@ -41,8 +41,7 @@
   },
   "archive": {
     "exclude": [
-      "/tests",
-      "/vendor",
+      "vendor/**",
       ".gitattributes",
       ".gitignore",
       ".travis.yml",

@@ -1,24 +1,2 @@
-/.buildpath
-/.idea/
-/.project
-/.settings
-
-/000
-
-/build/bin
-/build/buildlang
-/build/epub
-/build/phingext
-/build/tools
-/build/templates/release.json
-/build/templates/release-app.json
-/build/templates/release-wp.json
-/build/build.properties
-
-/phpunit.xml
-
-/release
-
-/Tests/coverage
-
+### Composer dependencies
 /vendor
