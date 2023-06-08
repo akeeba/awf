@@ -157,6 +157,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			return false;
 		}
 
+		clearstatcache();
 		$cacheTime = filemtime($cachePath);
 		$fileTime = filemtime($path);
 
