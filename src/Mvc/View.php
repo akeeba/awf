@@ -7,12 +7,15 @@
 
 namespace Awf\Mvc;
 
+use AllowDynamicProperties;
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\EngineInterface;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
+use ErrorException;
+use Exception;
 use RuntimeException;
 
 /**
@@ -22,9 +25,25 @@ use RuntimeException;
  *
  * @package Awf\Mvc
  */
-#[\AllowDynamicProperties]
+#[AllowDynamicProperties]
 class View
 {
+	/**
+	 * Current or most recently performed task.
+	 * Currently public, it should be reduced to protected in the future
+	 *
+	 * @var  string
+	 */
+	public $task;
+
+	/**
+	 * The mapped task that was performed.
+	 * Currently public, it should be reduced to protected in the future
+	 *
+	 * @var  string
+	 */
+	public $doTask;
+
 	/**
 	 * The name of the view
 	 *
@@ -37,7 +56,7 @@ class View
 	 *
 	 * @var    array
 	 */
-	protected $modelInstances = array();
+	protected $modelInstances = [];
 
 	/**
 	 * The default model
@@ -65,7 +84,7 @@ class View
 	 *
 	 * @var   array
 	 */
-	protected $templatePaths = array();
+	protected $templatePaths = [];
 
 	/**
 	 * The name of the default template source file.
@@ -86,7 +105,7 @@ class View
 	 *
 	 * @var   array
 	 */
-	protected $config = array();
+	protected $config = [];
 
 	/**
 	 * The input object
@@ -103,22 +122,6 @@ class View
 	protected $container;
 
 	/**
-	 * Current or most recently performed task.
-	 * Currently public, it should be reduced to protected in the future
-	 *
-	 * @var  string
-	 */
-	public $task;
-
-	/**
-	 * The mapped task that was performed.
-	 * Currently public, it should be reduced to protected in the future
-	 *
-	 * @var  string
-	 */
-	public $doTask;
-
-	/**
 	 * Aliases of view templates. For example:
 	 *
 	 * array('userProfile' => 'users/profile')
@@ -128,7 +131,7 @@ class View
 	 *
 	 * @var  array
 	 */
-	protected $viewTemplateAliases = array();
+	protected $viewTemplateAliases = [];
 
 	/**
 	 * The object used to locate view templates in the filesystem
@@ -149,24 +152,24 @@ class View
 	 *
 	 * @var    array
 	 */
-	protected $viewEngineMap = array(
+	protected $viewEngineMap = [
 		'.blade.php' => 'Awf\\Mvc\\Engine\\BladeEngine',
 		'.php'       => 'Awf\\Mvc\\Engine\\PhpEngine',
-	);
+	];
 
 	/**
 	 * All of the finished, captured sections.
 	 *
 	 * @var array
 	 */
-	protected $sections = array();
+	protected $sections = [];
 
 	/**
 	 * The stack of in-progress sections.
 	 *
 	 * @var array
 	 */
-	protected $sectionStack = array();
+	protected $sectionStack = [];
 
 	/**
 	 * The number of active rendering operations.
@@ -176,78 +179,15 @@ class View
 	protected $renderCount = 0;
 
 	/**
-	 * Returns an instance of a view class
-	 *
-	 * @param null      $appName   The application name [optional] Default: from container or default app if no container is provided
-	 * @param null      $viewName  The view name [optional] Default: the "view" input parameter
-	 * @param null      $viewType  The view type [optional] Default: the "format" input parameter or, if not defined, "html"
-	 * @param Container $container The container to be attached to the view
-	 *
-	 * @return mixed
-	 */
-	public static function &getInstance($appName = null, $viewName = null, $viewType = null, $container = null)
-	{
-		if (empty($appName) && !is_object($container))
-		{
-			$app = Application::getInstance();
-			$appName = $app->getName();
-			$container = $app->getContainer();
-		}
-		elseif (empty($appName) && is_object($container))
-		{
-			$appName = $container->application_name;
-		}
-		elseif (!empty($appName) && !is_object($container))
-		{
-			$container = Application::getInstance($appName)->getContainer();
-		}
-
-		$input = $container->input;
-
-		if (empty($viewName))
-		{
-			$viewName = $input->getCmd('view', '');
-		}
-
-		if (empty($viewType))
-		{
-			$viewType = $input->getCmd('format', 'html');
-		}
-
-		$classNames = array(
-			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
-			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
-			$container->applicationNamespace . '\\View\\Default\\' . ucfirst($viewType),
-			$container->applicationNamespace . '\\View\\DefaultView'
-		);
-
-		foreach ($classNames as $className)
-		{
-			if (class_exists($className))
-			{
-				break;
-			}
-		}
-
-		if (!class_exists($className))
-		{
-			throw new RuntimeException("View not found (app : view : type) = $appName : $viewName : $viewType");
-		}
-
-		$object = new $className($container);
-
-		return $object;
-	}
-
-	/**
 	 * Constructor
 	 *
-	 * @param   Container $container   A named configuration array for object construction.<br/>
+	 * @param   Container  $container  A named configuration array for object construction.<br/>
 	 *                                 Inside it you can have an 'mvc_config' array with the following options:<br/>
-	 *                                 name: the name (optional) of the view (defaults to the view class name suffix).<br/>
-	 *                                 escape: the name (optional) of the function to use for escaping strings<br/>
-	 *                                 template_path: the path (optional) of the layout directory (defaults to base_path + /views/ + view name<br/>
-	 *                                 layout: the layout (optional) to use to display the view<br/>
+	 *                                 name: the name (optional) of the view (defaults to the view class name
+	 *                                 suffix).<br/> escape: the name (optional) of the function to use for escaping
+	 *                                 strings<br/> template_path: the path (optional) of the layout directory
+	 *                                 (defaults to base_path + /views/ + view name<br/> layout: the layout (optional)
+	 *                                 to use to display the view<br/>
 	 *
 	 * @return  View
 	 */
@@ -266,7 +206,7 @@ class View
 
 		$this->container = $container;
 
-		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
+		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : [];
 
 		// Get the view name
 		$this->name = $this->getName();
@@ -289,11 +229,11 @@ class View
 		}
 
 		$templatePath = $this->container->templatePath;
-		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
+		$fallback     = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . ucfirst($this->container->application->getName()) . '/' . $this->name;
 		$this->addTemplatePath($fallback);
 
 		// Get extra directories through event dispatchers
-		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', array($this->getName()));
+		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', [$this->getName()]);
 
 		if (is_array($extraPathsResults) && !empty($extraPathsResults))
 		{
@@ -314,8 +254,8 @@ class View
 		{
 			if (!is_array($this->config['viewEngineMap']))
 			{
-				$temp = explode(',', $this->config['viewEngineMap']);
-				$this->config['viewEngineMap'] = array();
+				$temp                          = explode(',', $this->config['viewEngineMap']);
+				$this->config['viewEngineMap'] = [];
 
 				foreach ($temp as $assignment)
 				{
@@ -326,7 +266,7 @@ class View
 						continue;
 					}
 
-					$parts = array_map(function($x) { return trim($x); }, $parts);
+					$parts = array_map(function ($x) { return trim($x); }, $parts);
 
 					$this->config['viewEngineMap'][$parts[0]] = $parts[1];
 				}
@@ -352,71 +292,69 @@ class View
 	}
 
 	/**
-	 * Sets an entire array of search paths for templates or resources.
+	 * Returns an instance of a view class
 	 *
-	 * @param   mixed $path The new search path, or an array of search paths.  If null or false, resets to the current directory only.
+	 * @param   null       $appName    The application name [optional] Default: from container or default app if no
+	 *                                 container is provided
+	 * @param   null       $viewName   The view name [optional] Default: the "view" input parameter
+	 * @param   null       $viewType   The view type [optional] Default: the "format" input parameter or, if not
+	 *                                 defined, "html"
+	 * @param   Container  $container  The container to be attached to the view
 	 *
-	 * @return  void
+	 * @return mixed
 	 */
-	protected function setTemplatePath($path)
+	public static function &getInstance($appName = null, $viewName = null, $viewType = null, $container = null)
 	{
-		// Clear out the prior search dirs
-		$this->templatePaths = array();
-
-		// Actually add the user-specified directories
-		$this->addTemplatePath($path);
-
-		// Set the alternative template search dir
-		$templatePath = $this->container->templatePath;
-		$fallback = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . strtoupper($this->container->application->getName()) . '/' . $this->getName();
-		$this->addTemplatePath($fallback);
-
-		// Get extra directories through event dispatchers
-		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', array($this->getName()));
-
-		if (is_array($extraPathsResults) && !empty($extraPathsResults))
+		if (empty($appName) && !is_object($container))
 		{
-			foreach ($extraPathsResults as $somePaths)
+			$app       = Application::getInstance();
+			$appName   = $app->getName();
+			$container = $app->getContainer();
+		}
+		elseif (empty($appName) && is_object($container))
+		{
+			$appName = $container->application_name;
+		}
+		elseif (!empty($appName) && !is_object($container))
+		{
+			$container = Application::getInstance($appName)->getContainer();
+		}
+
+		$input = $container->input;
+
+		if (empty($viewName))
+		{
+			$viewName = $input->getCmd('view', '');
+		}
+
+		if (empty($viewType))
+		{
+			$viewType = $input->getCmd('format', 'html');
+		}
+
+		$classNames = [
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
+			$container->applicationNamespace . '\\View\\Default\\' . ucfirst($viewType),
+			$container->applicationNamespace . '\\View\\DefaultView',
+		];
+
+		foreach ($classNames as $className)
+		{
+			if (class_exists($className))
 			{
-				if (!empty($somePaths))
-				{
-					foreach ($somePaths as $aPath)
-					{
-						$this->addTemplatePath($aPath);
-					}
-				}
+				break;
 			}
 		}
-	}
 
-	/**
-	 * Adds to the search path for templates and resources.
-	 *
-	 * @param   mixed $path The directory or stream, or an array of either, to search.
-	 *
-	 * @return  void
-	 */
-	protected function addTemplatePath($path)
-	{
-		// Just force to array
-		settype($path, 'array');
-
-		// Loop through the path directories
-		foreach ($path as $dir)
+		if (!class_exists($className))
 		{
-			// No surrounding spaces allowed!
-			$dir = trim($dir);
-
-			// Add trailing separators as needed
-			if (substr($dir, -1) != DIRECTORY_SEPARATOR)
-			{
-				// Directory
-				$dir .= DIRECTORY_SEPARATOR;
-			}
-
-			// Add to the top of the search dirs
-			array_unshift($this->templatePaths, $dir);
+			throw new RuntimeException("View not found (app : view : type) = $appName : $viewName : $viewType");
 		}
+
+		$object = new $className($container);
+
+		return $object;
 	}
 
 	/**
@@ -449,7 +387,7 @@ class View
 	/**
 	 * Escapes a value for output in a view script.
 	 *
-	 * @param   mixed $var The output to escape.
+	 * @param   mixed  $var  The output to escape.
 	 *
 	 * @return  mixed  The escaped value.
 	 */
@@ -461,9 +399,9 @@ class View
 	/**
 	 * Method to get data from a registered model or a property of the view
 	 *
-	 * @param   string $property  The name of the method to call on the Model or the property to get
-	 * @param   string $default   The default value [optional]
-	 * @param   string $modelName The name of the Model to reference [optional]
+	 * @param   string  $property   The name of the method to call on the Model or the property to get
+	 * @param   string  $default    The default value [optional]
+	 * @param   string  $modelName  The name of the Model to reference [optional]
 	 *
 	 * @return  mixed  The return value of the method
 	 */
@@ -522,15 +460,15 @@ class View
 	/**
 	 * Returns a named Model object
 	 *
-	 * @param   string $name     The Model name. If null we'll use the modelName
+	 * @param   string  $name    The Model name. If null we'll use the modelName
 	 *                           variable or, if it's empty, the same name as
 	 *                           the Controller
-	 * @param   array  $config   Configuration parameters to the Model. If skipped
+	 * @param   array   $config  Configuration parameters to the Model. If skipped
 	 *                           we will use $this->config
 	 *
 	 * @return  Model  The instance of the Model known to this Controller
 	 */
-	public function getModel($name = null, $config = array())
+	public function getModel($name = null, $config = [])
 	{
 		if (!empty($name))
 		{
@@ -565,7 +503,7 @@ class View
 	/**
 	 * Pushes the default Model to the View
 	 *
-	 * @param   Model $model The model to push
+	 * @param   Model  $model  The model to push
 	 */
 	public function setDefaultModel(Model &$model)
 	{
@@ -578,7 +516,7 @@ class View
 	/**
 	 * Set the name of the Model to be used by this View
 	 *
-	 * @param   string $modelName The name of the Model
+	 * @param   string  $modelName  The name of the Model
 	 *
 	 * @return  void
 	 */
@@ -590,8 +528,8 @@ class View
 	/**
 	 * Pushes a named model to the View
 	 *
-	 * @param   string $modelName The name of the Model
-	 * @param   Model  $model     The actual Model object to push
+	 * @param   string  $modelName  The name of the Model
+	 * @param   Model   $model      The actual Model object to push
 	 *
 	 * @return  void
 	 */
@@ -604,11 +542,11 @@ class View
 	 * Overrides the default method to execute and display a template script.
 	 * Instead of loadTemplate is uses loadAnyTemplate.
 	 *
-	 * @param   string $tpl The name of the template file to parse
+	 * @param   string  $tpl  The name of the template file to parse
 	 *
 	 * @return  boolean  True on success
 	 *
-	 * @throws  \Exception  When the layout file is not found
+	 * @throws  Exception  When the layout file is not found
 	 */
 	public function display($tpl = null)
 	{
@@ -619,7 +557,7 @@ class View
 
 			if (!$result)
 			{
-				throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+				throw new Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
 		}
 
@@ -640,18 +578,20 @@ class View
 
 			if (!$result)
 			{
-				throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+				throw new Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
 		}
 
-		$results = $this->container->eventDispatcher->trigger('onViewAfter' . ucfirst($this->doTask), [$this, &$result]) ?: [];
+		$results = $this->container->eventDispatcher->trigger('onViewAfter' . ucfirst($this->doTask), [
+			$this, &$result,
+		]) ?: [];
 
 		if (in_array(false, $results, true))
 		{
 			return false;
 		}
 
-		if (is_object($result) && ($result instanceof \Exception))
+		if (is_object($result) && ($result instanceof Exception))
 		{
 			throw $result;
 		}
@@ -666,8 +606,8 @@ class View
 	/**
 	 * Our function uses loadAnyTemplate to provide smarter view template loading.
 	 *
-	 * @param   string  $tpl    The name of the template file to parse
-	 * @param   boolean $strict Should we use strict naming, i.e. force a non-empty $tpl?
+	 * @param   string   $tpl     The name of the template file to parse
+	 * @param   boolean  $strict  Should we use strict naming, i.e. force a non-empty $tpl?
 	 *
 	 * @return  mixed  A string if successful, otherwise an Exception
 	 */
@@ -677,19 +617,19 @@ class View
 
 		if ($strict)
 		{
-			$paths = array(
+			$paths = [
 				$basePath . $this->getLayout() . ($tpl ? "_$tpl" : ''),
 				$basePath . 'default' . ($tpl ? "_$tpl" : ''),
-			);
+			];
 		}
 		else
 		{
-			$paths = array(
+			$paths = [
 				$basePath . $this->getLayout() . ($tpl ? "_$tpl" : ''),
 				$basePath . $this->getLayout(),
 				$basePath . 'default' . ($tpl ? "_$tpl" : ''),
 				$basePath . 'default',
-			);
+			];
 		}
 
 		$paths = array_unique($paths);
@@ -700,12 +640,12 @@ class View
 			{
 				$result = $this->loadAnyTemplate($path);
 			}
-			catch (\Exception $e)
+			catch (Exception $e)
 			{
 				$result = $e;
 			}
 
-			if (!($result instanceof \Exception))
+			if (!($result instanceof Exception))
 			{
 				break;
 			}
@@ -727,7 +667,7 @@ class View
 	/**
 	 * Sets the layout name to use
 	 *
-	 * @param   string $layout The layout name or a string in format <template>:<layout file>
+	 * @param   string  $layout  The layout name or a string in format <template>:<layout file>
 	 *
 	 * @return  string  Previous value.
 	 */
@@ -741,7 +681,7 @@ class View
 		else
 		{
 			// Convert parameter to array based on :
-			$temp = explode(':', $layout);
+			$temp         = explode(':', $layout);
 			$this->layout = $temp[1];
 
 			// Set layout template
@@ -754,8 +694,8 @@ class View
 	/**
 	 * Add an alias for a view template.
 	 *
-	 * @param  string  $viewTemplate  Existing view template, in the format viewName/layoutName
-	 * @param  string  $alias         The alias of the view template (any string will do)
+	 * @param   string  $viewTemplate  Existing view template, in the format viewName/layoutName
+	 * @param   string  $alias         The alias of the view template (any string will do)
 	 *
 	 * @return void
 	 */
@@ -768,14 +708,16 @@ class View
 	 * Loads a template given any path. The path is in the format viewName/layoutName
 	 *
 	 * @param   string    $uri          The template path
-	 * @param   array     $forceParams  A hash array of variables to be extracted in the local scope of the template file
-	 * @param   callable  $callback     A method to post-process the 3ναluα+3d view template (I use leetspeak here because of bad quality hosts with broken scanners)
+	 * @param   array     $forceParams  A hash array of variables to be extracted in the local scope of the template
+	 *                                  file
+	 * @param   callable  $callback     A method to post-process the 3ναluα+3d view template (I use leetspeak here
+	 *                                  because of bad quality hosts with broken scanners)
 	 *
 	 * @return  string  The output of the template
 	 *
-	 * @throws  \Exception  When the layout file is not found
+	 * @throws  Exception  When the layout file is not found
 	 */
-	public function loadAnyTemplate($uri = '', $forceParams = array(), $callback = null)
+	public function loadAnyTemplate($uri = '', $forceParams = [], $callback = null)
 	{
 		if (isset($this->viewTemplateAliases[$uri]))
 		{
@@ -784,7 +726,7 @@ class View
 
 		$layoutTemplate = $this->getLayoutTemplate();
 
-		$extraPaths = array();
+		$extraPaths = [];
 
 		if (!empty($this->templatePaths))
 		{
@@ -826,44 +768,6 @@ class View
 	}
 
 	/**
-	 * Get the appropriate view engine for the given view template path.
-	 *
-	 * @param   string  $path  The path of the view template
-	 *
-	 * @return  EngineInterface
-	 *
-	 * @throws  RuntimeException
-	 */
-	protected function getEngine($path)
-	{
-		foreach ($this->viewEngineMap as $extension => $engine)
-		{
-			if (substr($path, -strlen($extension)) == $extension)
-			{
-				return new $engine($this);
-			}
-		}
-
-		throw new RuntimeException(sprintf("Unrecognised extension in view template “%s”",$path));
-	}
-
-	/**
-	 * Get the extension used by the view file.
-	 *
-	 * @param  string  $path
-	 * @return string
-	 */
-	protected function getExtension($path)
-	{
-		$extensions = array_keys($this->viewEngineMap);
-
-		return akeeba_array_first($extensions, function($key, $value) use ($path)
-		{
-			return akeeba_ends_with($path, $value);
-		});
-	}
-
-	/**
 	 * Increment the rendering counter.
 	 *
 	 * @return void
@@ -897,13 +801,14 @@ class View
 	 * Go through a data array and render a subtemplate against each record (think master-detail views). This is
 	 * accessible through Blade templates as @each
 	 *
-	 * @param  string $viewTemplate The view template to use for each subitem, format viewName/layoutName
-	 * @param  array  $data         The array of data you want to render. It can be a DataModel\Collection, array, ...
-	 * @param  string $eachItemName How to call each item in the loaded subtemplate (passed through $forceParams)
-	 * @param  string $empty        What to display if the array is empty
+	 * @param   string  $viewTemplate  The view template to use for each subitem, format viewName/layoutName
+	 * @param   array   $data          The array of data you want to render. It can be a DataModel\Collection, array,
+	 *                                 ...
+	 * @param   string  $eachItemName  How to call each item in the loaded subtemplate (passed through $forceParams)
+	 * @param   string  $empty         What to display if the array is empty
 	 *
 	 * @return string
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function renderEach($viewTemplate, $data, $eachItemName, $empty = 'raw|')
 	{
@@ -916,7 +821,7 @@ class View
 		{
 			foreach ($data as $key => $value)
 			{
-				$data = array('key' => $key, $eachItemName => $value);
+				$data = ['key' => $key, $eachItemName => $value];
 
 				$result .= $this->loadAnyTemplate($viewTemplate, $data);
 			}
@@ -947,8 +852,9 @@ class View
 	/**
 	 * Start injecting content into a section.
 	 *
-	 * @param  string  $section
-	 * @param  string  $content
+	 * @param   string  $section
+	 * @param   string  $content
+	 *
 	 * @return void
 	 */
 	public function startSection($section, $content = '')
@@ -979,12 +885,13 @@ class View
 	/**
 	 * Stop injecting content into a section.
 	 *
-	 * @param  bool  $overwrite
+	 * @param   bool  $overwrite
+	 *
 	 * @return string
 	 */
 	public function stopSection($overwrite = false)
 	{
-		if(empty($this->sectionStack))
+		if (empty($this->sectionStack))
 		{
 			// Let's close the output buffering
 			ob_get_clean();
@@ -1013,7 +920,7 @@ class View
 	 */
 	public function appendSection()
 	{
-		if(empty($this->sectionStack))
+		if (empty($this->sectionStack))
 		{
 			// Let's close the output buffering
 			ob_get_clean();
@@ -1036,27 +943,10 @@ class View
 	}
 
 	/**
-	 * Append content to a given section.
-	 *
-	 * @param  string  $section
-	 * @param  string  $content
-	 * @return void
-	 */
-	protected function extendSection($section, $content)
-	{
-		if (isset($this->sections[$section]))
-		{
-			$content = str_replace('@parent', $content, $this->sections[$section]);
-		}
-
-		$this->sections[$section] = $content;
-	}
-
-	/**
 	 * Get the string contents of a section.
 	 *
-	 * @param  string  $section
-	 * @param  string  $default
+	 * @param   string  $section
+	 * @param   string  $default
 	 *
 	 * @return string
 	 */
@@ -1079,9 +969,9 @@ class View
 	 */
 	public function flushSections()
 	{
-		$this->sections = array();
+		$this->sections = [];
 
-		$this->sectionStack = array();
+		$this->sectionStack = [];
 	}
 
 	/**
@@ -1098,88 +988,6 @@ class View
 	}
 
 	/**
-	 * Evaluates the template described in the _tempFilePath property
-	 *
-	 * @param   array  $forceParams  Forced parameters
-	 *
-	 * @return string
-	 * @throws \Exception
-	 */
-	protected function processTemplate(array &$forceParams)
-	{
-		// If the engine returned raw content, return the raw content immediately
-		if ($this->_tempFilePath['type'] == 'raw')
-		{
-			return $this->_tempFilePath['content'];
-		}
-
-		if (substr($this->_tempFilePath['content'], 0, 4) == 'raw|')
-		{
-			return substr($this->_tempFilePath['content'], 4);
-		}
-
-		$obLevel = ob_get_level();
-
-		ob_start();
-
-		// We'll process the contents of the view inside a try/catch block so we can
-		// flush out any stray output that might get out before an error occurs or
-		// an exception is thrown. This prevents any partial views from leaking.
-		try
-		{
-			$this->includeTemplateFile($forceParams);
-		}
-		catch (\Exception $e)
-		{
-			$this->handleViewException($e, $obLevel);
-		}
-
-		return ob_get_clean();
-	}
-
-	/**
-	 * This method makes sure the current scope isn't polluted with variables when including a view template
-	 *
-	 * @param   array   $forceParams  Forced parameters
-	 *
-	 * @return  void
-	 */
-	private function includeTemplateFile(array &$forceParams)
-	{
-		// Extract forced parameters
-		if (!empty($forceParams))
-		{
-			extract($forceParams);
-		}
-
-		include $this->_tempFilePath['content'];
-	}
-
-	/**
-	 * Handle a view exception.
-	 *
-	 * @param   \Exception  $e        The exception to handle
-	 * @param   int         $obLevel  The target output buffering level
-	 *
-	 * @return  void
-	 *
-	 * @throws  $e
-	 */
-	protected function handleViewException(\Exception $e, $obLevel)
-	{
-		while (ob_get_level() > $obLevel)
-		{
-			ob_end_clean();
-		}
-
-		$message = $e->getMessage().' (View template: ' . realpath($this->_tempFilePath['content']) . ')';
-
-		$newException = new \ErrorException($message, 0, 1, $e->getFile(), $e->getLine(), $e);
-
-		throw $newException;
-	}
-
-	/**
 	 * Get the layout template.
 	 *
 	 * @return  string  The layout template name
@@ -1192,7 +1000,7 @@ class View
 	/**
 	 * Load a helper file
 	 *
-	 * @param   string $helperClass    The last part of the name of the helper
+	 * @param   string  $helperClass   The last part of the name of the helper
 	 *                                 class.
 	 *
 	 * @return  void
@@ -1211,7 +1019,7 @@ class View
 	/**
 	 * Returns a reference to the container attached to this View
 	 *
-	 * @return \Awf\Container\Container
+	 * @return Container
 	 */
 	public function &getContainer()
 	{
@@ -1250,5 +1058,212 @@ class View
 		$this->doTask = $task;
 
 		return $this;
+	}
+
+	/**
+	 * Sets an entire array of search paths for templates or resources.
+	 *
+	 * @param   mixed  $path  The new search path, or an array of search paths.  If null or false, resets to the
+	 *                        current directory only.
+	 *
+	 * @return  void
+	 */
+	protected function setTemplatePath($path)
+	{
+		// Clear out the prior search dirs
+		$this->templatePaths = [];
+
+		// Actually add the user-specified directories
+		$this->addTemplatePath($path);
+
+		// Set the alternative template search dir
+		$templatePath = $this->container->templatePath;
+		$fallback     = $templatePath . '/' . $this->container->application->getTemplate() . '/html/' . strtoupper($this->container->application->getName()) . '/' . $this->getName();
+		$this->addTemplatePath($fallback);
+
+		// Get extra directories through event dispatchers
+		$extraPathsResults = $this->container->eventDispatcher->trigger('onGetViewTemplatePaths', [$this->getName()]);
+
+		if (is_array($extraPathsResults) && !empty($extraPathsResults))
+		{
+			foreach ($extraPathsResults as $somePaths)
+			{
+				if (!empty($somePaths))
+				{
+					foreach ($somePaths as $aPath)
+					{
+						$this->addTemplatePath($aPath);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Adds to the search path for templates and resources.
+	 *
+	 * @param   mixed  $path  The directory or stream, or an array of either, to search.
+	 *
+	 * @return  void
+	 */
+	protected function addTemplatePath($path)
+	{
+		// Just force to array
+		settype($path, 'array');
+
+		// Loop through the path directories
+		foreach ($path as $dir)
+		{
+			// No surrounding spaces allowed!
+			$dir = trim($dir);
+
+			// Add trailing separators as needed
+			if (substr($dir, -1) != DIRECTORY_SEPARATOR)
+			{
+				// Directory
+				$dir .= DIRECTORY_SEPARATOR;
+			}
+
+			// Add to the top of the search dirs
+			array_unshift($this->templatePaths, $dir);
+		}
+	}
+
+	/**
+	 * Get the appropriate view engine for the given view template path.
+	 *
+	 * @param   string  $path  The path of the view template
+	 *
+	 * @return  EngineInterface
+	 *
+	 * @throws  RuntimeException
+	 */
+	protected function getEngine($path)
+	{
+		foreach ($this->viewEngineMap as $extension => $engine)
+		{
+			if (substr($path, -strlen($extension)) == $extension)
+			{
+				return new $engine($this);
+			}
+		}
+
+		throw new RuntimeException(sprintf("Unrecognised extension in view template “%s”", $path));
+	}
+
+	/**
+	 * Get the extension used by the view file.
+	 *
+	 * @param   string  $path
+	 *
+	 * @return string
+	 */
+	protected function getExtension($path)
+	{
+		$extensions = array_keys($this->viewEngineMap);
+
+		return akeeba_array_first($extensions, function ($key, $value) use ($path) {
+			return akeeba_ends_with($path, $value);
+		});
+	}
+
+	/**
+	 * Append content to a given section.
+	 *
+	 * @param   string  $section
+	 * @param   string  $content
+	 *
+	 * @return void
+	 */
+	protected function extendSection($section, $content)
+	{
+		if (isset($this->sections[$section]))
+		{
+			$content = str_replace('@parent', $content, $this->sections[$section]);
+		}
+
+		$this->sections[$section] = $content;
+	}
+
+	/**
+	 * Evaluates the template described in the _tempFilePath property
+	 *
+	 * @param   array  $forceParams  Forced parameters
+	 *
+	 * @return string
+	 * @throws Exception
+	 */
+	protected function processTemplate(array &$forceParams)
+	{
+		// If the engine returned raw content, return the raw content immediately
+		if ($this->_tempFilePath['type'] == 'raw')
+		{
+			return $this->_tempFilePath['content'];
+		}
+
+		if (substr($this->_tempFilePath['content'], 0, 4) == 'raw|')
+		{
+			return substr($this->_tempFilePath['content'], 4);
+		}
+
+		$obLevel = ob_get_level();
+
+		ob_start();
+
+		// We'll process the contents of the view inside a try/catch block so we can
+		// flush out any stray output that might get out before an error occurs or
+		// an exception is thrown. This prevents any partial views from leaking.
+		try
+		{
+			$this->includeTemplateFile($forceParams);
+		}
+		catch (Exception $e)
+		{
+			$this->handleViewException($e, $obLevel);
+		}
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Handle a view exception.
+	 *
+	 * @param   Exception  $e        The exception to handle
+	 * @param   int         $obLevel  The target output buffering level
+	 *
+	 * @return  void
+	 *
+	 * @throws  $e
+	 */
+	protected function handleViewException(Exception $e, $obLevel)
+	{
+		while (ob_get_level() > $obLevel)
+		{
+			ob_end_clean();
+		}
+
+		$message = $e->getMessage() . ' (View template: ' . realpath($this->_tempFilePath['content']) . ')';
+
+		$newException = new ErrorException($message, 0, 1, $e->getFile(), $e->getLine(), $e);
+
+		throw $newException;
+	}
+
+	/**
+	 * This method makes sure the current scope isn't polluted with variables when including a view template
+	 *
+	 * @param   array  $forceParams  Forced parameters
+	 *
+	 * @return  void
+	 */
+	private function includeTemplateFile(array &$forceParams)
+	{
+		// Extract forced parameters
+		if (!empty($forceParams))
+		{
+			extract($forceParams);
+		}
+
+		include $this->_tempFilePath['content'];
 	}
 }
