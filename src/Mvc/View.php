@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc;
 
-use AllowDynamicProperties;
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Input\Input;
@@ -25,7 +24,7 @@ use RuntimeException;
  *
  * @package Awf\Mvc
  */
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class View
 {
 	/**
@@ -177,6 +176,30 @@ class View
 	 * @var int
 	 */
 	protected $renderCount = 0;
+
+	/**
+	 * Should I be strict about the subtemplate being loaded?
+	 *
+	 * When false, trying to load template `foo_bar` will fall back to `foo` is `foo_bar` does not exist.
+	 *
+	 * When true, trying to load template `foo_bar` will throw if `foo_bar` does not exist.
+	 *
+	 * @var bool
+	 * @since 1.0.1
+	 */
+	protected $strictTpl = false;
+
+	/**
+	 * Should I be strict about the layout being loaded?
+	 *
+	 * When false, trying to load layout `foo` will fall back to `default` if `foo` does not exist.
+	 *
+	 * When true, trying to load layout `foo` will throw if `foo` does not exist.
+	 *
+	 * @var bool
+	 * @since 1.0.1
+	 */
+	protected $strictLayout = false;
 
 	/**
 	 * Constructor
@@ -615,21 +638,29 @@ class View
 	{
 		$basePath = $this->name . '/';
 
+		$strict = $strict || $this->strictTpl;
+
 		if ($strict)
 		{
-			$paths = [
-				$basePath . $this->getLayout() . ($tpl ? "_$tpl" : ''),
-				$basePath . 'default' . ($tpl ? "_$tpl" : ''),
-			];
+			$paths = [$basePath . $this->getLayout() . ($tpl ? "_$tpl" : '')];
+
+			if (!$this->strictLayout)
+			{
+				$paths[] = $basePath . 'default' . ($tpl ? "_$tpl" : '');
+			}
 		}
 		else
 		{
 			$paths = [
 				$basePath . $this->getLayout() . ($tpl ? "_$tpl" : ''),
 				$basePath . $this->getLayout(),
-				$basePath . 'default' . ($tpl ? "_$tpl" : ''),
-				$basePath . 'default',
 			];
+
+			if (!$this->strictLayout)
+			{
+				$paths[] = $basePath . 'default' . ($tpl ? "_$tpl" : '');
+				$paths[] = $basePath . 'default';
+			}
 		}
 
 		$paths = array_unique($paths);
@@ -1061,6 +1092,32 @@ class View
 	}
 
 	/**
+	 * Setter for the strictTpl flag
+	 *
+	 * @param   bool  $strictTpl  The value to set it to
+	 *
+	 * @see   self::$strictTpl
+	 * @since 1.0.0
+	 */
+	public function setStrictTpl(bool $strictTpl): void
+	{
+		$this->strictTpl = $strictTpl;
+	}
+
+	/**
+	 * Setter for the strictLayout flag
+	 *
+	 * @param   bool  $strictLayout  The value to set it to
+	 *
+	 * @see   self::$strictLayout
+	 * @since 1.0.0
+	 */
+	public function setStrictLayout(bool $strictLayout): void
+	{
+		$this->strictLayout = $strictLayout;
+	}
+
+	/**
 	 * Sets an entire array of search paths for templates or resources.
 	 *
 	 * @param   mixed  $path  The new search path, or an array of search paths.  If null or false, resets to the
@@ -1229,7 +1286,7 @@ class View
 	 * Handle a view exception.
 	 *
 	 * @param   Exception  $e        The exception to handle
-	 * @param   int         $obLevel  The target output buffering level
+	 * @param   int        $obLevel  The target output buffering level
 	 *
 	 * @return  void
 	 *
