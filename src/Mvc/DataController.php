@@ -297,10 +297,14 @@ class DataController extends Controller
 			$customURL = base64_decode($customURL);
 		}
 
-		$router = $this->container->router;
-		$url = !empty($customURL) ? $customURL : $router->route('index.php?view=' . $this->view . '&task=edit&id=' . $id);
-		$this->setRedirect($url, Text::_($textKey));
-	}
+        // Special consideration for apply: must always return to the editing page, not the return URL.
+        $router = $this->container->router;
+        $url    = empty($customURL)
+            ? $router->route(sprintf('index.php?view=%s&task=edit&id=%d', $this->view, $id))
+            : $router->route(sprintf('index.php?view=%s&task=edit&id=%d&returnurl=%s', $this->view, $id, base64_encode($customURL)));
+
+        $this->setRedirect($url, Text::_($textKey));
+    }
 
 	/**
 	 * Duplicates selected items
