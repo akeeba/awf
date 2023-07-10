@@ -16,6 +16,7 @@ use Awf\Uri\Uri;
 use ErrorException;
 use Exception;
 use RuntimeException;
+use Throwable;
 
 /**
  * Class View
@@ -1274,7 +1275,7 @@ class View
 		{
 			$this->includeTemplateFile($forceParams);
 		}
-		catch (Exception $e)
+		catch (Throwable $e)
 		{
 			$this->handleViewException($e, $obLevel);
 		}
@@ -1299,8 +1300,29 @@ class View
 			ob_end_clean();
 		}
 
-		$message = $e->getMessage() . ' (View template: ' . realpath($this->_tempFilePath['content']) . ')';
+		// Add a message about the view template
+		$realBasePath = realpath($this->container->filesystemBase);
+		$includedPath = str_replace($realBasePath, 'ROOT', realpath($this->_tempFilePath['content']));
+		$originalPath = str_replace($realBasePath, 'ROOT', realpath($this->_tempFilePath['original']));
 
+		if ($includedPath === $originalPath)
+		{
+			// Straight-up PHP file inclusion
+			$message = sprintf(' %s[View template: %s line %d]', PHP_EOL, $includedPath, $e->getLine());
+		}
+		else
+		{
+			// Compiled template file
+			$message = sprintf(' %s[View template: %s line %d, compiled from %s]', PHP_EOL, $includedPath, $e->getLine(), $originalPath);
+		}
+
+		// Ommit duplicate messages
+		if (strpos($e->getMessage(), $message) !== false)
+		{
+			$message = '';
+		}
+
+		$message      = $e->getMessage() . $message;
 		$newException = new ErrorException($message, 0, 1, $e->getFile(), $e->getLine(), $e);
 
 		throw $newException;

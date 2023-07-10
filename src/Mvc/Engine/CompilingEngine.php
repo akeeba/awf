@@ -7,8 +7,8 @@
 
 namespace Awf\Mvc\Engine;
 
-use Awf\Utils\Buffer;
 use Awf\Mvc\Compiler\CompilerInterface;
+use Awf\Utils\Buffer;
 
 /**
  * View engine for compiling PHP template files.
@@ -19,22 +19,24 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	protected $compiler = null;
 
 	/**
-	 * Get the 3ναlυa+3d contents of the view template. (I use leetspeak here because of bad quality hosts with broken scanners)
+	 * Get the 3ναlυa+3d contents of the view template. (I use leetspeak here because of bad quality hosts with broken
+	 * scanners)
 	 *
 	 * @param   string  $path         The path to the view template
 	 * @param   array   $forceParams  Any additional information to pass to the view template engine
 	 *
 	 * @return  array  Content evaluation information
 	 */
-	public function get($path, array $forceParams = array())
+	public function get($path, array $forceParams = [])
 	{
 		// If it's cached return the path to the cached file's path
 		if ($this->isCached($path))
 		{
-			return array(
-				'type'    => 'path',
-				'content' => $this->getCachePath($path),
-			);
+			return [
+				'type'     => 'path',
+				'content'  => $this->getCachePath($path),
+				'original' => $path,
+			];
 		}
 
 		/**
@@ -48,7 +50,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		$content        .= $this->compile($path, $forceParams);
 		$cacheFolder    = $this->view->getContainer()->temporaryPath;
 		$cachedFilePath = $this->putToCache($path, $content);
-		$isPHPFile = substr($path, -4) == '.php';
+		$isPHPFile      = substr($path, -4) == '.php';
 
 		// If we could cache it, return the cached file's path
 		if ($cachedFilePath !== false)
@@ -59,10 +61,11 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 				$this->bustOpCache($path);
 			}
 
-			return array(
-				'type'    => 'path',
-				'content' => $cachedFilePath,
-			);
+			return [
+				'type'     => 'path',
+				'content'  => $cachedFilePath,
+				'original' => $path,
+			];
 		}
 
 		// We could not write to the cache. Hm, can I use a stream wrapper?
@@ -70,8 +73,8 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 
 		if ($canUseStreams)
 		{
-			$id           = $this->getIdentifier($path);
-			$streamPath   = 'awf://' . $this->view->getContainer()->application_name . '/compiled_templates/' . $id . '.php';
+			$id         = $this->getIdentifier($path);
+			$streamPath = 'awf://' . $this->view->getContainer()->application_name . '/compiled_templates/' . $id . '.php';
 
 			file_put_contents($streamPath, $content);
 
@@ -81,15 +84,70 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 				$this->bustOpCache($path);
 			}
 
-			return array(
-				'type'    => 'path',
-				'content' => $streamPath,
-			);
+			return [
+				'type'     => 'path',
+				'content'  => $streamPath,
+				'original' => $path,
+			];
 		}
 
 		// I couldn't use a stream wrapper. I have to give up.
 		$errorMessage = "Could not write to your temporary directory “%s”. Please make it writeable to PHP by changing the permissions. Alternatively, ask your host to make sure that they have not disabled the stream_wrapper_register() function in PHP. Moreover, if your host is using the Suhosin patch for PHP ask them to whitelist the awf:// stream wrapper in their server's php.ini file. If you do not understand what this means please contact your host and paste this entire message to them.";
 		throw new \RuntimeException(sprintf($errorMessage, $cacheFolder), 500);
+	}
+
+	/**
+	 * Returns the path where I can find a precompiled version of the uncompiled view template which lives in $path
+	 *
+	 * @param   string  $path  The path to the uncompiled view template
+	 *
+	 * @return  bool|string  False if the view template is outside the component's front- or backend.
+	 */
+	public function getPrecompiledPath($path)
+	{
+		// Normalize the path to the file
+		$path = realpath($path);
+
+		if ($path === false)
+		{
+			// The file doesn't exist
+			return false;
+		}
+
+		// Is this path under the application folder?
+		$componentPath = realpath($this->view->getContainer()->basePath);
+		$frontPos      = strpos($path, $componentPath);
+
+		if ($frontPos !== 0)
+		{
+			// This is not a view template shipped with the application, i.e. it can't be precompiled
+			return false;
+		}
+
+		// Eliminate the component path from $path to get the relative path to the file
+		$relativePath = ltrim(substr($path, strlen($componentPath)), '\\/');
+
+		// Break down the relative path to its parts
+		$relativePath = str_replace('\\', '/', $relativePath);
+		$pathParts    = explode('/', $relativePath);
+
+		// Remove the prefix
+		$prefix = array_shift($pathParts);
+
+		// If it's a legacy view, View, Views, or views prefix remove the 'tmpl' part
+		if ($prefix != 'ViewTemplates')
+		{
+			unset($pathParts[1]);
+		}
+
+		// Get the last part and process the extension
+		$viewFile            = array_pop($pathParts);
+		$extensionWithoutDot = $this->compiler->getFileExtension();
+		$pathParts[]         = substr($viewFile, 0, -strlen($extensionWithoutDot)) . 'php';
+
+		$precompiledRelativePath = implode(DIRECTORY_SEPARATOR, $pathParts);
+
+		return $componentPath . DIRECTORY_SEPARATOR . 'PrecompiledTemplates' . DIRECTORY_SEPARATOR . $precompiledRelativePath;
 	}
 
 	/**
@@ -100,7 +158,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	 *
 	 * @return  string  The template compiled to executable PHP
 	 */
-	protected function compile($path, array $forceParams = array())
+	protected function compile($path, array $forceParams = [])
 	{
 		return $this->compiler->compile($path, $forceParams);
 	}
@@ -132,6 +190,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	protected function getCachePath($path)
 	{
 		$id = $this->getIdentifier($path);
+
 		return $this->view->getContainer()->temporaryPath . '/compiled_templates/' . $id . '.php';
 	}
 
@@ -160,7 +219,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		}
 
 		$cacheTime = filemtime($cachePath);
-		$fileTime = filemtime($path);
+		$fileTime  = filemtime($path);
 
 		return $fileTime <= $cacheTime;
 	}
@@ -170,7 +229,8 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	 *
 	 * @param   string  $path  The full path to the template file which needs to be compiled
 	 *
-	 * @return  bool|string  The ceched, compiled contents of the template file or boolean false if the file doesn't exist
+	 * @return  bool|string  The ceched, compiled contents of the template file or boolean false if the file doesn't
+	 *                       exist
 	 */
 	protected function getCached($path)
 	{
@@ -227,60 +287,6 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		}
 
 		$this->view->getContainer()->fileSystem->mkdir($cacheFolder, 0644);
-	}
-
-	/**
-	 * Returns the path where I can find a precompiled version of the uncompiled view template which lives in $path
-	 *
-	 * @param   string  $path  The path to the uncompiled view template
-	 *
-	 * @return  bool|string  False if the view template is outside the component's front- or backend.
-	 */
-	public function getPrecompiledPath($path)
-	{
-		// Normalize the path to the file
-		$path = realpath($path);
-
-		if ($path === false)
-		{
-			// The file doesn't exist
-			return false;
-		}
-
-		// Is this path under the application folder?
-		$componentPath = realpath($this->view->getContainer()->basePath);
-		$frontPos      = strpos($path, $componentPath);
-
-		if ($frontPos !== 0)
-		{
-			// This is not a view template shipped with the application, i.e. it can't be precompiled
-			return false;
-		}
-
-		// Eliminate the component path from $path to get the relative path to the file
-		$relativePath = ltrim(substr($path, strlen($componentPath)), '\\/');
-
-		// Break down the relative path to its parts
-		$relativePath = str_replace('\\', '/', $relativePath);
-		$pathParts    = explode('/', $relativePath);
-
-		// Remove the prefix
-		$prefix = array_shift($pathParts);
-
-		// If it's a legacy view, View, Views, or views prefix remove the 'tmpl' part
-		if ($prefix != 'ViewTemplates')
-		{
-			unset($pathParts[1]);
-		}
-
-		// Get the last part and process the extension
-		$viewFile            = array_pop($pathParts);
-		$extensionWithoutDot = $this->compiler->getFileExtension();
-		$pathParts[]         = substr($viewFile, 0, -strlen($extensionWithoutDot)) . 'php';
-
-		$precompiledRelativePath = implode(DIRECTORY_SEPARATOR, $pathParts);
-
-		return $componentPath . DIRECTORY_SEPARATOR . 'PrecompiledTemplates' . DIRECTORY_SEPARATOR . $precompiledRelativePath;
 	}
 
 	/**
