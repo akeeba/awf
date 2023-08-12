@@ -89,22 +89,32 @@ abstract class Grid
 	/**
 	 * Method to create a checkbox for a grid row.
 	 *
-	 * @param   integer $rowNum     The row index
-	 * @param   integer $recId      The record id
-	 * @param   boolean $checkedOut True if item is checke out
-	 * @param   string  $name       The name of the form element
-	 * @param   string  $checkedJs  (optional) The Javscript function to determine if a box is checked, e.g. "Foobar.system.isChecked"
+	 * @param   integer  $rowNum      The row index
+	 * @param   integer  $recId       The record id
+	 * @param   boolean  $checkedOut  True if item is checke out
+	 * @param   string   $name        The name of the form element
+	 * @param   string   $checkedJs   (optional) The Javscript function to determine if a box is checked, e.g. "Foobar.system.isChecked"
+	 * @param   string   $altLabel    (optional) The (invisible) label for the checkbox
 	 *
 	 * @return  mixed    String of html with a checkbox if item is not checked out, null if checked out.
 	 */
-	public static function id($rowNum, $recId, $checkedOut = false, $name = 'cid', $checkedJs = '')
+	public static function id(int $rowNum, int $recId, bool $checkedOut = false, string $name = 'cid', string $checkedJs = '', string $altLabel = '')
 	{
 		if (empty($checkedJs))
 		{
 			$checkedJs = self::$javascriptPrefix . 'isChecked';
 		}
 
-		return $checkedOut ? '' : '<input type="checkbox" id="cb' . $rowNum . '" name="' . $name . '[]" value="' . $recId
-			. '" onclick="' . $checkedJs . '(this.checked);" />';
+		if ($checkedOut)
+		{
+			return '';
+		}
+
+		$altLabel = $altLabel ?: Text::_('AWF_LBL_HTML_GRID_ID_ALT_LABEL');
+
+		// Note: The label for the checkbox is hidden in Bootstrap (visually-hidden) and Akeeba FEF (akeeba-sr-only).
+		return <<< HTML
+<label for="cb{$rowNum}"><span class="visually-hidden akeeba-sr-only">$altLabel</span></label><input type="checkbox" id="cb{$rowNum}" name="{$name}[]" value="$recId" onclick="$checkedJs(this.checked);" />
+HTML;
 	}
 } 
