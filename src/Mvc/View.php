@@ -1286,14 +1286,14 @@ class View
 	/**
 	 * Handle a view exception.
 	 *
-	 * @param   Exception  $e        The exception to handle
+	 * @param   Throwable  $e        The exception to handle
 	 * @param   int        $obLevel  The target output buffering level
 	 *
 	 * @return  void
 	 *
 	 * @throws  $e
 	 */
-	protected function handleViewException(Exception $e, $obLevel)
+	protected function handleViewException(Throwable $e, $obLevel)
 	{
 		while (ob_get_level() > $obLevel)
 		{
