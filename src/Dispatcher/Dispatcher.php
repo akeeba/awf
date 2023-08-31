@@ -109,8 +109,8 @@ class Dispatcher
 			$this->input->set('task', $task);
 		}
 
-		$controller = Mvc\Controller::getInstance($this->container->application_name, $view, $this->container);
-		$status = $controller->execute($task);
+		$controller = $this->container->mvcFactory->makeController($view);
+		$status     = $controller->execute($task);
 
 		if ($status === false)
 		{

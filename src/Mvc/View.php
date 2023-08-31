@@ -327,58 +327,18 @@ class View
 	 *
 	 * @return mixed
 	 */
-	public static function &getInstance($appName = null, $viewName = null, $viewType = null, $container = null)
+	public static function getInstance($appName = null, $viewName = null, $viewType = null, $container = null)
 	{
-		if (empty($appName) && !is_object($container))
-		{
-			$app       = Application::getInstance();
-			$appName   = $app->getName();
-			$container = $app->getContainer();
-		}
-		elseif (empty($appName) && is_object($container))
-		{
-			$appName = $container->application_name;
-		}
-		elseif (!empty($appName) && !is_object($container))
-		{
-			$container = Application::getInstance($appName)->getContainer();
-		}
+		trigger_error(
+			sprintf(
+				'Calling %s is deprecated. Use the MVCFactory service of the container instead.',
+				__METHOD__
+			),
+			E_USER_DEPRECATED
+		);
 
-		$input = $container->input;
-
-		if (empty($viewName))
-		{
-			$viewName = $input->getCmd('view', '');
-		}
-
-		if (empty($viewType))
-		{
-			$viewType = $input->getCmd('format', 'html');
-		}
-
-		$classNames = [
-			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\' . ucfirst($viewType),
-			$container->applicationNamespace . '\\View\\' . ucfirst($viewName) . '\\DefaultView',
-			$container->applicationNamespace . '\\View\\Default\\' . ucfirst($viewType),
-			$container->applicationNamespace . '\\View\\DefaultView',
-		];
-
-		foreach ($classNames as $className)
-		{
-			if (class_exists($className))
-			{
-				break;
-			}
-		}
-
-		if (!class_exists($className))
-		{
-			throw new RuntimeException("View not found (app : view : type) = $appName : $viewName : $viewType");
-		}
-
-		$object = new $className($container);
-
-		return $object;
+		return ($container ?? Application::getInstance($appName)->getContainer())
+			->mvcFactory->makeView($viewName, $viewType);
 	}
 
 	/**
@@ -509,16 +469,10 @@ class View
 
 		if (!array_key_exists($modelName, $this->modelInstances))
 		{
-			$appName = $this->container->application->getName();
-
-			if (empty($config))
-			{
-				$config = $this->config;
-			}
-
-			$this->container['mvc_config'] = $config;
-
-			$this->modelInstances[$modelName] = Model::getInstance($appName, $modelName, $this->container);
+			$mvcConfig                        = $this->container['mvc_config'] ?? [];
+			$this->container['mvc_config']    = ($config ?: $this->config);
+			$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName);
+			$this->container['mvc_config']    = $mvcConfig;
 		}
 
 		return $this->modelInstances[$modelName];
