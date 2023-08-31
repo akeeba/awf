@@ -121,7 +121,7 @@ class HasMany extends DataModel\Relation
 		// Get a model instance
 		$container = Application::getInstance($this->foreignModelApp)->getContainer();
 		/** @var DataModel $foreignModel */
-		$foreignModel = DataModel::getTmpInstance($this->foreignModelApp, $this->foreignModelName, $container);
+		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
 		$db = $foreignModel->getDbo();
 		$query = $db->getQuery(true)
@@ -146,7 +146,7 @@ class HasMany extends DataModel\Relation
 		// Get a model instance
 		$container = Application::getInstance($this->foreignModelApp)->getContainer();
 		/** @var DataModel $foreignModel */
-		$foreignModel = DataModel::getTmpInstance($this->foreignModelApp, $this->foreignModelName, $container);
+		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
 		// Prime the model
 		$foreignModel->setFieldValue($this->foreignKey, $this->parentModel->getFieldValue($this->localKey));

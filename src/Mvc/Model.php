@@ -102,69 +102,16 @@ class Model
 	 */
 	public static function getInstance($appName = null, $modelName = '', $container = null)
 	{
-		if (empty($appName) && !is_object($container))
-		{
-			$app = Application::getInstance();
-			$appName = $app->getName();
-			$container = $app->getContainer();
-		}
-		elseif (empty($appName) && is_object($container))
-		{
-			$appName = $container->application_name;
-		}
-		elseif (!empty($appName) && !is_object($container))
-		{
-			$container = Application::getInstance($appName)->getContainer();
-		}
-
-		$config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
-
-		if (empty($modelName))
-		{
-			$modelName = $container->input->getCmd('view', '');
-		}
-
-		// Try to load the Model class
-		$classes = array(
-			$container->applicationNamespace . '\\Model\\' . ucfirst($modelName),
-			$container->applicationNamespace . '\\Model\\' . ucfirst(Inflector::pluralize($modelName)), // For data models
-			$container->applicationNamespace . '\\Model\\DefaultModel',
+		trigger_error(
+			sprintf(
+				'Calling %s is deprecated. Use the MVCFactory service of the container instead.',
+				__METHOD__
+			),
+			E_USER_DEPRECATED
 		);
 
-		foreach ($classes as $className)
-		{
-			if (class_exists($className))
-			{
-				break;
-			}
-		}
-
-		if (!class_exists($className))
-		{
-			throw new RuntimeException("Model not found (app : model) = $appName : $modelName");
-		}
-
-		/** @var Model $result */
-		$result = new $className($container);
-
-		if (array_key_exists('modelTemporaryInstance', $config) && $config['modelTemporaryInstance'])
-		{
-			$result = $result
-				->getClone()
-				->savestate(0);
-		}
-
-		if (array_key_exists('modelClearState', $config) && $config['modelClearState'])
-		{
-			$result->clearState();
-		}
-
-		if (array_key_exists('modelClearInput', $config) && $config['modelClearInput'])
-		{
-			$result->clearInput();
-		}
-
-		return $result;
+		return ($container ?? Application::getInstance($appName)->getContainer())
+			->mvcFactory->makeModel($modelName);
 	}
 
 	/**
@@ -180,32 +127,16 @@ class Model
 	 */
 	public static function getTmpInstance($appName = '', $modelName = '', $container = null)
 	{
-		if (empty($appName) && !is_object($container))
-		{
-			$app = Application::getInstance();
-			$appName = $app->getName();
-			$container = $app->getContainer();
-		}
-		elseif (empty($appName) && is_object($container))
-		{
-			$appName = $container->application_name;
-		}
-		elseif (!empty($appName) && !is_object($container))
-		{
-			$container = Application::getInstance($appName)->getContainer();
-		}
+		trigger_error(
+			sprintf(
+				'Calling %s is deprecated. Use the MVCFactory service of the container instead.',
+				__METHOD__
+			),
+			E_USER_DEPRECATED
+		);
 
-		$config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
-
-		$config['modelTemporaryInstance'] = true;
-		$config['modelClearState'] = true;
-		$config['modelClearInput'] = true;
-
-		$container['mvc_config'] = $config;
-
-		$ret = static::getInstance($appName, $modelName, $container);
-
-		return $ret;
+		return ($container ?? Application::getInstance($appName)->getContainer())
+			->mvcFactory->makeTempModel($modelName);
 	}
 
 	/**
