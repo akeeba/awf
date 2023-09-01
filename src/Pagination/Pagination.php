@@ -528,17 +528,18 @@ class Pagination
 	 */
 	public function getLimitBox($attributes = null)
 	{
+		$container = Application::getInstance()->getContainer();
 		$limits = array();
 
 		// Make the option list.
 		for ($i = 5; $i <= 30; $i += 5)
 		{
-			$limits[] = Select::option($i);
+			$limits[] = $container->html->get('select.option', $i);
 		}
 
-		$limits[] = Select::option('50', Text::_('AWF_50'));
-		$limits[] = Select::option('100', Text::_('AWF_100'));
-		$limits[] = Select::option('0', Text::_('AWF_ALL'));
+		$limits[] = $container->html->get('select.option', '50', Text::_('AWF_50'));
+		$limits[] = $container->html->get('select.option', '100', Text::_('AWF_100'));
+		$limits[] = $container->html->get('select.option', '0', Text::_('AWF_ALL'));
 
 		$selected = $this->viewAll ? 0 : $this->limit;
 
@@ -553,7 +554,8 @@ class Pagination
 		}
 
 		// Build the select list.
-		$html = Select::genericList(
+		$html = $container->html->get(
+			'select.genericList',
 			$limits,
 			'limit',
 			$attributes,

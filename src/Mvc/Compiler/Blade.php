@@ -855,7 +855,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected function compileJhtml($expression)
 	{
-		return "<?php echo \\Awf\Html\\Html::_{$expression}; ?>";
+		return '<' . '?php echo $this->getContainer()->html->get' . $expression . '; ?' . '>';
 	}
 
 	/**
