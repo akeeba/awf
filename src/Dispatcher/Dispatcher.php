@@ -45,6 +45,7 @@ class Dispatcher implements ContainerAwareInterface
 	 */
 	public function __construct(?Container $container = null)
 	{
+		/** @deprecated 2.0 The container argument will become mandatory */
 		$this->setContainer($container ?? Application::getInstance()->getContainer());
 
 		$this->input = $container->input;

@@ -77,6 +77,7 @@ class Date extends \DateTime implements ContainerAwareInterface
 	 */
 	public function __construct($date = 'now', $tz = null, ?Container $container = null)
 	{
+		/** @deprecated 2.0 The container argument will become mandatory */
 		$this->setContainer($container ?? Application::getInstance()->getContainer());
 
 		// Create the base GMT and server time zone objects.

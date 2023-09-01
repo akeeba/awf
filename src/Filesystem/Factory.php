@@ -35,6 +35,7 @@ final class Factory
 	 */
 	public static function getAdapter(?Container $container = null, bool $hybrid = false)
 	{
+		/** @deprecated 2.0 The container argument will become mandatory */
 		$container = $container ?? Application::getInstance()->getContainer();
 
 		$config = $container->appConfig;
