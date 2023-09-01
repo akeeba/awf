@@ -162,7 +162,7 @@ class Controller implements ContainerAwareInterface
 	 *
 	 * @throws  App
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(?Container $container = null)
 	{
 		// Initialise
 		$this->methods     = [];
@@ -172,6 +172,7 @@ class Controller implements ContainerAwareInterface
 		$this->redirect    = null;
 		$this->taskMap     = [];
 
+		/** @deprecated 2.0 You must provide the container */
 		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onControllerBeforeConstruct', [$this, $container]);

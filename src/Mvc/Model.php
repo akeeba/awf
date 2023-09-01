@@ -153,6 +153,7 @@ class Model implements ContainerAwareInterface
 	 */
 	public function __construct(?Container $container = null)
 	{
+		/** @deprecated 2.0 You must provide the container */
 		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onModelBeforeConstruct', [$this, $container]);
