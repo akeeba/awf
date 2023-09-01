@@ -116,7 +116,7 @@ class Container extends Pimple
 		if (!isset($this['db']))
 		{
 			$this['db'] = function (Container $c) {
-				return Driver::getInstance($c);
+				return Driver::fromContainer($c);
 			};
 		}
 

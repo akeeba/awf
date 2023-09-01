@@ -8,6 +8,7 @@
 namespace Awf\Pagination;
 
 use Awf\Application\Application;
+use Awf\Exception\App;
 use Awf\Html\Select;
 use Awf\Input\Input;
 use Awf\Router\Router;
@@ -77,22 +78,24 @@ class Pagination
 	/**
 	 * Constructor.
 	 *
-	 * @param   integer           $total       The total number of items.
-	 * @param   integer           $limitStart  The offset of the item to start at.
-	 * @param   integer           $limit       The number of items to display per page.
-	 * @param   integer           $displayed   Maximum number of page links to display (default: 10)
+	 * @param   int|null          $total       The total number of items.
+	 * @param   int|null          $limitStart  The offset of the item to start at.
+	 * @param   int|null          $limit       The number of items to display per page.
+	 * @param   int|null          $displayed   Maximum number of page links to display (default: 10)
 	 * @param   Application|null  $app         The application this pagination object is attached to
+	 *
+	 * @throws App
 	 */
-	public function __construct(int $total, int $limitStart, int $limit, int $displayed = 10, ?Application $app = null)
+	public function __construct(?int $total, ?int $limitStart, ?int $limit, ?int $displayed = 10, ?Application $app = null)
 	{
 		$app = $app ?? Application::getInstance();
 
 		$this->application = $app;
 
 		// Value/type checking.
-		$this->total      = (int) $total;
-		$this->limitStart = (int) max($limitStart, 0);
-		$this->limit      = (int) max($limit, 0);
+		$this->total      = (int) ($total ?? 0);
+		$this->limitStart = (int) max($limitStart ?? 0, 0);
+		$this->limit      = (int) max($limit ?? 0, 0);
 
 		if ($this->limit > $this->total)
 		{
