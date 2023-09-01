@@ -8,12 +8,16 @@
 namespace Awf\Database;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Filesystem\File;
 use Exception;
 use SimpleXMLElement;
 
-class Installer
+class Installer implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/** @var array Internal cache for table list */
 	protected static $allTables = [];
 
@@ -33,6 +37,7 @@ class Installer
 	 */
 	public function __construct(Container $container)
 	{
+		$this->setContainer($container);
 		$this->xmlDirectory = $container->basePath . '/assets/sql/xml';
 		$this->db           = $container->db;
 	}
@@ -310,7 +315,7 @@ class Installer
 		}
 
 		// Get all XML files in the schema directory
-		$filesystem = new File([]);
+		$filesystem = new File([], $this->getContainer());
 		$xmlFiles   = $filesystem->directoryFiles($this->xmlDirectory, '\.xml$');
 
 		if (empty($xmlFiles))
