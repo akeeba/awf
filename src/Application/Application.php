@@ -117,8 +117,8 @@ abstract class Application implements ContainerAwareInterface
 		// Load the translation strings
 		Text::addIniProcessCallback([$this, 'processLanguageIniFile']);
 		$languagePath = $container->languagePath;
-		Text::loadLanguage(null, $this->name, '.ini', true, $languagePath);
-		Text::loadLanguage('en-GB', $this->name, '.ini', false, $languagePath);
+		Text::loadLanguage(null, $this->container, '.ini', true, $languagePath);
+		Text::loadLanguage('en-GB', $this->container, '.ini', false, $languagePath);
 	}
 
 	/**
