@@ -8,6 +8,7 @@
 namespace Awf\Text;
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Exception\App;
 use Awf\Utils\ParseIni;
 
@@ -32,6 +33,7 @@ abstract class Text
 	 * @param   callable  $callable  The processing callback to add
 	 *
 	 * @return  void
+	 * @deprecated 2.0 Use the callback argument of loadLanguage
 	 */
 	public static function addIniProcessCallback($callable)
 	{
@@ -41,30 +43,56 @@ abstract class Text
 	/**
 	 * Loads the language file for a specific language
 	 *
-	 * @param   string   $langCode      The ISO language code, e.g. en-GB, use null for automatic detection
-	 * @param   string   $appName       The name of the application to load translation strings for
-	 * @param   string   $suffix        The suffix of the language file, by default it's .ini
-	 * @param   boolean  $overwrite     Should I overwrite old language strings?
-	 * @param   string   $languagePath  The base path to the language files (optional)
+	 * Deprecation notice: The second argument must now be a Container object, not an application name
+	 *
+	 * @param   string                 $langCode      The ISO language code, e.g. en-GB, use null for automatic
+	 *                                                detection
+	 * @param   string|Container|null  $container     The DI container or name of the application to load translation
+	 *                                                strings for
+	 * @param   string                 $suffix        The suffix of the language file, by default it's .ini
+	 * @param   boolean                $overwrite     Should I overwrite old language strings?
+	 * @param   string                 $languagePath  The base path to the language files (optional)
+	 * @param   callable|null          $callback      A post-processing callback for the language strings
 	 *
 	 * @return  void
 	 */
-	public static function loadLanguage($langCode = null, $appName = null, $suffix = '.ini', $overwrite = true, $languagePath = null)
+	public static function loadLanguage(
+		$langCode = null, $container = null, $suffix = '.ini', $overwrite = true, $languagePath = null, ?callable $callback = null
+	)
 	{
-		if (is_null($langCode))
+		/** @deprecated 2.0 The $container argument must be provided */
+		if (empty($container))
 		{
-			$langCode = self::detectLanguage($appName, $suffix, $languagePath);
+			trigger_error(
+				sprintf('The second argument to %s must be a Container object, not an empty string or null.', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
 		}
 
-		if (empty($appName))
+		/** @deprecated 2.0 The $container argument must be a Container */
+		if (is_string($container))
 		{
-			$appName = Application::getInstance()->getName();
+			trigger_error(
+				sprintf('The second argument to %s must be a Container object, not an application name.', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance($container)->getContainer();
+		}
+
+		if (is_null($langCode))
+		{
+			$langCode = self::detectLanguage($container, $suffix, $languagePath);
 		}
 
 		if (empty($languagePath))
 		{
-			$languagePath = Application::getInstance($appName)->getContainer()->languagePath;
+			$languagePath = $container->languagePath;
 		}
+
+		$appName = $container->application_name;
 
 		$fileNames = [
 			// langPath/MyApp/en-GB.ini
@@ -102,21 +130,30 @@ abstract class Text
 		$rawText = str_replace('\\"', '"', $rawText);
 
 		$strings = ParseIni::parse_ini_file($rawText, false, true);
+		$callbacks = [$callback];
 
-		if (!empty(static::$iniProcessCallbacks) && !empty($strings))
+		/** @deprecated 2.0 The static::$iniProcessCallbacks will be removed without replacement. Use the $callback argument. */
+		if (!empty(static::$iniProcessCallbacks))
 		{
-			foreach (static::$iniProcessCallbacks as $callback)
-			{
-				$ret = call_user_func($callback, $filename, $strings);
+			trigger_error(
+				sprintf('%s::$iniProcessCallbacks is deprecated. Use the $callback argument of the %s method instead.', __CLASS__, __METHOD__),
+				E_USER_DEPRECATED
+			);
 
-				if ($ret === false)
-				{
-					return;
-				}
-				elseif (is_array($ret))
-				{
-					$strings = $ret;
-				}
+			$callbacks = array_merge(static::$iniProcessCallbacks, $callbacks);
+		}
+
+		foreach (array_filter($callbacks) as $callback)
+		{
+			$ret = call_user_func($callback, $filename, $strings);
+
+			if ($ret === false)
+			{
+				return;
+			}
+			elseif (is_array($ret))
+			{
+				$strings = $ret;
 			}
 		}
 
@@ -135,159 +172,185 @@ abstract class Text
 	 * the best fit language that exists on our system or falling back to en-GB
 	 * when no preferred language exists.
 	 *
-	 * @param   string  $appName       The application's name to load language strings for
-	 * @param   string  $suffix        The suffix of the language file, by default it's .ini
-	 * @param   string  $languagePath  The base path to the language files (optional)
+	 * @param   string|Container|null  $container      The DI container or name of the application to load translation
+	 *                                                 strings for
+	 * @param   string                 $suffix         The suffix of the language file, by default it's .ini
+	 * @param   string                 $languagePath   The base path to the language files (optional)
 	 *
 	 * @return  string  The language code
 	 */
-	public static function detectLanguage($appName = null, $suffix = '.ini', $languagePath = null)
+	public static function detectLanguage($container = null, $suffix = '.ini', $languagePath = null)
 	{
-		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+		/** @deprecated 2.0 The $container argument must be provided */
+		if (empty($container))
 		{
-			$languages = strtolower($_SERVER["HTTP_ACCEPT_LANGUAGE"]);
-			// $languages = ' fr-ch;q=0.3, da, en-us;q=0.8, en;q=0.5, fr;q=0.3';
-			// need to remove spaces from strings to avoid error
-			$languages = str_replace(' ', '', $languages);
-			$languages = explode(",", $languages);
+			trigger_error(
+				sprintf('The second argument to %s must be a Container object, not an empty string or null.', __METHOD__),
+				E_USER_DEPRECATED
+			);
 
-			// First we need to sort languages by their weight
-			$temp = [];
+			$container = Application::getInstance()->getContainer();
+		}
 
-			foreach ($languages as $lang)
+		/** @deprecated 2.0 The $container argument must be a Container */
+		if (is_string($container))
+		{
+			trigger_error(
+				sprintf('The second argument to %s must be a Container object, not an application name.', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance($container)->getContainer();
+		}
+
+		if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+		{
+			return 'en-GB';
+		}
+
+		$languages = strtolower($_SERVER["HTTP_ACCEPT_LANGUAGE"]);
+		// $languages = ' fr-ch;q=0.3, da, en-us;q=0.8, en;q=0.5, fr;q=0.3';
+		// need to remove spaces from strings to avoid error
+		$languages = str_replace(' ', '', $languages);
+		$languages = explode(",", $languages);
+
+		// First we need to sort languages by their weight
+		$temp = [];
+
+		foreach ($languages as $lang)
+		{
+			$parts = explode(';', $lang);
+
+			$q = 1;
+			if ((count($parts) > 1) && (substr($parts[1], 0, 2) == 'q='))
 			{
-				$parts = explode(';', $lang);
+				$q = floatval(substr($parts[1], 2));
+			}
 
-				$q = 1;
-				if ((count($parts) > 1) && (substr($parts[1], 0, 2) == 'q='))
+			$temp[$parts[0]] = $q;
+		}
+
+		arsort($temp);
+		$languages = $temp;
+
+		foreach ($languages as $language => $weight)
+		{
+			// pull out the language, place languages into array of full and primary
+			// string structure:
+			$temp_array = [];
+			// slice out the part before the dash, place into array
+			$temp_array[0] = $language; //full language
+			$parts         = explode('-', $language);
+			$temp_array[1] = $parts[0]; // cut out primary language
+
+			if ((strlen($temp_array[0]) == 5)
+			    && ((substr($temp_array[0], 2, 1) == '-')
+			        || (substr(
+				            $temp_array[0], 2, 1
+			            ) == '_')))
+			{
+				$langLocation  = strtoupper(substr($temp_array[0], 3, 2));
+				$temp_array[0] = $temp_array[1] . '-' . $langLocation;
+			}
+
+			//place this array into main $user_languages language array
+			$user_languages[] = $temp_array;
+		}
+
+		if (!isset($user_languages))
+		{
+			return 'en-GB';
+		}
+
+		$appName = $container->application_name;
+
+		if (empty($languagePath))
+		{
+			$languagePath = $container->languagePath;
+		}
+
+		$baseName = $languagePath . '/' . strtolower($appName) . '/';
+
+		if (!@is_dir($baseName))
+		{
+			$baseName = $languagePath . '/';
+		}
+
+		if (!@is_dir($baseName))
+		{
+			return 'en-GB';
+		}
+
+		// Look for classic file layout
+		foreach ($user_languages as $languageStruct)
+		{
+			// Search for exact language
+			$langFilename = $baseName . $languageStruct[0] . $suffix;
+
+			if (!file_exists($langFilename))
+			{
+				$langFilename = '';
+
+				if (function_exists('glob'))
 				{
-					$q = floatval(substr($parts[1], 2));
-				}
+					$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
 
-				$temp[$parts[0]] = $q;
-			}
-
-			arsort($temp);
-			$languages = $temp;
-
-			foreach ($languages as $language => $weight)
-			{
-				// pull out the language, place languages into array of full and primary
-				// string structure:
-				$temp_array = [];
-				// slice out the part before the dash, place into array
-				$temp_array[0] = $language; //full language
-				$parts         = explode('-', $language);
-				$temp_array[1] = $parts[0]; // cut out primary language
-
-				if ((strlen($temp_array[0]) == 5) && ((substr($temp_array[0], 2, 1) == '-') || (substr($temp_array[0], 2, 1) == '_')))
-				{
-					$langLocation  = strtoupper(substr($temp_array[0], 3, 2));
-					$temp_array[0] = $temp_array[1] . '-' . $langLocation;
-				}
-
-				//place this array into main $user_languages language array
-				$user_languages[] = $temp_array;
-			}
-
-			if (!isset($user_languages))
-			{
-				return 'en-GB';
-			}
-
-			if (empty($appName))
-			{
-				$appName = Application::getInstance()->getName();
-			}
-
-			if (empty($languagePath))
-			{
-				$languagePath = Application::getInstance($appName)->getContainer()->languagePath;
-			}
-
-			$baseName = $languagePath . '/' . strtolower($appName) . '/';
-
-			if (!@is_dir($baseName))
-			{
-				$baseName = $languagePath . '/';
-			}
-
-			if (!@is_dir($baseName))
-			{
-				return 'en-GB';
-			}
-
-			// Look for classic file layout
-			foreach ($user_languages as $languageStruct)
-			{
-				// Search for exact language
-				$langFilename = $baseName . $languageStruct[0] . $suffix;
-
-				if (!file_exists($langFilename))
-				{
-					$langFilename = '';
-
-					if (function_exists('glob'))
+					// Cover both failure cases: false (filesystem error) and empty array (no file found)
+					if (!is_array($allFiles) || empty($allFiles))
 					{
-						$allFiles = glob($baseName . $languageStruct[1] . '-*' . $suffix);
-
-						// Cover both failure cases: false (filesystem error) and empty array (no file found)
-						if (!is_array($allFiles) || empty($allFiles))
-						{
-							continue;
-						}
-
-						$langFilename = array_shift($allFiles);
+						continue;
 					}
-				}
 
-				if (!empty($langFilename) && file_exists($langFilename))
-				{
-					return basename($langFilename, $suffix);
+					$langFilename = array_shift($allFiles);
 				}
 			}
 
-			// Look for subdirectory layout
-			$allFolders = [];
-
-			try
+			if (!empty($langFilename) && file_exists($langFilename))
 			{
-				$di = new \DirectoryIterator($baseName);
+				return basename($langFilename, $suffix);
 			}
-			catch (\Exception $e)
+		}
+
+		// Look for subdirectory layout
+		$allFolders = [];
+
+		try
+		{
+			$di = new \DirectoryIterator($baseName);
+		}
+		catch (\Exception $e)
+		{
+			return 'en-GB';
+		}
+
+		/** @var \DirectoryIterator $file */
+		foreach ($di as $file)
+		{
+			if ($di->isDot())
 			{
-				return 'en-GB';
-			}
-
-			/** @var \DirectoryIterator $file */
-			foreach ($di as $file)
-			{
-				if ($di->isDot())
-				{
-					continue;
-				}
-
-				if (!$di->isDir())
-				{
-					continue;
-				}
-
-				$allFolders[] = $file->getFilename();
+				continue;
 			}
 
-			foreach ($user_languages as $languageStruct)
+			if (!$di->isDir())
 			{
-				if (array_key_exists($languageStruct[0], $allFolders))
-				{
-					return $languageStruct[0];
-				}
+				continue;
+			}
 
-				foreach ($allFolders as $folder)
+			$allFolders[] = $file->getFilename();
+		}
+
+		foreach ($user_languages as $languageStruct)
+		{
+			if (array_key_exists($languageStruct[0], $allFolders))
+			{
+				return $languageStruct[0];
+			}
+
+			foreach ($allFolders as $folder)
+			{
+				if (strpos($folder, $languageStruct[1]) === 0)
 				{
-					if (strpos($folder, $languageStruct[1]) === 0)
-					{
-						return $folder;
-					}
+					return $folder;
 				}
 			}
 		}
@@ -307,6 +370,7 @@ abstract class Text
 	 */
 	public static function _($key, $jsSafe = false, $interpretBackSlashes = true)
 	{
+		/** @deprecated 2.0 You must load the languages yourself */
 		if (empty(self::$strings))
 		{
 			self::loadLanguage('en-GB');
@@ -395,6 +459,7 @@ abstract class Text
 	 */
 	public static function hasKey($key)
 	{
+		/** @deprecated 2.0 You must load the languages yourself */
 		if (empty(self::$strings))
 		{
 			self::loadLanguage('en-GB');
