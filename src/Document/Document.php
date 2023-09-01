@@ -8,6 +8,8 @@
 namespace Awf\Document;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Document\Menu\MenuManager;
 use Awf\Document\Toolbar\Toolbar;
 
@@ -18,8 +20,9 @@ use Awf\Document\Toolbar\Toolbar;
  *
  * @package Awf\Document
  */
-abstract class Document
+abstract class Document implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
 
 	/** @var   string  The output data buffer */
 	protected $buffer = '';
@@ -52,9 +55,6 @@ abstract class Document
 	/** @var   Toolbar  The toolbar for this document */
 	protected $toolbar;
 
-	/** @var   Container  The container this menu manager is attached to */
-	protected $container;
-
 	/** @var   string  The MIME type of the request */
 	protected $mimeType = 'text/html';
 
@@ -75,7 +75,7 @@ abstract class Document
 
 		$this->toolbar = new Toolbar($container);
 
-		$this->container = $container;
+		$this->setContainer($container);
 	}
 
 	/**
@@ -335,16 +335,6 @@ abstract class Document
 	public function getApplication()
 	{
 		return $this->container->application;
-	}
-
-	/**
-	 * Returns a reference to our Container object
-	 *
-	 * @return \Awf\Container\Container
-	 */
-	public function getContainer()
-	{
-		return $this->container;
 	}
 
 	/**

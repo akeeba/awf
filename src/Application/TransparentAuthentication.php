@@ -7,14 +7,18 @@
 
 namespace Awf\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Encrypt\Aes;
 use Awf\Encrypt\Totp;
 
 /**
  * Provides support for transparent authentication
  */
-class TransparentAuthentication
+class TransparentAuthentication implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/** Use HTTP Basic Authentication with time-based one time passwords */
 	const Auth_HTTPBasicAuth_TOTP = 1;
 
@@ -54,12 +58,9 @@ class TransparentAuthentication
 	/** @var string The query parameter for the password in the Auth_SplitQueryString_Plaintext method */
 	protected $queryParamPassword = '_AwfPassword';
 
-	/** @var Container The container we are attached to */
-	protected $container = null;
-
 	function __construct(Container $container)
 	{
-		$this->container = $container;
+		$this->setContainer($container);
 	}
 
 	/**

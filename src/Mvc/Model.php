@@ -9,6 +9,8 @@ namespace Awf\Mvc;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Inflector\Inflector;
 use Awf\Input\Filter;
 use Awf\Input\Input;
@@ -24,8 +26,10 @@ use RuntimeException;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class Model
+class Model implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * Input variables, passed on from the controller, in an associative array
 	 *
@@ -67,13 +71,6 @@ class Model
 	 * @var   boolean
 	 */
 	protected $_state_set = false;
-
-	/**
-	 * The container attached to the model
-	 *
-	 * @var \Awf\Container\Container
-	 */
-	protected $container;
 
 	/**
 	 * A copy of the Model's configuration
@@ -160,7 +157,7 @@ class Model
 
 		$this->input = $container->input;
 
-		$this->container = $container;
+		$this->setContainer($container);
 
 		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 

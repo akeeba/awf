@@ -8,11 +8,15 @@
 namespace Awf\Mvc\Compiler;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 
 require_once __DIR__ . '/../../Utils/helpers.php';
 
-class Blade implements CompilerInterface
+class Blade implements CompilerInterface, ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * Are the results of this engine cacheable?
 	 *
@@ -82,13 +86,6 @@ class Blade implements CompilerInterface
 	protected $forelseCounter = 0;
 
 	/**
-	 * The AWF container we are attached to
-	 *
-	 * @var Container
-	 */
-	protected $container;
-
-	/**
 	 * Should I use the PHP Tokenizer extension to compile Blade templates? Default is true and is preferable. We expect
 	 * this to be false only on bad quality hosts. It can be overridden with Reflection for testing purposes.
 	 *
@@ -98,7 +95,7 @@ class Blade implements CompilerInterface
 
 	public function __construct(Container $container)
 	{
-		$this->container = $container;
+		$this->setContainer($container);
 		$this->usingTokenizer = false;
 
 		if (function_exists('token_get_all') && defined('T_INLINE_HTML'))
@@ -222,7 +219,7 @@ class Blade implements CompilerInterface
 	 */
 	protected function parseToken($token)
 	{
-		list($id, $content) = $token;
+		[$id, $content] = $token;
 
 		if ($id == T_INLINE_HTML)
 		{
