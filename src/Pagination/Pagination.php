@@ -8,14 +8,18 @@
 namespace Awf\Pagination;
 
 use Awf\Application\Application;
+use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
-use Awf\Html\Select;
 use Awf\Input\Input;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 
-class Pagination
+class Pagination implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * @var    integer  The record number to start displaying from.
 	 */
@@ -67,29 +71,42 @@ class Pagination
 	 *
 	 * @var    array
 	 */
-	protected $additionalUrlParams = array();
+	protected $additionalUrlParams = [];
 
 	protected $application = null;
 
-    /** @var  object    Pagination data object */
-    protected static $data;
+	/** @var  object    Pagination data object */
+	protected $data = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param   int|null          $total       The total number of items.
-	 * @param   int|null          $limitStart  The offset of the item to start at.
-	 * @param   int|null          $limit       The number of items to display per page.
-	 * @param   int|null          $displayed   Maximum number of page links to display (default: 10)
-	 * @param   Application|null  $app         The application this pagination object is attached to
+	 * Note: legacy application may provide an application as the last argument. This has been deprecated
+	 *
+	 * @param   int|null                    $total       The total number of items.
+	 * @param   int|null                    $limitStart  The offset of the item to start at.
+	 * @param   int|null                    $limit       The number of items to display per page.
+	 * @param   int|null                    $displayed   Maximum number of page links to display (default: 10)
+	 * @param   Container|Application|null  $app         The container object
 	 *
 	 * @throws App
 	 */
-	public function __construct(?int $total, ?int $limitStart, ?int $limit, ?int $displayed = 10, ?Application $app = null)
+	public function __construct(?int $total, ?int $limitStart, ?int $limit, ?int $displayed = 10, $container = null)
 	{
-		$app = $app ?? Application::getInstance();
+		/** @deprecated 2.0 You will have to provide the container in the constructor */
+		$container = $container ?? Application::getInstance()->getContainer();
 
-		$this->application = $app;
+		if ($container instanceof Application)
+		{
+			trigger_error(
+				sprintf('The last argument to %s must be a Container, not an application', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = $container->getContainer();
+		}
+
+		$this->setContainer($container);
 
 		// Value/type checking.
 		$this->total      = (int) ($total ?? 0);
@@ -103,7 +120,7 @@ class Pagination
 
 		if (!$this->limit)
 		{
-			$this->limit = $total;
+			$this->limit      = $total;
 			$this->limitStart = 0;
 		}
 
@@ -173,13 +190,13 @@ class Pagination
 	public function setAdditionalUrlParam($key, $value)
 	{
 		// Never add the limit parameters; that would break things badly!
-		if (in_array($key, array('limit', 'limitstart')))
+		if (in_array($key, ['limit', 'limitstart']))
 		{
 			return false;
 		}
 
 		// Get the old value to return and set the new one for the URL parameter.
-		$result = isset($this->additionalUrlParams[$key]) ? $this->additionalUrlParams[$key] : null;
+		$result = $this->additionalUrlParams[$key] ?? null;
 
 		// If the passed parameter value is null unset the parameter, otherwise set it to the given value.
 		if ($value === null)
@@ -195,23 +212,6 @@ class Pagination
 	}
 
 	/**
-	 * Set/unset multiple URL parameters at once.
-	 *
-	 * @see     Pagination::setAdditionalUrlParam()
-	 *
-	 * @param   array   $params  A key/value array of the additional URL parameters to set/unset
-	 *
-	 * @return  void
-	 */
-	public function setAdditionalUrlParams(array $params)
-	{
-		foreach ($params as $key => $value)
-		{
-			$this->setAdditionalUrlParam($key, $value);
-		}
-	}
-
-	/**
 	 * Sets the additional URL parameters from the input. If no input is specified we will use the application's
 	 * input. The URL parameters of the base URL will be automatically removed.
 	 *
@@ -224,15 +224,15 @@ class Pagination
 		// Make sure we have an input
 		if (!is_object($input))
 		{
-			$input = $this->application->getContainer()->input;
+			$input = $this->getContainer()->input;
 		}
 
 		// Get the input's data array
 		$data = $input->getData();
 
 		// Get the rebase URL parameters to eliminate
-		$rebase = Uri::rebase('index.php', $this->application->getContainer());
-		$rebase = new Uri($rebase);
+		$rebase          = Uri::rebase('index.php', $this->getContainer());
+		$rebase          = new Uri($rebase);
 		$eliminateParams = $rebase->getQuery(true);
 		$eliminateParams = array_keys($eliminateParams);
 
@@ -268,7 +268,7 @@ class Pagination
 	 */
 	public function clearAdditionalUrlParams()
 	{
-		$this->additionalUrlParams = array();
+		$this->additionalUrlParams = [];
 	}
 
 	/**
@@ -281,9 +281,7 @@ class Pagination
 	 */
 	public function getAdditionalUrlParam($key)
 	{
-		$result = isset($this->additionalUrlParams[$key]) ? $this->additionalUrlParams[$key] : null;
-
-		return $result;
+		return $this->additionalUrlParams[$key] ?? null;
 	}
 
 	/**
@@ -294,6 +292,23 @@ class Pagination
 	public function getAdditionalUrlParams()
 	{
 		return $this->additionalUrlParams;
+	}
+
+	/**
+	 * Set/unset multiple URL parameters at once.
+	 *
+	 * @param   array  $params  A key/value array of the additional URL parameters to set/unset
+	 *
+	 * @return  void
+	 * @see     Pagination::setAdditionalUrlParam()
+	 *
+	 */
+	public function setAdditionalUrlParams(array $params)
+	{
+		foreach ($params as $key => $value)
+		{
+			$this->setAdditionalUrlParam($key, $value);
+		}
 	}
 
 	/**
@@ -315,12 +330,9 @@ class Pagination
 	 */
 	public function getData()
 	{
-		if (!is_object(self::$data))
-		{
-			self::$data = $this->_buildDataObject();
-		}
+		$this->data = $this->data ?? $this->_buildDataObject();
 
-		return self::$data;
+		return $this->data;
 	}
 
 	/**
@@ -347,7 +359,7 @@ class Pagination
 	 */
 	public function getResultsCounter()
 	{
-		$html = null;
+		$html       = null;
 		$fromResult = $this->limitStart + 1;
 
 		// If the limit is reached before the end of the list.
@@ -363,7 +375,7 @@ class Pagination
 		// If there are results found.
 		if ($this->total > 0)
 		{
-			$msg = Text::sprintf('AWF_PAGINATION_LBL_RESULTS_OF', $fromResult, $toResult, $this->total);
+			$msg  = Text::sprintf('AWF_PAGINATION_LBL_RESULTS_OF', $fromResult, $toResult, $this->total);
 			$html .= "\n" . $msg;
 		}
 		else
@@ -384,19 +396,22 @@ class Pagination
 		// Build the page navigation list.
 		$data = $this->_buildDataObject();
 
-		$list = array();
+		$list = [];
 
 		$itemOverride = false;
 		$listOverride = false;
 
-		$templatePath = $this->application->getContainer()->templatePath;
-		$chromePath = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$templatePath = $this->getContainer()->templatePath;
+		$chromePath   = $templatePath . '/' . $this->getContainer()->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{
 			include_once $chromePath;
 
-			if (function_exists('_akeeba_pagination_item_active') && function_exists('_akeeba_pagination_item_inactive'))
+			if (function_exists('_akeeba_pagination_item_active')
+			    && function_exists(
+				    '_akeeba_pagination_item_inactive'
+			    ))
 			{
 				$itemOverride = true;
 			}
@@ -412,70 +427,87 @@ class Pagination
 		if ($data->all->base !== null)
 		{
 			$list['all']['active'] = true;
-			$list['all']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->all) : $this->_item_active($data->all);
+			$list['all']['data']   = ($itemOverride)
+				? _akeeba_pagination_item_active($data->all)
+				: $this->_item_active(
+					$data->all
+				);
 		}
 		else
 		{
 			$list['all']['active'] = false;
-			$list['all']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->all) : $this->_item_inactive($data->all);
+			$list['all']['data']   = ($itemOverride) ? _akeeba_pagination_item_inactive($data->all)
+				: $this->_item_inactive($data->all);
 		}
 
 		$list['start']['current'] = false;
 		if ($data->start->base !== null)
 		{
 			$list['start']['active'] = true;
-			$list['start']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->start) : $this->_item_active($data->start);
+			$list['start']['data']   = ($itemOverride) ? _akeeba_pagination_item_active($data->start)
+				: $this->_item_active($data->start);
 		}
 		else
 		{
 			$list['start']['active'] = false;
-			$list['start']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->start) : $this->_item_inactive($data->start);
+			$list['start']['data']   = ($itemOverride) ? _akeeba_pagination_item_inactive($data->start)
+				: $this->_item_inactive($data->start);
 		}
 
 		$list['previous']['current'] = false;
 		if ($data->previous->base !== null)
 		{
 			$list['previous']['active'] = true;
-			$list['previous']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->previous) : $this->_item_active($data->previous);
+			$list['previous']['data']   = ($itemOverride) ? _akeeba_pagination_item_active($data->previous)
+				: $this->_item_active($data->previous);
 		}
 		else
 		{
 			$list['previous']['active'] = false;
-			$list['previous']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->previous) : $this->_item_inactive($data->previous);
+			$list['previous']['data']   = ($itemOverride) ? _akeeba_pagination_item_inactive($data->previous)
+				: $this->_item_inactive($data->previous);
 		}
 
 		// Make sure it exists
-		$list['pages'] = array();
+		$list['pages'] = [];
 
 		foreach ($data->pages as $i => $page)
 		{
 			$list['pages'][$i]['current'] = $this->pagesCurrent == $i;
-			$list['pages'][$i]['active'] = true;
-			$list['pages'][$i]['data'] = ($itemOverride) ? _akeeba_pagination_item_active($page) : $this->_item_active($page);
+			$list['pages'][$i]['active']  = true;
+			$list['pages'][$i]['data']    = ($itemOverride) ? _akeeba_pagination_item_active($page)
+				: $this->_item_active($page);
 		}
 
 		$list['next']['current'] = false;
 		if ($data->next->base !== null)
 		{
 			$list['next']['active'] = true;
-			$list['next']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->next) : $this->_item_active($data->next);
+			$list['next']['data']   = ($itemOverride) ? _akeeba_pagination_item_active($data->next)
+				: $this->_item_active($data->next);
 		}
 		else
 		{
 			$list['next']['active'] = false;
-			$list['next']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->next) : $this->_item_inactive($data->next);
+			$list['next']['data']   = ($itemOverride) ? _akeeba_pagination_item_inactive($data->next)
+				: $this->_item_inactive($data->next);
 		}
 
 		$list['end']['current'] = false;
 		if ($data->end->base !== null)
 		{
 			$list['end']['active'] = true;
-			$list['end']['data'] = ($itemOverride) ? _akeeba_pagination_item_active($data->end) : $this->_item_active($data->end);
+			$list['end']['data']   = ($itemOverride)
+				? _akeeba_pagination_item_active($data->end)
+				: $this->_item_active(
+					$data->end
+				);
 		}
 		else
 		{
 			$list['end']['active'] = false;
-			$list['end']['data'] = ($itemOverride) ? _akeeba_pagination_item_inactive($data->end) : $this->_item_inactive($data->end);
+			$list['end']['data']   = ($itemOverride) ? _akeeba_pagination_item_inactive($data->end)
+				: $this->_item_inactive($data->end);
 		}
 
 		if ($this->total > $this->limit)
@@ -495,7 +527,7 @@ class Pagination
 	 */
 	public function getListFooter(?array $limitBoxAttributes = null)
 	{
-		$list                 = array();
+		$list                 = [];
 		$list['limit']        = $this->limit;
 		$list['limitstart']   = $this->limitStart;
 		$list['total']        = $this->total;
@@ -503,8 +535,8 @@ class Pagination
 		$list['pagescounter'] = $this->getPagesCounter();
 		$list['pageslinks']   = $this->getPagesLinks();
 
-		$templatePath = $this->application->getContainer()->templatePath;
-		$chromePath   = $templatePath . '/' . $this->application->getTemplate() . '/php/pagination.php';
+		$templatePath = $this->getContainer()->templatePath;
+		$chromePath   = $templatePath . '/' . $this->getContainer()->application->getTemplate() . '/php/pagination.php';
 
 		if (file_exists($chromePath))
 		{
@@ -528,8 +560,8 @@ class Pagination
 	 */
 	public function getLimitBox($attributes = null)
 	{
-		$container = Application::getInstance()->getContainer();
-		$limits = array();
+		$container = $this->getContainer();
+		$limits    = [];
 
 		// Make the option list.
 		for ($i = 5; $i <= 30; $i += 5)
@@ -546,11 +578,11 @@ class Pagination
 		// Use default attributes if none is specified
 		if (is_null($attributes))
 		{
-			$attributes = array(
-				'class'		=> 'input-sm',
-				'size'		=> 1,
-				'onchange'	=> 'this.form.submit()'
-			);
+			$attributes = [
+				'class'    => 'input-sm',
+				'size'     => 1,
+				'onchange' => 'this.form.submit()',
+			];
 		}
 
 		// Build the select list.
@@ -603,26 +635,26 @@ class Pagination
 		if ($this->pagesStart > 1)
 		{
 			$class = $list['start']['active'] ? '' : ' class="disabled"';
-			$html .= '<li' . $class . '>' . $list['start']['data'] . '</li>';
+			$html  .= '<li' . $class . '>' . $list['start']['data'] . '</li>';
 		}
 
 		$class = $list['previous']['active'] ? '' : ' class="disabled"';
-		$html .= '<li' . $class . '>' . $list['previous']['data'] . '</li>';
+		$html  .= '<li' . $class . '>' . $list['previous']['data'] . '</li>';
 
 		foreach ($list['pages'] as $page)
 		{
 			$class = $page['active'] ? ($page['current'] ? 'active' : '') : 'disabled';
 			$class = empty($class) ? '' : ' class="' . $class . '"';
-			$html .= '<li' . $class .'>' . $page['data'] . '</li>';
+			$html  .= '<li' . $class . '>' . $page['data'] . '</li>';
 		}
 
 		$class = $list['next']['active'] ? '' : ' class="disabled"';
-		$html .= '<li' . $class . '>' . $list['next']['data'] . '</li>';
+		$html  .= '<li' . $class . '>' . $list['next']['data'] . '</li>';
 
 		if ($this->pagesStop < $this->pagesTotal)
 		{
 			$class = $list['end']['active'] ? '' : ' class="disabled"';
-			$html .= '<li' . $class . '>' . $list['end']['data'] . '</li>';
+			$html  .= '<li' . $class . '>' . $list['end']['data'] . '</li>';
 		}
 
 		$html .= '</ul>';
@@ -633,7 +665,7 @@ class Pagination
 	/**
 	 * Method to create an active pagination link to the item
 	 *
-	 * @param   \Awf\Pagination\PaginationObject $item The object with which to make an active link.
+	 * @param   \Awf\Pagination\PaginationObject  $item  The object with which to make an active link.
 	 *
 	 * @return  string  HTML link
 	 */
@@ -646,7 +678,7 @@ class Pagination
 	/**
 	 * Method to create an inactive pagination string
 	 *
-	 * @param   \Awf\Pagination\PaginationObject $item The item to be processed
+	 * @param   \Awf\Pagination\PaginationObject  $item  The item to be processed
 	 *
 	 * @return  string
 	 */
@@ -662,8 +694,8 @@ class Pagination
 	 */
 	protected function _buildDataObject()
 	{
-		$data = new \stdClass;
-		$router = $this->application->getContainer()->router;
+		$data   = new \stdClass;
+		$router = $this->getContainer()->router;
 
 		// Build the additional URL parameters string.
 		$params = '';
@@ -717,8 +749,8 @@ class Pagination
 			$data->end->link = $router->route($params . '&limitstart=' . $end);
 		}
 
-		$data->pages = array();
-		$stop = $this->pagesStop;
+		$data->pages = [];
+		$stop        = $this->pagesStop;
 
 		for ($i = $this->pagesStart; $i <= $stop; $i++)
 		{
