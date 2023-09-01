@@ -8,6 +8,7 @@
 namespace Awf\Filesystem;
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Exception\App;
 
 /**
  * Hybrid filesystem abstraction. It uses direct file writing. When it detects that the write failed, it switches to
@@ -32,17 +33,14 @@ class Hybrid implements FilesystemInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array       $options    Configuration options for the filesystem abstraction object
-     * @param   Container   $container  Application container
+	 * @param   array           $options    Configuration options for the filesystem abstraction object
+	 * @param   Container|null  $container  Application container
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  App
 	 */
-	public function __construct(array $options, Container $container = null)
+	public function __construct(array $options, ?Container $container = null)
 	{
-        if(!is_object($container))
-        {
-            $container = Application::getInstance()->getContainer();
-        }
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		$this->fileAdapter = new File($options, $container);
 

@@ -77,18 +77,15 @@ class Pagination
 	/**
 	 * Constructor.
 	 *
-	 * @param   integer      $total       The total number of items.
-	 * @param   integer      $limitStart  The offset of the item to start at.
-	 * @param   integer      $limit       The number of items to display per page.
-	 * @param   integer      $displayed   Maximum number of page links to display (default: 10)
-	 * @param   Application  $app         The application this pagination object is attached to
+	 * @param   integer           $total       The total number of items.
+	 * @param   integer           $limitStart  The offset of the item to start at.
+	 * @param   integer           $limit       The number of items to display per page.
+	 * @param   integer           $displayed   Maximum number of page links to display (default: 10)
+	 * @param   Application|null  $app         The application this pagination object is attached to
 	 */
-	public function __construct($total, $limitStart, $limit, $displayed = 10, $app = null)
+	public function __construct(int $total, int $limitStart, int $limit, int $displayed = 10, ?Application $app = null)
 	{
-		if (!is_object($app) || !($app instanceof Application))
-		{
-			$app = Application::getInstance();
-		}
+		$app = $app ?? Application::getInstance();
 
 		$this->application = $app;
 

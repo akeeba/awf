@@ -172,10 +172,7 @@ class Controller implements ContainerAwareInterface
 		$this->redirect    = null;
 		$this->taskMap     = [];
 
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onControllerBeforeConstruct', [$this, $container]);
 
@@ -251,16 +248,17 @@ class Controller implements ContainerAwareInterface
 	/**
 	 * Creates an instance of a controller object.
 	 *
-	 * @param   string     $appName     The application name [optional] Default: the default application
-	 * @param   string     $controller  The controller name [optional] Default: based on the "view" input parameter
-	 * @param   Container  $container   The DI container [optional] Default: the application container of the $appName
+	 * @param   string|null     $appName     The application name [optional] Default: the default application
+	 * @param   string|null     $controller  The controller name [optional] Default: based on the "view" input parameter
+	 * @param   Container|null  $container   The DI container [optional] Default: the application container of the $appName
 	 *                                  application
 	 *
 	 * @return  Controller  A Controller instance
 	 *
 	 * @throws  RuntimeException  When you are referring to a controller class which doesn't exist
+	 * @deprecated 2.0 Go through the MVCFactory in the container instead
 	 */
-	public static function getInstance($appName = null, $controller = null, $container = null)
+	public static function getInstance(?string $appName = null, ?string $controller = null, ?Container $container = null)
 	{
 		trigger_error(
 			sprintf(
@@ -642,12 +640,13 @@ class Controller implements ContainerAwareInterface
 	 *
 	 * @return  boolean  False if no redirect exists.
 	 */
-	public function redirect()
+	public function redirect(): bool
 	{
 		if ($this->redirect)
 		{
-			$app = Application::getInstance();
-			$app->redirect($this->redirect, $this->message, $this->messageType);
+			$this->container->application->redirect($this->redirect, $this->message, $this->messageType);
+
+			return true;
 		}
 
 		return false;

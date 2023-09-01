@@ -10,6 +10,7 @@ namespace Awf\Html;
 
 use Awf\Application\Application;
 use Awf\Date\Date;
+use Awf\Exception\App;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 use Awf\Utils\ArrayHelper;
@@ -68,7 +69,7 @@ abstract class Html
 	 */
 	public static function _($key)
 	{
-		list($prefix, $file, $func) = static::extract($key);
+		[$prefix, $file, $func] = static::extract($key);
 
 		$className = $prefix . ucfirst($file);
 
@@ -172,22 +173,20 @@ abstract class Html
 	/**
 	 * Returns formatted date according to a given format and time zone.
 	 *
-	 * @param   string       $input      String in a format accepted by date(), defaults to "now".
-	 * @param   string       $format     The date format specification string (see {@link PHP_MANUAL#date}).
-	 * @param   mixed        $tz         Time zone to be used for the date.  Special cases: boolean true for user
-	 *                                   setting, boolean false for server setting.
-	 * @param   Application  $app        The application from which we'll retrieve settings, null to use the default app
+	 * @param   string            $input   String in a format accepted by date(), defaults to "now".
+	 * @param   null              $format  The date format specification string (see {@link PHP_MANUAL#date}).
+	 * @param   mixed             $tz      Time zone to be used for the date.  Special cases: boolean true for user
+	 *                                     setting, boolean false for server setting.
+	 * @param   Application|null  $app     The application from which we'll retrieve settings, null to use the default app
 	 *
 	 * @return  string    A date translated by the given format and time zone.
 	 *
+	 * @throws  App
 	 * @see     strftime
 	 */
-	public static function date($input = 'now', $format = null, $tz = true, Application $app = null)
+	public static function date($input = 'now', $format = null, $tz = true, ?Application $app = null)
 	{
-		if (!is_object($app))
-		{
-			$app = Application::getInstance();
-		}
+		$app = $app ?? Application::getInstance();
 
 		// Get some system objects.
 		$config = $app->getContainer()->appConfig;
@@ -244,23 +243,20 @@ abstract class Html
 	/**
 	 * Write a <img></img> element
 	 *
-	 * @param   string       $file      The relative or absolute URL to use for the src attribute.
-	 * @param   string       $alt       The alt text.
-	 * @param   mixed        $attribs   String or associative array of attribute(s) to use.
-	 * @param   boolean      $relative  Path to file is relative to /media folder
-	 * @param   Application  $app       The application to get configuration from
+	 * @param   string            $file      The relative or absolute URL to use for the src attribute.
+	 * @param   string            $alt       The alt text.
+	 * @param   mixed             $attribs   String or associative array of attribute(s) to use.
+	 * @param   boolean           $relative  Path to file is relative to /media folder
+	 * @param   Application|null  $app       The application to get configuration from
 	 *
 	 * @return  string
+	 * @throws  App
 	 */
-	public static function image($file, $alt, $attribs = null, $relative = false, Application $app = null)
+	public static function image($file, $alt, $attribs = null, $relative = false, ?Application $app = null)
 	{
 		if ($relative)
 		{
-			if (!is_object($app))
-			{
-				$app = Application::getInstance();
-			}
-
+			$app  = $app ?? Application::getInstance();
 			$file = Uri::base(false, $app->getContainer()) . 'media/' . ltrim($file, '/');
 		}
 
@@ -272,24 +268,31 @@ abstract class Html
 	/**
 	 * Creates a tooltip with an image as button
 	 *
-	 * @param   string       $tooltip  The tip string.
-	 * @param   mixed        $title    The title of the tooltip or an associative array with keys contained in
-	 *                                 {'title','image','text','href','alt'} and values corresponding to parameters of the same name.
-	 * @param   string       $image    The image for the tip, if no text is provided.
-	 * @param   string       $text     The text for the tip.
-	 * @param   string       $href     An URL that will be used to create the link.
-	 * @param   string       $alt      The alt attribute for img tag.
-	 * @param   string       $class    CSS class for the tool tip.
-	 * @param   Application  $app       The application to get configuration from
+	 * @param   string            $tooltip  The tip string.
+	 * @param   string|array      $title    The title of the tooltip or an associative array with keys contained in
+	 *                                      {'title','image','text','href','alt'} and values corresponding to parameters of the same name.
+	 * @param   string            $image    The image for the tip, if no text is provided.
+	 * @param   string            $text     The text for the tip.
+	 * @param   string            $href     An URL that will be used to create the link.
+	 * @param   string            $alt      The alt attribute for img tag.
+	 * @param   string            $class    CSS class for the tool tip.
+	 * @param   Application|null  $app      The application to get configuration from
 	 *
 	 * @return  string
+	 * @throws  App
 	 */
-	public static function tooltip($tooltip, $title = '', $image = 'images/tooltip.png', $text = '', $href = '', $alt = 'Tooltip', $class = 'hasTooltip', Application $app = null)
+	public static function tooltip(
+		string $tooltip,
+		$title = '',
+		string $image = 'images/tooltip.png',
+		string $text = '',
+		string $href = '',
+		string $alt = 'Tooltip',
+		string $class = 'hasTooltip',
+		?Application $app = null
+	): string
 	{
-		if (!is_object($app))
-		{
-			$app = Application::getInstance();
-		}
+		$app = $app ?? Application::getInstance();
 
 		if (is_array($title))
 		{
@@ -352,7 +355,7 @@ abstract class Html
 		// Split title into title and content if the title contains '::' (migrated Joomla! code, using the obsolete Mootools format).
 		if ($content == '' && !(strpos($title, '::') === false))
 		{
-			list($title, $content) = explode('::', $title, 2);
+			[$title, $content] = explode('::', $title, 2);
 		}
 
 		// Pass strings through Text.
@@ -397,23 +400,21 @@ abstract class Html
 	 * This field can use either jQuery DatePicker (default) or Pikaday. This is controlled by the application Container,
 	 * namely its awf_date_picker field. It can be either "jQuery" or "Pikaday".
 	 *
-	 * @param   string       $value    The date value
-	 * @param   string       $name     The name of the text field
-	 * @param   string       $id       The id of the text field
-	 * @param   string       $format   The date format
-	 * @param   array        $attribs  Additional HTML attributes
-	 * @param   Application  $app      The application to get the configuration from
+	 * @param   string            $value    The date value
+	 * @param   string            $name     The name of the text field
+	 * @param   string            $id       The id of the text field
+	 * @param   string            $format   The date format
+	 * @param   null              $attribs  Additional HTML attributes
+	 * @param   Application|null  $app      The application to get the configuration from
 	 *
 	 * @return  string  HTML markup for a calendar field
+	 * @throws  App
 	 */
-	public static function calendar($value, $name, $id, $format = 'yyyy-mm-dd', $attribs = null, Application $app = null)
+	public static function calendar($value, $name, $id, $format = 'yyyy-mm-dd', $attribs = null, ?Application $app = null)
 	{
 		static $done = [];
 
-		if (!is_object($app))
-		{
-			$app = Application::getInstance();
-		}
+		$app = $app ?? Application::getInstance();
 
 		$attribs['class'] = isset($attribs['class']) ? $attribs['class'] : 'form-control';
 		$attribs['class'] = trim($attribs['class'] . ' hasTooltip calendar');

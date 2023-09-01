@@ -71,10 +71,7 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 	 */
 	public function __construct(Container $container = null)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		$this->user_table = $container->appConfig->get('user_table', '#__users');
 		$this->user_class = $container->appConfig->get('user_class', '\\Awf\\User\\User');

@@ -11,6 +11,7 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Exception\App;
 
 /**
  * FTP filesystem abstraction layer
@@ -78,14 +79,12 @@ class Ftp implements FilesystemInterface, ContainerAwareInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   array       $options    Configuration options for the filesystem abstraction object
-     * @param   Container   $container  Application container
+	 * @param   array           $options    Configuration options for the filesystem abstraction object
+	 * @param   Container|null  $container  Application container
 	 *
-	 * @return  void
-	 *
-	 * @throws  \RuntimeException
+	 * @throws  App
 	 */
-	public function __construct(array $options, Container $container = null)
+	public function __construct(array $options, ?Container $container = null)
 	{
         $this->setContainer($container ?? Application::getInstance()->getContainer());
 

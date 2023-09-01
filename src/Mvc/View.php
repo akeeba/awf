@@ -11,6 +11,7 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Exception\App;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\EngineInterface;
 use Awf\Text\Text;
@@ -202,23 +203,20 @@ class View implements ContainerAwareInterface
 	/**
 	 * Constructor
 	 *
-	 * @param   Container  $container  A named configuration array for object construction.<br/>
-	 *                                 Inside it you can have an 'mvc_config' array with the following options:<br/>
-	 *                                 name: the name (optional) of the view (defaults to the view class name
-	 *                                 suffix).<br/> escape: the name (optional) of the function to use for escaping
-	 *                                 strings<br/> template_path: the path (optional) of the layout directory
-	 *                                 (defaults to base_path + /views/ + view name<br/> layout: the layout (optional)
-	 *                                 to use to display the view<br/>
+	 * @param   Container|null  $container  The DI Container.<br/>
+	 *                                      Inside it you can have an 'mvc_config' array with the following options:<br/>
+	 *                                      name: the name (optional) of the view (defaults to the view class name
+	 *                                      suffix).<br/> escape: the name (optional) of the function to use for escaping
+	 *                                      strings<br/> template_path: the path (optional) of the layout directory
+	 *                                      (defaults to base_path + /views/ + view name<br/> layout: the layout (optional)
+	 *                                      to use to display the view<br/>
 	 *
-	 * @return  View
+	 * @throws  App
 	 */
-	public function __construct($container = null)
+	public function __construct(?Container $container = null)
 	{
 		// Make sure we have a container
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onViewBeforeConstruct', [$this, $container]);
 
@@ -315,16 +313,18 @@ class View implements ContainerAwareInterface
 	/**
 	 * Returns an instance of a view class
 	 *
-	 * @param   null       $appName    The application name [optional] Default: from container or default app if no
-	 *                                 container is provided
-	 * @param   null       $viewName   The view name [optional] Default: the "view" input parameter
-	 * @param   null       $viewType   The view type [optional] Default: the "format" input parameter or, if not
-	 *                                 defined, "html"
-	 * @param   Container  $container  The container to be attached to the view
+	 * @param   string|null     $appName    The application name [optional] Default: from container or default app if no
+	 *                                      container is provided
+	 * @param   string|null     $viewName   The view name [optional] Default: the "view" input parameter
+	 * @param   string|null     $viewType   The view type [optional] Default: the "format" input parameter or, if not
+	 *                                      defined, "html"
+	 * @param   Container|null  $container  The container to be attached to the view
 	 *
-	 * @return mixed
+	 * @deprecated 2.0 Use the MVCFactory in the Container instead
+	 * @return  self
+	 * @throws  App
 	 */
-	public static function getInstance($appName = null, $viewName = null, $viewType = null, $container = null)
+	public static function getInstance(?string $appName = null, ?string $viewName = null, ?string $viewType = null, ?Container $container = null)
 	{
 		trigger_error(
 			sprintf(
