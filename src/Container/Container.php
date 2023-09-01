@@ -12,6 +12,8 @@ use Awf\Application\ApplicationServiceProvider;
 use Awf\Application\Configuration as AppConfiguration;
 use Awf\Database\Driver;
 use Awf\Database\Driver as DatabaseDriver;
+use Awf\Date\Date;
+use Awf\Date\DateFactory;
 use Awf\Dispatcher\Dispatcher as AppDispatcher;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Filesystem\Factory as FilesystemFactory;
@@ -212,5 +214,16 @@ class Container extends Pimple
 				return new UserManager($c);
 			};
 		}
+	}
+
+	/**
+	 * @param   string                     $date
+	 * @param   string|\DateTimeZone|null  $tz
+	 *
+	 * @return  Date
+	 */
+	public function dateFactory(string $date = 'now', $tz = null)
+	{
+		return new Date($date, $tz, $this);
 	}
 }

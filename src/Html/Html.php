@@ -186,18 +186,19 @@ abstract class Html
 	 */
 	public static function date($input = 'now', $format = null, $tz = true, ?Application $app = null)
 	{
-		$app = $app ?? Application::getInstance();
+		$app       = $app ?? Application::getInstance();
+		$container = $app->getContainer();
 
 		// Get some system objects.
-		$config = $app->getContainer()->appConfig;
-		$userManager = $app->getContainer()->userManager;
-		$user = $userManager->getUser();
+		$config      = $container->appConfig;
+		$userManager = $container->userManager;
+		$user        = $userManager->getUser();
 
 		// UTC date converted to user time zone.
 		if ($tz === true)
 		{
 			// Get a date object based on UTC.
-			$date = new Date($input, 'UTC');
+			$date = $container->dateFactory($input, 'UTC');
 
 			// Set the correct time zone based on the user configuration.
 			$date->setTimeZone(new \DateTimeZone($user->getParameters()->get('timezone', $config->get('timezone'))));
@@ -206,7 +207,7 @@ abstract class Html
 		elseif ($tz === false)
 		{
 			// Get a date object based on UTC.
-			$date = new Date($input, 'UTC');
+			$date = $container->dateFactory($input, 'UTC');
 
 			// Set the correct time zone based on the server configuration.
 			$date->setTimeZone(new \DateTimeZone($config->get('timezone', 'UTC')));
@@ -214,13 +215,13 @@ abstract class Html
 		// No date conversion.
 		elseif ($tz === null)
 		{
-			$date = new Date($input);
+			$date = $container->dateFactory($input);
 		}
 		// UTC date converted to given time zone.
 		else
 		{
 			// Get a date object based on UTC.
-			$date = new Date($input, 'UTC');
+			$date = $container->dateFactory($input, 'UTC');
 
 			// Set the correct time zone based on the server configuration.
 			$date->setTimeZone(new \DateTimeZone($tz));
