@@ -8,6 +8,7 @@
 namespace Awf\Container;
 
 use Awf\Application\Application;
+use Awf\Application\ApplicationServiceProvider;
 use Awf\Application\Configuration as AppConfiguration;
 use Awf\Database\Driver;
 use Awf\Database\Driver as DatabaseDriver;
@@ -82,9 +83,7 @@ class Container extends Pimple
 		// Application service
 		if (!isset($this['application']))
 		{
-			$this['application'] = function (Container $c) {
-				return Application::getInstance($c->application_name, $c);
-			};
+			$this->register(new ApplicationServiceProvider());
 		}
 
 		// MVC Factory

@@ -12,6 +12,7 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Document\Document;
 use Awf\Exception;
+use Awf\Exception\App;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 
@@ -52,18 +53,13 @@ abstract class Application implements ContainerAwareInterface
 	 *
 	 * @return  void
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(?Container $container = null)
 	{
 		// Start keeping time
 		$this->startTime = microtime(true);
 
 		// Create or attach the DI container
-		if (!is_object($container) || !($container instanceof Container))
-		{
-			$container = new Container();
-		}
-
-		$this->setContainer($container);
+		$this->setContainer($container ?? new Container());
 
 		// Set the application name
 		if (empty($container['application_name']))
@@ -152,66 +148,74 @@ abstract class Application implements ContainerAwareInterface
 	/**
 	 * Gets an instance of the application
 	 *
-	 * @param   string    $name      The name of the application (folder name)
-	 * @param   Container $container The DI container to use for the instance (if the instance is not already set)
+	 * @param   null            $name       The name of the application (folder name)
+	 * @param   Container|null  $container  The DI container to use for the instance (if the instance is not already set)
 	 *
 	 * @return  Application
 	 *
-	 * @throws  Exception\App
+	 * @throws App
 	 */
-	public static function getInstance($name = null, Container $container = null)
+	public static function getInstance($name = null, ?Container $container = null)
 	{
-		if (empty($name) && !empty(self::$instances))
+		trigger_error(
+			sprintf('Calling %s is deprecated. Go through the Container instead.', __METHOD__),
+			E_USER_DEPRECATED
+		);
+
+		// If we have an application name I have to check if I know about it.
+		if (!empty($name))
 		{
-			$keys = array_keys(self::$instances);
-			$name = array_shift($keys);
-		}
-		elseif (empty($name))
-		{
-			$name = 'unnamed';
-		}
-
-		$name = strtolower($name);
-
-		if (!array_key_exists($name, self::$instances))
-		{
-			$className = $container->applicationNamespace . '\\Application';
-
-			if (!class_exists($className, true))
+			if (isset(self::$instances[$name]))
 			{
-				$className = '\\' . ucfirst($name) . '\\Application';
+				// Yes, I have this application object. Return it.
+				return self::$instances[$name];
 			}
 
-
-			if (!class_exists($className))
+			// I don't know about the named application, but I can get it from the container and NOW I know about it.
+			if ($container instanceof Container)
 			{
-				$filePath = __DIR__ . '/../../' . $name . '/application.php';
-				$result = @include_once($filePath);
+				self::$instances[$name] = $container->application;
 
-				if (!class_exists($className, false))
-				{
-					$className = 'Application';
-				}
-
-				if (!class_exists($className, false))
-				{
-					$result = false;
-				}
-			}
-			else
-			{
-				$result = true;
+				return self::$instances[$name];
 			}
 
-			if ($result === false)
-			{
-				throw new Exception\App("The application '$name' was not found on this server");
-			}
-
-			self::$instances[$name] = new $className($container);
+			// Sorry, I have no idea what you are asking.
+			throw new Exception\App(sprintf("Unknown or uninitialized application '%s'.", $name));
 		}
 
-		return self::$instances[$name];
+		// No name provided, but there is a container object. Alright! Return the app object from the container.
+		if ($container instanceof Container)
+		{
+			self::setInstance($container->application_name, $container->application);
+
+			return $container->application;
+		}
+
+		// No name and no container. If I don't have any known applications I have no idea what to do.
+		if (empty(self::$instances))
+		{
+			throw new Exception\App('We do not know of any AWF applications.');
+		}
+
+		$instanceKeys     = array_keys(self::$instances);
+		$firstInstanceKey = array_shift($instanceKeys);
+
+		return self::$instances[$firstInstanceKey];
+	}
+
+	/**
+	 * Set an application object which can be used with getApplication().
+	 *
+	 * @param   string       $name         The application name
+	 * @param   Application  $application  The application object
+	 *
+	 * @deprecated 2.0.0 Always go through the Container to get the Application object
+	 * @return     void
+	 * @since      1.1.0
+	 */
+	public static function setInstance(string $name, self $application): void
+	{
+		self::$instances[$name] = $application;
 	}
 
 	/**
