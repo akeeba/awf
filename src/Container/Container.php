@@ -13,11 +13,17 @@ use Awf\Application\Configuration as AppConfiguration;
 use Awf\Database\Driver;
 use Awf\Database\Driver as DatabaseDriver;
 use Awf\Date\Date;
-use Awf\Date\DateFactory;
 use Awf\Dispatcher\Dispatcher as AppDispatcher;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Filesystem\Factory as FilesystemFactory;
 use Awf\Filesystem\FilesystemInterface as Filesystem;
+use Awf\Html\Helper\Accordion as AccordionHtmlHelper;
+use Awf\Html\Helper\Basic as BasicHtmlHelper;
+use Awf\Html\Helper\Behaviour as BehaviourHtmlHelper;
+use Awf\Html\Helper\Grid as GridHtmlHelper;
+use Awf\Html\Helper\Select as SelectHtmlHelper;
+use Awf\Html\Helper\Tabs as TabsHtmlHelper;
+use Awf\Html\Service as HtmlService;
 use Awf\Input\Input;
 use Awf\Mailer\Mailer;
 use Awf\Mvc\Compiler\Blade;
@@ -34,22 +40,24 @@ use Awf\User\ManagerInterface as UserManagerInterface;
 /**
  * Dependency injection container for Awf's Application
  *
- * @property  string                $application_name      The name of the application
- * @property  string                $session_segment_name  The name of the session segment
- * @property  string                $basePath              The path to your application's PHP files
- * @property  string                $templatePath          The base path of all your template folders
- * @property  string                $languagePath          The base path of all your language folders
- * @property  string                $temporaryPath         The temporary directory of your application
- * @property  string                $filesystemBase        The base path of your web root (for use by Awf\Filesystem)
- * @property  string                $sqlPath               The path to the SQL files restored by Awf\Database\Restore
- * @property  string                $mediaQueryKey         The query string parameter to append to media added through
- *            the Template class
- * @property  string                $applicationNamespace  Namespace for the application classes, defaults to
+ * @property  string                    $application_name      The name of the application
+ * @property  string                    $session_segment_name  The name of the session segment
+ * @property  string                    $basePath              The path to your application's PHP files
+ * @property  string                    $templatePath          The base path of all your template folders
+ * @property  string                    $languagePath          The base path of all your language folders
+ * @property  string                    $temporaryPath         The temporary directory of your application
+ * @property  string                    $filesystemBase        The base path of your web root (for use by
+ *            Awf\Filesystem)
+ * @property  string                    $sqlPath               The path to the SQL files restored by
+ *            Awf\Database\Restore
+ * @property  string                    $mediaQueryKey         The query string parameter to append to media added
+ *            through the Template class
+ * @property  string                    $applicationNamespace  Namespace for the application classes, defaults to
  *            \\{$application_name}
  *
- * @property-read  MVCFactory       $mvcFactory            The MVC factory
- * @property-read  Application      $application           The application instance
- * @property-read  AppConfiguration $appConfig             The application configuration registry
+ * @property-read  MVCFactory           $mvcFactory            The MVC factory
+ * @property-read  Application          $application           The application instance
+ * @property-read  AppConfiguration     $appConfig             The application configuration registry
  * @property-read  BladeCompiler        $blade                 The Blade view template compiler engine
  * @property-read  DatabaseDriver       $db                    The global database connection object
  * @property-read  AppDispatcher        $dispatcher            The application dispatcher
@@ -61,6 +69,7 @@ use Awf\User\ManagerInterface as UserManagerInterface;
  * @property-read  SessionSegment       $segment               The session segment, where values are stored
  * @property-read  SessionManager       $session               The session manager
  * @property-read  UserManagerInterface $userManager           The user manager object
+ * @property-read  HtmlService          $html                  The HTML helper service
  */
 class Container extends Pimple
 {
@@ -133,7 +142,7 @@ class Container extends Pimple
 
 				if (!class_exists($className))
 				{
-					$className = \Awf\Dispatcher\Dispatcher::class;
+					$className = AppDispatcher::class;
 				}
 
 				return new $className($c);
@@ -212,6 +221,23 @@ class Container extends Pimple
 		{
 			$this['userManager'] = function (Container $c) {
 				return new UserManager($c);
+			};
+		}
+
+		// HTML Helper service
+		if (!isset($this['html']))
+		{
+			$this['html'] = function (Container $c) {
+				$service = new HtmlService($c);
+
+				$service->registerHelperClass(AccordionHtmlHelper::class);
+				$service->registerHelperClass(BasicHtmlHelper::class);
+				$service->registerHelperClass(BehaviourHtmlHelper::class);
+				$service->registerHelperClass(GridHtmlHelper::class);
+				$service->registerHelperClass(SelectHtmlHelper::class);
+				$service->registerHelperClass(TabsHtmlHelper::class);
+
+				return $service;
 			};
 		}
 	}

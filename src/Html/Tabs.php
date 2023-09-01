@@ -7,103 +7,52 @@
 
 namespace Awf\Html;
 
+use Awf\Application\Application;
+use Awf\Exception\App;
+
 /**
- * An abstraction around Bootstrap tabs / pills
+ * @deprecated 2.0 Use the container's html service instead
  *
- * @see http://getbootstrap.com/javascript/#tabs
- *
- * Use:
- *      echo Tabs::start();
- *      echo Tabs::addNav('tab-one', 'First tab');
- *      echo Tabs::addNav('tab-two', 'Second tab');
- *      echo Tabs::startContent();
- *      echo Tabs::tab('tab-one');
- *      echo "HTML for the first tab";
- *      echo Tabs::tab('tab-two');
- *      echo "HTML for the second tab";
- *      echo Tabs::end();
+ * @method static start(bool $pills = false)
+ * @method static addNav(string $id, string $title)
+ * @method static startContent()
+ * @method static tab(string $id, bool $active = false, bool $fade = false)
+ * @method static end()
  */
-class Tabs
+abstract class Tabs
 {
 	/**
-	 * Start a new tabbed area
+	 * Handle static method calls for backwards compatibility.
 	 *
-	 * @param   boolean  $pills  Should I use the pill navigation style? Otherwise tabs will be used.
+	 * @param   string  $name
+	 * @param   array   $arguments
 	 *
-	 * @return  string  The HTML
+	 * @deprecated 2.0 Use the container's html service instead.
+	 * @return mixed|void
+	 * @throws App
+	 *
 	 */
-	public static function start($pills = false)
+	public static function __callStatic($name, $arguments)
 	{
-		$type = $pills ? 'pills' : 'nav';
+		switch (strtolower($name))
+		{
+			case 'start':
+			case 'addnav':
+			case 'startcontent':
+			case 'tab':
+			case 'end':
+				trigger_error(
+					sprintf('Calling %s is deprecated. Use the container\'s html service instead.', __METHOD__),
+					E_USER_DEPRECATED
+				);
 
-		return <<< HTML
-<ul class="nav nav-$type">
-HTML;
+				return Application::getInstance()->getContainer()->html->get('tabs.' . $name, ...$arguments);
+		}
 
+		throw new \LogicException(
+			sprintf('The method %s::%s does not exist.', __CLASS__, $name),
+			500
+		);
 	}
 
-	/**
-	 * Add one more tab/pill in the navigation section of the tabbed area
-	 *
-	 * @param   string  $id     The HTML ID of the tab content area opened by this tab/pill
-	 * @param   string  $title  The title of the tab/pill
-	 *
-	 * @return  string  The HTML
-	 */
-	public static function addNav($id, $title)
-	{
-		return <<< HTML
-	<li><a href="#$id" data-toggle="tab">$title</a></li>
-HTML;
-
-	}
-
-	/**
-	 * Closes the navigation area of the tabs and starts the content area
-	 *
-	 * @return  string  The HTML
-	 */
-	public static function startContent()
-	{
-		return <<< HTML
-</ul>
-<div class="tab-content">
- 	<div style="display:none">
-HTML;
-
-	}
-
-	/**
-	 * Starts the content section of a tab
-	 *
-	 * @param   string   $id      The HTML ID of this tab content. Must match what you previously used in addNav
-	 * @param   boolean  $active  Is this tab active by default?
-	 * @param   boolean  $fade    Should we use a fade transition effect?
-	 *
-	 * @return  string  The HTML
-	 */
-	public static function tab($id, $active = false, $fade = false)
-	{
-		$activeString = $active ? 'active' . ($fade ? ' in' : '') : '';
-		$fadeString = $fade ? 'fade' : '';
-
-		return <<< HTML
-	<div class="tab-pane $activeString $fadeString" id="$id">
-HTML;
-
-	}
-
-	/**
-	 * Ends the tabbed area
-	 *
-	 * @return  string  The HTML
-	 */
-	public static function end()
-	{
-		return <<< HTML
-	</div>
-</div>
-HTML;
-
-	}
-} 
+}

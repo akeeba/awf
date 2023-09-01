@@ -39,8 +39,9 @@ class Download implements ContainerAwareInterface
      */
     private $adapterOptions = array();
 
-	public function __construct(Container $c = null)
+	public function __construct(?Container $c = null)
 	{
+		/** @deprecated 2.0 The container argument will become mandatory */
         $this->setContainer($c ?? Application::getInstance()->getContainer());
 
 		// Find the best fitting adapter

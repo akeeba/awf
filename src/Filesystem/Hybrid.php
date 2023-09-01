@@ -40,6 +40,7 @@ class Hybrid implements FilesystemInterface
 	 */
 	public function __construct(array $options, ?Container $container = null)
 	{
+		/** @deprecated 2.0 The container argument will become mandatory */
 		$container = $container ?? Application::getInstance()->getContainer();
 
 		$this->fileAdapter = new File($options, $container);

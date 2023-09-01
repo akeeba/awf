@@ -11,7 +11,6 @@ use Awf\Application\Application;
 use Awf\Exception\App;
 use Awf\Html\Select;
 use Awf\Input\Input;
-use Awf\Router\Router;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 
