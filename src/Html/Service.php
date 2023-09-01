@@ -201,7 +201,7 @@ class Service implements ContainerAwareInterface
 	 *
 	 * @param   mixed  ...$arguments  The arguments to the helper.
 	 *
-	 * @return  string|void  The result of the helper. void (NULL) if it returns no result.
+	 * @return  mixed  The result of the helper. void (NULL) if it returns no result.
 	 * @since   1.1.0
 	 */
 	public function get(...$arguments)
