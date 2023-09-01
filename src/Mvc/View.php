@@ -215,7 +215,7 @@ class View implements ContainerAwareInterface
 	 */
 	public function __construct(?Container $container = null)
 	{
-		// Make sure we have a container
+		/** @deprecated 2.0 You must provide the container */
 		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onViewBeforeConstruct', [$this, $container]);
