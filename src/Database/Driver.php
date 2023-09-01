@@ -188,6 +188,87 @@ abstract class Driver implements DatabaseInterface
 	}
 
 	/**
+	 * Create a database object from the provided DI container instance
+	 *
+	 * @param   Container  $container
+	 *
+	 * @return  self
+	 * @since   1.1.0
+	 */
+	public static function fromContainer(Container $container): self
+	{
+		$config = $container->appConfig;
+
+		$options = [
+			'driver'   => $config->get('dbdriver', 'mysqli'),
+			'database' => $config->get('dbname', 'solo'),
+			'select'   => $config->get('dbselect', true),
+			'host'     => $config->get('dbhost', 'localhost'),
+			'user'     => $config->get('dbuser', ''),
+			'password' => $config->get('dbpass', ''),
+			'charset'  => $config->get('dbcharset', 'utf8'),
+			'prefix'   => $config->get('prefix', 'solo_'),
+			'ssl'      => [],
+		];
+
+		$options['driver'] = (isset($options['driver'])) ? preg_replace('/[^A-Z0-9_\.-]/i', '', $options['driver'])
+			: 'mysqli';
+
+		// Apply the MySQL SSL configuration, if necessary
+		if ($config->get('dbencryption', 0) && in_array(strtolower($options['driver']), ['mysqli', 'pdomysql']))
+		{
+			$options['ssl'] = [
+				'enable'             => true,
+				'cipher'             => $config->get('dbsslcipher', '') ?: '',
+				'ca'                 => $config->get('dbsslca', '') ?: '',
+				'capath'             => $config->get('dbsslcapath', '') ?: '',
+				'key'                => $config->get('dbsslkey', '') ?: '',
+				'cert'               => $config->get('dbsslcert', '') ?: '',
+				'verify_server_cert' => $config->get('dbsslverifyservercert', true) ?: false,
+			];
+		}
+
+		$connection = $config->get('connection', null);
+
+		if (!empty($connection))
+		{
+			$options['connection'] = $connection;
+		}
+
+		return self::fromOptions($options);
+	}
+
+	/**
+	 * Create a database object from the provided connection options
+	 *
+	 * @param   array  $options  The connection options
+	 *
+	 * @return  self
+	 * @since   1.1.0
+	 */
+	public static function fromOptions(array $options): self
+	{
+		// Derive the class name from the driver.
+		$class = '\\Awf\\Database\\Driver\\' . ucfirst(strtolower($options['driver']));
+
+		// If the class still doesn't exist we have nothing left to do but throw an exception.  We did our best.
+		if (!class_exists($class))
+		{
+			throw new RuntimeException(sprintf('Unable to load Database Driver: %s', $options['driver']));
+		}
+
+		// Create our new Driver connector based on the options given.
+		try
+		{
+			return new $class($options);
+		}
+		catch (RuntimeException $e)
+		{
+			throw new RuntimeException(sprintf('Unable to connect to the Database: %s', $e->getMessage()));
+		}
+	}
+
+	/**
 	 * Method to return a Driver instance based on the given options.  There are three global options and then
 	 * the rest are specific to the database driver.  The 'driver' option defines which Driver class is
 	 * used for the connection -- the default is 'mysqli'.  The 'database' option determines which database is to
@@ -203,93 +284,31 @@ abstract class Driver implements DatabaseInterface
 	 * @return  Driver  A database object.
 	 *
 	 * @throws  RuntimeException  When the driver cannot be instantiated
+	 * @deprecated 2.0 Go through the Container, or use the fromOptions and fromContainer methods
+	 * @see self::fromOptions()
+	 * @see self::fromContainer()
+	 * @see Container
 	 */
-	public static function getInstance($options = array())
+	public static function getInstance($options = []): self
 	{
-		// If no options are passed, push the default application into the options. This will result in the
-		// default driver object instance for the app to be created.
-		if (empty($options))
-		{
-			$options = Application::getInstance()->getContainer();
-		}
+		trigger_error(
+			sprintf(
+				'Calling %s is deprecated. Use the Container, the %s::fromOptions() method, or the %s::fromContainer() method.',
+				__METHOD__,
+				__CLASS__,
+				__CLASS__
+			),
+			E_USER_DEPRECATED
+		);
 
-		// If an application is passed in the options ignore everything else and set up based on app configuration
-		if (is_object($options) && ($options instanceof Container))
-		{
-			$config = $options->appConfig;
-
-			$options = array(
-				'driver'	=> $config->get('dbdriver', 'mysqli'),
-				'database'	=> $config->get('dbname', 'solo'),
-				'select'	=> $config->get('dbselect', true),
-				'host'		=> $config->get('dbhost', 'localhost'),
-				'user'		=> $config->get('dbuser', ''),
-				'password'	=> $config->get('dbpass', ''),
-				'charset'	=> $config->get('dbcharset', 'utf8'),
-				'prefix'	=> $config->get('prefix', 'solo_'),
-				'ssl'       => [],
-			);
-
-			$connection = $config->get('connection', null);
-
-			if (!empty($connection))
-			{
-				$options['connection'] = $connection;
-			}
-		}
-
-		// Sanitize the database connector options.
-		$options['driver']   = (isset($options['driver'])) ? preg_replace('/[^A-Z0-9_\.-]/i', '', $options['driver']) : 'mysqli';
-		$options['database'] = (isset($options['database'])) ? $options['database'] : null;
-		$options['select']   = (isset($options['select'])) ? $options['select'] : true;
-
-		// Apply the MySQL SSQL configuration
-		$driverName = strtolower($options['driver']);
-
-		if ($config->get('dbencryption', 0) && in_array($driverName, ['mysqli', 'pdomysql']))
-		{
-			$config = Application::getInstance()->getContainer()->appConfig;
-
-			$options['ssl'] = [
-				'enable'             => true,
-				'cipher'             => $config->get('dbsslcipher', '') ?: '',
-				'ca'                 => $config->get('dbsslca', '') ?: '',
-				'capath'             => '',
-				'key'                => $config->get('dbsslkey', '') ?: '',
-				'cert'               => $config->get('dbsslcert', '') ?: '',
-				'verify_server_cert' => $config->get('dbsslverifyservercert', true) ?: false,
-			];
-		}
+		// In no options are set, use the default application's DI container
+		$options = $options ?? Application::getInstance();
 
 		// Get the options signature for the database connector.
 		$signature = md5(serialize($options));
 
-		// If we already have a database connector instance for these options then just use that.
-		if (empty(self::$instances[$signature]))
-		{
-
-			// Derive the class name from the driver.
-			$class = '\\Awf\\Database\\Driver\\' . ucfirst(strtolower($options['driver']));
-
-			// If the class still doesn't exist we have nothing left to do but throw an exception.  We did our best.
-			if (!class_exists($class))
-			{
-				throw new RuntimeException(sprintf('Unable to load Database Driver: %s', $options['driver']));
-			}
-
-			// Create our new Driver connector based on the options given.
-			try
-			{
-				$instance = new $class($options);
-			}
-			catch (RuntimeException $e)
-			{
-				throw new RuntimeException(sprintf('Unable to connect to the Database: %s', $e->getMessage()));
-			}
-
-			// Set the new connector to the global instances based on signature.
-			self::$instances[$signature] = $instance;
-		}
+		self::$instances[$signature] = self::$instances[$signature] ??
+			($options instanceof Container ? self::fromContainer($options) : self::fromOptions($options));
 
 		return self::$instances[$signature];
 	}
@@ -355,7 +374,7 @@ abstract class Driver implements DatabaseInterface
 	 * @param   string  $method  The called method.
 	 * @param   array   $args    The array of arguments passed to the method.
 	 *
-	 * @return  string  The aliased method's return value or null.
+	 * @return  mixed|void  The aliased method's return value or null.
 	 */
 	public function __call($method, $args)
 	{
@@ -367,11 +386,11 @@ abstract class Driver implements DatabaseInterface
 		switch ($method)
 		{
 			case 'q':
-				return $this->quote($args[0], isset($args[1]) ? $args[1] : true);
+				return $this->quote($args[0], $args[1] ?? true);
 				break;
 			case 'qn':
 			case 'nq':
-				return $this->quoteName($args[0], isset($args[1]) ? $args[1] : null);
+				return $this->quoteName($args[0], $args[1] ?? null);
 				break;
 		}
 	}
