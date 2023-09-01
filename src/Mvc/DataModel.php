@@ -372,7 +372,7 @@ class DataModel extends Model
 			&& (in_array('datetime', $typeParts) || in_array('date', $typeParts) || in_array('timestamp', $typeParts))
 		)
 		{
-			return (new Date())->toSql(false, $this->container->db);
+			return ($this->container->dateFactory())->toSql(false, $this->container->db);
 		}
 
 		return $information->Default;
@@ -900,7 +900,7 @@ class DataModel extends Model
 		// Get the database object
 		$db       = $this->getDbo();
 		$nullDate = $db->getNullDate();
-		$date     = new Date();
+		$date     = $this->container->dateFactory();
 
 		// Update the created_on / modified_on
 		if ($isNewRecord && $this->hasField('created_on'))
@@ -2326,7 +2326,7 @@ class DataModel extends Model
 		}
 
 		$db   = $this->getDbo();
-		$date = new Date();
+		$date = $this->container->dateFactory();
 
 		// Update the created_on / modified_on
 		if ($this->hasField('modified_on'))
@@ -2383,7 +2383,7 @@ class DataModel extends Model
 
 		if ($this->hasField('locked_on'))
 		{
-			$date             = new Date();
+			$date             = $this->container->dateFactory();
 			$locked_on        = $this->getFieldAlias('locked_on');
 			$this->$locked_on = $date->toSql(false, $db);
 		}

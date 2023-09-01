@@ -6,7 +6,12 @@
  */
 
 namespace Awf\Date;
+use Awf\Application\Application;
+use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Database\Driver;
+use Awf\Exception\App;
 
 /**
  * Date is a class that stores a date and provides logic to manipulate
@@ -27,8 +32,10 @@ use Awf\Database\Driver;
  *
  * This class is adapted from the Joomla! Framework
  */
-class Date extends \DateTime
+class Date extends \DateTime implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * The format string to be applied when using the __toString() magic method.
 	 *
@@ -61,11 +68,17 @@ class Date extends \DateTime
 	/**
 	 * Constructor.
 	 *
-	 * @param   string  $date  String in a format accepted by strtotime(), defaults to "now".
-	 * @param   mixed   $tz    Time zone to be used for the date. Might be a string or a DateTimeZone object.
+	 * @param   string          $date       String in a format accepted by strtotime(), defaults to "now".
+	 * @param   mixed           $tz         Time zone to be used for the date. Might be a string or a DateTimeZone
+	 *                                      object.
+	 * @param   Container|null  $container  The DI Container of the application
+	 *
+	 * @throws App
 	 */
-	public function __construct($date = 'now', $tz = null)
+	public function __construct($date = 'now', $tz = null, ?Container $container = null)
 	{
+		$this->setContainer($container ?? Application::getInstance()->getContainer());
+
 		// Create the base GMT and server time zone objects.
 		if (empty(self::$gmt) || empty(self::$stz))
 		{
@@ -292,10 +305,7 @@ class Date extends \DateTime
 	 */
 	public function toSql($local = false, Driver $db = null)
 	{
-		if ($db === null)
-		{
-			$db = Driver::getInstance();
-		}
+		$db = $db ?? $this->container->db;
 
 		return $this->format($db->getDateFormat(), $local);
 	}
