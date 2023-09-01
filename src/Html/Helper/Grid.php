@@ -108,9 +108,10 @@ class Grid extends AbstractHelper
 			$action = $this->javascriptPrefix . 'checkAll(this)';
 		}
 
-		return '<input type="checkbox" name="' . $name . '" value="" class="hasTooltip" title="' . Html::tooltipText(
-				$tip
-			) . '" onclick="' . $action . '" />';
+
+
+		return '<input type="checkbox" name="' . $name . '" value="" class="hasTooltip" title="' .
+		       $this->getContainer()->html->get('basic.tooltipText', $tip) . '" onclick="' . $action . '" />';
 	}
 
 	/**
