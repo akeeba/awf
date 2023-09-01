@@ -369,7 +369,7 @@ class DataModel extends Model
 			&& (in_array('datetime', $typeParts) || in_array('date', $typeParts) || in_array('timestamp', $typeParts))
 		)
 		{
-			return (new Date())->toSql();
+			return (new Date())->toSql(false, $this->container->db);
 		}
 
 		return $information->Default;
