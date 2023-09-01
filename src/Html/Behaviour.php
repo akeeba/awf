@@ -8,6 +8,7 @@
 namespace Awf\Html;
 
 use Awf\Application\Application;
+use Awf\Exception\App;
 use Awf\Uri\Uri;
 use Awf\Utils\Template;
 
@@ -28,11 +29,12 @@ abstract class Behaviour
 	/**
 	 * Add unobtrusive JavaScript support for a calendar control.
 	 *
-	 * @param   Application  $app  CSS and JS will be added to the document of the selected application
+	 * @param   Application|null  $app  CSS and JS will be added to the document of the selected application
 	 *
 	 * @return  void
+	 * @throws  App
 	 */
-	public static function calendar(Application $app = null)
+	public static function calendar(?Application $app = null)
 	{
 		// Only load once
 		if (isset(static::$loaded[__METHOD__]))
@@ -40,15 +42,10 @@ abstract class Behaviour
 			return;
 		}
 
-		if (!is_object($app))
-		{
-			$app = Application::getInstance();
-		}
+		$app = $app ?? Application::getInstance();
 
-		$document = $app->getDocument();
-
-		Template::addJs('media://js/datepicker/bootstrap-datepicker.js');
-		Template::addCss('media://css/datepicker.css');
+		Template::addJs('media://js/datepicker/bootstrap-datepicker.js', $app);
+		Template::addCss('media://css/datepicker.css', $app);
 
 		static::$loaded[__METHOD__] = true;
 	}

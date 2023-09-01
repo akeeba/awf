@@ -153,7 +153,8 @@ abstract class Application implements ContainerAwareInterface
 	 *
 	 * @return  Application
 	 *
-	 * @throws App
+	 * @throws  App
+	 * @deprecated 2.0 Go through the Container instead
 	 */
 	public static function getInstance($name = null, ?Container $container = null)
 	{

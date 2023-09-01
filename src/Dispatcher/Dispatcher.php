@@ -41,16 +41,11 @@ class Dispatcher implements ContainerAwareInterface
 	/**
 	 * Public constructor
 	 *
-	 * @param   Container $container The container this dispatcher belongs to
+	 * @param   Container|null  $container  The container this dispatcher belongs to
 	 */
-	public function __construct($container = null)
+	public function __construct(?Container $container = null)
 	{
-		if (!is_object($container) || !($container instanceof Container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
-
-		$this->setContainer($container);
+		$this->setContainer($container ?? Application::getInstance()->getContainer());
 
 		$this->input = $container->input;
 

@@ -34,12 +34,9 @@ class Mailer extends PHPMailer implements ContainerAwareInterface
 	 */
 	public $CharSet = 'utf-8';
 
-	public function __construct($container = null)
+	public function __construct(?Container $container = null)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		parent::__construct();
 

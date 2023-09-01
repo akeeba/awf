@@ -29,12 +29,12 @@ class HasOne extends HasMany
 	 * supposed to return anything, just modify $foreignModel's state directly. For example, you may want to do:
 	 * $foreignModel->setState('foo', 'bar')
 	 *
-	 * @param callable   $callback The callback to run on the remote model.
-	 * @param Collection $dataCollection
+	 * @param   callable|null  $callback  The callback to run on the remote model.
+	 * @param Collection       $dataCollection
 	 *
 	 * @return Collection|DataModel
 	 */
-	public function getData($callback = null, Collection $dataCollection = null)
+	public function getData(callable $callback = null, Collection $dataCollection = null)
 	{
 		if (is_null($dataCollection))
 		{

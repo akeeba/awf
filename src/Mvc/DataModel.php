@@ -13,6 +13,7 @@ use Awf\Database\Driver;
 use Awf\Database\Query;
 use Awf\Date\Date;
 use Awf\Event\Dispatcher as EventDispatcher;
+use Awf\Exception\App;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
@@ -20,6 +21,8 @@ use Awf\Mvc\DataModel\Exception\InvalidSearchMethod;
 use Awf\Mvc\DataModel\Exception\NoTableColumns;
 use Awf\Mvc\DataModel\Exception\RecordNotLoaded;
 use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
+use Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound;
+use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
 use Awf\Mvc\DataModel\RelationManager;
 use Awf\Text\Text;
 
@@ -129,17 +132,17 @@ class DataModel extends Model
 	 * both
 	 * are set only guarded_fields is taken into account. Fields are not filled automatically outside the constructor.
 	 *
-	 * @param   Container  $container
+	 * @param   Container|null  $container
+	 *
+	 * @throws  ForeignModelNotFound
+	 * @throws  RelationTypeNotFound
+	 * @throws  App
 	 *
 	 * @see \Awf\Mvc\Model::__construct()
-	 *
 	 */
-	public function __construct(\Awf\Container\Container $container = null)
+	public function __construct(?Container $container = null)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		// First call the parent constructor. It also populates $this->config from $container['mvc_config']
 		parent::__construct($container);
@@ -667,7 +670,7 @@ class DataModel extends Model
 					{
 						if (stristr($field->Default, '\'::timestamp without time zone'))
 						{
-							list ($date,) = explode('::', $field->Default, 2);
+							[$date,] = explode('::', $field->Default, 2);
 							$field->Default = trim($date, "'");
 						}
 					}

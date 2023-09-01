@@ -11,6 +11,7 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Exception\App;
 use Awf\Inflector\Inflector;
 use Awf\Input\Filter;
 use Awf\Input\Input;
@@ -89,15 +90,16 @@ class Model implements ContainerAwareInterface
 	 * By default the new model instance is created with persistent state, unless
 	 * you pass $config['modelTemporaryInstance'] = false
 	 *
-	 * @param   string    $appName   The application name
-	 * @param   string    $modelName The model name
-	 * @param   Container $container Configuration variables to the model
+	 * @param   string|null     $appName    The application name
+	 * @param   string|null     $modelName  The model name
+	 * @param   Container|null  $container  Configuration variables to the model
 	 *
+	 * @deprecated 2.0 Go through the MVCFactory in the Container instead.
 	 * @return  static
 	 *
-	 * @throws  RuntimeException  If the Model is not found
+	 * @throws App
 	 */
-	public static function getInstance($appName = null, $modelName = '', $container = null)
+	public static function getInstance(?string $appName = null, ?string $modelName = '', ?Container $container = null)
 	{
 		trigger_error(
 			sprintf(
@@ -114,15 +116,16 @@ class Model implements ContainerAwareInterface
 	/**
 	 * Returns a new instance of a model, with the state reset to defaults
 	 *
-	 * @param   string    $appName   The application name
-	 * @param   string    $modelName The model name
-	 * @param   Container $container Configuration variables to the model
+	 * @param   string|null     $appName    The application name
+	 * @param   string|null     $modelName  The model name
+	 * @param   Container|null  $container  Configuration variables to the model
 	 *
+	 * @deprecated 2.0 Go through the MVCFactory in the Container instead.
 	 * @return  static
 	 *
-	 * @throws  RuntimeException  If the Model is not found
+	 * @throws App
 	 */
-	public static function getTmpInstance($appName = '', $modelName = '', $container = null)
+	public static function getTmpInstance(?string $appName = '', ?string $modelName = '', ?Container $container = null)
 	{
 		trigger_error(
 			sprintf(
@@ -140,18 +143,17 @@ class Model implements ContainerAwareInterface
 	 * Public class constructor
 	 *
 	 * You can use the $container['mvc_config'] array to pass some configuration values to the object:
-	 * state			stdClass|array. The state variables of the Model.
-	 * use_populate		Boolean. When true the model will set its state from populateState() instead of the request.
-	 * ignore_request	Boolean. When true getState will now automatically load state data from the request.
+	 * state            stdClass|array. The state variables of the Model.
+	 * use_populate        Boolean. When true the model will set its state from populateState() instead of the request.
+	 * ignore_request    Boolean. When true getState will now automatically load state data from the request.
 	 *
-	 * @param   Container $container The configuration variables to this model
+	 * @param   Container|null  $container  The configuration variables to this model
+	 *
+	 * @throws  App
 	 */
-	public function __construct(\Awf\Container\Container $container = null)
+	public function __construct(?Container $container = null)
 	{
-		if (!is_object($container))
-		{
-			$container = Application::getInstance()->getContainer();
-		}
+		$container = $container ?? Application::getInstance()->getContainer();
 
 		$container->eventDispatcher->trigger('onModelBeforeConstruct', [$this, $container]);
 

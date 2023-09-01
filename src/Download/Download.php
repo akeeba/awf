@@ -41,12 +41,7 @@ class Download implements ContainerAwareInterface
 
 	public function __construct(Container $c = null)
 	{
-        if(!is_object($c))
-        {
-            $c = Application::getInstance()->getContainer();
-        }
-
-        $this->setContainer($c);
+        $this->setContainer($c ?? Application::getInstance()->getContainer());
 
 		// Find the best fitting adapter
 		$allAdapters = self::getFiles(__DIR__ . '/Adapter', [], ['AbstractAdapter.php', 'cacert.pem']);
