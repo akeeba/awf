@@ -124,6 +124,12 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 				foreach ($this->privileges as $name => $privilegeClass)
 				{
 					$privilegeObject = new $privilegeClass();
+
+					if ($privilegeObject instanceof ContainerAwareInterface)
+					{
+						$privilegeObject->setContainer($this->container);
+					}
+
 					$user->attachPrivilegePlugin($name, $privilegeObject);
 				}
 			}
@@ -134,6 +140,12 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 				foreach ($this->authentications as $name => $authenticationClass)
 				{
 					$authenticationObject = new $authenticationClass();
+
+					if ($authenticationObject instanceof ContainerAwareInterface)
+					{
+						$authenticationObject->setContainer($this->container);
+					}
+
 					$user->attachAuthenticationPlugin($name, $authenticationObject);
 				}
 			}
