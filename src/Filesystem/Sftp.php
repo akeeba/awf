@@ -8,14 +8,15 @@
 namespace Awf\Filesystem;
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 
 /**
  * SFTP filesystem abstraction layer
  */
-class Sftp implements FilesystemInterface
+class Sftp implements FilesystemInterface, ContainerAwareInterface
 {
-    /** @var  Container Application container */
-    protected $container;
+	use ContainerAwareTrait;
 
 	/**
 	 * SFTP server's hostname or IP address
@@ -86,16 +87,11 @@ class Sftp implements FilesystemInterface
 	 * @param   array       $options    Configuration options for the filesystem abstraction object
      * @param   Container   $container  Application container
 	 *
-	 * @return  Sftp
+	 * @return  void
 	 */
 	public function __construct(array $options, Container $container = null)
 	{
-        if(!is_object($container))
-        {
-            $container = Application::getInstance()->getContainer();
-        }
-
-        $this->container = $container;
+		$this->setContainer($container ?? Application::getInstance()->getContainer());
 
 		if (isset($options['host']))
 		{

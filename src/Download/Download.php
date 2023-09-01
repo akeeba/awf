@@ -9,17 +9,14 @@ namespace Awf\Download;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Text\Text;
 use Awf\Timer\Timer;
 
-class Download
+class Download implements ContainerAwareInterface
 {
-    /**
-     * The component container object
-     *
-     * @var  Container
-     */
-    protected $container = null;
+	use ContainerAwareTrait;
 
 	/**
 	 * Parameters passed from the GUI when importing from URL
@@ -49,7 +46,7 @@ class Download
             $c = Application::getInstance()->getContainer();
         }
 
-        $this->container = $c;
+        $this->setContainer($c);
 
 		// Find the best fitting adapter
 		$allAdapters = self::getFiles(__DIR__ . '/Adapter', [], ['AbstractAdapter.php', 'cacert.pem']);

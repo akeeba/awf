@@ -9,6 +9,8 @@ namespace Awf\Mvc;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\EngineInterface;
 use Awf\Text\Text;
@@ -26,8 +28,10 @@ use Throwable;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class View
+class View implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * Current or most recently performed task.
 	 * Currently public, it should be reduced to protected in the future
@@ -113,13 +117,6 @@ class View
 	 * @var   Input
 	 */
 	protected $input = null;
-
-	/**
-	 * The container attached to this view
-	 *
-	 * @var   Container
-	 */
-	protected $container;
 
 	/**
 	 * Aliases of view templates. For example:
@@ -228,7 +225,7 @@ class View
 		// Cache some useful references in the class
 		$this->input = $container->input;
 
-		$this->container = $container;
+		$this->setContainer($container);
 
 		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : [];
 
@@ -1000,16 +997,6 @@ class View
 		// helpers are (supposed to be) abstract classes with static method
 		// interfaces.
 		class_exists($className);
-	}
-
-	/**
-	 * Returns a reference to the container attached to this View
-	 *
-	 * @return Container
-	 */
-	public function &getContainer()
-	{
-		return $this->container;
 	}
 
 	public function getTask()

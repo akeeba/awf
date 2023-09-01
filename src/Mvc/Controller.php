@@ -9,6 +9,8 @@ namespace Awf\Mvc;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
 use Awf\Input\Input;
 use Awf\Text\Text;
@@ -23,8 +25,10 @@ use RuntimeException;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class Controller
+class Controller implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * Instance container.
 	 *
@@ -152,13 +156,6 @@ class Controller
 	protected $viewInstances = [];
 
 	/**
-	 * The container attached to this Controller
-	 *
-	 * @var Container
-	 */
-	protected $container = null;
-
-	/**
 	 * Public constructor of the Controller class
 	 *
 	 * @param   Container|null  $container  The application container
@@ -187,7 +184,7 @@ class Controller
 		// Get local copies of things included in the container
 		$this->input = $container->input;
 
-		$this->container = $container;
+		$this->setContainer($container);
 
 		// Determine the methods to exclude from the base class.
 		$xMethods = get_class_methods('\\Awf\\Mvc\\Controller');

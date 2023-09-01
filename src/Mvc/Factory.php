@@ -8,6 +8,8 @@
 namespace Awf\Mvc;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Inflector\Inflector;
 use RuntimeException;
 
@@ -16,13 +18,13 @@ use RuntimeException;
  *
  * @since   1.1.0
  */
-class Factory
+class Factory implements ContainerAwareInterface
 {
-	private $container;
+	use ContainerAwareTrait;
 
 	public function __construct(Container $container)
 	{
-		$this->container = $container;
+		$this->setContainer($container);
 	}
 
 	/**

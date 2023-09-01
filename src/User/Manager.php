@@ -9,27 +9,24 @@ namespace Awf\User;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Database\Driver;
 use Awf\Text\Text;
 
 /**
  * The User Manager class allows you to load, save, log in and log out users
  */
-class Manager implements ManagerInterface
+class Manager implements ManagerInterface, ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/**
 	 * An array of the instances we have already created
 	 *
 	 * @var  array[ManagerInterface]
 	 */
 	protected static $instances = array();
-
-	/**
-	 * The container this instance of User Manager is attached to
-	 *
-	 * @var  Container
-	 */
-	protected $container;
 
 	/**
 	 * The name of the table where user accounts are stored
@@ -82,7 +79,7 @@ class Manager implements ManagerInterface
 		$this->user_table = $container->appConfig->get('user_table', '#__users');
 		$this->user_class = $container->appConfig->get('user_class', '\\Awf\\User\\User');
 
-		$this->container = $container;
+		$this->setContainer($container);
 	}
 
 	/**

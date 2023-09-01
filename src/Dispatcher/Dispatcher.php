@@ -8,6 +8,8 @@
 namespace Awf\Dispatcher;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Input\Input;
 use Awf\Application\Application;
 use Awf\Text\Text;
@@ -20,16 +22,15 @@ use Awf\Mvc;
  *
  * @package Awf\Dispatcher
  */
-class Dispatcher
+class Dispatcher implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/** @var   Input  Input variables */
 	protected $input = array();
 
 	/** @var   string  The name of the default view, in case none is specified */
 	public $defaultView = 'main';
-
-	/** @var   Container  A copy of the application object we belong to */
-	protected $container;
 
 	/** @var string The view which will be rendered by the dispatcher */
 	protected $view;
@@ -49,7 +50,7 @@ class Dispatcher
 			$container = Application::getInstance()->getContainer();
 		}
 
-		$this->container = $container;
+		$this->setContainer($container);
 
 		$this->input = $container->input;
 

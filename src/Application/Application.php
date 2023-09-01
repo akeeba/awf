@@ -8,6 +8,8 @@
 namespace Awf\Application;
 
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Document\Document;
 use Awf\Exception;
 use Awf\Text\Text;
@@ -21,16 +23,15 @@ use Awf\Uri\Uri;
  *
  * @package Awf\Application
  */
-abstract class Application
+abstract class Application implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/** @var   array  An array of application instances */
 	protected static $instances = array();
 
 	/** @var   array  The application message queue */
 	public $messageQueue = array();
-
-	/** @var   Container  The DI container for this application */
-	protected $container = null;
 
 	/** @var   string  The name (alias) of the application */
 	protected $name = null;
@@ -62,7 +63,7 @@ abstract class Application
 			$container = new Container();
 		}
 
-		$this->container = $container;
+		$this->setContainer($container);
 
 		// Set the application name
 		if (empty($container['application_name']))
@@ -523,15 +524,5 @@ abstract class Application
 	public function processLanguageIniFile($filename, $strings)
 	{
 		return true;
-	}
-
-	/**
-	 * Returns an instance of the DI container of the application
-	 *
-	 * @return \Awf\Container\Container
-	 */
-	public function &getContainer()
-	{
-		return $this->container;
 	}
 }

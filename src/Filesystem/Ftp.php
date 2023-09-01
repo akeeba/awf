@@ -9,14 +9,15 @@ namespace Awf\Filesystem;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 
 /**
  * FTP filesystem abstraction layer
  */
-class Ftp implements FilesystemInterface
+class Ftp implements FilesystemInterface, ContainerAwareInterface
 {
-    /** @var  Container Application container */
-    protected $container;
+	use ContainerAwareTrait;
 
 	/**
 	 * FTP server's hostname or IP address
@@ -80,18 +81,13 @@ class Ftp implements FilesystemInterface
 	 * @param   array       $options    Configuration options for the filesystem abstraction object
      * @param   Container   $container  Application container
 	 *
-	 * @return  Ftp
+	 * @return  void
 	 *
 	 * @throws  \RuntimeException
 	 */
 	public function __construct(array $options, Container $container = null)
 	{
-        if(!is_object($container))
-        {
-            $container = Application::getInstance()->getContainer();
-        }
-
-        $this->container = $container;
+        $this->setContainer($container ?? Application::getInstance()->getContainer());
 
 		if (isset($options['host']))
 		{
