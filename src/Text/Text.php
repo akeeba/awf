@@ -9,6 +9,7 @@ namespace Awf\Text;
 
 use Awf\Application\Application;
 use Awf\Container\Container;
+use Awf\Document\Document;
 use Awf\Exception\App;
 use Awf\Utils\ParseIni;
 
@@ -32,8 +33,8 @@ abstract class Text
 	 *
 	 * @param   callable  $callable  The processing callback to add
 	 *
-	 * @return  void
 	 * @deprecated 2.0 Use the callback argument of loadLanguage
+	 * @return  void
 	 */
 	public static function addIniProcessCallback($callable)
 	{
@@ -57,14 +58,17 @@ abstract class Text
 	 * @return  void
 	 */
 	public static function loadLanguage(
-		$langCode = null, $container = null, $suffix = '.ini', $overwrite = true, $languagePath = null, ?callable $callback = null
+		$langCode = null, $container = null, $suffix = '.ini', $overwrite = true, $languagePath = null,
+		?callable $callback = null
 	)
 	{
 		/** @deprecated 2.0 The $container argument must be provided */
 		if (empty($container))
 		{
 			trigger_error(
-				sprintf('The second argument to %s must be a Container object, not an empty string or null.', __METHOD__),
+				sprintf(
+					'The second argument to %s must be a Container object, not an empty string or null.', __METHOD__
+				),
 				E_USER_DEPRECATED
 			);
 
@@ -129,14 +133,17 @@ abstract class Text
 		$rawText = str_replace('"_QQ_"', '\"', $rawText);
 		$rawText = str_replace('\\"', '"', $rawText);
 
-		$strings = ParseIni::parse_ini_file($rawText, false, true);
+		$strings   = ParseIni::parse_ini_file($rawText, false, true);
 		$callbacks = [$callback];
 
 		/** @deprecated 2.0 The static::$iniProcessCallbacks will be removed without replacement. Use the $callback argument. */
 		if (!empty(static::$iniProcessCallbacks))
 		{
 			trigger_error(
-				sprintf('%s::$iniProcessCallbacks is deprecated. Use the $callback argument of the %s method instead.', __CLASS__, __METHOD__),
+				sprintf(
+					'%s::$iniProcessCallbacks is deprecated. Use the $callback argument of the %s method instead.',
+					__CLASS__, __METHOD__
+				),
 				E_USER_DEPRECATED
 			);
 
@@ -185,7 +192,9 @@ abstract class Text
 		if (empty($container))
 		{
 			trigger_error(
-				sprintf('The second argument to %s must be a Container object, not an empty string or null.', __METHOD__),
+				sprintf(
+					'The second argument to %s must be a Container object, not an empty string or null.', __METHOD__
+				),
 				E_USER_DEPRECATED
 			);
 
@@ -478,26 +487,18 @@ abstract class Text
 	 * @param   boolean  $jsSafe                Ensure the output is JavaScript safe.
 	 * @param   boolean  $interpretBackSlashes  Interpret \t and \n.
 	 *
+	 * @deprecated 2.0 Use the document's lang() method instead
 	 * @return  void
+	 * @see        \Awf\Document\Document::lang
 	 */
 	public static function script($string = null, $jsSafe = false, $interpretBackSlashes = true)
 	{
-		// Translate the string.
-		$translated = self::_($string, $jsSafe, $interpretBackSlashes);
+		trigger_error(
+			sprintf('%s is deprecated. Use the document\'s lang() method instead.', __METHOD__),
+			E_USER_DEPRECATED
+		);
 
-		// Create an entry to merge into the 'akeeba.text' script option
-		$thisEntry = [
-			strtoupper($string) => $translated,
-		];
-
-		// Update Joomla.JText script options
-		try
-		{
-			Application::getInstance()->getDocument()->addScriptOptions('akeeba.text', $thisEntry, true);
-		}
-		catch (App $e)
-		{
-		}
+		Application::getInstance()->getDocument()->lang($string, $jsSafe, $interpretBackSlashes);
 	}
 
 	/**
