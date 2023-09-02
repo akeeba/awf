@@ -80,15 +80,17 @@ class Model implements ContainerAwareInterface
 	 */
 	protected $config = array();
 
-	private $hash;
+	/**
+	 * A unique prefix for this model's session data, e.g. `example.items.`
+	 *
+	 * @var   null|string
+	 */
+	private $hash = null;
 
 
 	/**
 	 * Returns a new model object. Unless overridden by the $config array, it will
 	 * try to automatically populate its state from the request variables.
-	 *
-	 * By default the new model instance is created with persistent state, unless
-	 * you pass $config['modelTemporaryInstance'] = false
 	 *
 	 * @param   string|null     $appName    The application name
 	 * @param   string|null     $modelName  The model name
@@ -215,7 +217,7 @@ class Model implements ContainerAwareInterface
 	/**
 	 * Method to get the model name
 	 *
-	 * The model name. By default parsed using the classname or it can be set
+	 * The model name. By default, parsed using the classname or it can be set
 	 * by passing a $config['name'] in the class constructor
 	 *
 	 * @return  string  The name of the model
@@ -347,7 +349,7 @@ class Model implements ContainerAwareInterface
 	{
 		if (!$this->_state_set)
 		{
-			// Protected method to auto-populate the model state.
+			// Protected method to automatically populate the model state.
 			$this->populateState();
 
 			// Set the model state set flag to true.
@@ -494,7 +496,7 @@ class Model implements ContainerAwareInterface
 	 */
 	public function savestate($newState)
 	{
-		$this->_savestate = $newState ? true : false;
+		$this->_savestate = (bool) $newState;
 
 		return $this;
 	}
@@ -510,12 +512,16 @@ class Model implements ContainerAwareInterface
 		if (is_null($this->_savestate))
 		{
 			$savestate = $this->input->getInt('savestate', -999);
+
 			if ($savestate == -999)
 			{
 				$savestate = true;
 			}
+
 			$this->savestate($savestate);
 		}
+
+		return $this;
 	}
 
 	/**
