@@ -486,7 +486,8 @@ class Controller implements ContainerAwareInterface
 
 			if (empty($name))
 			{
-				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeTempModel($modelName);
+				// Default model instances must have state management enabled
+				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName);
 			}
 			else
 			{
