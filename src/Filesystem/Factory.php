@@ -36,7 +36,15 @@ final class Factory
 	public static function getAdapter(?Container $container = null, bool $hybrid = false)
 	{
 		/** @deprecated 2.0 The container argument will become mandatory */
-		$container = $container ?? Application::getInstance()->getContainer();
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
 
 		$config = $container->appConfig;
 

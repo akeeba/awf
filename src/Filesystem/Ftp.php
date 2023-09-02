@@ -87,7 +87,17 @@ class Ftp implements FilesystemInterface, ContainerAwareInterface
 	public function __construct(array $options, ?Container $container = null)
 	{
 		/** @deprecated 2.0 The container argument will become mandatory */
-        $this->setContainer($container ?? Application::getInstance()->getContainer());
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
+
+        $this->setContainer($container);
 
 		if (isset($options['host']))
 		{
