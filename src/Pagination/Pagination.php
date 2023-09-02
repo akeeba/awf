@@ -94,7 +94,15 @@ class Pagination implements ContainerAwareInterface
 	public function __construct(?int $total, ?int $limitStart, ?int $limit, ?int $displayed = 10, $container = null)
 	{
 		/** @deprecated 2.0 You will have to provide the container in the constructor */
-		$container = $container ?? Application::getInstance()->getContainer();
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
 
 		if ($container instanceof Application)
 		{

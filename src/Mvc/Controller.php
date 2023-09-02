@@ -173,7 +173,15 @@ class Controller implements ContainerAwareInterface
 		$this->taskMap     = [];
 
 		/** @deprecated 2.0 You must provide the container */
-		$container = $container ?? Application::getInstance()->getContainer();
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
 
 		$container->eventDispatcher->trigger('onControllerBeforeConstruct', [$this, $container]);
 

@@ -39,10 +39,20 @@ class Download implements ContainerAwareInterface
      */
     private $adapterOptions = array();
 
-	public function __construct(?Container $c = null)
+	public function __construct(?Container $container = null)
 	{
 		/** @deprecated 2.0 The container argument will become mandatory */
-        $this->setContainer($c ?? Application::getInstance()->getContainer());
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
+
+        $this->setContainer($container);
 
 		// Find the best fitting adapter
 		$allAdapters = self::getFiles(__DIR__ . '/Adapter', [], ['AbstractAdapter.php', 'cacert.pem']);

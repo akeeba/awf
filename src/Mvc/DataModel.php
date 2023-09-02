@@ -143,7 +143,15 @@ class DataModel extends Model
 	public function __construct(?Container $container = null)
 	{
 		/** @deprecated 2.0 You must provide the container */
-		$container = $container ?? Application::getInstance()->getContainer();
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
 
 		// First call the parent constructor. It also populates $this->config from $container['mvc_config']
 		parent::__construct($container);

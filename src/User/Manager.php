@@ -69,9 +69,18 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 	 *
 	 * @param   Container   $container
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(?Container $container = null)
 	{
-		$container = $container ?? Application::getInstance()->getContainer();
+		/** @deprecated 2.0 Container is now mandatory */
+		if (empty($container))
+		{
+			trigger_error(
+				sprintf('The container argument is mandatory in %s', __METHOD__),
+				E_USER_DEPRECATED
+			);
+
+			$container = Application::getInstance()->getContainer();
+		}
 
 		$this->user_table = $container->appConfig->get('user_table', '#__users');
 		$this->user_class = $container->appConfig->get('user_class', '\\Awf\\User\\User');
