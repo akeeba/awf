@@ -54,7 +54,13 @@ use Awf\User\ManagerInterface as UserManagerInterface;
  *            through the Template class
  * @property  string                    $applicationNamespace  Namespace for the application classes, defaults to
  *            \\{$application_name}
+ * @property  bool                      $autoloadHelpers       Should I autoload helper classes?
+ * @property  array                     $helperList            List of helper classnames to autoload. Empty to
+ *            auto-detect.
+ * @property string                     $helperPath            Absolute path to the Helpers. NULL to assume
+ *           `src/Helpers` under the basePath.
  *
+ * @property-read  string               $constantPrefix        The prefix for the constants, default `APATH_`
  * @property-read  MVCFactory           $mvcFactory            The MVC factory
  * @property-read  Application          $application           The application instance
  * @property-read  AppConfiguration     $appConfig             The application configuration registry
@@ -75,6 +81,7 @@ class Container extends Pimple
 {
 	public function __construct(array $values = [])
 	{
+		$this->constantPrefix       = 'APATH_';
 		$this->application_name     = '';
 		$this->session_segment_name = null;
 		$this->basePath             = null;
@@ -84,12 +91,144 @@ class Container extends Pimple
 		$this->filesystemBase       = null;
 		$this->sqlPath              = null;
 		$this->mediaQueryKey        = null;
+		$this->autoloadHelpers      = true;
+		$this->helperList           = [];
+		$this->helperPath           = null;
 
 		parent::__construct($values);
 
+		// Application name. YOU SHOULD DEFINE THIS IN YOUR CONTAINER!
+		if ($this['application_name'] === null)
+		{
+			trigger_error(
+				'You must provide a custom application_name in your AWF Container\'s constructor. Currently using ‘myapp’ as a default.',
+				E_USER_WARNING
+			);
+
+			$this->application_name = 'myapp';
+		}
+
+		// Filesystem base.
+		if ($this['filesystemBase'] === null)
+		{
+			$this->filesystemBase = call_user_func(
+				function () {
+					$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
+
+					if (defined($constantName))
+					{
+						return constant($constantName);
+					}
+
+					$default = getcwd();
+
+					trigger_error(
+						sprintf(
+							'You should provide a custom filesystemBase in your AWF Container\'s constructor, or set the %sBASE constant. Currently using %s as the default.',
+							$this->constantPrefix, $default
+						),
+						E_USER_WARNING
+					);
+
+					return $default;
+				}
+			);
+		}
+
+		// Application base path.
+		if ($this['basePath'] === null)
+		{
+			$this->basePath = call_user_func(
+				function () {
+					$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
+
+					if (defined($constantName))
+					{
+						return constant($constantName) . '/' . ucfirst($this->application_name);
+					}
+
+					$default = getcwd() . '/' . ucfirst($this->application_name);
+
+					trigger_error(
+						sprintf(
+							'You must provide a custom basePath in your AWF Container\'s constructor, or set the %s_BASE constant. Currently using %s as the default.',
+							$this->constantPrefix,
+							$default
+						),
+						E_USER_WARNING
+					);
+
+					return $default;
+				}
+			);
+		}
+
+		// Templates path
+		$this->templatePath = $this->templatePath ?? call_user_func(function () {
+			$constantName = ($this->constantPrefix ?: 'APATH_') . 'THEMES';
+
+			return defined($constantName)
+				? constant($constantName)
+				: $this->filesystemBase . '/templates';
+		});
+
+		// Language files path
+		$this->languagePath = call_user_func(function () {
+			$constantName = ($this->constantPrefix ?: 'APATH_') . 'TRANSLATION';
+
+			return defined($constantName)
+				? constant($constantName)
+				: $this->filesystemBase . '/languages';
+		});
+
+		// Temporary path
+		if ($this['temporaryPath'] === null)
+		{
+			$this->temporaryPath = call_user_func(
+				function () {
+					$constantName = ($this->constantPrefix ?: 'APATH_') . 'TMP';
+
+					if (defined($constantName))
+					{
+						return constant($constantName);
+					}
+
+					if (is_dir($this->basePath . '/tmp'))
+					{
+						return $this->basePath . '/tmp';
+					}
+
+					$path = sys_get_temp_dir();
+
+					if (@is_dir($path) && @is_writable($path))
+					{
+						return $path;
+					}
+
+					trigger_error(
+						sprintf(
+							'The autodetected temporary folder %s is not writeable. Things may get weird.',
+							$path
+						),
+						E_USER_NOTICE
+					);
+
+					return $path;
+				}
+			);
+		}
+
+		// SQL path
+		$this->sqlPath = $this->sqlPath ?? call_user_func(function () {
+			$constantName = ($this->constantPrefix ?: 'APATH_') . 'ROOT';
+
+			return defined($constantName)
+				? constant($constantName)
+				: $this->filesystemBase . '/installation/sql';
+		});
+
 		// Application namespace
-		$this['applicationNamespace'] = $this['applicationNamespace']
-		                                ?? '\\' . $this->application_name;
+		$this['applicationNamespace'] = $this['applicationNamespace'] ?? '\\' . $this->application_name;
 
 		// Application service
 		if (!isset($this['application']))
