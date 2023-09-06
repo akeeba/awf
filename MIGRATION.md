@@ -100,9 +100,9 @@ to this:
 
 **Use the dateFactory instead of instantiating Date directly**. As noted, the Container now has a `dateFactory` service to create `\Awf\Date\Date` objects. Instead of `new \Awf\Date\Date($dateTime, $timeZone)` do `$container->dateFactory($dateTime, $timeZone)`. Alternatively, you can still use the Date constructor passing the container in the third argument: `new \Awf\Date\Date($dateTime, $timeZone, $container)`. However, the Date constructor is not considered to be API-stable and may change over time. We recommend using the `dateFactory` service instead.
 
-**Do not use `\Awf\Html\Html::_()`, replace with `$container->html->get()` or `$container->html->run()`**. Since the HTML helpers are no longer abstract classes with static methods you need to go through the HTML service. The `get()` method returns the result of the HTML helper, so you can output it. If you want to call an HTML helper method which returns no result, use the `run()` method instead.
+**Do not use `\Awf\Html\Html::_()`, replace with `$container->html`**. Since the HTML helpers are no longer abstract classes with static methods you need to go through the HTML service. The `get()` method returns the result of the HTML helper, so you can output it. If you want to call an HTML helper method which returns no result, use the `run()` method instead. Alternatively, and most recommended, you can replace code that looks like this `\Awf\Html\Html::_('foo.bar', $whatever)` with code that looks like this `$container->html->foo->bar($whatever)`.
 
-You can register your own HTML helper classes with `$container->html->registerHelperClass(YourHTMLHelperClass::class)`. It is recommended that you do this in your Application's initialisation.
+You can register your own HTML helper classes with `$container->html->registerHelperClass(YourHTMLHelperClass::class)`. It is recommended that you do this in your Application's initialisation, or when setting up your Container.
 
 **Do not use static method calls to the HTML helper objects**. Replace calls to static methods of the classes `\Awf\Html\Behaviour`, `\Awf\Html\Accordion`, `\Awf\Html\Grid`, `\Awf\Html\Tabs`, and `\Awf\Html\Select` with calls through the `html` service of the container. The aforementioned classes exist in AWF 1.1 as shims and will be removed in 2.0. 
 
