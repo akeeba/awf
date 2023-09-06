@@ -47,7 +47,8 @@
       ".gitattributes",
       ".gitignore",
       ".travis.yml",
-      "phpunit*"
+      "phpunit*",
+      "MIGRATION.md"
     ]
   }
 }
