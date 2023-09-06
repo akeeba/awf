@@ -10,32 +10,37 @@ namespace Awf\Container;
 use Awf\Application\Application;
 use Awf\Application\ApplicationServiceProvider;
 use Awf\Application\Configuration as AppConfiguration;
-use Awf\Database\Driver;
+use Awf\Container\Defaults\AppConfigProvider;
+use Awf\Container\Defaults\BladeProvider;
+use Awf\Container\Defaults\DatabaseProvider;
+use Awf\Container\Defaults\DateFactoryProvider;
+use Awf\Container\Defaults\DispatcherProvider;
+use Awf\Container\Defaults\EventDispatcherProvider;
+use Awf\Container\Defaults\FilesystemProvider;
+use Awf\Container\Defaults\HelperProvider;
+use Awf\Container\Defaults\HTMLHelperProvider;
+use Awf\Container\Defaults\InputProvider;
+use Awf\Container\Defaults\MailerProvider;
+use Awf\Container\Defaults\MVCFactoryProvider;
+use Awf\Container\Defaults\RouterProvider;
+use Awf\Container\Defaults\SegmentProvider;
+use Awf\Container\Defaults\SessionProvider;
+use Awf\Container\Defaults\UserManagerProvider;
 use Awf\Database\Driver as DatabaseDriver;
 use Awf\Date\Date;
 use Awf\Dispatcher\Dispatcher as AppDispatcher;
 use Awf\Event\Dispatcher as EventDispatcher;
-use Awf\Filesystem\Factory as FilesystemFactory;
 use Awf\Filesystem\FilesystemInterface as Filesystem;
 use Awf\Helper\HelperService;
-use Awf\Html\Helper\Accordion as AccordionHtmlHelper;
-use Awf\Html\Helper\Basic as BasicHtmlHelper;
-use Awf\Html\Helper\Behaviour as BehaviourHtmlHelper;
-use Awf\Html\Helper\Grid as GridHtmlHelper;
-use Awf\Html\Helper\Select as SelectHtmlHelper;
-use Awf\Html\Helper\Tabs as TabsHtmlHelper;
 use Awf\Html\HtmlService as HtmlService;
 use Awf\Input\Input;
 use Awf\Mailer\Mailer;
-use Awf\Mvc\Compiler\Blade;
 use Awf\Mvc\Compiler\Blade as BladeCompiler;
 use Awf\Mvc\Factory as MVCFactory;
 use Awf\Pimple\Pimple;
 use Awf\Router\Router;
-use Awf\Session;
 use Awf\Session\Manager as SessionManager;
 use Awf\Session\Segment as SessionSegment;
-use Awf\User\Manager as UserManager;
 use Awf\User\ManagerInterface as UserManagerInterface;
 
 /**
@@ -78,326 +83,287 @@ use Awf\User\ManagerInterface as UserManagerInterface;
  * @property-read  SessionSegment       $segment               The session segment, where values are stored
  * @property-read  SessionManager       $session               The session manager
  * @property-read  UserManagerInterface $userManager           The user manager object
+ *
+ * @method         Date  dateFactory(string $date = 'now', $tz = null)
  */
 class Container extends Pimple
 {
 	public function __construct(array $values = [])
 	{
-		$this->constantPrefix       = 'APATH_';
-		$this->application_name     = '';
-		$this->session_segment_name = null;
-		$this->basePath             = null;
-		$this->templatePath         = null;
-		$this->languagePath         = null;
-		$this->temporaryPath        = null;
-		$this->filesystemBase       = null;
-		$this->sqlPath              = null;
-		$this->mediaQueryKey        = null;
-		$this->autoloadHelpers      = true;
-		$this->helperList           = [];
-		$this->helperPath           = null;
+		$values = array_merge(
+			[
+				// Scalars
+				'constantPrefix'       => 'APATH_',
+				'application_name'     => null,
+				'applicationNamespace' => null,
+				'session_segment_name' => null,
+				'filesystemBase'       => null,
+				'basePath'             => null,
+				'templatePath'         => null,
+				'languagePath'         => null,
+				'temporaryPath'        => null,
+				'sqlPath'              => null,
+				'autoloadHelpers'      => true,
+				'helperList'           => [],
+				'helperPath'           => null,
+				'mediaQueryKey'        => null,
+				// Services (and service factories)
+				'application'          => new ApplicationServiceProvider(),
+				'mvcFactory'           => new MVCFactoryProvider(),
+				'appConfig'            => new AppConfigProvider(),
+				'blade'                => new BladeProvider(),
+				'db'                   => new DatabaseProvider(),
+				'dispatcher'           => new DispatcherProvider(),
+				'eventDispatcher'      => new EventDispatcherProvider(),
+				'fileSystem'           => new FilesystemProvider(),
+				'input'                => new InputProvider(),
+				'mailer'               => new MailerProvider(),
+				'router'               => new RouterProvider(),
+				'session'              => new SessionProvider(),
+				'segment'              => new SegmentProvider(),
+				'userManager'          => new UserManagerProvider(),
+				'dateFactory'          => new DateFactoryProvider(),
+				'html'                 => new HTMLHelperProvider(),
+				'helper'               => new HelperProvider(),
+			], $values
+		);
 
 		parent::__construct($values);
 
-		// Application name. YOU SHOULD DEFINE THIS IN YOUR CONTAINER!
-		if ($this['application_name'] === null)
-		{
-			trigger_error(
-				'You must provide a custom application_name in your AWF Container\'s constructor. Currently using ‘myapp’ as a default.',
-				E_USER_WARNING
-			);
+		// Application name.
+		$this['application_name'] = $this['application_name'] ?? call_user_func(
+			function () {
+				trigger_error(
+					'You must provide a custom application_name in your AWF Container\'s constructor. Currently using ‘myapp’ as a default.',
+					E_USER_WARNING
+				);
 
-			$this->application_name = 'myapp';
-		}
-
-		// Filesystem base.
-		if ($this['filesystemBase'] === null)
-		{
-			$this->filesystemBase = call_user_func(
-				function () {
-					$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
-
-					if (defined($constantName))
-					{
-						return constant($constantName);
-					}
-
-					$default = getcwd();
-
-					trigger_error(
-						sprintf(
-							'You should provide a custom filesystemBase in your AWF Container\'s constructor, or set the %sBASE constant. Currently using %s as the default.',
-							$this->constantPrefix, $default
-						),
-						E_USER_WARNING
-					);
-
-					return $default;
-				}
-			);
-		}
-
-		// Application base path.
-		if ($this['basePath'] === null)
-		{
-			$this->basePath = call_user_func(
-				function () {
-					$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
-
-					if (defined($constantName))
-					{
-						return constant($constantName) . '/' . ucfirst($this->application_name);
-					}
-
-					$default = getcwd() . '/' . ucfirst($this->application_name);
-
-					trigger_error(
-						sprintf(
-							'You must provide a custom basePath in your AWF Container\'s constructor, or set the %s_BASE constant. Currently using %s as the default.',
-							$this->constantPrefix,
-							$default
-						),
-						E_USER_WARNING
-					);
-
-					return $default;
-				}
-			);
-		}
-
-		// Templates path
-		$this->templatePath = $this->templatePath ?? call_user_func(function () {
-			$constantName = ($this->constantPrefix ?: 'APATH_') . 'THEMES';
-
-			return defined($constantName)
-				? constant($constantName)
-				: $this->filesystemBase . '/templates';
-		});
-
-		// Language files path
-		$this->languagePath = call_user_func(function () {
-			$constantName = ($this->constantPrefix ?: 'APATH_') . 'TRANSLATION';
-
-			return defined($constantName)
-				? constant($constantName)
-				: $this->filesystemBase . '/languages';
-		});
-
-		// Temporary path
-		if ($this['temporaryPath'] === null)
-		{
-			$this->temporaryPath = call_user_func(
-				function () {
-					$constantName = ($this->constantPrefix ?: 'APATH_') . 'TMP';
-
-					if (defined($constantName))
-					{
-						return constant($constantName);
-					}
-
-					if (is_dir($this->basePath . '/tmp'))
-					{
-						return $this->basePath . '/tmp';
-					}
-
-					$path = sys_get_temp_dir();
-
-					if (@is_dir($path) && @is_writable($path))
-					{
-						return $path;
-					}
-
-					trigger_error(
-						sprintf(
-							'The autodetected temporary folder %s is not writeable. Things may get weird.',
-							$path
-						),
-						E_USER_NOTICE
-					);
-
-					return $path;
-				}
-			);
-		}
-
-		// SQL path
-		$this->sqlPath = $this->sqlPath ?? call_user_func(function () {
-			$constantName = ($this->constantPrefix ?: 'APATH_') . 'ROOT';
-
-			return defined($constantName)
-				? constant($constantName)
-				: $this->filesystemBase . '/installation/sql';
-		});
+				return 'myapp';
+			}
+		);
 
 		// Application namespace
-		$this['applicationNamespace'] = $this['applicationNamespace'] ?? '\\' . $this->application_name;
-
-		// Application service
-		if (!isset($this['application']))
-		{
-			$this->register(new ApplicationServiceProvider());
-		}
-
-		// MVC Factory
-		if (!isset($this['mvcFactory']))
-		{
-			$this['mvcFactory'] = function (Container $c) {
-				return new MVCFactory($c);
-			};
-		}
-
-		// Application Configuration service
-		if (!isset($this['appConfig']))
-		{
-			$this['appConfig'] = function (Container $c) {
-				return new AppConfiguration($c);
-			};
-		}
-
-		// Blade view template compiler service
-		if (!isset($this['blade']))
-		{
-			$this['blade'] = function (Container $c) {
-				return new Blade($c);
-			};
-		}
-
-		// Database Driver service
-		if (!isset($this['db']))
-		{
-			$this['db'] = function (Container $c) {
-				return Driver::fromContainer($c);
-			};
-		}
-
-		// Application Dispatcher service
-		if (!isset($this['dispatcher']))
-		{
-			$this['dispatcher'] = function (Container $c) {
-				$className = $this->applicationNamespace . '\\Dispatcher';
-
-				if (!class_exists($className))
-				{
-					$className = '\\' . ucfirst($c->application_name) . '\Dispatcher';
-				}
-
-				if (!class_exists($className))
-				{
-					$className = AppDispatcher::class;
-				}
-
-				return new $className($c);
-			};
-		}
-
-		// Application Event Dispatcher service
-		if (!isset($this['eventDispatcher']))
-		{
-			$this['eventDispatcher'] = function (Container $c) {
-				return new EventDispatcher($c);
-			};
-		}
-
-		// Filesystem Abstraction Layer service
-		if (!isset($this['fileSystem']))
-		{
-			$this['fileSystem'] = function (Container $c) {
-				return FilesystemFactory::getAdapter($c, true);
-			};
-		}
-
-		// Input Access service
-		if (!isset($this['input']))
-		{
-			$this['input'] = function (Container $c) {
-				return new Input();
-			};
-		}
-
-		// Mailer Object service
-		if (!isset($this['mailer']))
-		{
-			$this['mailer'] = $this->factory(
-				function (Container $c) {
-					return new Mailer($c);
-				}
-			);
-		}
-
-		// Application Router service
-		if (!isset($this['router']))
-		{
-			$this['router'] = function (Container $c) {
-				return new Router($c);
-			};
-		}
-
-		// Session Manager service
-		if (!isset($this['session']))
-		{
-			$this['session'] = function () {
-				return new Session\Manager(
-					new Session\SegmentFactory,
-					new Session\CsrfTokenFactory(),
-					$_COOKIE
+		$this['applicationNamespace'] = $this['applicationNamespace'] ?? call_user_func(
+			function () {
+				trigger_error(
+					'You must provide a custom applicationNamespace in your AWF Container\'s constructor.',
+					E_USER_WARNING
 				);
-			};
-		}
 
-		// Application Session Segment service
-		if (!isset($this['segment']))
-		{
-			$this['segment'] = function (Container $c) {
-				if (empty($c->session_segment_name))
+				return '\\' . $this->application_name;
+			}
+		);
+
+		// Session Segment name
+		$this->session_segment_name = $this->session_segment_name ?? call_user_func(
+			function () {
+				trigger_error(
+					'You must provide a custom session_segment_name in your AWF Container\'s constructor.',
+					E_USER_WARNING
+				);
+
+				$installationId = 'default';
+
+				if (function_exists('base64_encode'))
 				{
-					$c->session_segment_name = 'Akeeba\\Awf\\' . $c->application_name;
+					$installationId = base64_encode($this->application_name);
 				}
 
-				return $c->session->newSegment($c->session_segment_name);
-			};
-		}
+				if (function_exists('md5'))
+				{
+					$installationId = md5($this->application_name);
+				}
 
-		// User Manager service
-		if (!isset($this['userManager']))
-		{
-			$this['userManager'] = function (Container $c) {
-				return new UserManager($c);
-			};
-		}
+				if (function_exists('sha1'))
+				{
+					$installationId = sha1($this->application_name);
+				}
 
-		// HTML Helper service
-		if (!isset($this['html']))
-		{
-			$this['html'] = function (Container $c) {
-				$service = new HtmlService($c);
+				return $this->application_name . '_' . $installationId;
+			}
+		);
 
-				$service->registerHelperClass(AccordionHtmlHelper::class);
-				$service->registerHelperClass(BasicHtmlHelper::class);
-				$service->registerHelperClass(BehaviourHtmlHelper::class);
-				$service->registerHelperClass(GridHtmlHelper::class);
-				$service->registerHelperClass(SelectHtmlHelper::class);
-				$service->registerHelperClass(TabsHtmlHelper::class);
+		// Filesystem base.
+		$this['filesystemBase'] = $this['filesystemBase'] ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
 
-				return $service;
-			};
-		}
+				if (defined($constantName))
+				{
+					return constant($constantName);
+				}
 
-		if (!isset($this['helper']))
-		{
-			$this['helper'] = function (Container $c) {
-				return new HelperService($c);
-			};
-		}
+				$default = getcwd();
+
+				trigger_error(
+					sprintf(
+						'You should provide a custom filesystemBase in your AWF Container\'s constructor, or set the %sBASE constant. Currently using %s as the default.',
+						$this->constantPrefix, $default
+					),
+					E_USER_WARNING
+				);
+
+				return $default;
+			}
+		);
+
+		// Application base path.
+		$this->basePath = $this->basePath ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'BASE';
+
+				if (defined($constantName))
+				{
+					return constant($constantName) . '/' . ucfirst($this->application_name);
+				}
+
+				$default = getcwd() . '/' . ucfirst($this->application_name);
+
+				trigger_error(
+					sprintf(
+						'You must provide a custom basePath in your AWF Container\'s constructor, or set the %s_BASE constant. Currently using %s as the default.',
+						$this->constantPrefix,
+						$default
+					),
+					E_USER_WARNING
+				);
+
+				return $default;
+			}
+		);
+
+		// Templates path
+		$this->templatePath = $this->templatePath ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'THEMES';
+
+				if (defined($constantName))
+				{
+					return constant($constantName);
+				}
+
+				$default = $this->filesystemBase . '/templates';
+
+				trigger_error(
+					sprintf(
+						'You must provide a custom templatePath in your AWF Container\'s constructor, or set the %s_THEMES constant. Currently using %s as the default.',
+						$this->constantPrefix,
+						$default
+					),
+					E_USER_WARNING
+				);
+
+				return $default;
+			}
+		);
+
+		// Language files path
+		$this->languagePath = $this->languagePath ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'TRANSLATION';
+
+				if (defined($constantName))
+				{
+					return constant($constantName);
+				}
+
+				$default = $this->filesystemBase . '/languages';
+
+				trigger_error(
+					sprintf(
+						'You must provide a custom languagePath in your AWF Container\'s constructor, or set the %s_TRANSLATION constant. Currently using %s as the default.',
+						$this->constantPrefix,
+						$default
+					),
+					E_USER_WARNING
+				);
+
+				return $default;
+			}
+		);
+
+		// Temporary path
+		$this->temporaryPath = $this->temporaryPath ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'TMP';
+
+				if (defined($constantName))
+				{
+					return constant($constantName);
+				}
+
+				if (is_dir($this->basePath . '/tmp'))
+				{
+					return $this->basePath . '/tmp';
+				}
+
+				$path = sys_get_temp_dir();
+
+				if (@is_dir($path) && @is_writable($path))
+				{
+					return $path;
+				}
+
+				trigger_error(
+					sprintf(
+						'The autodetected temporary folder %s is not writeable. Things may get weird.',
+						$path
+					),
+					E_USER_NOTICE
+				);
+
+				return $path;
+			}
+		);
+
+		// SQL path
+		$this->sqlPath = $this->sqlPath ?? call_user_func(
+			function () {
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'SQL';
+
+				if (defined($constantName))
+				{
+					return constant($constantName);
+				}
+
+				// We DO NOT raise a warning; the implicit default will continue to be supported.
+				$constantName = ($this->constantPrefix ?: 'APATH_') . 'ROOT';
+				$rootFolder   = defined($constantName) ? constant($constantName) : realpath($this->basePath . '/..');
+
+				return $rootFolder . '/installation/sql';
+			}
+		);
 	}
 
 	/**
-	 * @param   string                     $date
-	 * @param   string|\DateTimeZone|null  $tz
+	 * Magic method caller.
 	 *
-	 * @return  Date
+	 * Allows calling stored callables directly, as if they were methods. Useful for factories which take parameters.
+	 *
+	 * @param   string  $name       The name of the callable to execute
+	 * @param   array   $arguments  Any parameters to the callable
+	 *
+	 * @return  mixed  The return type of the callable.
+	 * @since   1.1.0
 	 */
-	public function dateFactory(string $date = 'now', $tz = null)
+	public function __call($name, $arguments)
 	{
-		return new Date($date, $tz, $this);
+		$callable = $this->offsetGet($name);
+
+		if (!is_callable($callable))
+		{
+			throw new \BadMethodCallException(
+				sprintf(
+					'Method %s::%s does not exist.',
+					__CLASS__,
+					htmlentities($name)
+				),
+				500
+			);
+		}
+
+		return call_user_func($callable, ...$arguments);
 	}
+
+
 }
