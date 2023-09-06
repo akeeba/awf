@@ -40,6 +40,8 @@ Please note that the default implementation of `application` in the Container is
 
 ### Deprecations
 
+**`\Awf\Autoloader\Autoloader` is deprecated without replacement**. We strongly recommend using AWF through [Composer](https://getcomposer.org), using Composer's [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloader to autoload your application classes.
+
 **`\Awf\Text\Text::detectLanguage` and `\Awf\Text\Text::loadLanguage` now prefer a container object to an application name**. In AWF 1.0 these methods took an `$application` argument with the name of the AWF application. In AWF 1.1 this argument is renamed to `$container` and can take either the name of the AWF application (deprecated) or a Container object. We encourage you to use the latter; in AWF 2.0 only a Container object will be accepted.
 
 Change this:
