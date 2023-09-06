@@ -20,6 +20,39 @@ The goal of version 1.1 is to deprecate magic global objects, replacing them wit
 
 **HTML Helper service**. The container now has the `html` service which replaces the static method calls to `\Awf\Html\Html`. The HTML services are no longer abstract classes with a bunch of public static methods, they are real objects implementing the `\Awf\Html\HtmlHelperInterface` interface (or, alternatively, extending from the much easier to use `\Awf\Html\AbstractHelper` abstract class).
 
+**Helper service**. In the past, you could have a number of classes with static methods, by convention under the `Helper` namespace of your application, which provided some related functionality that's not quite part of the Models. The problem with the static approach is that they _by necessity_ needed to make static calls to Model, Controller, View, HTML, Application, etc. Since we're moving away from magic global objects, the helpers need a container. Therefore, we're moving to non-static helpers which implement the `\Awf\Helper\HelperInterface` and the `\Awf\Container\ContainerAwareInterface`. The `helper` service allows you to access them. 
+
+The simplest way is by replacing static calls in the form of `\Myapp\Helper\Foo::bar($something)` with calls in the form of `$container->helper->foo->bar($something)`. Alternatively, you can do `$container->helper->get('foo')->bar($something)` (which lets you more obviously change the helper you call using a PHP variable) and `$container->helper->run('foo.bar', $something)` (which lets you more obviously change the helper, method, and parameters passed). The first form is what we recommend in the vast majority of cases.
+
+As an aside, here's how you can dynamically change the helper, method, and argument list for a helper call:
+```php
+// Dynamic helper definition
+$helper = 'foo';
+$container->helper->{$helper}->bar($something);
+// Dynamic helper and method definition
+$helper = 'foo';
+$method = 'bar';
+$container->helper->{$helper}->{$method}($something);
+// Dynamic helper, method, and arguments definition
+$helper = 'foo';
+$method = 'bar';
+$arguments = [$something];
+$container->helper->{$helper}->{$method}(...$arguments);
+```
+All forms are fully compatible with PHP 8 named argument method calls:
+```php
+// For a helper method with signature `public function baz(string $something = 'example', int $count = 1)`
+$container->helper->foo->baz(count: 10);
+$container->helper->get('foo')->baz(count: 10);
+$container->helper->run('foo.baz', count: 10);
+
+// Let's go super fancy, combining PHP 8 calling conventions AND dynamic helper and method definition
+$helper = 'foo';
+$method = 'baz';
+$arguments = ['count' => 10];
+$container->helper->run(sprintf('%s.%s', $helper, $method), ...$arguments);
+```
+
 ### Backwards incompatible changes
 
 **Your Application object must be registered with the `\Awf\Application\Application` class**. Since the application object is now provided by the container itself you need to register it with the `\Awf\Application\Application` class, so it can be used with its now-deprecated Singleton factory (the `getInstance()` method).
@@ -72,3 +105,55 @@ to this:
 You can register your own HTML helper classes with `$container->html->registerHelperClass(YourHTMLHelperClass::class)`. It is recommended that you do this in your Application's initialisation.
 
 **Do not use static method calls to the HTML helper objects**. Replace calls to static methods of the classes `\Awf\Html\Behaviour`, `\Awf\Html\Accordion`, `\Awf\Html\Grid`, `\Awf\Html\Tabs`, and `\Awf\Html\Select` with calls through the `html` service of the container. The aforementioned classes exist in AWF 1.1 as shims and will be removed in 2.0. 
+
+### Tips and Tricks
+
+With AWF 1.1 the One Object You Need to get things done has shifted from the Application object to the Container object.
+
+If you had an application architecture where you could always get a reference to your application object, your migration is pretty straightforward. For example, let's say you had a global variable `$myAppObject`. You could now do:
+
+```php
+global $myAppObject;
+$container = $myAppObject->getContainer();
+// You can now call any container service
+```
+
+While this is convenient, it's not a great way to go about it if you are planning on doing unit tests.
+
+Ideally, you will need to always pass the container around, or objects which implement the `\Awf\Container\ContainerAwareInterface`. This way, it becomes very easy to mock whatever you need for your unit tests.
+
+If you cannot move away from static calls right away, you can work around that problem by implementing a Container Factory for your application, a small class like this:
+
+```php
+
+namespace Myapp;
+
+use Awf\Container\Container;
+
+abstract class Factory
+{
+    private static $myContainer = null;
+
+    public static function getContainer(): Container
+    {
+        self::$myContainer = self::$myContainer ?? new \Myapp\Container();
+        
+        return self::$myContainer;
+    }
+    
+    public static function setContainer(Container $container): void
+    {
+        self::$myContainer = $container;
+    }
+}
+```
+
+You can use `setContainer()` to set your mock container (or container with mock objects, whatever you need) during your Unit Tests. Again, this should be treated as an imperfect workaround until you can explicitly inject your container everywhere.
+
+### Why pass a container instead of individual services?
+
+Yes, in the purest form of Dependency Injection we should be passing around individual services instead of a service provider (what our Container really is). 
+
+Frankly, in most practical uses cases of the fairly limited scope applications we expect to use AWF for this is just tedious, and does not make all that much difference in Unit Tests. If you follow through the thought process to solve this problem you will end up either with Laravel or Symfony, depending on which of two opposing directions your thought process leads you. Both are awesome, but they are too cumbersome for making fairly small, limited scope applications, which need a stable API for many years to come. Neither is a good choice for integrating with a CMS, like WordPress. So, clearly, trying to reinvent the wheel is neither productive, nor desirable.
+
+Designing AWF we preferred to err on the site of adding a minimal amount of pain setting up the more complex Unit Tests to greatly reduce the pain implementing an application, while being better suited to simple, limited-scope, mass-distributed applications which need an API stability for a decade at a time.
