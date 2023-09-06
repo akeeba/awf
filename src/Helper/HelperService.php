@@ -97,7 +97,7 @@ class HelperService implements ContainerAwareInterface
 			$o->setContainer($this->getContainer());
 		}
 
-		$this->registerHelper($o->getName(), $o);
+		$this->helpers[$o->getName()] = $o;
 	}
 
 	/**
