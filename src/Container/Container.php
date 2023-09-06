@@ -24,7 +24,7 @@ use Awf\Html\Helper\Behaviour as BehaviourHtmlHelper;
 use Awf\Html\Helper\Grid as GridHtmlHelper;
 use Awf\Html\Helper\Select as SelectHtmlHelper;
 use Awf\Html\Helper\Tabs as TabsHtmlHelper;
-use Awf\Html\Service as HtmlService;
+use Awf\Html\HtmlService as HtmlService;
 use Awf\Input\Input;
 use Awf\Mailer\Mailer;
 use Awf\Mvc\Compiler\Blade;
