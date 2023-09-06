@@ -12,13 +12,14 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use BadMethodCallException;
 use InvalidArgumentException;
+use OutOfRangeException;
 
 /**
  * HTML Helper Service.
  *
  * @since 1.1.0
  */
-class Service implements ContainerAwareInterface
+class HtmlService implements ContainerAwareInterface
 {
 	use ContainerAwareTrait;
 
@@ -330,7 +331,7 @@ class Service implements ContainerAwareInterface
 	 * @return  $this  Self, for chaining
 	 * @since   1.1.0
 	 */
-	public function setFormatOptions(array $formatOptions): Service
+	public function setFormatOptions(array $formatOptions): HtmlService
 	{
 		foreach ($formatOptions as $k => $v)
 		{
@@ -344,4 +345,29 @@ class Service implements ContainerAwareInterface
 
 		return $this;
 	}
+
+	/**
+	 * Get a helper object
+	 *
+	 * @param   string  $name  The name of the helper object to get
+	 *
+	 * @return  mixed
+	 * @throws  OutOfRangeException  When asked for a helper which does not exist
+	 */
+	public function __get($name)
+	{
+		if (!$this->hasHelper($name))
+		{
+			throw new OutOfRangeException(
+				sprintf(
+					'Unknown helper ‘%s’',
+					htmlentities($name)
+				),
+				500
+			);
+		}
+
+		return $this->helpers[$name];
+	}
+
 }
