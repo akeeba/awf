@@ -11,26 +11,34 @@ namespace Awf\Autoloader;
  * A PSR-4 class autoloader. This is a modified version of Composer's ClassLoader class
  *
  * @codeCoverageIgnore
+ * @deprecated 2.0 No replacement. Use Composer's autoloader instead.
  */
 class Autoloader
 {
-	/** @var   array  Lengths of PSR-4 prefixes */
-	private $prefixLengths = array();
-
-	/** @var   array  Prefix to directory map */
-	private $prefixDirs = array();
-
-	/** @var   array  Fall-back directories */
-	private $fallbackDirs = array();
-
 	/** @var   Autoloader  The static instance of this autoloader */
 	private static $instance;
 
+	/** @var   array  Lengths of PSR-4 prefixes */
+	private $prefixLengths = [];
+
+	/** @var   array  Prefix to directory map */
+	private $prefixDirs = [];
+
+	/** @var   array  Fall-back directories */
+	private $fallbackDirs = [];
+
 	/**
+	 * @deprecated 2.0
 	 * @return Autoloader
+	 *
 	 */
 	public static function getInstance()
 	{
+		trigger_error(
+			sprintf('%s is deprecated. Use the PSR-4 autoloader provided by Composer instead.', __CLASS__),
+			E_USER_DEPRECATED
+		);
+
 		if (!is_object(self::$instance))
 		{
 			self::$instance = new Autoloader();
@@ -42,6 +50,7 @@ class Autoloader
 	/**
 	 * Returns the prefix to directory map
 	 *
+	 * @deprecated 2.0
 	 * @return  array
 	 */
 	public function getPrefixes()
@@ -50,8 +59,9 @@ class Autoloader
 	}
 
 	/**
-	 * Returns the list of fall=back directories
+	 * Returns the list of fall-back directories
 	 *
+	 * @deprecated 2.0
 	 * @return  array
 	 */
 	public function getFallbackDirs()
@@ -67,6 +77,7 @@ class Autoloader
 	 * @param   array|string  $paths    The PSR-0 base directories
 	 * @param   boolean       $prepend  Whether to prefix the directories
 	 *
+	 * @deprecated 2.0
 	 * @return  $this for chaining
 	 *
 	 * @throws  \InvalidArgumentException  When the prefix is invalid
@@ -79,7 +90,7 @@ class Autoloader
 			if ($prepend)
 			{
 				$this->fallbackDirs = array_merge(
-					(array)$paths,
+					(array) $paths,
 					$this->fallbackDirs
 				);
 			}
@@ -87,7 +98,7 @@ class Autoloader
 			{
 				$this->fallbackDirs = array_merge(
 					$this->fallbackDirs,
-					(array)$paths
+					(array) $paths
 				);
 			}
 		}
@@ -100,13 +111,13 @@ class Autoloader
 				throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
 			}
 			$this->prefixLengths[$prefix[0]][$prefix] = $length;
-			$this->prefixDirs[$prefix] = (array)$paths;
+			$this->prefixDirs[$prefix]                = (array) $paths;
 		}
 		elseif ($prepend)
 		{
 			// Prepend directories for an already registered namespace.
 			$this->prefixDirs[$prefix] = array_merge(
-				(array)$paths,
+				(array) $paths,
 				$this->prefixDirs[$prefix]
 			);
 		}
@@ -115,7 +126,7 @@ class Autoloader
 			// Append directories for an already registered namespace.
 			$this->prefixDirs[$prefix] = array_merge(
 				$this->prefixDirs[$prefix],
-				(array)$paths
+				(array) $paths
 			);
 		}
 
@@ -129,6 +140,7 @@ class Autoloader
 	 * @param   string        $prefix  The prefix/namespace, with trailing '\\'
 	 * @param   array|string  $paths   The PSR-4 base directories
 	 *
+	 * @deprecated 2.0
 	 * @return  void
 	 *
 	 * @throws  \InvalidArgumentException  When the prefix is invalid
@@ -137,7 +149,7 @@ class Autoloader
 	{
 		if (!$prefix)
 		{
-			$this->fallbackDirs = (array)$paths;
+			$this->fallbackDirs = (array) $paths;
 		}
 		else
 		{
@@ -147,7 +159,7 @@ class Autoloader
 				throw new \InvalidArgumentException("A non-empty PSR-4 prefix must end with a namespace separator.");
 			}
 			$this->prefixLengths[$prefix[0]][$prefix] = $length;
-			$this->prefixDirs[$prefix] = (array)$paths;
+			$this->prefixDirs[$prefix]                = (array) $paths;
 		}
 	}
 
@@ -156,27 +168,31 @@ class Autoloader
 	 *
 	 * @param   boolean  $prepend  Whether to prepend the autoloader or not
 	 *
+	 * @deprecated 2.0
 	 * @return  void
 	 */
 	public function register($prepend = false)
 	{
-		spl_autoload_register(array($this, 'loadClass'), true, $prepend);
+		spl_autoload_register([$this, 'loadClass'], true, $prepend);
 	}
 
 	/**
 	 * Unregisters this instance as an autoloader.
 	 *
+	 * @deprecated 2.0
 	 * @return  void
 	 */
 	public function unregister()
 	{
-		spl_autoload_unregister(array($this, 'loadClass'));
+		spl_autoload_unregister([$this, 'loadClass']);
 	}
 
 	/**
 	 * Loads the given class or interface.
 	 *
 	 * @param   string  $class  The name of the class
+	 *
+	 * @deprecated 2.0
 	 *
 	 * @return  boolean|null True if loaded, null otherwise
 	 */
@@ -188,12 +204,16 @@ class Autoloader
 
 			return true;
 		}
+
+		return false;
 	}
 
 	/**
 	 * Finds the path to the file where the class is defined.
 	 *
 	 * @param   string  $class  The name of the class
+	 *
+	 * @deprecated 2.0
 	 *
 	 * @return  string|false  The path if found, false otherwise
 	 */
@@ -235,8 +255,14 @@ class Autoloader
 				return $file;
 			}
 		}
+
+		return false;
 	}
 }
 
-Autoloader::getInstance()->addMap('Awf\\', array(realpath(__DIR__ . '/..')));
-Autoloader::getInstance()->register();
+call_user_func(function() {
+	$autoloader = Autoloader::getInstance();
+	$autoloader->addMap('Awf\\', [realpath(__DIR__ . '/..')]);
+	$autoloader->register();
+});
+
