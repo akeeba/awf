@@ -6,7 +6,9 @@ The goal of version 1.1 is to deprecate magic global objects, replacing them wit
 
 ### New features
 
-**PHP E_USER_DEPRECATED error messages for deprecated behaviours**. Whenever your code is using a behaviour deprecated in AWF 1.1 it will raise a PHP error with the E_USER_DEPRECATED error level, i.e. it won't stop your programme's execution. Depending on your PHP settings it may be output to the browser / standard output, and/or get logged in the PHP or Apache error log. We recommend logging PHP errors and inspecting these logs to discover any deprecated behaviours in your code you may have missed in the course of migrating it to AWF 1.1.  
+**PHP E_USER_DEPRECATED error messages for deprecated behaviours**. Whenever your code is using a behaviour deprecated in AWF 1.1 it will raise a PHP error with the E_USER_DEPRECATED error level, i.e. it won't stop your programme's execution. Depending on your PHP settings it may be output to the browser / standard output, and/or get logged in the PHP or Apache error log. We recommend logging PHP errors and inspecting these logs to discover any deprecated behaviours in your code you may have missed in the course of migrating it to AWF 1.1.
+
+**`constantPrefix` variable in the Container**. In the past, all paths could fall back to a number of constants with the `APATH_` prefix. Now, you can configure the prefix of these constants. The default is still `APATH_` for compatibility purposes. We recommend using a prefix specific to your application, e.g. `MYAPP_PATH_`. 
 
 **Introduction of `\Awf\Container\ContainerAwareInterface` and `\Awf\Container\ContainerAwareTrait`**. Objects which need to use the Container should implement the `\Awf\Container\ContainerAwareInterface`. When writing code inside classes which implement the `\Awf\Container\ContainerAwareInterface` use `$this->getContainer()` instead of `$this->container`.
 
@@ -36,7 +38,11 @@ if (method_exists(\Awf\Application\Application::class, 'setInstance'))
 }
 ```
 
-Please note that the default implementation of `application` in the Container is through the new `\Awf\Application\ApplicationServiceProvider` which does that automatically. However, if you instantiate the application object yourself, overriding the default service, you will need to do the above manually. In this case, and this case only, if you do not apply the aforementioned workaround your application will break when using the Text, Model, View, Controller classes' static methods, and when instantiating Date.
+Please note that the default implementation of `application` in the Container is through the new `\Awf\Application\ApplicationServiceProvider` which does that automatically. The previous recommendation was to set up the `application_name` in the Container and let AWF handle the application object instantiation. If you follow this recommendation you will not experience any backwards incompatible change. 
+
+However, if you instantiate the application object yourself, overriding the default service, or if your application object defines a different application name than what you have in the container, then and only then will you need to apply the aforementioned workaround manually. In this case, and this case only, if you do not apply the aforementioned workaround your application will break when using the Text, Model, View, Controller classes' static methods, and when instantiating Date.
+
+**Path auto-discovery now takes place in the Container, not `\Awf\Application\Application`**. As a result, you need to set up at the very least the `application_name` key in your container's constructor. This was a strong recommendation in 1.0, but it's enforced in 1.1.
 
 ### Deprecations
 

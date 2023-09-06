@@ -69,46 +69,17 @@ abstract class Application implements ContainerAwareInterface
 
 		$this->name = $container->application_name;
 
-		// Set up the filesystem path
-		if (empty($container['filesystemBase']))
+		// Self-register the application with the static helper
+		if (method_exists($this, 'setInstance'))
 		{
-			$container->filesystemBase = APATH_BASE;
-		}
-
-		// Set up the base path
-		if (empty($container['basePath']))
-		{
-			$container->basePath = (defined('APATH_BASE') ? APATH_BASE : $container->filesystemBase) . '/' . ucfirst($this->name);
-		}
-
-		// Set up the template path
-		if (empty($container['templatePath']))
-		{
-			$container->templatePath = defined('APATH_THEMES') ? APATH_THEMES : $container->filesystemBase . '/templates';
-		}
-
-		// Set up the temporary path
-		if (empty($container['temporaryPath']))
-		{
-			$container->temporaryPath = defined('APATH_TMP') ? APATH_TMP : $container->filesystemBase . '/tmp';
-		}
-
-		// Set up the language path
-		if (empty($container['languagePath']))
-		{
-			$container->languagePath = defined('APATH_TRANSLATION') ? APATH_TRANSLATION : $container->filesystemBase . '/languages';
-		}
-
-		// Set up the language path
-		if (empty($container['sqlPath']))
-		{
-			$container->sqlPath = defined('APATH_ROOT') ? (APATH_ROOT . '/installation/sql') : $container->filesystemBase . '/installation/sql';
+			self::setInstance($this->name, $this);
 		}
 
 		// Start the session
 		$this->container->session->start();
 
 		// Forcibly create the session segment
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		$segment = $this->container->segment;
 
 		// Set up the template
@@ -476,7 +447,7 @@ abstract class Application implements ContainerAwareInterface
 	}
 
 	/**
-	 * Sets the template name. It must be a directory inside APATH_THEMES.
+	 * Sets the template name. It must be a directory inside the configured templatePath.
 	 *
 	 * @param   string $template The template name
 	 *
