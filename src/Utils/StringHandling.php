@@ -50,7 +50,7 @@ abstract class StringHandling
 	 */
 	public static function toASCII($value)
 	{
-		$string = htmlentities(Utf8::utf8_decode($value), null, 'ISO-8859-1');
+		$string = htmlentities(Utf8::utf8_decode($value), ENT_QUOTES, 'ISO-8859-1');
 		$string = preg_replace(
 			array('/&szlig;/', '/&(..)lig;/', '/&([aouAOU])uml;/', '/&(.)[^;]*;/'), array('ss', "$1", "$1" . 'e', "$1"), $string
 		);
