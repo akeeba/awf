@@ -338,11 +338,41 @@ class DataModel extends Model
 		foreach ($this->knownFields as $fieldName => $information)
 		{
 			// Initialize only the null or not yet set records
-			if (!isset($this->recordData[$fieldName]))
+			if (isset($this->recordData[$fieldName]))
 			{
-				$this->recordData[$fieldName] = $information->Default;
+				continue;
 			}
+
+			$this->recordData[$fieldName] = $this->getDefaultValueForField($fieldName);
 		}
+	}
+
+	protected function getDefaultValueForField($fieldName)
+	{
+		if (!array_key_exists($fieldName, $this->knownFields))
+		{
+			return null;
+		}
+
+		$information = $this->knownFields[$fieldName];
+		$type        = strtolower($information->Type ?? 'text');
+
+		if (!isset($information->Default))
+		{
+			return null;
+		}
+
+		$typeParts = explode(' ', $type);
+
+		if (
+			in_array(strtolower($information->Default ?? ''), ['current_timestamp', 'now', 'current_timestamp()', 'now()'])
+			&& (in_array('datetime', $typeParts) || in_array('date', $typeParts) || in_array('timestamp', $typeParts))
+		)
+		{
+			return (new Date())->toSql();
+		}
+
+		return $information->Default;
 	}
 
 	/**
@@ -1819,12 +1849,12 @@ class DataModel extends Model
 		{
 			if ($useDefaults)
 			{
-				$this->recordData[$fieldName] = $information->Default;
+				$this->recordData[$fieldName] = $this->getDefaultValueForField($fieldName);
+
+				continue;
 			}
-			else
-			{
-				$this->recordData[$fieldName] = null;
-			}
+
+			$this->recordData[$fieldName] = null;
 		}
 
 		if ($resetRelations)
