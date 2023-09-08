@@ -38,7 +38,7 @@ abstract class Driver implements DatabaseInterface
 	public $name;
 
 	/**
-	 * @var    resource  The database connection resource.
+	 * @var    \PDO  The database connection resource.
 	 */
 	protected $connection;
 
