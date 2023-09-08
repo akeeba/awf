@@ -912,7 +912,14 @@ abstract class Pdo extends Driver
 
 		if (!$toSavepoint || $this->transactionDepth == 1)
 		{
-			$this->connection->commit();
+			try
+			{
+				$this->connection->commit();
+			}
+			catch (\PDOException $e)
+			{
+				// There was no active transaction. Oops, we're out of sync. Ignore the exception and decrease the counter.
+			}
 		}
 
 		$this->transactionDepth--;
@@ -934,7 +941,14 @@ abstract class Pdo extends Driver
 
 		if (!$toSavepoint || $this->transactionDepth == 1)
 		{
-			$this->connection->rollBack();
+			try
+			{
+				$this->connection->rollBack();
+			}
+			catch (\PDOException $e)
+			{
+				// There was no active transaction. Oops, we're out of sync. Ignore the exception and decrease the counter.
+			}
 		}
 
 		$this->transactionDepth--;
@@ -956,7 +970,14 @@ abstract class Pdo extends Driver
 
 		if (!$asSavepoint || !$this->transactionDepth)
 		{
-			$this->connection->beginTransaction();
+			try
+			{
+				$this->connection->beginTransaction();
+			}
+			catch (\PDOException $e)
+			{
+				// A transaction is already open. I can, therefore, ignore the exception and increase the counter.
+			}
 		}
 
 		$this->transactionDepth++;
