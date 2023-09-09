@@ -60,17 +60,17 @@ class Select extends AbstractHelper
 	/**
 	 * Generates a yes/no radio list.
 	 *
-	 * @param   string            $name      The value of the HTML name attribute
-	 * @param   array             $attribs   Additional HTML attributes for the <select> tag
-	 * @param   string|null       $selected  The key that is selected
-	 * @param   string            $yes       Language key for Yes
-	 * @param   string            $no        Language key for no
-	 * @param   bool|null|string  $id        The id for the field
+	 * @param   string             $name      The value of the HTML name attribute
+	 * @param   array              $attribs   Additional HTML attributes for the <select> tag
+	 * @param   string|null|array  $selected  The key that is selected
+	 * @param   string             $yes       Language key for Yes
+	 * @param   string             $no        Language key for no
+	 * @param   bool|null|string   $id        The id for the field
 	 *
 	 * @return  string  HTML for the radio list
 	 */
 	public function booleanList(
-		string $name, array $attribs = [], ?string $selected = null, string $yes = 'AWF_YES', string $no = 'AWF_NO',
+		string $name, array $attribs = [], $selected = null, string $yes = 'AWF_YES', string $no = 'AWF_NO',
 		$id = false
 	): string
 	{
@@ -82,31 +82,31 @@ class Select extends AbstractHelper
 	/**
 	 * Generates an HTML selection list.
 	 *
-	 * @param   array             $data       An array of objects, arrays, or scalars.
-	 * @param   string            $name       The value of the HTML name attribute.
-	 * @param   mixed             $attribs    Additional HTML attributes for the <select> tag. This
-	 *                                        can be an array of attributes, or an array of options. Treated as options
-	 *                                        if it is the last argument passed. Valid options are:
-	 *                                        Format options,
-	 *                                        Selection options, see {@see Select::options()}.
-	 *                                        list.attr, string|array: Additional attributes for the select
-	 *                                        element.
-	 *                                        id, string: Value to use as the select element id attribute.
-	 *                                        Defaults to the same as the name.
-	 *                                        list.select, string|array: Identifies one or more option elements
-	 *                                        to be selected, based on the option key values.
-	 * @param   string            $optKey     The name of the object variable for the option value. If
-	 *                                        set to null, the index of the value array is used.
-	 * @param   string            $optText    The name of the object variable for the option text.
-	 * @param   null|string       $selected   The key that is selected (accepts an array or a string).
-	 * @param   bool|null|string  $idTag      Value of the field id or null by default
-	 * @param   boolean           $translate  True to translate
+	 * @param   array              $data       An array of objects, arrays, or scalars.
+	 * @param   string             $name       The value of the HTML name attribute.
+	 * @param   mixed              $attribs    Additional HTML attributes for the <select> tag. This
+	 *                                         can be an array of attributes, or an array of options. Treated as options
+	 *                                         if it is the last argument passed. Valid options are:
+	 *                                         Format options,
+	 *                                         Selection options, see {@see Select::options()}.
+	 *                                         list.attr, string|array: Additional attributes for the select
+	 *                                         element.
+	 *                                         id, string: Value to use as the select element id attribute.
+	 *                                         Defaults to the same as the name.
+	 *                                         list.select, string|array: Identifies one or more option elements
+	 *                                         to be selected, based on the option key values.
+	 * @param   string             $optKey     The name of the object variable for the option value. If
+	 *                                         set to null, the index of the value array is used.
+	 * @param   string             $optText    The name of the object variable for the option text.
+	 * @param   null|string|array  $selected   The key that is selected (accepts an array or a string).
+	 * @param   bool|null|string   $idTag      Value of the field id or null by default
+	 * @param   boolean            $translate  True to translate
 	 *
 	 * @return  string  HTML for the select list.
 	 */
 	public function genericList(
 		array $data, string $name, ?array $attribs = null, string $optKey = 'value', string $optText = 'text',
-		?string $selected = null, $idTag = false, bool $translate = false
+		$selected = null, $idTag = false, bool $translate = false
 	): string
 	{
 		// Set default options
@@ -352,20 +352,20 @@ class Select extends AbstractHelper
 	/**
 	 * Generates a selection list of integers.
 	 *
-	 * @param   integer      $start     The start integer
-	 * @param   integer      $end       The end integer
-	 * @param   integer      $inc       The increment
-	 * @param   string       $name      The value of the HTML name attribute
-	 * @param   array|null   $attribs   Additional HTML attributes for the <select> tag, an array of
-	 *                                  attributes, or an array of options. Treated as options if it is the last
-	 *                                  argument passed.
-	 * @param   string|null  $selected  The key that is selected
-	 * @param   string       $format    The printf format to be applied to the number
+	 * @param   integer            $start     The start integer
+	 * @param   integer            $end       The end integer
+	 * @param   integer            $inc       The increment
+	 * @param   string             $name      The value of the HTML name attribute
+	 * @param   array|null         $attribs   Additional HTML attributes for the <select> tag, an array of
+	 *                                        attributes, or an array of options. Treated as options if it is the last
+	 *                                        argument passed.
+	 * @param   string|null|array  $selected  The key that is selected
+	 * @param   string             $format    The printf format to be applied to the number
 	 *
 	 * @return  string   HTML for the select list
 	 */
 	public function integerList(
-		int $start, int $end, int $inc, string $name, ?array $attribs = null, ?string $selected = null,
+		int $start, int $end, int $inc, string $name, ?array $attribs = null, $selected = null,
 		string $format = ''
 	): string
 	{
@@ -503,42 +503,43 @@ class Select extends AbstractHelper
 	 * Generates the option tags for an HTML select list (with no select tag
 	 * surrounding the options).
 	 *
-	 * @param   array         $arr        An array of objects, arrays, or values.
-	 * @param   string|array  $optKey     If a string, this is the name of the object variable for
-	 *                                    the option value. If null, the index of the array of objects is used. If
-	 *                                    an array, this is a set of options, as key/value pairs. Valid options are:
-	 *                                    -Format options,
-	 *                                    -list.select: either the value of one selected option or an array
-	 *                                    of selected options. Default: none.
-	 *                                    -list.translate: Boolean. If set, text and labels are translated via
-	 *                                    Text::_(). Default is false.
-	 *                                    -option.id: The property in each option array to use as the
-	 *                                    selection id attribute. Defaults to none.
-	 *                                    -option.key: The property in each option array to use as the
-	 *                                    selection value. Defaults to "value". If set to null, the index of the
-	 *                                    option array is used.
-	 *                                    -option.label: The property in each option array to use as the
-	 *                                    selection label attribute. Defaults to null (none).
-	 *                                    -option.text: The property in each option array to use as the
-	 *                                    displayed text. Defaults to "text". If set to null, the option array is
-	 *                                    assumed to be a list of displayable scalars.
-	 *                                    -option.attr: The property in each option array to use for
-	 *                                    additional selection attributes. Defaults to none.
-	 *                                    -option.disable: The property that will hold the disabled state.
-	 *                                    Defaults to "disable".
-	 *                                    -option.key: The property that will hold the selection value.
-	 *                                    Defaults to "value".
-	 *                                    -option.text: The property that will hold the the displayed text.
-	 *                                    Defaults to "text". If set to null, the option array is assumed to be a
-	 *                                    list of displayable scalars.
-	 * @param   string        $optText    The name of the object variable for the option text.
-	 * @param   string|array  $selected   The key that is selected (accepts an array or a string)
-	 * @param   boolean       $translate  Translate the option values.
+	 * @param   array              $arr        An array of objects, arrays, or values.
+	 * @param   string|array       $optKey     If a string, this is the name of the object variable for
+	 *                                         the option value. If null, the index of the array of objects is used. If
+	 *                                         an array, this is a set of options, as key/value pairs. Valid options
+	 *                                         are:
+	 *                                         -Format options,
+	 *                                         -list.select: either the value of one selected option or an array
+	 *                                         of selected options. Default: none.
+	 *                                         -list.translate: Boolean. If set, text and labels are translated via
+	 *                                         Text::_(). Default is false.
+	 *                                         -option.id: The property in each option array to use as the
+	 *                                         selection id attribute. Defaults to none.
+	 *                                         -option.key: The property in each option array to use as the
+	 *                                         selection value. Defaults to "value". If set to null, the index of the
+	 *                                         option array is used.
+	 *                                         -option.label: The property in each option array to use as the
+	 *                                         selection label attribute. Defaults to null (none).
+	 *                                         -option.text: The property in each option array to use as the
+	 *                                         displayed text. Defaults to "text". If set to null, the option array is
+	 *                                         assumed to be a list of displayable scalars.
+	 *                                         -option.attr: The property in each option array to use for
+	 *                                         additional selection attributes. Defaults to none.
+	 *                                         -option.disable: The property that will hold the disabled state.
+	 *                                         Defaults to "disable".
+	 *                                         -option.key: The property that will hold the selection value.
+	 *                                         Defaults to "value".
+	 *                                         -option.text: The property that will hold the the displayed text.
+	 *                                         Defaults to "text". If set to null, the option array is assumed to be a
+	 *                                         list of displayable scalars.
+	 * @param   string             $optText    The name of the object variable for the option text.
+	 * @param   string|array|null  $selected   The key that is selected (accepts an array or a string)
+	 * @param   boolean            $translate  Translate the option values.
 	 *
 	 * @return  string  HTML for the select list
 	 */
 	public function options(
-		array $arr, $optKey = 'value', string $optText = 'text', ?string $selected = null, bool $translate = false
+		array $arr, $optKey = 'value', string $optText = 'text', $selected = null, bool $translate = false
 	): string
 	{
 		$options = array_merge(
@@ -710,23 +711,23 @@ class Select extends AbstractHelper
 	/**
 	 * Generates an HTML radio list.
 	 *
-	 * @param   array             $data       An array of objects
-	 * @param   string            $name       The value of the HTML name attribute
-	 * @param   array|null        $attribs    Additional HTML attributes for the <select> tag, or the following
-	 *                                        - inline: boolean Create the radio list as inline elements
-	 *                                        - radioType: radio|checkbox Use radio buttons (radio) or checkboxes
-	 *                                        (checkbox)
-	 * @param   string            $optKey     The key that is selected
-	 * @param   string            $optText    The name of the object variable for the option value
-	 * @param   string|null       $selected   The name of the object variable for the option text
-	 * @param   bool|null|string  $idTag      Value of the field id or null by default
-	 * @param   boolean           $translate  True if options will be translated
+	 * @param   array              $data       An array of objects
+	 * @param   string             $name       The value of the HTML name attribute
+	 * @param   array|null         $attribs    Additional HTML attributes for the <select> tag, or the following
+	 *                                         - inline: boolean Create the radio list as inline elements
+	 *                                         - radioType: radio|checkbox Use radio buttons (radio) or checkboxes
+	 *                                         (checkbox)
+	 * @param   string             $optKey     The key that is selected
+	 * @param   string             $optText    The name of the object variable for the option value
+	 * @param   string|null|array  $selected   The name of the object variable for the option text
+	 * @param   bool|null|string   $idTag      Value of the field id or null by default
+	 * @param   boolean            $translate  True if options will be translated
 	 *
 	 * @return  string  HTML for the select list
 	 */
 	public function radioList(
 		array $data, string $name, array $attribs = null, string $optKey = 'value', string $optText = 'text',
-		?string $selected = null, $idTag = false, bool $translate = false
+		$selected = null, $idTag = false, bool $translate = false
 	): string
 	{
 		reset($data);
