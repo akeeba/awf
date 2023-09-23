@@ -51,11 +51,11 @@ class Grid extends AbstractHelper
 	 * @return  string
 	 */
 	public function sort(
-		string $title, string $order, string $direction = 'asc', ?string $selected = '', string $task = null,
+		string $title, string $order, ?string $direction = 'asc', ?string $selected = '', string $task = null,
 		string $new_direction = 'asc', string $tip = '', string $orderingJs = ''
 	)
 	{
-		$direction = strtolower($direction);
+		$direction = strtolower($direction ?? '') ?: 'asc';
 
 		$icon  = ['caret-up', 'caret-down'];
 		$index = (int) ($direction == 'desc');
