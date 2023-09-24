@@ -5,6 +5,8 @@
  * @license   GNU GPL version 3 or later
  */
 
+/** @noinspection PhpUnused */
+
 namespace Awf\Mvc\Compiler;
 
 use Awf\Container\Container;
@@ -14,6 +16,11 @@ use Awf\Text\Text;
 
 require_once __DIR__ . '/../../Utils/helpers.php';
 
+/**
+ * Blade templates compiler into regular PHP code
+ *
+ * @since        1.0.0
+ */
 class Blade implements CompilerInterface, ContainerAwareInterface
 {
 	use ContainerAwareTrait;
@@ -33,11 +40,11 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected $fileExtension = 'blade.php';
 
 	/**
-	 * All of the registered compiler extensions.
+	 * All the registered compiler extensions.
 	 *
 	 * @var array
 	 */
-	protected $extensions = array();
+	protected $extensions = [];
 
 	/**
 	 * The file currently being compiled.
@@ -47,37 +54,37 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected $path;
 
 	/**
-	 * All of the available compiler functions. Each one is called against every HTML block in the template.
+	 * All the available compiler functions. Each one is called against every HTML block in the template.
 	 *
 	 * @var array
 	 */
-	protected $compilers = array(
+	protected $compilers = [
 		'Extensions',
 		'Statements',
 		'Comments',
-		'Echos'
-	);
+		'Echos',
+	];
 
 	/**
 	 * Array of opening and closing tags for escaped echos.
 	 *
 	 * @var array
 	 */
-	protected $contentTags = array('{{', '}}');
+	protected $contentTags = ['{{', '}}'];
 
 	/**
 	 * Array of opening and closing tags for escaped echos.
 	 *
 	 * @var array
 	 */
-	protected $escapedTags = array('{{{', '}}}');
+	protected $escapedTags = ['{{{', '}}}'];
 
 	/**
 	 * Array of footer lines to be added to template.
 	 *
 	 * @var array
 	 */
-	protected $footer = array();
+	protected $footer = [];
 
 	/**
 	 * Counter to keep track of nested forelse statements.
@@ -94,6 +101,13 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected $usingTokenizer = false;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param   Container  $container  The application container.
+	 *
+	 * @since   1.0.0
+	 */
 	public function __construct(Container $container)
 	{
 		$this->setContainer($container);
@@ -104,8 +118,9 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * Report if the PHP Tokenizer extension is being used
 	 *
 	 * @return  bool
+	 * @since   1.0.0
 	 */
-	public function isUsingTokenizer()
+	public function isUsingTokenizer(): bool
 	{
 		return $this->usingTokenizer;
 	}
@@ -114,9 +129,10 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * Are the results of this compiler engine cacheable? If the engine makes use of the forcedParams it must return
 	 * false.
 	 *
-	 * @return  mixed
+	 * @return  bool
+	 * @since   1.0.0
 	 */
-	public function isCacheable()
+	public function isCacheable(): bool
 	{
 		return $this->isCacheable;
 	}
@@ -127,11 +143,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @param   string  $path         The absolute filesystem path of the view template
 	 * @param   array   $forceParams  Any parameters to force (only for engines returning raw HTML)
 	 *
-	 * @return mixed
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	public function compile($path, array $forceParams = array())
+	public function compile(string $path, array $forceParams = []): string
 	{
-		$this->footer = array();
+		$this->footer = [];
 
 		$fileData = @file_get_contents($path);
 
@@ -147,9 +164,10 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Get the path currently being compiled.
 	 *
-	 * @return string
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	public function getPath()
+	public function getPath(): string
 	{
 		return $this->path;
 	}
@@ -157,10 +175,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Set the path currently being compiled.
 	 *
-	 * @param  string  $path
-	 * @return void
+	 * @param   string  $path
+	 *
+	 * @return  void
+	 * @since   1.0.0
 	 */
-	public function setPath($path)
+	public function setPath(string $path)
 	{
 		$this->path = $path;
 	}
@@ -168,18 +188,22 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the given Blade template contents.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param   string|null  $value  The string to compile
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	public function compileString($value)
+	public function compileString(?string $value): string
 	{
+		$value  = $value ?? '';
 		$result = '';
 
 		if ($this->usingTokenizer)
 		{
-			// Here we will loop through all of the tokens returned by the Zend lexer and
-			// parse each one into the corresponding valid PHP. We will then have this
-			// template as the correctly rendered PHP that can be rendered natively.
+			/**
+			 * Here we will loop through all the tokens returned by the Zend lexer and parse each one into the
+			 * corresponding, valid PHP.
+			 */
 			foreach (token_get_all($value) as $token)
 			{
 				$result .= is_array($token) ? $this->parseToken($token) : $token;
@@ -195,25 +219,156 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 			$result .= $value;
 		}
 
-		// If there are any footer lines that need to get added to a template we will
-		// add them here at the end of the template. This gets used mainly for the
-		// template inheritance via the extends keyword that should be appended.
+		/**
+		 * If there are any footer lines that need to get added to a template we will add them here at the end of the
+		 * template. This gets used mainly for the template inheritance via the extends keyword that should be appended.
+		 */
 		if (count($this->footer) > 0)
 		{
-			$result = ltrim($result, PHP_EOL)
-				.PHP_EOL.implode(PHP_EOL, array_reverse($this->footer));
+			$result = ltrim($result, PHP_EOL) . PHP_EOL . implode(PHP_EOL, array_reverse($this->footer));
 		}
 
 		return $result;
 	}
 
 	/**
+	 * Compile the default values for the echo statement.
+	 *
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function compileEchoDefaults($value)
+	{
+		return preg_replace('/^(?=\$)(.+?)(?:\s+or\s+)(.+?)$/s', 'isset($1) ? $1 : $2', $value);
+	}
+
+	/**
+	 * Register a custom Blade compiler.
+	 *
+	 * @param   callable  $compiler
+	 *
+	 * @return  void
+	 * @since   1.0.0
+	 */
+	public function extend(callable $compiler)
+	{
+		$this->extensions[] = $compiler;
+	}
+
+	/**
+	 * Get the regular expression for a generic Blade function.
+	 *
+	 * @param   string  $function
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function createMatcher(string $function): string
+	{
+		return '/(?<!\w)(\s*)@' . $function . '(\s*\(.*\))/';
+	}
+
+	/**
+	 * Get the regular expression for a generic Blade function.
+	 *
+	 * @param   string  $function
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function createOpenMatcher(string $function): string
+	{
+		return '/(?<!\w)(\s*)@' . $function . '(\s*\(.*)\)/';
+	}
+
+	/**
+	 * Create a plain Blade matcher.
+	 *
+	 * @param   string  $function
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function createPlainMatcher(string $function): string
+	{
+		return '/(?<!\w)(\s*)@' . $function . '(\s*)/';
+	}
+
+	/**
+	 * Sets the escaped content tags used for the compiler.
+	 *
+	 * @param   string  $openTag
+	 * @param   string  $closeTag
+	 *
+	 * @return  void
+	 * @since   1.0.0
+	 */
+	public function setEscapedContentTags(string $openTag, string $closeTag): void
+	{
+		$this->setContentTags($openTag, $closeTag, true);
+	}
+
+	/**
+	 * Gets the content tags used for the compiler.
+	 *
+	 * @return  array
+	 * @since   1.0.0
+	 */
+	public function getContentTags(): array
+	{
+		return $this->getTags();
+	}
+
+	/**
+	 * Sets the content tags used for the compiler.
+	 *
+	 * @param   string  $openTag
+	 * @param   string  $closeTag
+	 * @param   bool    $escaped
+	 *
+	 * @return  void
+	 * @since   1.0.0
+	 */
+	public function setContentTags(string $openTag, string $closeTag, bool $escaped = false): void
+	{
+		$property = ($escaped === true) ? 'escapedTags' : 'contentTags';
+
+		$this->{$property} = [preg_quote($openTag), preg_quote($closeTag)];
+	}
+
+	/**
+	 * Gets the escaped content tags used for the compiler.
+	 *
+	 * @return  array
+	 * @since   1.0.0
+	 */
+	public function getEscapedContentTags(): array
+	{
+		return $this->getTags(true);
+	}
+
+	/**
+	 * Returns the file extension supported by this compiler
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function getFileExtension(): string
+	{
+		return $this->fileExtension;
+	}
+
+	/**
 	 * Parse the tokens from the template.
 	 *
-	 * @param  array  $token
-	 * @return string
+	 * @param   array  $token
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function parseToken($token)
+	protected function parseToken(array $token): string
 	{
 		[$id, $content] = $token;
 
@@ -231,10 +386,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Execute the user defined extensions.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileExtensions($value)
+	protected function compileExtensions(string $value): string
 	{
 		foreach ($this->extensions as $compiler)
 		{
@@ -247,10 +404,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile Blade comments into valid PHP.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileComments($value)
+	protected function compileComments(string $value): string
 	{
 		$pattern = sprintf('/%s--((.|\s)*?)--%s/', $this->contentTags[0], $this->contentTags[1]);
 
@@ -260,10 +419,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile Blade echos into valid PHP.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEchos($value)
+	protected function compileEchos(string $value): string
 	{
 		$difference = strlen($this->contentTags[0]) - strlen($this->escapedTags[0]);
 
@@ -278,29 +439,34 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile Blade Statements that start with "@"
 	 *
-	 * @param  string  $value
-	 * @return mixed
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileStatements($value)
+	protected function compileStatements(string $value): string
 	{
-		return preg_replace_callback('/\B@(\w+)([ \t]*)(\( ( (?>[^()]+) | (?3) )* \))?/x', array($this, 'compileStatementsCallback'), $value);
+		return preg_replace_callback(
+			'/\B@(\w+)([ \t]*)(\( ( (?>[^()]+) | (?3) )* \))?/x', [$this, 'compileStatementsCallback'], $value
+		);
 	}
 
 	/**
 	 * Callback for compileStatements, since $this is not allowed in Closures under PHP 5.3.
 	 *
-	 * @param   $match
+	 * @param   array  $match
 	 *
 	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileStatementsCallback($match)
+	protected function compileStatementsCallback(array $match): string
 	{
-		if (method_exists($this, $method = 'compile'.ucfirst($match[1])))
+		if (method_exists($this, $method = 'compile' . ucfirst($match[1])))
 		{
 			$match[0] = $this->$method(akeeba_array_get($match, 3));
 		}
 
-		return isset($match[3]) ? $match[0] : $match[0].$match[2];
+		return isset($match[3]) ? $match[0] : $match[0] . $match[2];
 	}
 
 	/**
@@ -309,12 +475,13 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @param   string  $value
 	 *
 	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileRegularEchos($value)
+	protected function compileRegularEchos(string $value): string
 	{
 		$pattern = sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $this->contentTags[0], $this->contentTags[1]);
 
-		return preg_replace_callback($pattern, array($this, 'compileRegularEchosCallback'), $value);
+		return preg_replace_callback($pattern, [$this, 'compileRegularEchosCallback'], $value);
 	}
 
 	/**
@@ -323,25 +490,29 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @param   array  $matches
 	 *
 	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileRegularEchosCallback($matches)
+	protected function compileRegularEchosCallback(array $matches): string
 	{
-		$whitespace = empty($matches[3]) ? '' : $matches[3].$matches[3];
+		$whitespace = empty($matches[3]) ? '' : $matches[3] . $matches[3];
 
-		return $matches[1] ? substr($matches[0], 1) : '<?php echo '.$this->compileEchoDefaults($matches[2]).'; ?>'.$whitespace;
+		return $matches[1] ? substr($matches[0], 1)
+			: '<?php echo ' . $this->compileEchoDefaults($matches[2]) . '; ?>' . $whitespace;
 	}
 
 	/**
 	 * Compile the escaped echo statements.
 	 *
-	 * @param  string  $value
-	 * @return string
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEscapedEchos($value)
+	protected function compileEscapedEchos(string $value): string
 	{
 		$pattern = sprintf('/%s\s*(.+?)\s*%s(\r?\n)?/s', $this->escapedTags[0], $this->escapedTags[1]);
 
-		return preg_replace_callback($pattern, array($this, 'compileEscapedEchosCallback'), $value);
+		return preg_replace_callback($pattern, [$this, 'compileEscapedEchosCallback'], $value);
 	}
 
 	/**
@@ -350,32 +521,24 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @param   array  $matches
 	 *
 	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEscapedEchosCallback($matches)
+	protected function compileEscapedEchosCallback(array $matches): string
 	{
-		$whitespace = empty($matches[2]) ? '' : $matches[2].$matches[2];
+		$whitespace = empty($matches[2]) ? '' : $matches[2] . $matches[2];
 
-		return '<?php echo $this->escape('.$this->compileEchoDefaults($matches[1]).'); ?>'.$whitespace;
+		return '<?php echo $this->escape(' . $this->compileEchoDefaults($matches[1]) . '); ?>' . $whitespace;
 	}
 
 	/**
-	 * Compile the default values for the echo statement.
+	 * Compile the `each` statements into valid PHP.
 	 *
-	 * @param  string  $value
-	 * @return string
-	 */
-	public function compileEchoDefaults($value)
-	{
-		return preg_replace('/^(?=\$)(.+?)(?:\s+or\s+)(.+?)$/s', 'isset($1) ? $1 : $2', $value);
-	}
-
-	/**
-	 * Compile the each statements into valid PHP.
+	 * @param   string  $expression
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEach($expression)
+	protected function compileEach(string $expression): string
 	{
 		return "<?php echo \$this->renderEach{$expression}; ?>";
 	}
@@ -383,10 +546,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the yield statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileYield($expression)
+	protected function compileYield(string $expression): string
 	{
 		return "<?php echo \$this->yieldContent{$expression}; ?>";
 	}
@@ -394,10 +559,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the show statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileShow($expression)
+	protected function compileShow(?string $expression): string
 	{
 		return "<?php echo \$this->yieldSection(); ?>";
 	}
@@ -405,10 +572,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the section statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileSection($expression)
+	protected function compileSection(string $expression): string
 	{
 		return "<?php \$this->startSection{$expression}; ?>";
 	}
@@ -416,10 +585,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the append statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileAppend($expression)
+	protected function compileAppend(?string $expression): string
 	{
 		return "<?php \$this->appendSection(); ?>";
 	}
@@ -427,10 +598,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-section statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndsection($expression)
+	protected function compileEndsection(?string $expression): string
 	{
 		return "<?php \$this->stopSection(); ?>";
 	}
@@ -438,10 +611,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the stop statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileStop($expression)
+	protected function compileStop(?string $expression): string
 	{
 		return "<?php \$this->stopSection(); ?>";
 	}
@@ -449,10 +624,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the overwrite statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileOverwrite($expression)
+	protected function compileOverwrite(?string $expression): string
 	{
 		return "<?php \$this->stopSection(true); ?>";
 	}
@@ -460,10 +637,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the unless statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileUnless($expression)
+	protected function compileUnless(?string $expression): string
 	{
 		return "<?php if ( ! $expression): ?>";
 	}
@@ -471,10 +650,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end unless statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndunless($expression)
+	protected function compileEndunless(?string $expression): string
 	{
 		return "<?php endif; ?>";
 	}
@@ -482,15 +663,17 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end repeatable statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileRepeatable($expression)
+	protected function compileRepeatable(string $expression): string
 	{
 		$expression = trim($expression, '()');
-		$parts = explode(',', $expression, 2);
+		$parts      = explode(',', $expression, 2);
 
-		$functionName = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
+		$functionName  = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
 		$argumentsList = isset($parts[1]) ? $parts[1] : '';
 
 		return "<?php @\$$functionName = function($argumentsList) { ?>";
@@ -499,10 +682,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end endRepeatable statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndRepeatable($expression)
+	protected function compileEndRepeatable(?string $expression): string
 	{
 		return "<?php }; ?>";
 	}
@@ -510,15 +695,17 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end yieldRepeatable statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileYieldRepeatable($expression)
+	protected function compileYieldRepeatable(string $expression): string
 	{
 		$expression = trim($expression, '()');
-		$parts = explode(',', $expression, 2);
+		$parts      = explode(',', $expression, 2);
 
-		$functionName = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
+		$functionName  = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
 		$argumentsList = isset($parts[1]) ? $parts[1] : '';
 
 		return "<?php \$$functionName($argumentsList); ?>";
@@ -527,10 +714,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the lang statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileLang($expression)
+	protected function compileLang(string $expression): string
 	{
 		return "<?php echo \\Awf\\Text\\Text::_$expression; ?>";
 	}
@@ -538,10 +727,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the sprintf statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileSprintf($expression)
+	protected function compileSprintf(string $expression): string
 	{
 		return "<?php echo \\Awf\\Text\\Text::sprintf$expression; ?>";
 	}
@@ -549,14 +740,16 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the plural statements into valid PHP.
 	 *
-	 * e.g. @plural('COM_FOOBAR_N_ITEMS_SAVED', $countItemsSaved)
+	 * e.g. `@plural('COM_FOOBAR_N_ITEMS_SAVED', $countItemsSaved)`
 	 *
-	 * @see JText::plural()
+	 * @param   string  $expression
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @return  string
+	 * @since   1.0.0
+	 * @see     Text::plural()
+	 *
 	 */
-	protected function compilePlural($expression)
+	protected function compilePlural(string $expression): string
 	{
 		return "<?php echo \\Awf\\Text\\Text::plural$expression; ?>";
 	}
@@ -564,10 +757,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the token statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileToken($expression)
+	protected function compileToken(?string $expression): string
 	{
 		return "<?php echo \$this->container->session->getCsrfToken()->getValue(); ?>";
 	}
@@ -575,10 +770,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the else statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileElse($expression)
+	protected function compileElse(?string $expression): string
 	{
 		return "<?php else: ?>";
 	}
@@ -586,10 +783,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the for statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileFor($expression)
+	protected function compileFor(string $expression): string
 	{
 		return "<?php for{$expression}: ?>";
 	}
@@ -597,10 +796,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the foreach statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileForeach($expression)
+	protected function compileForeach(string $expression): string
 	{
 		return "<?php foreach{$expression}: ?>";
 	}
@@ -608,10 +809,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the forelse statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileForelse($expression)
+	protected function compileForelse(string $expression): string
 	{
 		$empty = '$__empty_' . ++$this->forelseCounter;
 
@@ -621,10 +824,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the if statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileIf($expression)
+	protected function compileIf(string $expression): string
 	{
 		return "<?php if{$expression}: ?>";
 	}
@@ -632,10 +837,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the else-if statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileElseif($expression)
+	protected function compileElseif(string $expression): string
 	{
 		return "<?php elseif{$expression}: ?>";
 	}
@@ -643,10 +850,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the forelse statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEmpty($expression)
+	protected function compileEmpty(?string $expression): string
 	{
 		$empty = '$__empty_' . $this->forelseCounter--;
 
@@ -656,10 +865,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the while statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileWhile($expression)
+	protected function compileWhile(string $expression): string
 	{
 		return "<?php while{$expression}: ?>";
 	}
@@ -667,10 +878,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-while statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndwhile($expression)
+	protected function compileEndwhile(?string $expression): string
 	{
 		return "<?php endwhile; ?>";
 	}
@@ -678,10 +891,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-for statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndfor($expression)
+	protected function compileEndfor(?string $expression): string
 	{
 		return "<?php endfor; ?>";
 	}
@@ -689,10 +904,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-for-each statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndforeach($expression)
+	protected function compileEndforeach(?string $expression): string
 	{
 		return "<?php endforeach; ?>";
 	}
@@ -700,10 +917,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-if statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndif($expression)
+	protected function compileEndif(?string $expression): string
 	{
 		return "<?php endif; ?>";
 	}
@@ -711,10 +930,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the end-for-else statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndforelse($expression)
+	protected function compileEndforelse(?string $expression): string
 	{
 		return "<?php endif; ?>";
 	}
@@ -722,10 +943,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the extends statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileExtends($expression)
+	protected function compileExtends(string $expression): string
 	{
 		if (akeeba_starts_with($expression, '('))
 		{
@@ -742,10 +965,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the include statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileInclude($expression)
+	protected function compileInclude(string $expression): string
 	{
 		if (akeeba_starts_with($expression, '('))
 		{
@@ -758,10 +983,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the stack statements into the content
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileStack($expression)
+	protected function compileStack(string $expression): string
 	{
 		return "<?php echo \$this->yieldContent{$expression}; ?>";
 	}
@@ -769,10 +996,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the push statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compilePush($expression)
+	protected function compilePush(string $expression): string
 	{
 		return "<?php \$this->startSection{$expression}; ?>";
 	}
@@ -780,10 +1009,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the endpush statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string|null  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileEndpush($expression)
+	protected function compileEndpush(?string $expression): string
 	{
 		return "<?php \$this->appendSection(); ?>";
 	}
@@ -791,10 +1022,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the route statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileRoute($expression)
+	protected function compileRoute(string $expression): string
 	{
 		return "<?php echo \$this->container->router->route{$expression}; ?>";
 	}
@@ -802,10 +1035,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the css statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileCss($expression)
+	protected function compileCss(string $expression): string
 	{
 		return "<?php \\Awf\\Utils\\Template::addCss{$expression}; ?>";
 	}
@@ -813,10 +1048,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the inlineCss statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileInlineCss($expression)
+	protected function compileInlineCss(string $expression): string
 	{
 		return "<?php \$this->container->application->getDocument()->addStyleDeclaration{$expression}; ?>";
 	}
@@ -824,10 +1061,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the inlineJs statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileInlineJs($expression)
+	protected function compileInlineJs(string $expression): string
 	{
 		return "<?php \$this->container->application->getDocument()->addScriptDeclaration{$expression}; ?>";
 	}
@@ -835,10 +1074,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the js statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileJs($expression)
+	protected function compileJs(string $expression): string
 	{
 		return "<?php \\Awf\\Utils\\Template::addJs{$expression}; ?>";
 	}
@@ -846,10 +1087,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the jhtml statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileJhtml($expression)
+	protected function compileJhtml(string $expression): string
 	{
 		return '<' . '?php echo $this->getContainer()->html->get' . $expression . '; ?' . '>';
 	}
@@ -857,10 +1100,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the html statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileHtml($expression)
+	protected function compileHtml(string $expression): string
 	{
 		return $this->compileJhtml($expression);
 	}
@@ -868,122 +1113,25 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the media statements into valid PHP.
 	 *
-	 * @param  string  $expression
-	 * @return string
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.0.0
 	 */
-	protected function compileMedia($expression)
+	protected function compileMedia(string $expression): string
 	{
 		return "<?php echo \\Awf\\Utils\\Template::parsePath{$expression}; ?>";
 	}
 
 	/**
-	 * Register a custom Blade compiler.
-	 *
-	 * @param  callable  $compiler
-	 * @return void
-	 */
-	public function extend($compiler)
-	{
-		$this->extensions[] = $compiler;
-	}
-
-	/**
-	 * Get the regular expression for a generic Blade function.
-	 *
-	 * @param  string  $function
-	 * @return string
-	 */
-	public function createMatcher($function)
-	{
-		return '/(?<!\w)(\s*)@'.$function.'(\s*\(.*\))/';
-	}
-
-	/**
-	 * Get the regular expression for a generic Blade function.
-	 *
-	 * @param  string  $function
-	 * @return string
-	 */
-	public function createOpenMatcher($function)
-	{
-		return '/(?<!\w)(\s*)@'.$function.'(\s*\(.*)\)/';
-	}
-
-	/**
-	 * Create a plain Blade matcher.
-	 *
-	 * @param  string  $function
-	 * @return string
-	 */
-	public function createPlainMatcher($function)
-	{
-		return '/(?<!\w)(\s*)@'.$function.'(\s*)/';
-	}
-
-	/**
-	 * Sets the content tags used for the compiler.
-	 *
-	 * @param  string  $openTag
-	 * @param  string  $closeTag
-	 * @param  bool    $escaped
-	 * @return void
-	 */
-	public function setContentTags($openTag, $closeTag, $escaped = false)
-	{
-		$property = ($escaped === true) ? 'escapedTags' : 'contentTags';
-
-		$this->{$property} = array(preg_quote($openTag), preg_quote($closeTag));
-	}
-
-	/**
-	 * Sets the escaped content tags used for the compiler.
-	 *
-	 * @param  string  $openTag
-	 * @param  string  $closeTag
-	 * @return void
-	 */
-	public function setEscapedContentTags($openTag, $closeTag)
-	{
-		$this->setContentTags($openTag, $closeTag, true);
-	}
-
-	/**
-	 * Gets the content tags used for the compiler.
-	 *
-	 * @return string
-	 */
-	public function getContentTags()
-	{
-		return $this->getTags();
-	}
-
-	/**
-	 * Gets the escaped content tags used for the compiler.
-	 *
-	 * @return string
-	 */
-	public function getEscapedContentTags()
-	{
-		return $this->getTags(true);
-	}
-
-	/**
-	 * Returns the file extension supported by this compiler
-	 *
-	 * @return  string
-	 */
-	public function getFileExtension()
-	{
-		return $this->fileExtension;
-	}
-
-	/**
 	 * Gets the tags used for the compiler.
 	 *
-	 * @param  bool  $escaped
-	 * @return array
+	 * @param   bool  $escaped
+	 *
+	 * @return  array
+	 * @since   1.0.0
 	 */
-	protected function getTags($escaped = false)
+	protected function getTags(bool $escaped = false): array
 	{
 		$tags = $escaped ? $this->escapedTags : $this->contentTags;
 
