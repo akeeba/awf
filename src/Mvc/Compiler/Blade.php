@@ -10,6 +10,7 @@ namespace Awf\Mvc\Compiler;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Text\Text;
 
 require_once __DIR__ . '/../../Utils/helpers.php';
 
@@ -96,12 +97,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	public function __construct(Container $container)
 	{
 		$this->setContainer($container);
-		$this->usingTokenizer = false;
-
-		if (function_exists('token_get_all') && defined('T_INLINE_HTML'))
-		{
-			$this->usingTokenizer = true;
-		}
+		$this->conditionallyEnableTokenizer();
 	}
 
 	/**
@@ -993,5 +989,29 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 
 		return array_map('stripcslashes', $tags);
 	}
+
+	/**
+	 * Enable the PHP Tokenizer if it is enabled and found to be working correctly
+	 *
+	 * @return  void
+	 * @since   1.1.0
+	 * @see     https://www.akeeba.com/support/akeeba-backup-wordpress/39513-user-interface-shows-code-instead-of-control-element-texts.html
+	 */
+	private function conditionallyEnableTokenizer(): void
+	{
+		$this->usingTokenizer = function_exists('token_get_all') && defined('T_INLINE_HTML');
+
+		if (!$this->usingTokenizer)
+		{
+			return;
+		}
+
+		$uncompiledSource = "@lang('TEST')";
+		$actual           = trim($this->compileString($uncompiledSource));
+		$expected         = trim($this->compileLang("('TEST')"));
+
+		$this->usingTokenizer = $actual === $expected && $actual !== $uncompiledSource;
+	}
+
 
 }
