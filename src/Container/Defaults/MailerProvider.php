@@ -27,8 +27,8 @@ class MailerProvider
 	 */
 	public function __invoke(Container $c): callable
 	{
-		return $c->factory(
-			function (Container $c) {
+		return $c->protect(
+			function () use ($c): Mailer {
 				return new Mailer($c);
 			}
 		);
