@@ -200,20 +200,65 @@ class Mailer extends PHPMailer implements ContainerAwareInterface
 
 				foreach ($combined as $recipientEmail => $recipientName)
 				{
-					call_user_func('parent::' . $method, $recipientEmail, $recipientName);
+					switch ($method)
+					{
+						case 'AddAddress':
+						default:
+							parent::AddAddress($recipientEmail, $recipientName);
+							break;
+
+						case 'AddCC':
+							parent::AddCC($recipientEmail, $recipientName);
+
+						case 'AddBCC':
+							parent::AddBCC($recipientEmail, $recipientName);
+
+						case 'AddReplyTo':
+							parent::AddReplyTo($recipientEmail, $recipientName);
+					}
 				}
 			}
 			else
 			{
 				foreach ($recipient as $to)
 				{
-					call_user_func('parent::' . $method, $to, $name);
+					switch ($method)
+					{
+						case 'AddAddress':
+						default:
+							parent::AddAddress($to, $name);
+							break;
+
+						case 'AddCC':
+							parent::AddCC($to, $name);
+
+						case 'AddBCC':
+							parent::AddBCC($to, $name);
+
+						case 'AddReplyTo':
+							parent::AddReplyTo($to, $name);
+					}
 				}
 			}
 		}
 		else
 		{
-			call_user_func('parent::' . $method, $recipient, $name);
+			switch ($method)
+			{
+				case 'AddAddress':
+				default:
+					parent::AddAddress($recipient, $name);
+					break;
+
+				case 'AddCC':
+					parent::AddCC($recipient, $name);
+
+				case 'AddBCC':
+					parent::AddBCC($recipient, $name);
+
+				case 'AddReplyTo':
+					parent::AddReplyTo($recipient, $name);
+			}
 		}
 
 		return $this;
