@@ -32,7 +32,15 @@ class Php extends AbstractRegistryFormat
 
 		foreach (get_object_vars($object) as $k => $v)
 		{
-			if (is_scalar($v))
+			if (is_null($v))
+			{
+				$vars .= "\tpublic $" . $k . " = NULL;\n";
+			}
+			elseif (is_bool($v))
+			{
+				$vars .= "\tpublic $" . $k . " = " . ($v ? 'true' : 'false') . ";\n";
+			}
+			elseif (is_scalar($v))
 			{
 				$vars .= "\tpublic $" . $k . " = '" . addcslashes($v, '\\\'') . "';\n";
 			}
@@ -65,7 +73,7 @@ class Php extends AbstractRegistryFormat
 	 */
 	public function stringToObject($data, array $options = array())
 	{
-		return true;
+		throw new \BadMethodCallException('Do not use loadString() for PHP-based registry files; only use loadFile()');
 	}
 
 	/**
@@ -73,11 +81,11 @@ class Php extends AbstractRegistryFormat
 	 *
 	 * @param   array  $a  The array to get as a string.
 	 *
-	 * @return  array
+	 * @return  string
 	 */
 	protected function getArrayString($a)
 	{
-		$s = 'array(';
+		$s = '[';
 		$i = 0;
 
 		foreach ($a as $k => $v)
@@ -89,6 +97,14 @@ class Php extends AbstractRegistryFormat
 			{
 				$s .= $this->getArrayString((array) $v);
 			}
+			elseif (is_null($v))
+			{
+				$s .= 'NULL';
+			}
+			elseif (is_bool($v))
+			{
+				$s .= $v ? 'true' : 'false';
+			}
 			else
 			{
 				$s .= '"' . addslashes($v) . '"';
@@ -97,7 +113,7 @@ class Php extends AbstractRegistryFormat
 			$i++;
 		}
 
-		$s .= ')';
+		$s .= ']';
 
 		return $s;
 	}
