@@ -225,9 +225,20 @@ class ViewTemplateFinder implements ContainerAwareInterface
 		// Parse the URI into its parts
 		$parts = $this->parseTemplateUri($uri);
 
+		try
+		{
+			$templateName = $this->container->application->getTemplate();
+		}
+		catch (\Exception $e)
+		{
+			$templateName = 'system';
+		}
+
 		// Get the lookup paths
 		$paths = array(
 			// Template override
+			$this->container->templatePath . '/' . $templateName . '/html/' . $parts['view'],
+			// Legacy template override (legacy; do not use)
 			$this->container->templatePath . '/html/' . $parts['view'],
 			// Application ViewTemplates folder (preferred)
 			$this->container->basePath . '/ViewTemplates/' . $parts['view'],
@@ -235,6 +246,8 @@ class ViewTemplateFinder implements ContainerAwareInterface
 			$this->container->basePath . '/View/' . $parts['view'] . '/tmpl',
 			// Application views folder (legacy, don't use)
 			$this->container->basePath . '/views/' . $parts['view'] . '/tmpl',
+			// System template fallback
+			$this->container->templatePath . '/system/html/' . $parts['view'],
 		);
 
 		// Add extra paths
