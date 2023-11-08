@@ -7,10 +7,8 @@
 
 namespace Awf\Mvc\DataModel\Relation;
 
-use Awf\Application\Application;
-use Awf\Database\Query;
+use Awf\Container\Container;
 use Awf\Mvc\DataModel;
-use Awf\Mvc\DataModel\Collection;
 
 /**
  * BelongsTo (reverse 1-to-1 or 1-to-many) relation: this model is a child which belongs to the foreign table
@@ -28,22 +26,29 @@ class BelongsTo extends HasOne
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
-	 * @param   DataModel  $parentModel        The data model we are attached to
+	 * @param   DataModel  $parentModel  The data model we are attached to
 	 * @param   string     $foreignModelClass  The class name of the foreign key's model
-	 * @param   string     $localKey           The local table key for this relation, default: parentModel's ID field name
-	 * @param   string     $foreignKey         The foreign key for this relation, default: parentModel's ID field name
-	 * @param   string     $pivotTable         IGNORED
-	 * @param   string     $pivotLocalKey      IGNORED
-	 * @param   string     $pivotForeignKey    IGNORED
+	 * @param   string     $localKey  The local table key for this relation, default: parentModel's ID field name
+	 * @param   string     $foreignKey  The foreign key for this relation, default: parentModel's ID field name
+	 * @param   string     $pivotTable  IGNORED
+	 * @param   string     $pivotLocalKey  IGNORED
+	 * @param   string     $pivotForeignKey  IGNORED
 	 */
-	public function __construct(DataModel $parentModel, $foreignModelClass, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
+	public function __construct(
+		DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null,
+		?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null,
+		?Container $foreignModelContainer = null
+	)
 	{
-		parent::__construct($parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey);
+		parent::__construct(
+			$parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey,
+			$foreignModelContainer
+		);
 
 		if (empty($localKey))
 		{
 			// Get a model instance
-			$container = Application::getInstance($this->foreignModelApp)->getContainer();
+			$container = $this->getContainer();
 			/** @var DataModel $foreignModel */
 			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
@@ -55,7 +60,7 @@ class BelongsTo extends HasOne
 			if (!isset($foreignModel))
 			{
 				// Get a model instance
-				$container = Application::getInstance($this->foreignModelApp)->getContainer();
+				$container = $this->getContainer();
 				/** @var DataModel $foreignModel */
 				$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 			}
@@ -71,7 +76,9 @@ class BelongsTo extends HasOne
 	 */
 	public function getNew()
 	{
-		throw new DataModel\Relation\Exception\NewNotSupported("getNew() is not supported by the belongsTo relation type");
+		throw new DataModel\Relation\Exception\NewNotSupported(
+			"getNew() is not supported by the belongsTo relation type"
+		);
 	}
 
 }

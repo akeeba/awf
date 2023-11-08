@@ -8,6 +8,7 @@
 namespace Awf\Mvc\DataModel\Relation;
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
 use Awf\Mvc\DataModel\Collection;
@@ -32,9 +33,13 @@ class HasMany extends DataModel\Relation
 	 * @param   string    $pivotLocalKey     IGNORED
 	 * @param   string    $pivotForeignKey   IGNORED
 	 */
-	public function __construct(DataModel $parentModel, $foreignModelClass, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
+	public function __construct(
+		DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null,
+		?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null,
+		?Container $foreignModelContainer = null
+	)
 	{
-		parent::__construct($parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey);
+		parent::__construct($parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey, $foreignModelContainer);
 
 		if (empty($this->localKey))
 		{
@@ -119,7 +124,7 @@ class HasMany extends DataModel\Relation
 	public function getCountSubquery()
 	{
 		// Get a model instance
-		$container = Application::getInstance($this->foreignModelApp)->getContainer();
+		$container = $this->getContainer();
 		/** @var DataModel $foreignModel */
 		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
@@ -144,7 +149,7 @@ class HasMany extends DataModel\Relation
 	public function getNew()
 	{
 		// Get a model instance
-		$container = Application::getInstance($this->foreignModelApp)->getContainer();
+		$container = $this->getContainer();
 		/** @var DataModel $foreignModel */
 		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
