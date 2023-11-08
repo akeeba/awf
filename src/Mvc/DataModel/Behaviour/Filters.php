@@ -8,8 +8,8 @@
 namespace Awf\Mvc\DataModel\Behaviour;
 
 use Awf\Database\Query;
-use Awf\Mvc\DataModel;
 use Awf\Event\Observer;
+use Awf\Mvc\DataModel;
 use Awf\Registry\Registry;
 
 class Filters extends Observer
@@ -26,9 +26,9 @@ class Filters extends Observer
 	public function onAfterBuildQuery(&$model, &$query)
 	{
 		$tableKey = $model->getIdFieldName();
-		$db = $model->getDbo();
+		$db       = $model->getDbo();
 
-		$fields = $model->getTableFields();
+		$fields     = $model->getTableFields();
 		$blacklist  = $model->getBlacklistFilters();
 		$filterZero = $model->getBehaviorParam('filterZero', null);
 		$tableAlias = $model->getBehaviorParam('tableAlias', null);
@@ -40,14 +40,14 @@ class Filters extends Observer
 				continue;
 			}
 
-			$fieldInfo = (object)array(
-				'name'	=> $fieldname,
-				'type'	=> $fieldmeta->Type,
+			$fieldInfo = (object) [
+				'name'       => $fieldname,
+				'type'       => $fieldmeta->Type,
 				'filterZero' => $filterZero,
 				'tableAlias' => $tableAlias,
-			);
+			];
 
-			$filterName = ($fieldInfo->name == $tableKey) ? 'id' : $fieldInfo->name;
+			$filterName  = ($fieldInfo->name == $tableKey) ? 'id' : $fieldInfo->name;
 			$filterState = $model->getState($filterName, null);
 
 			// Special primary key handling: if ignore request is set we'll also look for an 'id' state variable if a
@@ -69,18 +69,20 @@ class Filters extends Observer
 				}
 			}
 
-			$field = DataModel\Filter\AbstractFilter::getField($fieldInfo, array('dbo' => $db));
+			$field = DataModel\Filter\AbstractFilter::getField($fieldInfo, ['dbo' => $db]);
 
 			if (!is_object($field) || !($field instanceof DataModel\Filter\AbstractFilter))
 			{
 				continue;
 			}
 
-			if ((is_array($filterState) && (
-						array_key_exists('value', $filterState) ||
-						array_key_exists('from', $filterState) ||
-						array_key_exists('to', $filterState)
-					)) || is_object($filterState))
+			if ((is_array($filterState)
+			     && (
+				     array_key_exists('value', $filterState)
+				     || array_key_exists('from', $filterState)
+				     || array_key_exists('to', $filterState)
+			     ))
+			    || is_object($filterState))
 			{
 				$options = new Registry($filterState);
 			}
@@ -91,7 +93,7 @@ class Filters extends Observer
 			}
 
 			$methods = $field->getSearchMethods();
-			$method = $options->get('method', $field->getDefaultSearchMethod());
+			$method  = $options->get('method', $field->getDefaultSearchMethod());
 
 			if (!in_array($method, $methods))
 			{

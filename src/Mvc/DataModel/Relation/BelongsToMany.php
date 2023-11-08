@@ -8,9 +8,9 @@
 namespace Awf\Mvc\DataModel\Relation;
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Mvc\DataModel\Relation;
 use Awf\Mvc\DataModel\Collection;
 
 /**
@@ -27,19 +27,29 @@ class BelongsToMany extends DataModel\Relation
 	/**
 	 * Public constructor. Initialises the relation.
 	 *
-	 * @param   DataModel $parentModel       The data model we are attached to
-	 * @param   string    $foreignModelClass The class name of the foreign key's model
-	 * @param   string    $localKey          The local table key for this relation, default: parentModel's ID field name
-	 * @param   string    $foreignKey        The foreign key for this relation, default: parentModel's ID field name
-	 * @param   string    $pivotTable        For many-to-many relations, the pivot (glue) table
-	 * @param   string    $pivotLocalKey     For many-to-many relations, the pivot table's column storing the local key
-	 * @param   string    $pivotForeignKey   For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   DataModel  $parentModel        The data model we are attached to
+	 * @param   string     $foreignModelClass  The class name of the foreign key's model
+	 * @param   string     $localKey           The local table key for this relation, default: parentModel's ID field
+	 *                                         name
+	 * @param   string     $foreignKey         The foreign key for this relation, default: parentModel's ID field name
+	 * @param   string     $pivotTable         For many-to-many relations, the pivot (glue) table
+	 * @param   string     $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local
+	 *                                         key
+	 * @param   string     $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign
+	 *                                         key
 	 *
 	 * @throws  DataModel\Relation\Exception\PivotTableNotFound
 	 */
-	public function __construct(DataModel $parentModel, $foreignModelClass, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
+	public function __construct(
+		DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null,
+		?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null,
+		?Container $foreignModelContainer = null
+	)
 	{
-		parent::__construct($parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey);
+		parent::__construct(
+			$parentModel, $foreignModelClass, $localKey, $foreignKey, $pivotTable, $pivotLocalKey, $pivotForeignKey,
+			$foreignModelContainer
+		);
 
 		if (empty($localKey))
 		{
@@ -54,7 +64,7 @@ class BelongsToMany extends DataModel\Relation
 		if (empty($foreignKey))
 		{
 			// Get a model instance
-			$container = Application::getInstance($this->foreignModelApp)->getContainer();
+			$container = $this->getContainer();
 			/** @var DataModel $foreignModel */
 			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 
@@ -70,38 +80,42 @@ class BelongsToMany extends DataModel\Relation
 		{
 			// Get the local model's name (e.g. "users")
 			$localParts = explode('\\', $parentModel->getName());
-			$localName = end($localParts);
-			$localName = strtolower($localName);
+			$localName  = end($localParts);
+			$localName  = strtolower($localName);
 
 			// Get the foreign model's name (e.g. "groups")
 			if (!isset($foreignModel))
 			{
 				// Get a model instance
-				$container = Application::getInstance($this->foreignModelApp)->getContainer();
+				$container = $this->getContainer();
 				/** @var DataModel $foreignModel */
 				$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
 			}
 
 			$foreignParts = explode('\\', $foreignModel->getName());
-			$foreignName = end($foreignParts);
-			$foreignName = strtolower($foreignName);
+			$foreignName  = end($foreignParts);
+			$foreignName  = strtolower($foreignName);
 
 			// Get the local model's app name
-			$class = get_class($parentModel);
-			$localParts = explode('\\', $class);
+			$class          = get_class($parentModel);
+			$localParts     = explode('\\', $class);
 			$parentModelApp = $localParts[0];
 
 			// There are two possibilities for the table name: #__app_local_foreign or #__app_foreign_local.
 			// There are also two possibilities for an app name (local or foreign model's)
-			$db = $parentModel->getDbo();
+			$db     = $parentModel->getDbo();
 			$prefix = $db->getPrefix();
 
-			$tableNames = array(
+			$tableNames = [
 				'#__' . strtolower($parentModelApp) . '_' . $localName . '_' . $foreignName,
 				'#__' . strtolower($parentModelApp) . '_' . $foreignName . '_' . $localName,
-				'#__' . strtolower($this->foreignModelApp) . '_' . $localName . '_' . $foreignName,
-				'#__' . strtolower($this->foreignModelApp) . '_' . $foreignName . '_' . $localName,
-			);
+			];
+
+			if (!empty($this->foreignModelApp))
+			{
+				$tableNames[] = '#__' . strtolower($this->foreignModelApp) . '_' . $localName . '_' . $foreignName;
+				$tableNames[] = '#__' . strtolower($this->foreignModelApp) . '_' . $foreignName . '_' . $localName;
+			}
 
 			$allTables = $db->getTableList();
 
@@ -119,7 +133,9 @@ class BelongsToMany extends DataModel\Relation
 
 			if (empty($this->pivotTable))
 			{
-				throw new DataModel\Relation\Exception\PivotTableNotFound("Pivot table for many-to-many relation between '$localName and '$foreignName' not found'");
+				throw new DataModel\Relation\Exception\PivotTableNotFound(
+					"Pivot table for many-to-many relation between '$localName and '$foreignName' not found'"
+				);
 			}
 		}
 	}
@@ -128,8 +144,8 @@ class BelongsToMany extends DataModel\Relation
 	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
 	 * DataModel to push the eager loaded data into each item's relation.
 	 *
-	 * @param Collection $data   The relation data to push into this relation
-	 * @param mixed      $keyMap Passes around the local to foreign key map
+	 * @param   Collection  $data    The relation data to push into this relation
+	 * @param   mixed       $keyMap  Passes around the local to foreign key map
 	 *
 	 * @return void
 	 */
@@ -166,10 +182,128 @@ class BelongsToMany extends DataModel\Relation
 	}
 
 	/**
+	 * Returns the count subquery for DataModel's has() and whereHas() methods.
+	 *
+	 * @return Query
+	 */
+	public function getCountSubquery()
+	{
+		// Get a model instance
+		$container = $this->getContainer();
+		/** @var DataModel $foreignModel */
+		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
+
+		$db = $foreignModel->getDbo();
+
+		$query = $db->getQuery(true)
+			->select('COUNT(*)')
+			->from($db->qn($foreignModel->getTableName()) . ' AS ' . $db->qn('reltbl'))
+			->innerJoin(
+				$db->qn($this->pivotTable) . ' AS ' . $db->qn('pivotTable') . ' ON('
+				. $db->qn('pivotTable') . '.' . $db->qn($this->pivotForeignKey) . ' = '
+				. $db->qn('reltbl') . '.' . $db->qn($foreignModel->getFieldAlias($this->foreignKey))
+				. ')'
+			)
+			->where(
+				$db->qn('pivotTable') . '.' . $db->qn($this->pivotLocalKey) . ' ='
+				. $db->qn($this->parentModel->getTableName()) . '.'
+				. $db->qn($this->parentModel->getFieldAlias($this->localKey))
+			);
+
+		return $query;
+	}
+
+	/**
+	 * Saves all related items. For many-to-many relations there are two things we have to do:
+	 * 1. Save all related items; and
+	 * 2. Overwrite the pivot table data with the new associations
+	 */
+	public function saveAll()
+	{
+		// Save all related items
+		parent::saveAll();
+
+		// Get all the new keys
+		$newKeys = [];
+
+		if ($this->data instanceof Collection)
+		{
+			foreach ($this->data as $item)
+			{
+				if ($item instanceof DataModel)
+				{
+					$newKeys[] = $item->getId();
+				}
+				elseif (!is_object($item))
+				{
+					$newKeys[] = $item;
+				}
+			}
+		}
+
+		$newKeys = array_unique($newKeys);
+
+		$db            = $this->parentModel->getDbo();
+		$localKeyValue = $this->parentModel->getFieldValue($this->localKey);
+
+		// Kill all existing relations in the pivot table
+		$query = $db->getQuery(true)
+			->delete($db->qn($this->pivotTable))
+			->where($db->qn($this->pivotLocalKey) . ' = ' . $db->q($localKeyValue));
+		$db->setQuery($query);
+		$db->execute();
+
+		// Write the new relations to the database
+		$protoQuery = $db->getQuery(true)
+			->insert($db->qn($this->pivotTable))
+			->columns([$db->qn($this->pivotLocalKey), $db->qn($this->pivotForeignKey)]);
+
+		$i     = 0;
+		$query = null;
+
+		foreach ($newKeys as $key)
+		{
+			$i++;
+
+			if (is_null($query))
+			{
+				$query = clone $protoQuery;
+			}
+
+			$query->values($db->q($localKeyValue) . ', ' . $db->q($key));
+
+			if (($i % 50) == 0)
+			{
+				$db->setQuery($query);
+				$db->execute();
+				$query = null;
+			}
+		}
+
+		if (!is_null($query))
+		{
+			$db->setQuery($query);
+			$db->execute();
+		}
+	}
+
+	/**
+	 * This is not supported by the belongsTo relation
+	 *
+	 * @throws DataModel\Relation\Exception\NewNotSupported when it's not supported
+	 */
+	public function getNew()
+	{
+		throw new DataModel\Relation\Exception\NewNotSupported(
+			"getNew() is not supported for many-to-may relations. Please add/remove items from the relation data and use push() to effect changes."
+		);
+	}
+
+	/**
 	 * Applies the relation filters to the foreign model when getData is called
 	 *
-	 * @param DataModel  $foreignModel   The foreign model you're operating on
-	 * @param Collection $dataCollection If it's an eager loaded relation, the collection of loaded parent records
+	 * @param   DataModel   $foreignModel    The foreign model you're operating on
+	 * @param   Collection  $dataCollection  If it's an eager loaded relation, the collection of loaded parent records
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
@@ -184,7 +318,7 @@ class BelongsToMany extends DataModel\Relation
 			if (!empty($dataCollection))
 			{
 				// Get a list of local keys from the collection
-				$values = array();
+				$values = [];
 
 				/** @var $item DataModel */
 				foreach ($dataCollection as $item)
@@ -199,30 +333,31 @@ class BelongsToMany extends DataModel\Relation
 
 				// Keep only unique values
 				$values = array_unique($values);
-				$values = array_map(function ($x) use (&$db)
-				{
-					return $db->q($x);
-				}, $values);
+				$values = array_map(
+					function ($x) use (&$db) {
+						return $db->q($x);
+					}, $values
+				);
 
 				// Get the foreign keys from the glue table
 				$query = $db->getQuery(true)
-					->select(array($db->qn($this->pivotLocalKey), $db->qn($this->pivotForeignKey)))
+					->select([$db->qn($this->pivotLocalKey), $db->qn($this->pivotForeignKey)])
 					->from($db->qn($this->pivotTable))
 					->where($db->qn($this->pivotLocalKey) . ' IN(' . implode(',', $values) . ')');
 				$db->setQuery($query);
 				$foreignKeysUnmapped = $db->loadRowList();
 
-				$this->foreignKeyMap = array();
-				$foreignKeys = array();
+				$this->foreignKeyMap = [];
+				$foreignKeys         = [];
 
 				foreach ($foreignKeysUnmapped as $unmapped)
 				{
-					$local = $unmapped[0];
+					$local   = $unmapped[0];
 					$foreign = $unmapped[1];
 
 					if (!isset($this->foreignKeyMap[$local]))
 					{
-						$this->foreignKeyMap[$local] = array();
+						$this->foreignKeyMap[$local] = [];
 					}
 
 					$this->foreignKeyMap[$local][] = $foreign;
@@ -274,121 +409,5 @@ class BelongsToMany extends DataModel\Relation
 		}
 
 		return true;
-	}
-
-	/**
-	 * Returns the count subquery for DataModel's has() and whereHas() methods.
-	 *
-	 * @return Query
-	 */
-	public function getCountSubquery()
-	{
-		// Get a model instance
-		$container = Application::getInstance($this->foreignModelApp)->getContainer();
-		/** @var DataModel $foreignModel */
-		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
-
-		$db = $foreignModel->getDbo();
-
-		$query = $db->getQuery(true)
-			->select('COUNT(*)')
-			->from($db->qn($foreignModel->getTableName()) . ' AS ' . $db->qn('reltbl'))
-			->innerJoin(
-				$db->qn($this->pivotTable) . ' AS ' . $db->qn('pivotTable') . ' ON('
-				. $db->qn('pivotTable') . '.' . $db->qn($this->pivotForeignKey) . ' = '
-				. $db->qn('reltbl') . '.' . $db->qn($foreignModel->getFieldAlias($this->foreignKey))
-				. ')'
-			)
-			->where(
-				$db->qn('pivotTable') . '.' . $db->qn($this->pivotLocalKey) . ' ='
-				. $db->qn($this->parentModel->getTableName()) . '.'
-				. $db->qn($this->parentModel->getFieldAlias($this->localKey))
-			);
-
-		return $query;
-	}
-
-	/**
-	 * Saves all related items. For many-to-many relations there are two things we have to do:
-	 * 1. Save all related items; and
-	 * 2. Overwrite the pivot table data with the new associations
-	 */
-	public function saveAll()
-	{
-		// Save all related items
-		parent::saveAll();
-
-		// Get all the new keys
-		$newKeys = array();
-
-		if ($this->data instanceof Collection)
-		{
-			foreach ($this->data as $item)
-			{
-				if ($item instanceof DataModel)
-				{
-					$newKeys[] = $item->getId();
-				}
-				elseif (!is_object($item))
-				{
-					$newKeys[] = $item;
-				}
-			}
-		}
-
-		$newKeys = array_unique($newKeys);
-
-		$db = $this->parentModel->getDbo();
-		$localKeyValue = $this->parentModel->getFieldValue($this->localKey);
-
-		// Kill all existing relations in the pivot table
-		$query = $db->getQuery(true)
-			->delete($db->qn($this->pivotTable))
-			->where($db->qn($this->pivotLocalKey) . ' = ' . $db->q($localKeyValue));
-		$db->setQuery($query);
-		$db->execute();
-
-		// Write the new relations to the database
-		$protoQuery = $db->getQuery(true)
-			->insert($db->qn($this->pivotTable))
-			->columns(array($db->qn($this->pivotLocalKey), $db->qn($this->pivotForeignKey)));
-
-		$i = 0;
-		$query = null;
-
-		foreach ($newKeys as $key)
-		{
-			$i++;
-
-			if (is_null($query))
-			{
-				$query = clone $protoQuery;
-			}
-
-			$query->values($db->q($localKeyValue) . ', ' . $db->q($key));
-
-			if (($i % 50) == 0)
-			{
-				$db->setQuery($query);
-				$db->execute();
-				$query = null;
-			}
-		}
-
-		if (!is_null($query))
-		{
-			$db->setQuery($query);
-			$db->execute();
-		}
-	}
-
-	/**
-	 * This is not supported by the belongsTo relation
-	 *
-	 * @throws DataModel\Relation\Exception\NewNotSupported when it's not supported
-	 */
-	public function getNew()
-	{
-		throw new DataModel\Relation\Exception\NewNotSupported("getNew() is not supported for many-to-may relations. Please add/remove items from the relation data and use push() to effect changes.");
 	}
 }

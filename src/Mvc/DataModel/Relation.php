@@ -9,11 +9,11 @@ namespace Awf\Mvc\DataModel;
 
 
 use Awf\Application\Application;
+use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
-use Awf\Mvc\DataModel\Collection;
 
 abstract class Relation implements ContainerAwareInterface
 {
@@ -22,11 +22,19 @@ abstract class Relation implements ContainerAwareInterface
 	/** @var   DataModel  The data model we are attached to */
 	protected $parentModel = null;
 
-	/** @var   string  The class name of the foreign key's model */
+	/** @var   string  The name of the model of the foreign key */
 	protected $foreignModelClass = null;
 
-	/** @var   string  The application name of the foreign model */
+	/**
+	 * The application name of the foreign model
+	 *
+	 * @var   string
+	 * @deprecated
+	 */
 	protected $foreignModelApp = null;
+
+	/** @var Container|null The container of the foreign model */
+	protected $foreignModelContainer = null;
 
 	/** @var   string  The bade name of the foreign model */
 	protected $foreignModelName = null;
@@ -50,7 +58,7 @@ abstract class Relation implements ContainerAwareInterface
 	protected $data = null;
 
 	/** @var array Maps each local table key to an array of foreign table keys, used in many-to-many relations */
-	protected $foreignKeyMap = array();
+	protected $foreignKeyMap = [];
 
 	/**
 	 * Public constructor. Initialises the relation.
@@ -60,31 +68,38 @@ abstract class Relation implements ContainerAwareInterface
 	 * @param   string|null  $localKey           The local table key for this relation
 	 * @param   string|null  $foreignKey         The foreign key for this relation
 	 * @param   string|null  $pivotTable         For many-to-many relations, the pivot (glue) table
-	 * @param   string|null  $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local key
-	 * @param   string|null  $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   string|null  $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local
+	 *                                           key
+	 * @param   string|null  $pivotForeignKey    For many-to-many relations, the pivot table's column storing the
+	 *                                           foreign key
 	 */
-	public function __construct(DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null, ?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null)
+	public function __construct(
+		DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null,
+		?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null,
+		?Container $foreignModelContainer = null
+	)
 	{
 		$this->setContainer($parentModel->getContainer());
-		$this->parentModel = $parentModel;
-		$this->foreignModelClass = $foreignModelClass;
-		$this->localKey = $localKey;
-		$this->foreignKey = $foreignKey;
-		$this->pivotTable = $pivotTable;
-		$this->pivotLocalKey = $pivotLocalKey;
-		$this->pivotForeignKey = $pivotForeignKey;
+		$this->parentModel           = $parentModel;
+		$this->localKey              = $localKey;
+		$this->foreignKey            = $foreignKey;
+		$this->pivotTable            = $pivotTable;
+		$this->pivotLocalKey         = $pivotLocalKey;
+		$this->pivotForeignKey       = $pivotForeignKey;
+		$this->foreignModelContainer = $foreignModelContainer;
+		$this->foreignModelClass     = $foreignModelClass;
 
-		$class = $foreignModelClass;
-
-		// Work around for PHP 5.3.0 - 5.3.2 https://bugs.php.net/50731
-		if ('\\' == $class[0])
+		if (empty($foreignModelContainer))
 		{
-			$class = substr($class, 1);
+			$class = ltrim($foreignModelClass, '\\');
+			$foreignParts           = explode('\\', $class);
+			$this->foreignModelApp  = $foreignParts[0];
+			$this->foreignModelName = $foreignParts[2];
 		}
-
-		$foreignParts = explode('\\', $class);
-		$this->foreignModelApp = $foreignParts[0];
-		$this->foreignModelName = $foreignParts[2];
+		else
+		{
+			$this->foreignModelApp = null;
+		}
 	}
 
 	/**
@@ -94,8 +109,8 @@ abstract class Relation implements ContainerAwareInterface
 	 */
 	public function reset()
 	{
-		$this->data = null;
-		$this->foreignKeyMap = array();
+		$this->data          = null;
+		$this->foreignKeyMap = [];
 
 		return $this;
 	}
@@ -103,7 +118,7 @@ abstract class Relation implements ContainerAwareInterface
 	/**
 	 * Rebase the relation to a different model
 	 *
-	 * @param DataModel $model
+	 * @param   DataModel  $model
 	 *
 	 * @return $this For chaining
 	 */
@@ -112,6 +127,11 @@ abstract class Relation implements ContainerAwareInterface
 		$this->parentModel = $model;
 
 		return $this->reset();
+	}
+
+	public function getContainer(): Container
+	{
+		return $this->foreignModelContainer ?: Application::getInstance($this->foreignModelApp)->getContainer();
 	}
 
 	/**
@@ -123,7 +143,7 @@ abstract class Relation implements ContainerAwareInterface
 	 * $foreignModel->setState('foo', 'bar')
 	 *
 	 * @param   callable|null  $callback  The callback to run on the remote model.
-	 * @param Collection       $dataCollection
+	 * @param   Collection     $dataCollection
 	 *
 	 * @return Collection|DataModel
 	 */
@@ -135,7 +155,7 @@ abstract class Relation implements ContainerAwareInterface
 			$this->data = new Collection();
 
 			// Get a model instance
-			$container = Application::getInstance($this->foreignModelApp)->getContainer();
+			$container = $this->getContainer();
 			/** @var DataModel $foreignModel */
 			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName)
 				->setIgnoreRequest(true);
@@ -164,8 +184,8 @@ abstract class Relation implements ContainerAwareInterface
 	 * Populates the internal $this->data collection from the contents of the provided collection. This is used by
 	 * DataModel to push the eager loaded data into each item's relation.
 	 *
-	 * @param Collection $data   The relation data to push into this relation
-	 * @param mixed      $keyMap Used by many-to-many relations to pass around the local to foreign key map
+	 * @param   Collection  $data    The relation data to push into this relation
+	 * @param   mixed       $keyMap  Used by many-to-many relations to pass around the local to foreign key map
 	 *
 	 * @return void
 	 */
@@ -187,16 +207,6 @@ abstract class Relation implements ContainerAwareInterface
 			}
 		}
 	}
-
-	/**
-	 * Applies the relation filters to the foreign model when getData is called
-	 *
-	 * @param DataModel  $foreignModel   The foreign model you're operating on
-	 * @param Collection $dataCollection If it's an eager loaded relation, the collection of loaded parent records
-	 *
-	 * @return boolean Return false to force an empty data collection
-	 */
-	abstract protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null);
 
 	/**
 	 * Returns the count subquery for DataModel's has() and whereHas() methods.
@@ -241,4 +251,14 @@ abstract class Relation implements ContainerAwareInterface
 	{
 		return $this->foreignKeyMap;
 	}
+
+	/**
+	 * Applies the relation filters to the foreign model when getData is called
+	 *
+	 * @param   DataModel   $foreignModel    The foreign model you're operating on
+	 * @param   Collection  $dataCollection  If it's an eager loaded relation, the collection of loaded parent records
+	 *
+	 * @return boolean Return false to force an empty data collection
+	 */
+	abstract protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null);
 }

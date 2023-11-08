@@ -7,11 +7,19 @@
 
 namespace Awf\Mvc\DataModel;
 
+use Awf\Container\Container;
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel;
+use Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound;
+use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
+use RuntimeException;
 
-class RelationManager
+class RelationManager implements ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
 	/** @var DataModel The data model we are attached to */
 	protected $parentModel = null;
 
@@ -33,11 +41,10 @@ class RelationManager
 	{
 		// Set the parent model
 		$this->parentModel = $parentModel;
+		$this->setContainer($this->parentModel->getContainer());
 
 		// Make sure the relation types are initialised
 		static::getRelationTypes();
-
-		// @todo Maybe set up a few relations automatically?
 	}
 
 	/**
@@ -145,52 +152,66 @@ class RelationManager
 	/**
 	 * Adds a relation to the relation manager
 	 *
-	 * @param   string $name               The name of the relation as known to this relation manager, e.g. 'phone'
-	 * @param   string $type               The relation type, e.g. 'hasOne'
-	 * @param   string $foreignModelClass  The class name of the foreign key's model, e.g. '\Foobar\Phones'
-	 * @param   string $localKey           The local table key for this relation
-	 * @param   string $foreignKey         The foreign key for this relation
-	 * @param   string $pivotTable         For many-to-many relations, the pivot (glue) table
-	 * @param   string $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local key
-	 * @param   string $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   string          $name               The name of the relation as known to this relation manager, e.g. 'phone'
+	 * @param   string          $type               The relation type, e.g. 'hasOne'
+	 * @param   string|null     $foreignModelClass  The class name of the foreign key's model, e.g. '\Foobar\Phones'
+	 * @param   string|null     $localKey           The local table key for this relation
+	 * @param   string|null     $foreignKey         The foreign key for this relation
+	 * @param   string|null     $pivotTable         For many-to-many relations, the pivot (glue) table
+	 * @param   string|null     $pivotLocalKey      For many-to-many relations, the pivot table's column storing the local key
+	 * @param   string|null     $pivotForeignKey    For many-to-many relations, the pivot table's column storing the foreign key
+	 * @param   Container|null  $foreignKeyContainer
 	 *
 	 * @return DataModel The parent model, for chaining
 	 *
-	 * @throws Relation\Exception\RelationTypeNotFound when $type is not known
-	 * @throws Relation\Exception\ForeignModelNotFound when $foreignModelClass doesn't exist
+	 * @throws ForeignModelNotFound when $foreignModelClass doesn't exist
+	 * @throws RelationTypeNotFound when $type is not known
 	 */
-	public function addRelation($name, $type, $foreignModelClass = null, $localKey = null, $foreignKey = null, $pivotTable = null, $pivotLocalKey = null, $pivotForeignKey = null)
+	public function addRelation(
+		string $name, string $type, ?string $foreignModelClass = null, ?string $localKey = null,
+		?string $foreignKey = null, ?string $pivotTable = null, ?string $pivotLocalKey = null,
+		?string $pivotForeignKey = null, ?Container $foreignKeyContainer = null
+	)
 	{
 		if (!isset(static::$relationTypes[$type]))
 		{
 			throw new DataModel\Relation\Exception\RelationTypeNotFound("Relation type '$type' not found");
 		}
 
-		// Guess the foreign model class if necessary
+		$foreignKeyContainer = $foreignKeyContainer ?? $this->getContainer();
+
 		if (empty($foreignModelClass) || !class_exists($foreignModelClass, true))
 		{
-			$parentClass = get_class($this->parentModel);
-			$classNameParts = explode('\\', $parentClass);
-			array_pop($classNameParts);
-			$classPrefix = implode('\\', $classNameParts);
-
-			$foreignModelClass = $classPrefix . '\\' . ucfirst($name);
-
-			if (!class_exists($foreignModelClass, true))
+			try
 			{
-				$foreignModelClass = $classPrefix . '\\' . ucfirst(Inflector::pluralize($name));
+				$model = $foreignKeyContainer->mvcFactory->makeTempModel($foreignModelClass);
 			}
-		}
+			catch (RuntimeException $e)
+			{
+				// Guess the foreign model class if necessary
+				$parentClass = get_class($this->parentModel);
+				$classNameParts = explode('\\', $parentClass);
+				array_pop($classNameParts);
+				$classPrefix = implode('\\', $classNameParts);
 
-		if (!class_exists($foreignModelClass, true))
-		{
-			throw new DataModel\Relation\Exception\ForeignModelNotFound("Foreign model '$foreignModelClass' for relation '$name' not found");
+				$foreignModelClass = $classPrefix . '\\' . ucfirst($name);
+
+				if (!class_exists($foreignModelClass, true))
+				{
+					$foreignModelClass = $classPrefix . '\\' . ucfirst(Inflector::pluralize($name));
+				}
+
+				if (!class_exists($foreignModelClass, true))
+				{
+					throw new DataModel\Relation\Exception\ForeignModelNotFound("Foreign model '$foreignModelClass' for relation '$name' not found");
+				}
+			}
 		}
 
 		$className = static::$relationTypes[$type];
 		/** @var Relation $relation */
 		$relation = new $className($this->parentModel, $foreignModelClass, $localKey, $foreignKey,
-			$pivotTable, $pivotLocalKey, $pivotForeignKey);
+			$pivotTable, $pivotLocalKey, $pivotForeignKey, $foreignKeyContainer);
 
 		$this->relations[$name] = $relation;
 
