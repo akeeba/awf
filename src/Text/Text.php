@@ -429,7 +429,14 @@ abstract class Text
 		{
 			$args[0] = self::_($string);
 
-			return call_user_func_array('sprintf', $args);
+			try
+			{
+				return call_user_func_array('sprintf', $args);
+			}
+			catch (\Throwable $e)
+			{
+				return 'BAD TRANSLATION. LANGUAGE KEY “' . $string . '” HAS THE WRONG NUMBER OR KIND OF VALUE ARGUMENTS.';
+			}
 		}
 
 		return '';
