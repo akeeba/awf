@@ -86,9 +86,16 @@ abstract class Application implements ContainerAwareInterface
 		$this->setTemplate();
 
 		// Load the translation strings
-		$container['language'] = function ($container) {
-			return $container->languageFactory(null, null, [[$this, 'processLanguageIniFile']]);
-		};
+		try
+		{
+			$container['language'] = function ($container) {
+				return $container->languageFactory(null, null, [[$this, 'processLanguageIniFile']]);
+			};
+		}
+		catch (\Exception $e)
+		{
+			// This will fail if we've already loaded the languages earlier. No worries, then!
+		}
 	}
 
 	/**

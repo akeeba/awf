@@ -7,11 +7,9 @@
 
 namespace Awf\Text;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
-use Awf\Exception\App;
 use Awf\User\UserInterface;
 use Awf\Utils\ParseIni;
 
