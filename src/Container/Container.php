@@ -20,6 +20,7 @@ use Awf\Container\Defaults\FilesystemProvider;
 use Awf\Container\Defaults\HelperProvider;
 use Awf\Container\Defaults\HTMLHelperProvider;
 use Awf\Container\Defaults\InputProvider;
+use Awf\Container\Defaults\LanguageFactoryProvider;
 use Awf\Container\Defaults\MailerProvider;
 use Awf\Container\Defaults\MVCFactoryProvider;
 use Awf\Container\Defaults\RouterProvider;
@@ -41,7 +42,9 @@ use Awf\Pimple\Pimple;
 use Awf\Router\Router;
 use Awf\Session\Manager as SessionManager;
 use Awf\Session\Segment as SessionSegment;
+use Awf\Text\Language;
 use Awf\User\ManagerInterface as UserManagerInterface;
+use Awf\User\UserInterface;
 
 /**
  * Dependency injection container for Awf's Application
@@ -77,6 +80,7 @@ use Awf\User\ManagerInterface as UserManagerInterface;
  * @property-read  HelperService        $helper                The helper server
  * @property-read  HtmlService          $html                  The HTML helper service
  * @property-read  Input                $input                 The global application input object
+ * @property-read  Language             $language              The global language object
  * @property-read  Mailer               $mailer                The email sender. Note: this is a factory method
  * @property-read  MVCFactory           $mvcFactory            The MVC factory
  * @property-read  Router               $router                The URL router
@@ -85,6 +89,7 @@ use Awf\User\ManagerInterface as UserManagerInterface;
  * @property-read  UserManagerInterface $userManager           The user manager object
  *
  * @method         Date  dateFactory(string $date = 'now', $tz = null)
+ * @method         Language  languageFactory(string|null $langCode = null, UserInterface|null $user = null, callable|callable[] $callbacks = [])
  */
 class Container extends Pimple
 {
@@ -123,6 +128,7 @@ class Container extends Pimple
 				'segment'              => new SegmentProvider(),
 				'userManager'          => new UserManagerProvider(),
 				'dateFactory'          => new DateFactoryProvider(),
+				'languageFactory'      => new LanguageFactoryProvider(),
 				'html'                 => new HTMLHelperProvider(),
 				'helper'               => new HelperProvider(),
 			], $values

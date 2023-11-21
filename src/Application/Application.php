@@ -86,9 +86,9 @@ abstract class Application implements ContainerAwareInterface
 		$this->setTemplate();
 
 		// Load the translation strings
-		$languagePath = $container->languagePath;
-		Text::loadLanguage(null, $this->container, '.ini', true, $languagePath, [$this, 'processLanguageIniFile']);
-		Text::loadLanguage('en-GB', $this->container, '.ini', false, $languagePath, [$this, 'processLanguageIniFile']);
+		$container['language'] = function ($container) {
+			return $container->languageFactory(null, null, [[$this, 'processLanguageIniFile']]);
+		};
 	}
 
 	/**
