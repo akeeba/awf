@@ -21,6 +21,7 @@ use Awf\Container\Defaults\HelperProvider;
 use Awf\Container\Defaults\HTMLHelperProvider;
 use Awf\Container\Defaults\InputProvider;
 use Awf\Container\Defaults\LanguageFactoryProvider;
+use Awf\Container\Defaults\LanguageProvider;
 use Awf\Container\Defaults\MailerProvider;
 use Awf\Container\Defaults\MVCFactoryProvider;
 use Awf\Container\Defaults\RouterProvider;
@@ -89,7 +90,8 @@ use Awf\User\UserInterface;
  * @property-read  UserManagerInterface $userManager           The user manager object
  *
  * @method         Date  dateFactory(string $date = 'now', $tz = null)
- * @method         Language  languageFactory(string|null $langCode = null, UserInterface|null $user = null, callable|callable[] $callbacks = [])
+ * @method         Language  languageFactory(string|null $langCode = null, UserInterface|null $user = null)
+ *                 callable|callable[] $callbacks = [])
  */
 class Container extends Pimple
 {
@@ -129,6 +131,7 @@ class Container extends Pimple
 				'userManager'          => new UserManagerProvider(),
 				'dateFactory'          => new DateFactoryProvider(),
 				'languageFactory'      => new LanguageFactoryProvider(),
+				'language'             => new LanguageProvider(),
 				'html'                 => new HTMLHelperProvider(),
 				'helper'               => new HelperProvider(),
 			], $values
