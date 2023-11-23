@@ -721,7 +721,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected function compileLang(string $expression): string
 	{
-		return "<?php echo \\Awf\\Text\\Text::_$expression; ?>";
+		return "<?php echo \$this->getLanguage()->text$expression; ?>";
 	}
 
 	/**
@@ -734,7 +734,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected function compileSprintf(string $expression): string
 	{
-		return "<?php echo \\Awf\\Text\\Text::sprintf$expression; ?>";
+		return "<?php echo \$this->getLanguage()->sprintf$expression; ?>";
 	}
 
 	/**
@@ -751,7 +751,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected function compilePlural(string $expression): string
 	{
-		return "<?php echo \\Awf\\Text\\Text::plural$expression; ?>";
+		return "<?php echo \$this->getLanguage()->plural$expression; ?>";
 	}
 
 	/**

@@ -14,6 +14,9 @@ use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\EngineInterface;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 use ErrorException;
@@ -29,9 +32,10 @@ use Throwable;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class View implements ContainerAwareInterface
+class View implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/**
 	 * Current or most recently performed task.
@@ -213,7 +217,7 @@ class View implements ContainerAwareInterface
 	 *
 	 * @throws  App
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
 		/** @deprecated 2.0 You must provide the container */
 		if (empty($container))
@@ -226,12 +230,15 @@ class View implements ContainerAwareInterface
 			$container = Application::getInstance()->getContainer();
 		}
 
+		$this->setContainer($container);
+		$this->setLanguage($language ?? $container->language);
+
 		$container->eventDispatcher->trigger('onViewBeforeConstruct', [$this, $container]);
+
+		$container = $this->getContainer();
 
 		// Cache some useful references in the class
 		$this->input = $container->input;
-
-		$this->setContainer($container);
 
 		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : [];
 
@@ -332,7 +339,7 @@ class View implements ContainerAwareInterface
 	 * @return  self
 	 * @throws  App
 	 */
-	public static function getInstance(?string $appName = null, ?string $viewName = null, ?string $viewType = null, ?Container $container = null)
+	public static function getInstance(?string $appName = null, ?string $viewName = null, ?string $viewType = null, ?Container $container = null, ?Language $language = null)
 	{
 		trigger_error(
 			sprintf(
@@ -343,7 +350,7 @@ class View implements ContainerAwareInterface
 		);
 
 		return ($container ?? Application::getInstance($appName)->getContainer())
-			->mvcFactory->makeView($viewName, $viewType);
+			->mvcFactory->makeView($viewName, $viewType, $language);
 	}
 
 	/**
@@ -364,7 +371,7 @@ class View implements ContainerAwareInterface
 
 			if (!preg_match('/(.*)\\\\View\\\\(.*)\\\\(.*)/i', get_class($this), $r))
 			{
-				throw new RuntimeException(Text::_('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
+				throw new RuntimeException($this->getContainer()->language->text('AWF_APPLICATION_ERROR_VIEW_GET_NAME'), 500);
 			}
 
 			$this->name = $r[2];
@@ -476,7 +483,7 @@ class View implements ContainerAwareInterface
 		{
 			$mvcConfig                        = $this->container['mvc_config'] ?? [];
 			$this->container['mvc_config']    = ($config ?: $this->config);
-			$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName);
+			$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName, $this->getLanguage());
 			$this->container['mvc_config']    = $mvcConfig;
 		}
 
@@ -540,7 +547,7 @@ class View implements ContainerAwareInterface
 
 			if (!$result)
 			{
-				throw new Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+				throw new Exception($this->getContainer()->language->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
 		}
 
@@ -561,7 +568,7 @@ class View implements ContainerAwareInterface
 
 			if (!$result)
 			{
-				throw new Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+				throw new Exception($this->getContainer()->language->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
 		}
 
@@ -829,7 +836,7 @@ class View implements ContainerAwareInterface
 			}
 			elseif (akeeba_starts_with($empty, 'text|'))
 			{
-				$result = Text::_(substr($empty, 5));
+				$result = $this->getContainer()->language->text(substr($empty, 5));
 			}
 			else
 			{

@@ -12,6 +12,9 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Input\Input;
 use Awf\Application\Application;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 use Awf\Mvc;
 
@@ -22,9 +25,10 @@ use Awf\Mvc;
  *
  * @package Awf\Dispatcher
  */
-class Dispatcher implements ContainerAwareInterface
+class Dispatcher implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/** @var   Input  Input variables */
 	protected $input = array();
@@ -43,7 +47,7 @@ class Dispatcher implements ContainerAwareInterface
 	 *
 	 * @param   Container|null  $container  The container this dispatcher belongs to
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
 		/** @deprecated 2.0 The container argument will become mandatory */
 		if (empty($container))
@@ -57,6 +61,7 @@ class Dispatcher implements ContainerAwareInterface
 		}
 
 		$this->setContainer($container);
+		$this->setLanguage($language ?? $container->language);
 
 		$this->input = $container->input;
 
@@ -103,7 +108,7 @@ class Dispatcher implements ContainerAwareInterface
 				$this->container->application->close();
 			}
 
-			throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+			throw new \Exception($this->getLanguage()->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 		}
 
 		// Get and execute the controller
@@ -121,12 +126,12 @@ class Dispatcher implements ContainerAwareInterface
 
 		if ($status === false)
 		{
-			throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+			throw new \Exception($this->getLanguage()->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 		}
 
 		if (!$this->onAfterDispatch())
 		{
-			throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+			throw new \Exception($this->getLanguage()->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 		}
 
 		$controller->redirect();

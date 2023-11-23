@@ -11,7 +11,6 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
-use Awf\Text\Text;
 use Awf\Timer\Timer;
 
 class Download implements ContainerAwareInterface
@@ -67,6 +66,8 @@ class Download implements ContainerAwareInterface
 
 			/** @var Adapter\AbstractAdapter $adapter */
 			$adapter = new $adapterInfo['classname'];
+
+			$adapter->setContainer($this->getContainer());
 
 			if (!$adapter->isSupported())
 			{
@@ -331,7 +332,7 @@ class Download implements ContainerAwareInterface
                     {
                         // Can't open the file for writing
                         $retArray['status'] = false;
-                        $retArray['error']  = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_COULDNOTWRITELOCALFILE', $localFilename);
+                        $retArray['error']  = $this->container->language->sprintf('AWF_DOWNLOAD_ERR_LIB_COULDNOTWRITELOCALFILE', $localFilename);
 
                         return $retArray;
                     }

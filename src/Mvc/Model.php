@@ -16,6 +16,9 @@ use Awf\Inflector\Inflector;
 use Awf\Input\Filter;
 use Awf\Input\Input;
 use Awf\Registry\Registry;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 use RuntimeException;
 
@@ -27,9 +30,10 @@ use RuntimeException;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class Model implements ContainerAwareInterface
+class Model implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/**
 	 * Input variables, passed on from the controller, in an associative array
@@ -101,7 +105,7 @@ class Model implements ContainerAwareInterface
 	 *
 	 * @throws App
 	 */
-	public static function getInstance(?string $appName = null, ?string $modelName = '', ?Container $container = null)
+	public static function getInstance(?string $appName = null, ?string $modelName = '', ?Container $container = null, ?Language $language = null)
 	{
 		trigger_error(
 			sprintf(
@@ -112,7 +116,7 @@ class Model implements ContainerAwareInterface
 		);
 
 		return ($container ?? Application::getInstance($appName)->getContainer())
-			->mvcFactory->makeModel($modelName);
+			->mvcFactory->makeModel($modelName, $language);
 	}
 
 	/**
@@ -127,7 +131,7 @@ class Model implements ContainerAwareInterface
 	 *
 	 * @throws App
 	 */
-	public static function getTmpInstance(?string $appName = '', ?string $modelName = '', ?Container $container = null)
+	public static function getTmpInstance(?string $appName = '', ?string $modelName = '', ?Container $container = null, ?Language $language = null)
 	{
 		trigger_error(
 			sprintf(
@@ -138,7 +142,7 @@ class Model implements ContainerAwareInterface
 		);
 
 		return ($container ?? Application::getInstance($appName)->getContainer())
-			->mvcFactory->makeTempModel($modelName);
+			->mvcFactory->makeTempModel($modelName, $language);
 	}
 
 	/**
@@ -153,7 +157,7 @@ class Model implements ContainerAwareInterface
 	 *
 	 * @throws  App
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
 		/** @deprecated 2.0 You must provide the container */
 		if (empty($container))
@@ -166,11 +170,14 @@ class Model implements ContainerAwareInterface
 			$container = Application::getInstance()->getContainer();
 		}
 
+		$this->setContainer($container);
+		$this->setLanguage($language ?? $container->language);
+
 		$container->eventDispatcher->trigger('onModelBeforeConstruct', [$this, $container]);
 
-		$this->input = $container->input;
+		$container = $this->getContainer();
 
-		$this->setContainer($container);
+		$this->input = $container->input;
 
 		$this->config = isset($container['mvc_config']) ? $container['mvc_config'] : array();
 
@@ -232,7 +239,7 @@ class Model implements ContainerAwareInterface
 
 			if (!preg_match('/(.*)\\\\Model\\\\(.*)/i', get_class($this), $r))
 			{
-				throw new RuntimeException(Text::_('AWF_APPLICATION_ERROR_MODEL_GET_NAME'), 500);
+				throw new RuntimeException($this->getContainer()->language->text('AWF_APPLICATION_ERROR_MODEL_GET_NAME'), 500);
 			}
 
 			$this->name = $r[2];

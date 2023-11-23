@@ -13,6 +13,9 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
 use Awf\Input\Input;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 use Exception;
 use RuntimeException;
@@ -25,9 +28,10 @@ use RuntimeException;
  * @package Awf\Mvc
  */
 #[\AllowDynamicProperties]
-class Controller implements ContainerAwareInterface
+class Controller implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/**
 	 * Instance container.
@@ -162,7 +166,7 @@ class Controller implements ContainerAwareInterface
 	 *
 	 * @throws  App
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
 		// Initialise
 		$this->methods     = [];
@@ -183,14 +187,16 @@ class Controller implements ContainerAwareInterface
 			$container = Application::getInstance()->getContainer();
 		}
 
+		$this->setContainer($container);
+		$this->setLanguage($language ?? $container->language);
+
 		$container->eventDispatcher->trigger('onControllerBeforeConstruct', [$this, $container]);
 
+		$container = $this->getContainer();
 		$config = $container['mvc_config'] ?? [];
 
 		// Get local copies of things included in the container
 		$this->input = $container->input;
-
-		$this->setContainer($container);
 
 		// Determine the methods to exclude from the base class.
 		$xMethods = get_class_methods('\\Awf\\Mvc\\Controller');
@@ -267,7 +273,7 @@ class Controller implements ContainerAwareInterface
 	 * @throws  RuntimeException  When you are referring to a controller class which doesn't exist
 	 * @deprecated 2.0 Go through the MVCFactory in the container instead
 	 */
-	public static function getInstance(?string $appName = null, ?string $controller = null, ?Container $container = null)
+	public static function getInstance(?string $appName = null, ?string $controller = null, ?Container $container = null, ?Language $language = null)
 	{
 		trigger_error(
 			sprintf(
@@ -278,7 +284,7 @@ class Controller implements ContainerAwareInterface
 		);
 
 		return ($container ?? Application::getInstance($appName)->getContainer())
-			->mvcFactory->makeController($controller);
+			->mvcFactory->makeController($controller, $language);
 	}
 
 	/**
@@ -307,7 +313,7 @@ class Controller implements ContainerAwareInterface
 		}
 		else
 		{
-			throw new Exception(Text::sprintf('AWF_APPLICATION_ERROR_TASK_NOT_FOUND', $task), 404);
+			throw new Exception($this->getContainer()->language->sprintf('AWF_APPLICATION_ERROR_TASK_NOT_FOUND', $task), 404);
 		}
 
 		$method_name = 'onBeforeExecute';
@@ -487,12 +493,12 @@ class Controller implements ContainerAwareInterface
 			if (empty($name))
 			{
 				// Default model instances must have state management enabled
-				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName);
+				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName, $this->getLanguage());
 			}
 			else
 			{
 				// Other classes are loaded with persistent state disabled and their state/input blanked out
-				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName)
+				$this->modelInstances[$modelName] = $this->container->mvcFactory->makeModel($modelName, $this->getLanguage())
 					->clearState()
 					->clearInput();
 			}
@@ -542,7 +548,7 @@ class Controller implements ContainerAwareInterface
 
 			$this->container['mvc_config'] = $config;
 
-			$this->viewInstances[$viewName] = $this->container->mvcFactory->makeView($viewName, $viewType);
+			$this->viewInstances[$viewName] = $this->container->mvcFactory->makeView($viewName, $viewType, $this->getLanguage());
 		}
 
 		return $this->viewInstances[$viewName];
@@ -616,7 +622,7 @@ class Controller implements ContainerAwareInterface
 
 			if (!preg_match('/(.*)\\\\Controller\\\\(.*)/i', get_class($this), $r))
 			{
-				throw new RuntimeException(Text::_('AWF_APPLICATION_ERROR_CONTROLLER_GET_NAME'), 500);
+				throw new RuntimeException($this->getContainer()->language->text('AWF_APPLICATION_ERROR_CONTROLLER_GET_NAME'), 500);
 			}
 
 			$this->name = $r[2];

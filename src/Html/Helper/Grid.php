@@ -76,9 +76,9 @@ class Grid extends AbstractHelper
 
 		$html = '<a href="#" onclick="' . $orderingJs . '(\'' . $order . '\',\'' . $direction . '\',\'' . $task
 		        . '\');return false;"'
-		        . ' class="hasTooltip" title="' . Text::_($tip ? $tip : $title) . '">';
+		        . ' class="hasTooltip" title="' . $this->getContainer()->language->text($tip ? $tip : $title) . '">';
 
-		$html .= Text::_($title);
+		$html .= $this->getContainer()->language->text($title);
 
 		if ($order == $selected)
 		{
@@ -142,7 +142,7 @@ class Grid extends AbstractHelper
 			return '';
 		}
 
-		$altLabel = $altLabel ?: Text::_('AWF_LBL_HTML_GRID_ID_ALT_LABEL');
+		$altLabel = $altLabel ?: $this->getContainer()->language->text('AWF_LBL_HTML_GRID_ID_ALT_LABEL');
 
 		// Note: The label for the checkbox is hidden in Bootstrap (visually-hidden) and Akeeba FEF (akeeba-sr-only).
 		return <<< HTML

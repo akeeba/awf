@@ -12,6 +12,9 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Document\Menu\MenuManager;
 use Awf\Document\Toolbar\Toolbar;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 
 /**
@@ -21,9 +24,10 @@ use Awf\Text\Text;
  *
  * @package Awf\Document
  */
-abstract class Document implements ContainerAwareInterface
+abstract class Document implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/** @var   array  Cache of all document instances known to us */
 	private static $instances = [];
@@ -65,8 +69,11 @@ abstract class Document implements ContainerAwareInterface
 	/** @var   null|string  The base name of the returned document. If set, the browser will initiate a download instead of displaying content inline. */
 	protected $name = null;
 
-	public function __construct(Container $container)
+	public function __construct(Container $container, ?Language $language = null)
 	{
+		$this->setContainer($container);
+		$this->setLanguage($language ?? $container->language);
+
 		$viewPath     = $container->basePath . '/View';
 		$viewPath_alt = $container->basePath . '/views';
 
@@ -75,8 +82,6 @@ abstract class Document implements ContainerAwareInterface
 		$this->menu->initialiseFromDirectory($viewPath_alt, false);
 
 		$this->toolbar = new Toolbar($container);
-
-		$this->setContainer($container);
 	}
 
 	/**
@@ -88,8 +93,10 @@ abstract class Document implements ContainerAwareInterface
 	 *
 	 * @return  \Awf\Document\Document
 	 */
-	public static function getInstance($type, Container $container, $classPrefix = '\\Awf')
+	public static function getInstance(string $type, Container $container, ?string $classPrefix = null, ?Language $language = null)
 	{
+		$classPrefix = $classPrefix ?? '\\Awf';
+
 		if (!array_key_exists($type, self::$instances))
 		{
 			$className = $classPrefix . '\\Document\\' . ucfirst($type);
@@ -99,7 +106,7 @@ abstract class Document implements ContainerAwareInterface
 				$className = '\\Awf\\Document\\Html';
 			}
 
-			self::$instances[$type] = new $className($container);
+			self::$instances[$type] = new $className($container, $language);
 		}
 
 		return self::$instances[$type];
@@ -118,7 +125,7 @@ abstract class Document implements ContainerAwareInterface
 	public function lang(string $string, bool $jsSafe = false, bool $interpretBackSlashes = true)
 	{
 		// Translate the string.
-		$translated = Text::_($string, $jsSafe, $interpretBackSlashes);
+		$translated = $this->getLanguage()->text($string, $jsSafe, $interpretBackSlashes);
 
 		// Merge an entry into the 'akeeba.text' script option
 		$this->addScriptOptions(

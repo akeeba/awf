@@ -7,10 +7,14 @@
 
 namespace Awf\Download\Adapter;
 
+use Awf\Container\ContainerAwareInterface;
+use Awf\Container\ContainerAwareTrait;
 use Awf\Download\DownloadInterface;
 
-abstract class AbstractAdapter implements DownloadInterface
+abstract class AbstractAdapter implements DownloadInterface, ContainerAwareInterface
 {
+	use ContainerAwareTrait;
+
     /**
      * Load order priority
      *

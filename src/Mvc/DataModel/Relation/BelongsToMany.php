@@ -66,7 +66,7 @@ class BelongsToMany extends DataModel\Relation
 			// Get a model instance
 			$container = $this->getContainer();
 			/** @var DataModel $foreignModel */
-			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
+			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName, $this->foreignModelLanguage);
 
 			$this->foreignKey = $foreignModel->getIdFieldName();
 		}
@@ -89,7 +89,7 @@ class BelongsToMany extends DataModel\Relation
 				// Get a model instance
 				$container = $this->getContainer();
 				/** @var DataModel $foreignModel */
-				$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
+				$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName, $this->foreignModelLanguage);
 			}
 
 			$foreignParts = explode('\\', $foreignModel->getName());
@@ -191,7 +191,7 @@ class BelongsToMany extends DataModel\Relation
 		// Get a model instance
 		$container = $this->getContainer();
 		/** @var DataModel $foreignModel */
-		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName);
+		$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName, $this->foreignModelLanguage);
 
 		$db = $foreignModel->getDbo();
 

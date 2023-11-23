@@ -274,7 +274,7 @@ class ViewTemplateFinder implements ContainerAwareInterface
 			}
 		}
 
-		throw new \Exception(\Awf\Text\Text::sprintf('AWF_APPLICATION_ERROR_LAYOUTFILE_NOT_FOUND', $uri), 500);
+		throw new \Exception($this->getContainer()->language->sprintf('AWF_APPLICATION_ERROR_LAYOUTFILE_NOT_FOUND', $uri), 500);
 	}
 
 	/**

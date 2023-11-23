@@ -18,6 +18,7 @@ use Awf\Exception\App;
  * Internationalisation class for Awf applications
  *
  * @package Awf\Text
+ * @deprecated 2.0 Use the language object
  */
 abstract class Text
 {

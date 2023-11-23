@@ -8,7 +8,6 @@
 namespace Awf\Container\Defaults;
 
 use Awf\Container\Container;
-use Awf\Date\Date;
 use Awf\Text\Language;
 use Awf\Text\Text;
 use Awf\User\UserInterface;
