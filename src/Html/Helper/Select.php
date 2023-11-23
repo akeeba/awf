@@ -74,7 +74,10 @@ class Select extends AbstractHelper
 		$id = false
 	): string
 	{
-		$arr = [$this->option('0', Text::_($no)), $this->option('1', Text::_($yes))];
+		$arr = [
+			$this->option('0', $this->getContainer()->language->text($no)),
+			$this->option('1', $this->getContainer()->language->text($yes))
+		];
 
 		return $this->radioList($arr, $name, $attribs, 'value', 'text', (int) $selected, $id);
 	}
@@ -650,7 +653,7 @@ class Select extends AbstractHelper
 
 			if ($options['list.translate'] && !empty($label))
 			{
-				$label = Text::_($label);
+				$label = $this->getContainer()->language->text($label);
 			}
 
 			if ($options['option.label.toHtml'])
@@ -690,7 +693,7 @@ class Select extends AbstractHelper
 
 			if ($options['list.translate'])
 			{
-				$text = Text::_($text);
+				$text = $this->getContainer()->language->text($text);
 			}
 
 			// Generate the option, encoding as required
@@ -779,7 +782,7 @@ class Select extends AbstractHelper
 		foreach ($data as $obj)
 		{
 			$k  = $obj->$optKey;
-			$t  = $translate ? Text::_($obj->$optText) : $obj->$optText;
+			$t  = $translate ? $this->getContainer()->language->text($obj->$optText) : $obj->$optText;
 			$id = (isset($obj->id) ? $obj->id : null);
 
 			$extra = '';

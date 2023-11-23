@@ -167,7 +167,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 
 		if ($result === false)
 		{
-			$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_CURL_ERROR', $errno, $errmsg);
+			$error = $this->getContainer()->language->sprintf('AWF_DOWNLOAD_ERR_LIB_CURL_ERROR', $errno, $errmsg);
 		}
 		elseif (($http_status >= 300) && ($http_status <= 399) && isset($this->headers['location']) && !empty($this->headers['location']))
 		{
@@ -177,7 +177,7 @@ class Curl extends AbstractAdapter implements DownloadInterface
 		{
 			$result = false;
 			$errno = $http_status;
-			$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_HTTPERROR', $http_status);
+			$error = $this->getContainer()->language->sprintf('AWF_DOWNLOAD_ERR_LIB_HTTPERROR', $http_status);
 		}
 
 		curl_close($ch);

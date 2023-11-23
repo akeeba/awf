@@ -14,10 +14,14 @@ use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 
-abstract class Relation implements ContainerAwareInterface
+abstract class Relation implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/** @var   DataModel  The data model we are attached to */
 	protected $parentModel = null;
@@ -61,6 +65,14 @@ abstract class Relation implements ContainerAwareInterface
 	protected $foreignKeyMap = [];
 
 	/**
+	 * The language object for creating foreign models.
+	 *
+	 * @var   Language|null
+	 * @since 1.2.0
+	 */
+	protected $foreignModelLanguage = null;
+
+	/**
 	 * Public constructor. Initialises the relation.
 	 *
 	 * @param   DataModel    $parentModel        The data model we are attached to
@@ -76,10 +88,11 @@ abstract class Relation implements ContainerAwareInterface
 	public function __construct(
 		DataModel $parentModel, string $foreignModelClass, ?string $localKey = null, ?string $foreignKey = null,
 		?string $pivotTable = null, ?string $pivotLocalKey = null, ?string $pivotForeignKey = null,
-		?Container $foreignModelContainer = null
+		?Container $foreignModelContainer = null, ?Language $foreignModelLanguage = null
 	)
 	{
 		$this->setContainer($parentModel->getContainer());
+		$this->setLanguage($this->getContainer()->language);
 		$this->parentModel           = $parentModel;
 		$this->localKey              = $localKey;
 		$this->foreignKey            = $foreignKey;
@@ -87,6 +100,7 @@ abstract class Relation implements ContainerAwareInterface
 		$this->pivotLocalKey         = $pivotLocalKey;
 		$this->pivotForeignKey       = $pivotForeignKey;
 		$this->foreignModelContainer = $foreignModelContainer;
+		$this->foreignModelLanguage  = $foreignModelLanguage;
 		$this->foreignModelClass     = $foreignModelClass;
 
 		if (empty($foreignModelContainer))
@@ -129,9 +143,25 @@ abstract class Relation implements ContainerAwareInterface
 		return $this->reset();
 	}
 
-	public function getContainer(): Container
+	public function getForeignContainer(): Container
 	{
+		if (
+			empty($this->foreignModelContainer)
+		    && (
+				empty($this->foreignModelApp)
+				|| $this->foreignModelApp === $this->getContainer()->application_name
+			)
+		)
+		{
+			$this->foreignModelContainer = $this->getContainer();
+		}
+
 		return $this->foreignModelContainer ?: Application::getInstance($this->foreignModelApp)->getContainer();
+	}
+
+	public function getForeignLanguage(): Language
+	{
+		return $this->foreignModelLanguage ?: $this->getForeignContainer()->language;
 	}
 
 	/**
@@ -155,9 +185,10 @@ abstract class Relation implements ContainerAwareInterface
 			$this->data = new Collection();
 
 			// Get a model instance
-			$container = $this->getContainer();
+			$container = $this->getForeignContainer();
 			/** @var DataModel $foreignModel */
-			$foreignModel = $container->mvcFactory->makeTempModel($this->foreignModelName)
+			$foreignModel = $container->mvcFactory
+				->makeTempModel($this->foreignModelName, $this->getForeignLanguage())
 				->setIgnoreRequest(true);
 
 			$filtered = $this->filterForeignModel($foreignModel, $dataCollection);

@@ -135,12 +135,12 @@ class Basic extends AbstractHelper
 		// If no format is given use the default locale based format.
 		if (!$format)
 		{
-			$format = Text::_('DATE_FORMAT_LC1');
+			$format = $this->getContainer()->language->text('DATE_FORMAT_LC1');
 		}
 		// $format is an existing language key
-		elseif (Text::hasKey($format))
+		elseif ($this->getContainer()->language->hasKey($format))
 		{
-			$format = Text::_($format);
+			$format = $this->getContainer()->language->text($format);
 		}
 
 		return $date->format($format, true);
@@ -256,8 +256,8 @@ class Basic extends AbstractHelper
 		// Pass strings through Text.
 		if ($translate)
 		{
-			$title   = Text::_($title);
-			$content = Text::_($content);
+			$title   = $this->getContainer()->language->text($title);
+			$content = $this->getContainer()->language->text($content);
 		}
 
 		// Escape the strings.
@@ -334,7 +334,7 @@ class Basic extends AbstractHelper
 				$pickerType = !in_array($pickerType, ['jQuery', 'Pikaday']) ? 'jQuery' : $pickerType;
 
 				// @todo Implement a way for the application to override the language
-				$lang = Text::detectLanguage($this->getContainer()->application->getName());
+				$lang = $this->getContainer()->application->getLanguage()->getLangCode();
 
 				$document = $this->getContainer()->application->getDocument();
 

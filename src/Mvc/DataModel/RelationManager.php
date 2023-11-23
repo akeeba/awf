@@ -14,11 +14,15 @@ use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel;
 use Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound;
 use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use RuntimeException;
 
-class RelationManager implements ContainerAwareInterface
+class RelationManager implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/** @var DataModel The data model we are attached to */
 	protected $parentModel = null;
@@ -42,6 +46,7 @@ class RelationManager implements ContainerAwareInterface
 		// Set the parent model
 		$this->parentModel = $parentModel;
 		$this->setContainer($this->parentModel->getContainer());
+		$this->setLanguage($this->parentModel->getLanguage());
 
 		// Make sure the relation types are initialised
 		static::getRelationTypes();
@@ -170,7 +175,7 @@ class RelationManager implements ContainerAwareInterface
 	public function addRelation(
 		string $name, string $type, ?string $foreignModelClass = null, ?string $localKey = null,
 		?string $foreignKey = null, ?string $pivotTable = null, ?string $pivotLocalKey = null,
-		?string $pivotForeignKey = null, ?Container $foreignKeyContainer = null
+		?string $pivotForeignKey = null, ?Container $foreignKeyContainer = null, ?Language $foreignKeyLanguage = null
 	)
 	{
 		if (!isset(static::$relationTypes[$type]))
@@ -179,12 +184,13 @@ class RelationManager implements ContainerAwareInterface
 		}
 
 		$foreignKeyContainer = $foreignKeyContainer ?? $this->getContainer();
+		$foreignKeyLanguage = $foreignKeyLanguage ?? $foreignKeyContainer->language;
 
 		if (empty($foreignModelClass) || !class_exists($foreignModelClass, true))
 		{
 			try
 			{
-				$model = $foreignKeyContainer->mvcFactory->makeTempModel($foreignModelClass);
+				$model = $foreignKeyContainer->mvcFactory->makeTempModel($foreignModelClass, $foreignKeyLanguage);
 			}
 			catch (RuntimeException $e)
 			{
@@ -404,60 +410,27 @@ class RelationManager implements ContainerAwareInterface
 
 		if (isset(static::$relationTypes[$name]))
 		{
-			if ($numberOfArguments == 1)
-			{
-				return $this->addRelation($arguments[0], $name);
-			}
-			elseif ($numberOfArguments == 2)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1]);
-			}
-			elseif ($numberOfArguments == 3)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2]);
-			}
-			elseif ($numberOfArguments == 4)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3]);
-			}
-			elseif ($numberOfArguments == 5)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4]);
-			}
-			elseif ($numberOfArguments == 6)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5]);
-			}
-			elseif ($numberOfArguments >= 7)
-			{
-				return $this->addRelation($arguments[0], $name, $arguments[1], $arguments[2], $arguments[3], $arguments[4], $arguments[5], $arguments[6]);
-			}
-			else
+			if ($numberOfArguments < 1)
 			{
 				throw new \InvalidArgumentException("You can not create an unnamed '$name' relation");
 			}
+
+			$relName = array_shift($arguments);
+			$arguments = array_merge([$relName, $name], array_values($arguments));
+
+			return $this->addRelation(...$arguments);
 		}
 		elseif (substr($name, 0, 3) == 'get')
 		{
 			$relationName = substr($name, 3);
 			$relationName = strtolower($relationName[0]) . substr($relationName, 1);
 
-			if ($numberOfArguments == 0)
-			{
-				return $this->getData($relationName);
-			}
-			elseif ($numberOfArguments == 1)
-			{
-				return $this->getData($relationName, $arguments[0]);
-			}
-			elseif ($numberOfArguments == 2)
-			{
-				return $this->getData($relationName, $arguments[0], $arguments[1]);
-			}
-			else
+			if($numberOfArguments > 2)
 			{
 				throw new \InvalidArgumentException("Invalid number of arguments getting data for the '$relationName' relation");
 			}
+
+			return $this->getData($relationName, ...$arguments);
 		}
 
 		// Throw an exception otherwise

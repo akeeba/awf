@@ -106,7 +106,7 @@ class Csv extends Raw
 
             if (!$result)
             {
-                throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+                throw new \Exception($this->getContainer()->language->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
             }
         }
 
@@ -276,7 +276,7 @@ class Csv extends Raw
 
             if (!$result)
             {
-                throw new \Exception(Text::_('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
+                throw new \Exception($this->getContainer()->language->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
             }
         }
 

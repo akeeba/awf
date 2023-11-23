@@ -146,7 +146,7 @@ class Fopen extends AbstractAdapter implements DownloadInterface
 
         if (!isset($http_response_header) && empty($http_response_header_test))
 		{
-			$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR');
+			$error = $this->getContainer()->language->text('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR');
 			throw new \Exception($error, 404);
 		}
 		else
@@ -173,14 +173,14 @@ class Fopen extends AbstractAdapter implements DownloadInterface
 
 			if ($http_code >= 299)
 			{
-				$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR', $http_code);
+				$error = $this->getContainer()->language->sprintf('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR', $http_code);
 				throw new \Exception($error, $http_code);
 			}
 		}
 
 		if ($result === false)
 		{
-			$error = Text::sprintf('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR');
+			$error = $this->getContainer()->language->text('AWF_DOWNLOAD_ERR_LIB_FOPEN_ERROR');
 			throw new \Exception($error, 1);
 		}
 		else

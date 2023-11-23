@@ -1191,7 +1191,7 @@ class DataModel extends Model
 				$text = $this->container->application->getName() . '_' . Inflector::singularize($this->getName()) . '_ERR_'
 					. $fieldName . '_EMPTY';
 
-				throw new \RuntimeException(Text::_($text), 500);
+				throw new \RuntimeException($this->getContainer()->language->text($text), 500);
 			}
 		}
 

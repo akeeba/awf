@@ -11,6 +11,9 @@ use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Inflector\Inflector;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use RuntimeException;
 
 /**
@@ -18,13 +21,20 @@ use RuntimeException;
  *
  * @since   1.1.0
  */
-class Factory implements ContainerAwareInterface
+class Factory implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	public function __construct(Container $container)
 	{
 		$this->setContainer($container);
+		$this->languageObject = null;
+	}
+
+	public function getLanguage(): Language
+	{
+		return $this->languageObject ?? $this->getContainer()->language;
 	}
 
 	/**
@@ -35,7 +45,7 @@ class Factory implements ContainerAwareInterface
 	 * @return  Controller
 	 * @since   1.1.0
 	 */
-	public function makeController(?string $controller): Controller
+	public function makeController(?string $controller, ?Language $language = null): Controller
 	{
 		// Make sure I have a controller name
 		$controller = $controller ?? $this->container->input->getCmd('view', '');
@@ -67,7 +77,7 @@ class Factory implements ContainerAwareInterface
 			);
 		}
 
-		return new $className($this->container);
+		return new $className($this->container, $language ?? $this->getLanguage());
 	}
 
 	/**
@@ -78,7 +88,7 @@ class Factory implements ContainerAwareInterface
 	 * @return  Model
 	 * @since   1.1.0
 	 */
-	public function makeModel(?string $modelName): Model
+	public function makeModel(?string $modelName, ?Language $language = null): Model
 	{
 		// Make sure I have a model name
 		$modelName = $modelName ?? $this->container->input->getCmd('view', '');
@@ -111,7 +121,7 @@ class Factory implements ContainerAwareInterface
 		}
 
 		/** @var Model $model */
-		$model  = new $className($this->container);
+		$model  = new $className($this->container, $language ?? $language ?? $this->getLanguage());
 		$config = $container['mvc_config'] ?? [];
 		$isDeprecated = false;
 
@@ -157,9 +167,9 @@ class Factory implements ContainerAwareInterface
 	 * @return  Model
 	 * @since   1.1.0
 	 */
-	public function makeTempModel(?string $modelName): Model
+	public function makeTempModel(?string $modelName, ?Language $language = null): Model
 	{
-		return $this->makeModel($modelName)
+		return $this->makeModel($modelName, $language ?? $this->getLanguage())
 			->getClone()
 			->savestate(0)
 			->clearState()
@@ -174,7 +184,7 @@ class Factory implements ContainerAwareInterface
 	 *
 	 * @return  View
 	 */
-	public function makeView(string $viewName = null, string $viewType = null): View
+	public function makeView(string $viewName = null, string $viewType = null, ?Language $language = null): View
 	{
 		// Make sure I have a view name
 		$viewName = $viewName ?? $this->container->input->getCmd('view', '');
@@ -208,6 +218,6 @@ class Factory implements ContainerAwareInterface
 			);
 		}
 
-		return new $className($this->container);
+		return new $className($this->container, $language ?? $this->getLanguage());
 	}
 }

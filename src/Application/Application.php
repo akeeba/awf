@@ -13,6 +13,9 @@ use Awf\Container\ContainerAwareTrait;
 use Awf\Document\Document;
 use Awf\Exception;
 use Awf\Exception\App;
+use Awf\Text\Language;
+use Awf\Text\LanguageAwareInterface;
+use Awf\Text\LanguageAwareTrait;
 use Awf\Text\Text;
 use Awf\Uri\Uri;
 
@@ -24,9 +27,10 @@ use Awf\Uri\Uri;
  *
  * @package Awf\Application
  */
-abstract class Application implements ContainerAwareInterface
+abstract class Application implements ContainerAwareInterface, LanguageAwareInterface
 {
 	use ContainerAwareTrait;
+	use LanguageAwareTrait;
 
 	/** @var   array  An array of application instances */
 	protected static $instances = array();
@@ -53,7 +57,7 @@ abstract class Application implements ContainerAwareInterface
 	 *
 	 * @return  void
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $languageObject = null)
 	{
 		// Start keeping time
 		$this->startTime = microtime(true);
@@ -88,14 +92,18 @@ abstract class Application implements ContainerAwareInterface
 		// Load the translation strings
 		try
 		{
+			$this->languageObject = $languageObject ?? $container->languageFactory(null, null, [[$this, 'processLanguageIniFile']]);
+
 			$container['language'] = function ($container) {
-				return $container->languageFactory(null, null, [[$this, 'processLanguageIniFile']]);
+				return $this->languageObject;
 			};
 		}
 		catch (\Exception $e)
 		{
 			// This will fail if we've already loaded the languages earlier. No worries, then!
 		}
+
+		$this->setLanguage($container->language);
 	}
 
 	/**
@@ -246,7 +254,7 @@ abstract class Application implements ContainerAwareInterface
 		{
 			$type = $this->getContainer()->input->getCmd('format', 'html');
 
-			$instance = Document::getInstance($type, $this->container);
+			$instance = Document::getInstance($type, $this->container, null, $this->getLanguage());
 		}
 
 		return $instance;

@@ -354,7 +354,7 @@ class Pagination implements ContainerAwareInterface
 
 		if ($this->pagesTotal > 1)
 		{
-			$html .= Text::sprintf('AWF_PAGINATION_LBL_PAGE_CURRENT_OF_TOTAL', $this->pagesCurrent, $this->pagesTotal);
+			$html .= $this->getContainer()->language->sprintf('AWF_PAGINATION_LBL_PAGE_CURRENT_OF_TOTAL', $this->pagesCurrent, $this->pagesTotal);
 		}
 
 		return $html;
@@ -383,12 +383,12 @@ class Pagination implements ContainerAwareInterface
 		// If there are results found.
 		if ($this->total > 0)
 		{
-			$msg  = Text::sprintf('AWF_PAGINATION_LBL_RESULTS_OF', $fromResult, $toResult, $this->total);
+			$msg  = $this->getContainer()->language->sprintf('AWF_PAGINATION_LBL_RESULTS_OF', $fromResult, $toResult, $this->total);
 			$html .= "\n" . $msg;
 		}
 		else
 		{
-			$html .= "\n" . Text::_('AWF_PAGINATION_LBL_NO_RESULTS');
+			$html .= "\n" . $this->getContainer()->language->text('AWF_PAGINATION_LBL_NO_RESULTS');
 		}
 
 		return $html;
@@ -577,9 +577,9 @@ class Pagination implements ContainerAwareInterface
 			$limits[] = $container->html->get('select.option', $i);
 		}
 
-		$limits[] = $container->html->get('select.option', '50', Text::_('AWF_50'));
-		$limits[] = $container->html->get('select.option', '100', Text::_('AWF_100'));
-		$limits[] = $container->html->get('select.option', '0', Text::_('AWF_ALL'));
+		$limits[] = $container->html->get('select.option', '50', $this->getContainer()->language->text('AWF_50'));
+		$limits[] = $container->html->get('select.option', '100', $this->getContainer()->language->text('AWF_100'));
+		$limits[] = $container->html->get('select.option', '0', $this->getContainer()->language->text('AWF_ALL'));
 
 		$selected = $this->viewAll ? 0 : $this->limit;
 
@@ -618,7 +618,7 @@ class Pagination implements ContainerAwareInterface
 	{
 		$html = "<div class=\"list-footer\">\n";
 
-		$html .= "\n<div class=\"limit\">" . Text::_('AWF_COMMON_LBL_DISPLAY_NUM') . $list['limitfield'] . "</div>";
+		$html .= "\n<div class=\"limit\">" . $this->getContainer()->language->text('AWF_COMMON_LBL_DISPLAY_NUM') . $list['limitfield'] . "</div>";
 		$html .= $list['pageslinks'];
 		$html .= "\n<div class=\"counter\">" . $list['pagescounter'] . "</div>";
 
@@ -718,7 +718,7 @@ class Pagination implements ContainerAwareInterface
 
 		$params = 'index.php?' . substr($params, 1);
 
-		$data->all = new PaginationObject(Text::_('AWF_PAGINATION_LBL_VIEW_ALL'));
+		$data->all = new PaginationObject($this->getContainer()->language->text('AWF_PAGINATION_LBL_VIEW_ALL'));
 
 		if (!$this->viewAll)
 		{

@@ -10,6 +10,7 @@ use Awf\Container\Container;
 use Awf\Document\Toolbar\Toolbar;
 use Awf\Document\Menu\MenuManager;
 use Awf\Application\Application;
+use Awf\Text\Language;
 
 /**
  * Class Raw
@@ -20,9 +21,9 @@ use Awf\Application\Application;
  */
 class Raw extends Document
 {
-	public function __construct(Container $container)
+	public function __construct(Container $container, ?Language $language = null)
 	{
-		parent::__construct($container);
+		parent::__construct($container, $language);
 
 		$this->mimeType = 'text/plain';
 	}

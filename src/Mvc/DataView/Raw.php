@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc\DataView;
 
-use Awf\Mvc\DataModel;
 use Awf\Mvc\View;
 use Awf\Pagination\Pagination;
 

@@ -246,12 +246,12 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 
 		if (is_null($user))
 		{
-			throw new \RuntimeException(Text::_('AWF_USER_ERROR_AUTHERROR'), 403);
+			throw new \RuntimeException($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
 		}
 
 		if (!$user->verifyPassword($password, $params))
 		{
-			throw new \RuntimeException(Text::_('AWF_USER_ERROR_AUTHERROR'), 403);
+			throw new \RuntimeException($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
 		}
 
 		$this->container->segment->set('user_id', $user->getId());

@@ -101,7 +101,7 @@ class DataController extends Controller
 			if ($model->getId() != reset($ids))
 			{
 				$key = $this->container->application_name . '_ERR_' . $model->getName() . '_NOTFOUND';
-				throw new \RuntimeException(Text::_($key), 404);
+				throw new \RuntimeException($this->getContainer()->language->text($key), 404);
 			}
 		}
 
@@ -242,7 +242,7 @@ class DataController extends Controller
 				sprintf('index.php?view=%s&task=edit&id=%d&returnurl=%s', $this->view, $id, base64_encode($customURL))
 			);
 
-		$this->setRedirect($url, Text::_($textKey));
+		$this->setRedirect($url, $this->getContainer()->language->text($textKey));
 	}
 
 	/**
@@ -302,7 +302,7 @@ class DataController extends Controller
 		else
 		{
 			$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_COPIED';
-			$this->setRedirect($url, Text::_($textKey));
+			$this->setRedirect($url, $this->getContainer()->language->text($textKey));
 		}
 	}
 
@@ -336,7 +336,7 @@ class DataController extends Controller
 			: $router->route(
 				'index.php?view=' . Inflector::pluralize($this->view)
 			);
-		$this->setRedirect($url, Text::_($textKey));
+		$this->setRedirect($url, $this->getContainer()->language->text($textKey));
 	}
 
 	/**
@@ -369,7 +369,7 @@ class DataController extends Controller
 			: $router->route(
 				'index.php?view=' . Inflector::singularize($this->view) . '&task=add'
 			);
-		$this->setRedirect($url, Text::_($textKey));
+		$this->setRedirect($url, $this->getContainer()->language->text($textKey));
 	}
 
 	/**
@@ -901,7 +901,7 @@ class DataController extends Controller
 		else
 		{
 			$textKey = $this->container->application_name . '_LBL_' . Inflector::singularize($this->view) . '_DELETED';
-			$this->setRedirect($url, Text::_($textKey));
+			$this->setRedirect($url, $this->getContainer()->language->text($textKey));
 		}
 	}
 
