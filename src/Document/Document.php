@@ -181,6 +181,23 @@ abstract class Document implements ContainerAwareInterface, LanguageAwareInterfa
 	}
 
 	/**
+	 * Adds an external JavaScript module to the page.
+	 *
+	 * Note that modules are always deferred. Therefore, there are neither defer, nor async parameters.
+	 *
+	 * @param   string   $url     The URL of the script file
+	 * @param   boolean  $before  (optional) Should I add this before the template's scripts?
+	 *
+	 * @return  self
+	 * @since   1.1.2
+	 * @see     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+	 */
+	public function addModule(string $url, bool $before = false): Document
+	{
+		return $this->addScript($url, $before, 'module');
+	}
+
+	/**
 	 * Adds an inline script to the page's header
 	 *
 	 * @param   string  $content  The contents of the script (without the script tag)
