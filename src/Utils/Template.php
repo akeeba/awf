@@ -30,22 +30,18 @@ abstract class Template
 		$app->getDocument()->addStyleSheet($url);
 	}
 
-	public static function addJs(string $path, ?Application $app = null, bool $useMediaQueryKey = true, bool $defer = false, bool $async = false)
+	public static function addJs(
+		string $path, ?Application $app = null, bool $useMediaQueryKey = true, bool $defer = false, bool $async = false
+	)
 	{
-		$app = $app ?? Application::getInstance();
+		self::addScript($path, $app, $useMediaQueryKey, $defer, $async, 'text/javascript');
+	}
 
-		$url = self::parsePath($path, false, $app);
-
-		$mediaQueryKey = $app->getContainer()->mediaQueryKey;
-
-		if ($useMediaQueryKey && !empty($mediaQueryKey))
-		{
-			$uri = Uri::getInstance($url);
-			$uri->setVar($mediaQueryKey, '1');
-			$url = $uri->toString();
-		}
-
-		$app->getDocument()->addScript($url, false, 'text/javascript', $defer, $async);
+	public static function addModule(string $path, ?Application $app = null, bool $useMediaQueryKey = true)
+	{
+		// Defer and async are not necessary; modules are always deferred.
+		// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#other_differences_between_modules_and_standard_scripts
+		self::addScript($path, $app, $useMediaQueryKey, false, false, 'module');
 	}
 
 	/**
@@ -57,8 +53,8 @@ abstract class Template
 	 * template is called mytemplate and there's a media override for it.
 	 *
 	 * The valid protocols are:
-	 * media://		The media directory or a media override
-	 * site://		Path relative to site's root (no overrides)
+	 * media://        The media directory or a media override
+	 * site://        Path relative to site's root (no overrides)
 	 *
 	 * @param   string            $path       Fancy path
 	 * @param   boolean           $localFile  When true, it returns the local path, not the URL
@@ -82,14 +78,15 @@ abstract class Template
 		}
 
 		$altPaths = self::getAltPaths($path, $app);
-		$ext = pathinfo($altPaths['normal'], PATHINFO_EXTENSION);
+		$ext      = pathinfo($altPaths['normal'], PATHINFO_EXTENSION);
 
 		// We have an uncompressed CSS / JS file. We must look for a minimised file.
-		if (in_array($ext, array('css', 'js')) && (strstr($altPaths['normal'], '.min.') === false))
+		if (in_array($ext, ['css', 'js']) && (strstr($altPaths['normal'], '.min.') === false))
 		{
-			$minFile = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.' . $ext;
+			$minFile          = dirname($altPaths['normal']) . '/' . basename($altPaths['normal'], $ext) . 'min.'
+			                    . $ext;
 			$normalFileExists = @file_exists($altPaths['normal']);
-			$minFileExists = @file_exists($rootPath . '/' . $minFile);
+			$minFileExists    = @file_exists($rootPath . '/' . $minFile);
 
 			// If debug is not enabled prefer the minimised file if it exists
 			if ((!defined('AKEEBADEBUG') || !AKEEBADEBUG) && $minFileExists)
@@ -117,9 +114,10 @@ abstract class Template
 		elseif (isset($altPaths['alternate']))
 		{
 			// Look for a minimised file, if available
-			if (in_array($ext, array('css', 'js')) && strstr($altPaths['alternate'], '.min.') === false)
+			if (in_array($ext, ['css', 'js']) && strstr($altPaths['alternate'], '.min.') === false)
 			{
-				$minFile = dirname($altPaths['alternate']) . '/' . basename($altPaths['alternate'], $ext) . 'min.' . $ext;
+				$minFile = dirname($altPaths['alternate']) . '/' . basename($altPaths['alternate'], $ext) . 'min.'
+				           . $ext;
 
 				if (@file_exists($rootPath . '/' . $minFile))
 				{
@@ -148,8 +146,8 @@ abstract class Template
 	 * );
 	 *
 	 * The valid protocols are:
-	 * media://		The media directory or a media override
-	 * site://		Path relative to site's root (no alternate)
+	 * media://        The media directory or a media override
+	 * site://        Path relative to site's root (no alternate)
 	 *
 	 * @param   string       $path  Fancy path
 	 * @param   Application  $app   The application we're operating under
@@ -169,7 +167,7 @@ abstract class Template
 		else
 		{
 			$protocol = $protoAndPath[0];
-			$path = $protoAndPath[1];
+			$path     = $protoAndPath[1];
 		}
 
 		$path = ltrim($path, '/' . DIRECTORY_SEPARATOR);
@@ -181,7 +179,7 @@ abstract class Template
 				$pathAndParams = explode('?', $path, 2);
 
 				// Get the path of the templates directory relative to the file system base
-				$rootPath = realpath($app->getContainer()->filesystemBase);
+				$rootPath             = realpath($app->getContainer()->filesystemBase);
 				$templateRelativePath = realpath($app->getContainer()->templatePath);
 
 				if ($templateRelativePath == $rootPath)
@@ -197,24 +195,24 @@ abstract class Template
 				$templateRelativePath = str_replace('\\', '/', $templateRelativePath);
 
 				// Return the alternative paths
-				$ret = array(
-					'normal'	 => 'media/' . $pathAndParams[0],
-					'alternate'	 =>  $templateRelativePath . $app->getTemplate() . '/media/' . $pathAndParams[0],
-				);
+				$ret = [
+					'normal'    => 'media/' . $pathAndParams[0],
+					'alternate' => $templateRelativePath . $app->getTemplate() . '/media/' . $pathAndParams[0],
+				];
 				break;
 
 			default:
 			case 'site':
-				$ret = array(
-					'normal' => $path
-				);
+				$ret = [
+					'normal' => $path,
+				];
 				break;
 		}
 
 		// For CSS and JS files, add a debug path if the supplied file is compressed
 		$ext = pathinfo($ret['normal'], PATHINFO_EXTENSION);
 
-		if (in_array($ext, array('css', 'js')))
+		if (in_array($ext, ['css', 'js']))
 		{
 			$file = basename($ret['normal'], '.' . $ext);
 
@@ -229,10 +227,10 @@ abstract class Template
 			}
 
 			// Clone the $ret array so we can manipulate the 'normal' path a bit
-			$t1 = (object) $ret;
+			$t1   = (object) $ret;
 			$temp = clone $t1;
 			unset($t1);
-			$temp = (array)$temp;
+			$temp       = (array) $temp;
 			$normalPath = explode('/', $temp['normal']);
 			array_pop($normalPath);
 			$normalPath[] = $filename;
@@ -240,5 +238,26 @@ abstract class Template
 		}
 
 		return $ret;
+	}
+
+	private static function addScript(
+		string $path, ?Application $app = null, bool $useMediaQueryKey = true, bool $defer = false, bool $async = false,
+		$type = 'text/javascript'
+	)
+	{
+		$app = $app ?? Application::getInstance();
+
+		$url = self::parsePath($path, false, $app);
+
+		$mediaQueryKey = $app->getContainer()->mediaQueryKey;
+
+		if ($useMediaQueryKey && !empty($mediaQueryKey))
+		{
+			$uri = Uri::getInstance($url);
+			$uri->setVar($mediaQueryKey, '1');
+			$url = $uri->toString();
+		}
+
+		$app->getDocument()->addScript($url, false, $type, $defer, $async);
 	}
 } 
