@@ -8,8 +8,7 @@
 namespace Awf\Html\Helper;
 
 use Awf\Html\AbstractHelper;
-use Awf\Html\Html;
-use Awf\Text\Text;
+use Awf\Utils\ArrayHelper;
 
 /**
  * Administration grid actions abstraction
@@ -21,6 +20,11 @@ use Awf\Text\Text;
 class Grid extends AbstractHelper
 {
 	private $javascriptPrefix = 'akeeba.System.';
+
+	public function getJavascriptPrefix(): string
+	{
+		return $this->javascriptPrefix;
+	}
 
 	/**
 	 * Sets the JavaScript prefix.
@@ -52,35 +56,31 @@ class Grid extends AbstractHelper
 	 */
 	public function sort(
 		string $title, string $order, ?string $direction = 'asc', ?string $selected = '', string $task = null,
-		string $new_direction = 'asc', string $tip = '', string $orderingJs = ''
+		string $new_direction = 'asc', string $tip = '', string $orderingJs = '', array $attribs = []
 	)
 	{
-		$direction = strtolower($direction ?? '') ?: 'asc';
+		$direction  = strtolower($direction ?? '') ?: 'asc';
+		$icon       = ['caret-up', 'caret-down'];
+		$index      = $direction === 'asc' ? 0 : 1;
+		$direction  = $order != $selected
+			? $new_direction
+			: ($index ? 'asc' : 'desc');
+		$orderingJs = trim($orderingJs) ?: ($this->javascriptPrefix . 'tableOrdering');
 
-		$icon  = ['caret-up', 'caret-down'];
-		$index = (int) ($direction == 'desc');
+		$attribs = array_merge(
+			[
+				'href'    => '#',
+				'onclick' => sprintf("%s('%s','%s','%s');return false;", $orderingJs, $order, $direction, $task),
+				'class'   => 'hasTooltip',
+				'title'   => $this->getContainer()->language->text($tip ?: $title),
+			],
+			$attribs
+		);
 
-		if ($order != $selected)
-		{
-			$direction = $new_direction;
-		}
-		else
-		{
-			$direction = ($direction == 'desc') ? 'asc' : 'desc';
-		}
-
-		if (empty($orderingJs))
-		{
-			$orderingJs = $this->javascriptPrefix . 'tableOrdering';
-		}
-
-		$html = '<a href="#" onclick="' . $orderingJs . '(\'' . $order . '\',\'' . $direction . '\',\'' . $task
-		        . '\');return false;"'
-		        . ' class="hasTooltip" title="' . $this->getContainer()->language->text($tip ? $tip : $title) . '">';
-
+		$html = sprintf("<a %s>", ArrayHelper::toString($attribs));
 		$html .= $this->getContainer()->language->text($title);
 
-		if ($order == $selected)
+		if ($order === $selected)
 		{
 			$html .= ' <span class="fa fa-' . $icon[$index] . '"></span>';
 		}
@@ -100,18 +100,25 @@ class Grid extends AbstractHelper
 	 * @return  string
 	 */
 	public function checkAll(
-		string $name = 'checkall-toggle', string $tip = 'AWF_COMMON_LBL_CHECK_ALL', string $action = ''
+		string $name = 'checkall-toggle', string $tip = 'AWF_COMMON_LBL_CHECK_ALL', string $action = '',
+		array $attribs = []
 	): string
 	{
-		if (empty($action))
-		{
-			$action = $this->javascriptPrefix . 'checkAll(this)';
-		}
+		$action = $action ?: $this->javascriptPrefix . 'checkAll(this)';
 
+		$attribs = array_merge(
+			[
+				'type'    => 'checkbox',
+				'name'    => $name,
+				'value'   => '',
+				'class'   => 'hasTooltip',
+				'title'   => $this->getContainer()->html->get('basic.tooltipText', $tip),
+				'onclick' => $action,
+			],
+			$attribs
+		);
 
-
-		return '<input type="checkbox" name="' . $name . '" value="" class="hasTooltip" title="' .
-		       $this->getContainer()->html->get('basic.tooltipText', $tip) . '" onclick="' . $action . '" />';
+		return '<input ' . ArrayHelper::toString($attribs) . '>';
 	}
 
 	/**
@@ -129,24 +136,40 @@ class Grid extends AbstractHelper
 	 */
 	public function id(
 		int $rowNum, int $recId, bool $checkedOut = false, string $name = 'cid', string $checkedJs = '',
-		string $altLabel = ''
+		string $altLabel = '', array $attribs = [], array $labelAttribs = []
 	): string
 	{
-		if (empty($checkedJs))
-		{
-			$checkedJs = $this->javascriptPrefix . 'isChecked';
-		}
+		$checkedJs = $checkedJs ?: $this->javascriptPrefix . 'isChecked';
+		$attribs   = array_merge(
+			[
+				'type'    => 'checkbox',
+				'id'      => 'cb' . $rowNum,
+				'name'    => $name . '[]',
+				'value'   => $recId,
+				'onClick' => $checkedJs . '(this.checked);',
+			],
+			$attribs
+		);
 
 		if ($checkedOut)
 		{
-			return '';
+			$attribs['disabled'] = 'disabled';
 		}
+
+		$cbHtml = sprintf('<input %s>', ArrayHelper::toString($attribs));
 
 		$altLabel = $altLabel ?: $this->getContainer()->language->text('AWF_LBL_HTML_GRID_ID_ALT_LABEL');
 
+		$labelAttribs = array_merge(
+			[
+				'for' => 'cb' . $rowNum,
+				'class' => 'visually-hidden akeeba-sr-only'
+			],
+			$labelAttribs
+		);
+		$labelHtml = sprintf('<label %s>%s</label>', ArrayHelper::toString($labelAttribs), $altLabel);
+
 		// Note: The label for the checkbox is hidden in Bootstrap (visually-hidden) and Akeeba FEF (akeeba-sr-only).
-		return <<< HTML
-<label for="cb{$rowNum}"><span class="visually-hidden akeeba-sr-only">$altLabel</span></label><input type="checkbox" id="cb{$rowNum}" name="{$name}[]" value="$recId" onclick="$checkedJs(this.checked);" />
-HTML;
+		return $labelHtml . $cbHtml;
 	}
 } 
