@@ -105,6 +105,11 @@ class Download implements ContainerAwareInterface
 		{
 			$this->adapter = $adapter;
 		}
+
+		if (is_object($adapter) && ($adapter instanceof ContainerAwareInterface))
+		{
+			$this->adapter->setContainer($this->getContainer());
+		}
 	}
 
     /**
