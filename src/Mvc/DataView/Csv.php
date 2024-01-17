@@ -10,7 +10,6 @@ namespace Awf\Mvc\DataView;
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
 use Awf\Mvc\DataModel;
-use Awf\Text\Text;
 
 class Csv extends Raw
 {

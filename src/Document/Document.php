@@ -15,7 +15,6 @@ use Awf\Document\Toolbar\Toolbar;
 use Awf\Text\Language;
 use Awf\Text\LanguageAwareInterface;
 use Awf\Text\LanguageAwareTrait;
-use Awf\Text\Text;
 
 /**
  * Class Document

@@ -8,7 +8,6 @@
 namespace Awf\Mvc\DataView;
 
 use Awf\Mvc\DataModel;
-use Awf\Text\Text;
 
 class Json extends Raw
 {

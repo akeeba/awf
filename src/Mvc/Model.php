@@ -12,14 +12,11 @@ use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
-use Awf\Inflector\Inflector;
 use Awf\Input\Filter;
 use Awf\Input\Input;
-use Awf\Registry\Registry;
 use Awf\Text\Language;
 use Awf\Text\LanguageAwareInterface;
 use Awf\Text\LanguageAwareTrait;
-use Awf\Text\Text;
 use RuntimeException;
 
 /**

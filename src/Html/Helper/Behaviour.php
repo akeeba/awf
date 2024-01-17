@@ -7,7 +7,6 @@
 
 namespace Awf\Html\Helper;
 
-use Awf\Exception\App;
 use Awf\Html\AbstractHelper;
 use Awf\Utils\Template;
 

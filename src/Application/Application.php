@@ -16,7 +16,6 @@ use Awf\Exception\App;
 use Awf\Text\Language;
 use Awf\Text\LanguageAwareInterface;
 use Awf\Text\LanguageAwareTrait;
-use Awf\Text\Text;
 use Awf\Uri\Uri;
 
 

@@ -8,7 +8,6 @@
 namespace Awf\Html\Helper;
 
 use Awf\Html\AbstractHelper;
-use Awf\Text\Text;
 use Awf\Utils\ArrayHelper;
 
 /**

@@ -7,11 +7,7 @@
 
 namespace Awf\Mvc;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
-use Awf\Event\Dispatcher as EventDispatcher;
-use Awf\Inflector\Inflector;
-use Awf\Mvc\DataModel\RelationManager;
 use Awf\Utils\StringHandling;
 
 /**

@@ -7,9 +7,6 @@
 
 namespace Awf\Database\Driver;
 
-use Awf\Database\QueryLimitable;
-use Awf\Database\QueryPreparable;
-use Awf\Database\Driver;
 use Awf\Database\Query;
 use Sqlite3;
 

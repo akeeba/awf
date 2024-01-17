@@ -11,12 +11,11 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Database\Driver;
 use Awf\Database\Query;
-use Awf\Date\Date;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Exception\App;
 use Awf\Inflector\Inflector;
-use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Collection;
+use Awf\Mvc\DataModel\Collection as DataCollection;
 use Awf\Mvc\DataModel\Exception\InvalidSearchMethod;
 use Awf\Mvc\DataModel\Exception\NoTableColumns;
 use Awf\Mvc\DataModel\Exception\RecordNotLoaded;
@@ -24,7 +23,6 @@ use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound;
 use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
 use Awf\Mvc\DataModel\RelationManager;
-use Awf\Text\Text;
 
 /**
  * Data-aware model, implementing a convenient ORM

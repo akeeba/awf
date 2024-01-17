@@ -11,7 +11,6 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
-use Awf\Text\Text;
 use PHPMailer\PHPMailer\PHPMailer;
 use RuntimeException;
 

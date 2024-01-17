@@ -7,7 +7,6 @@
 
 namespace Awf\Download\Adapter;
 use Awf\Download\DownloadInterface;
-use Awf\Text\Text;
 use Composer\CaBundle\CaBundle;
 
 /**

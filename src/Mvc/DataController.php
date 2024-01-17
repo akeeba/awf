@@ -9,7 +9,6 @@ namespace Awf\Mvc;
 
 use Awf\Container\Container;
 use Awf\Inflector\Inflector;
-use Awf\Text\Text;
 
 /**
  * Database-aware Controller

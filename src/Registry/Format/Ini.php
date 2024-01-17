@@ -133,7 +133,7 @@ class Ini extends AbstractRegistryFormat
 			}
 
 			// Get the key and value for the line.
-			list ($key, $value) = explode('=', $line, 2);
+			[$key, $value] = explode('=', $line, 2);
 
 			// Validate the key.
 			if (preg_match('/[^A-Z0-9_]/i', $key))

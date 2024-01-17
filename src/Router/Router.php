@@ -7,7 +7,6 @@
 
 namespace Awf\Router;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;

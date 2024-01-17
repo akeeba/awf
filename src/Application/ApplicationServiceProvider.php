@@ -9,8 +9,6 @@ namespace Awf\Application;
 
 use Awf\Container\Container;
 use Awf\Exception\App as AppException;
-use Awf\Pimple\Pimple;
-use Awf\Pimple\ServiceProviderInterface;
 
 class ApplicationServiceProvider
 {

@@ -11,8 +11,6 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
-use Awf\Database\Driver;
-use Awf\Text\Text;
 
 /**
  * The User Manager class allows you to load, save, log in and log out users

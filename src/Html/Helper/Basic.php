@@ -9,7 +9,6 @@ namespace Awf\Html\Helper;
 
 use Awf\Exception\App;
 use Awf\Html\AbstractHelper;
-use Awf\Text\Text;
 use Awf\Uri\Uri;
 use Awf\Utils\ArrayHelper;
 
