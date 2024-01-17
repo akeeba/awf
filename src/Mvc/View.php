@@ -540,6 +540,8 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 	 */
 	public function display($tpl = null)
 	{
+		$this->viewOutput = '';
+
 		$method = 'onBefore' . ucfirst($this->doTask);
 		if (method_exists($this, $method))
 		{
@@ -558,22 +560,20 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 			return false;
 		}
 
-		$result = $this->loadTemplate($tpl);
+		$this->viewOutput .= $this->loadTemplate($tpl);
 
 		$method = 'onAfter' . ucfirst($this->doTask);
 
 		if (method_exists($this, $method))
 		{
-			$result = $this->$method($tpl);
-
-			if (!$result)
+			if (!($this->$method($tpl)))
 			{
 				throw new Exception($this->getContainer()->language->text('AWF_APPLICATION_ERROR_ACCESS_FORBIDDEN'), 403);
 			}
 		}
 
 		$results = $this->container->eventDispatcher->trigger('onViewAfter' . ucfirst($this->doTask), [
-			$this, &$result,
+			$this, &$this->viewOutput,
 		]) ?: [];
 
 		if (in_array(false, $results, true))
@@ -581,13 +581,13 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 			return false;
 		}
 
-		if (is_object($result) && ($result instanceof Exception))
+		if (is_object($this->viewOutput) && ($this->viewOutput instanceof Exception))
 		{
-			throw $result;
+			throw $this->viewOutput;
 		}
 		else
 		{
-			echo $result;
+			echo $this->viewOutput;
 
 			return true;
 		}
