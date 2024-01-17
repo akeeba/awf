@@ -13,13 +13,13 @@ namespace Awf\Utils;
  * Laravel 4 is distributed under the MIT license, see https://github.com/laravel/framework/blob/master/LICENSE.txt
  */
 
-use Closure;
-use Countable;
 use ArrayAccess;
 use ArrayIterator;
 use CachingIterator;
-use JsonSerializable;
+use Closure;
+use Countable;
 use IteratorAggregate;
+use JsonSerializable;
 
 require_once __DIR__ . '/helpers.php';
 

@@ -7,9 +7,6 @@
 
 namespace Awf\Document;
 use Awf\Container\Container;
-use Awf\Document\Toolbar\Toolbar;
-use Awf\Document\Menu\MenuManager;
-use Awf\Application\Application;
 use Awf\Text\Language;
 
 /**

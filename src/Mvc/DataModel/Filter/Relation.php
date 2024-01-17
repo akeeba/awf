@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc\DataModel\Filter;
 
-use Awf\Database\Driver;
 use Awf\Database\Query;
 
 class Relation extends Number

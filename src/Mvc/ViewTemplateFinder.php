@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc;
 
-use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Inflector\Inflector;

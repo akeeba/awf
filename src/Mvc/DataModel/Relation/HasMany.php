@@ -7,7 +7,6 @@
 
 namespace Awf\Mvc\DataModel\Relation;
 
-use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Database\Query;
 use Awf\Mvc\DataModel;

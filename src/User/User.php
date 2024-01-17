@@ -331,7 +331,7 @@ class User implements UserInterface
 			return $default;
 		}
 
-		list ($name, $subPrivilege) = explode('.', $privilege);
+		[$name, $subPrivilege] = explode('.', $privilege);
 
 		// Did they ask for an unknown privilege?
 		if (!array_key_exists($name, $this->privileges))
@@ -363,7 +363,7 @@ class User implements UserInterface
 			return false;
 		}
 
-		list ($name, $subPrivilege) = explode('.', $privilege);
+		[$name, $subPrivilege] = explode('.', $privilege);
 
 		// Did they ask for an unknown privilege?
 		if (!array_key_exists($name, $this->privileges))

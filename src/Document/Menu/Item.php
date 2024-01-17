@@ -10,7 +10,6 @@ namespace Awf\Document\Menu;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
-use Awf\Router\Router;
 use Awf\Uri\Uri;
 
 /**
