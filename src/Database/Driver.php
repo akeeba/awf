@@ -618,12 +618,24 @@ abstract class Driver implements DatabaseInterface
 	 * Method that provides access to the underlying database connection. Useful for when you need to call a
 	 * proprietary method such as postgresql's lo_* methods.
 	 *
-	 * @return  resource  The underlying database connection resource.
+	 * @return  mixed  The underlying database connection resource.
 	 *
 	 */
 	public function getConnection()
 	{
 		return $this->connection;
+	}
+
+	/**
+	 * Set the underlying database connection object / resource.
+	 *
+	 * @param   mixed $connection
+	 *
+	 * @return  void
+	 */
+	public function setConnection($connection)
+	{
+		$this->connection = $connection;
 	}
 
 	/**
