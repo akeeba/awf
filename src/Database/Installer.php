@@ -151,6 +151,7 @@ class Installer implements ContainerAwareInterface
 
 			// Am I allowed to let this action fail?
 			$canFailAction = $attributes->canfail ?: 0;
+			$canFailAction = (string) $canFailAction;
 
 			// Evaluate conditions
 			$shouldExecute = true;
