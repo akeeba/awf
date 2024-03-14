@@ -10,6 +10,7 @@ namespace Awf\Text;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Mvc\Factory;
 use Awf\User\UserInterface;
 use Awf\Utils\ParseIni;
 
@@ -250,9 +251,20 @@ class Language implements ContainerAwareInterface
 	 */
 	public function detectLanguage(?string $languagePath, ?UserInterface $user = null): ?string
 	{
-		// If there is a logged-in user, their language setting is our primary preference.
-		$user     = $user ?? $this->getContainer()->userManager->getUser();
-		$language = $user->getId() ? $user->getParameters()->get('language') : null;
+		// If there is a session started and a logged-in user, their language setting is our primary preference.
+		if ($this->getContainer()->session->isStarted())
+		{
+			$user = $user ?? $this->getContainer()->userManager->getUser();
+		}
+
+		if ($user instanceof UserInterface)
+		{
+			$language = $user->getId() ? $user->getParameters()->get('language') : null;
+		}
+		else
+		{
+			$language = null;
+		}
 
 		// The secondary fallback is the language set in the user's browser.
 		$language = $language ?? $this->detectLanguageFromBrowser($languagePath);
