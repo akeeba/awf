@@ -50,6 +50,14 @@ abstract class Application implements ContainerAwareInterface, LanguageAwareInte
 	private $startTime = 0;
 
 	/**
+	 * Should I auto-start the session on application initialisation?
+	 *
+	 * @var   bool
+	 * @since 1.1.2
+	 */
+	protected $sessionAutoStart = false;
+
+	/**
 	 * Public constructor
 	 *
 	 * @param   Container  $container  Configuration parameters
@@ -79,7 +87,10 @@ abstract class Application implements ContainerAwareInterface, LanguageAwareInte
 		}
 
 		// Start the session
-		$this->container->session->start();
+		if ($this->sessionAutoStart)
+		{
+			$this->container->session->start();
+		}
 
 		// Forcibly create the session segment
 		/** @noinspection PhpUnusedLocalVariableInspection */
