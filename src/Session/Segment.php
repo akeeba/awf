@@ -11,7 +11,10 @@
  */
 
 namespace Awf\Session;
-use Awf\Encrypt\Base32;
+
+use Awf\Session\Encoder\Base32Encoder;
+use Awf\Session\Encoder\Base64Encoder;
+use Awf\Session\Encoder\EncoderInterface;
 
 /**
  * A session segment; lazy-loads from the session.
@@ -46,9 +49,9 @@ class Segment implements SegmentInterface
 	protected $data;
 
 	/**
-	 * Base32 encoder, in case base64 encoding is not available on this server
+	 * Session data encoder
 	 *
-	 * @var Base32
+	 * @var  EncoderInterface
 	 */
 	protected $encoder;
 
@@ -56,16 +59,21 @@ class Segment implements SegmentInterface
 	 *
 	 * Constructor.
 	 *
-	 * @param Manager $session The session manager.
+	 * @param   Manager  $session  The session manager.
 	 *
-	 * @param string  $name    The segment name.
+	 * @param   string   $name     The segment name.
 	 *
 	 */
 	public function __construct(Manager $session, $name)
 	{
 		$this->session = $session;
-		$this->name = $name;
-		$this->encoder = new Base32();
+		$this->name    = $name;
+		$this->encoder = new Base64Encoder();
+
+		if (!$this->encoder->isAvailable())
+		{
+			$this->encoder = new Base32Encoder();
+		}
 	}
 
 	/**
@@ -122,24 +130,13 @@ class Segment implements SegmentInterface
 			$this->session->start();
 		}
 
-		// Intialize data
-		$this->data = array();
+		// Initialize data
+		$this->data = [];
 
 		// Try loading data from the session
 		if (isset($_SESSION[$this->name]) && !empty($_SESSION[$this->name]))
 		{
-			$data = $_SESSION[$this->name];
-
-			if (function_exists('base64_encode') && function_exists('base64_decode'))
-			{
-				$data = base64_decode($data);
-			}
-			else
-			{
-				$data = $this->encoder->decode($data);
-			}
-
-			$this->data = unserialize($data);
+			$this->data = $this->encoder->decode($_SESSION[$this->name]) ?? [];
 		}
 	}
 
@@ -151,27 +148,16 @@ class Segment implements SegmentInterface
 	 */
 	public function save()
 	{
-		$data = serialize($this->data);
-
-		if (function_exists('base64_encode') && function_exists('base64_decode'))
-		{
-			$data = base64_encode($data);
-		}
-		else
-		{
-			$data = $this->encoder->encode($data);
-		}
-
-		$_SESSION[$this->name] = $data;
+		$_SESSION[$this->name] = $this->encoder->encode($this->data);
 	}
 
 	/**
 	 *
 	 * Returns the value of a key in the segment.
 	 *
-	 * @param string $key The key in the segment.
+	 * @param   string  $key  The key in the segment.
 	 *
-	 * @return mixed
+	 * @return  mixed
 	 *
 	 */
 	public function __get($key)
@@ -180,15 +166,17 @@ class Segment implements SegmentInterface
 		{
 			return isset($this->data[$key]) ? $this->data[$key] : null;
 		}
+
+		return null;
 	}
 
 	/**
 	 *
 	 * Sets the value of a key in the segment.
 	 *
-	 * @param string $key The key to set.
+	 * @param   string  $key  The key to set.
 	 *
-	 * @param mixed  $val The value to set it to.
+	 * @param   mixed   $val  The value to set it to.
 	 *
 	 */
 	public function __set($key, $val)
@@ -201,7 +189,7 @@ class Segment implements SegmentInterface
 	 *
 	 * Check whether a key is set in the segment.
 	 *
-	 * @param string $key The key to check.
+	 * @param   string  $key  The key to check.
 	 *
 	 * @return bool
 	 *
@@ -220,7 +208,7 @@ class Segment implements SegmentInterface
 	 *
 	 * Unsets a key in the segment.
 	 *
-	 * @param string $key The key to unset.
+	 * @param   string  $key  The key to unset.
 	 *
 	 * @return void
 	 *
@@ -244,7 +232,7 @@ class Segment implements SegmentInterface
 	{
 		if ($this->isLoaded())
 		{
-			$this->data = array();
+			$this->data = [];
 		}
 	}
 
@@ -264,9 +252,9 @@ class Segment implements SegmentInterface
 	 *
 	 * Sets a read-once flash value on the segment.
 	 *
-	 * @param string $key The key for the flash value.
+	 * @param   string  $key  The key for the flash value.
 	 *
-	 * @param mixed  $val The flash value itself.
+	 * @param   mixed   $val  The flash value itself.
 	 *
 	 */
 	public function setFlash($key, $val)
@@ -279,9 +267,9 @@ class Segment implements SegmentInterface
 	 *
 	 * Reads the flash value for a key, thereby removing it from the session.
 	 *
-	 * @param string $key The key for the flash value.
+	 * @param   string  $key  The key for the flash value.
 	 *
-	 * @return mixed The flash value itself.
+	 * @return  mixed The flash value itself.
 	 *
 	 */
 	public function getFlash($key)
@@ -293,13 +281,15 @@ class Segment implements SegmentInterface
 
 			return $val;
 		}
+
+		return null;
 	}
 
 	/**
 	 *
 	 * Checks whether a flash key is set, without reading it.
 	 *
-	 * @param string $key The flash key to check.
+	 * @param   string  $key  The flash key to check.
 	 *
 	 * @return bool True if it is set, false if not.
 	 *
@@ -332,7 +322,7 @@ class Segment implements SegmentInterface
 	/**
 	 * Does this segment have the specified session variable?
 	 *
-	 * @param   string $key The session variable's key (name)
+	 * @param   string  $key  The session variable's key (name)
 	 *
 	 * @return  boolean  True if the session variable exists
 	 */
@@ -351,8 +341,8 @@ class Segment implements SegmentInterface
 	/**
 	 * Set a session variable
 	 *
-	 * @param   string $key The name of the session variable
-	 * @param   mixed  $val The value to set it to
+	 * @param   string  $key  The name of the session variable
+	 * @param   mixed   $val  The value to set it to
 	 *
 	 * @return  void
 	 */
@@ -369,8 +359,8 @@ class Segment implements SegmentInterface
 	/**
 	 * Get the value of a session variable. If the session variable does not exist it is initialised with $default
 	 *
-	 * @param   string $key     The session variable's name
-	 * @param   mixed  $default [Optional] The defualt value to use if the session variable doesn't exist
+	 * @param   string  $key      The session variable's name
+	 * @param   mixed   $default  [Optional] The defualt value to use if the session variable doesn't exist
 	 *
 	 * @return  mixed  The value of the session variable
 	 */
@@ -394,7 +384,7 @@ class Segment implements SegmentInterface
 	/**
 	 * Removes a session variable
 	 *
-	 * @param   string $key The session variable's name
+	 * @param   string  $key  The session variable's name
 	 *
 	 * @return  void
 	 */
@@ -404,5 +394,15 @@ class Segment implements SegmentInterface
 		{
 			unset($this->data[$key]);
 		}
+	}
+
+	public function setEncoder(EncoderInterface $encoder)
+	{
+		$this->encoder = $encoder;
+	}
+
+	public function getEncoder(): EncoderInterface
+	{
+		return $this->encoder;
 	}
 }
