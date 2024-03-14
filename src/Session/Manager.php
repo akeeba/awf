@@ -157,15 +157,34 @@ class Manager
 	{
 		if (!$this->isStarted())
 		{
-			return @session_start();
+			return @session_start(
+				[
+					'save_handler'           => 'files',
+					'serialize_handler'      => 'php_serialize',
+					'cookie_lifetime'        => $this->cookie_params['lifetime'] ?? 3600,
+					'cookie_path'            => $this->cookie_params['path'] ?? '/',
+					'cookie_domain'          => $this->cookie_params['domain'] ?? '',
+					'cookie_secure'          => $this->cookie_params['secure'] ?? 0,
+					'cookie_httponly'        => $this->cookie_params['httponly'] ?? 1,
+					'use_strict_mode'        => 0,
+					'use_cookies'            => 1,
+					'cache_limiter'          => 'nocache',
+					'use_trans_sid'          => 0,
+					'sid_length'             => 42,
+					'sid_bits_per_character' => 6,
+					'lazy_write'             => 0,
+				]
+			);
 		}
+
+		return true;
 	}
 
 	/**
 	 *
 	 * Clears all session variables across all segments.
 	 *
-	 * @return null
+	 * @return void
 	 *
 	 */
 	public function clear()
@@ -179,7 +198,7 @@ class Manager
 	 *
 	 * Writes session data from all segments and ends the session.
 	 *
-	 * @return null
+	 * @return void
 	 *
 	 */
 	public function commit()
