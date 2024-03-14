@@ -12,6 +12,8 @@
 
 namespace Awf\Session;
 
+use Awf\Session\Encoder\EncoderInterface;
+
 /**
  * An interface for session segment objects.
  *
@@ -23,7 +25,7 @@ interface SegmentInterface
 	 *
 	 * Returns the value of a key in the segment.
 	 *
-	 * @param string $key The key in the segment.
+	 * @param   string  $key  The key in the segment.
 	 *
 	 * @return mixed
 	 *
@@ -34,9 +36,9 @@ interface SegmentInterface
 	 *
 	 * Sets the value of a key in the segment.
 	 *
-	 * @param string $key The key to set.
+	 * @param   string  $key  The key to set.
 	 *
-	 * @param mixed  $val The value to set it to.
+	 * @param   mixed   $val  The value to set it to.
 	 *
 	 */
 	public function __set($key, $val);
@@ -45,7 +47,7 @@ interface SegmentInterface
 	 *
 	 * Check whether a key is set in the segment.
 	 *
-	 * @param string $key The key to check.
+	 * @param   string  $key  The key to check.
 	 *
 	 * @return bool
 	 *
@@ -56,7 +58,7 @@ interface SegmentInterface
 	 *
 	 * Unsets a key in the segment.
 	 *
-	 * @param string $key The key to unset.
+	 * @param   string  $key  The key to unset.
 	 *
 	 * @return void
 	 *
@@ -85,9 +87,9 @@ interface SegmentInterface
 	 *
 	 * Sets a read-once flash value on the segment.
 	 *
-	 * @param string $key The key for the flash value.
+	 * @param   string  $key  The key for the flash value.
 	 *
-	 * @param mixed  $val The flash value itself.
+	 * @param   mixed   $val  The flash value itself.
 	 *
 	 */
 	public function setFlash($key, $val);
@@ -96,7 +98,7 @@ interface SegmentInterface
 	 *
 	 * Reads the flash value for a key, thereby removing it from the session.
 	 *
-	 * @param string $key The key for the flash value.
+	 * @param   string  $key  The key for the flash value.
 	 *
 	 * @return mixed The flash value itself.
 	 *
@@ -107,7 +109,7 @@ interface SegmentInterface
 	 *
 	 * Checks whether a flash key is set, without reading it.
 	 *
-	 * @param string $key The flash key to check.
+	 * @param   string  $key  The flash key to check.
 	 *
 	 * @return bool True if it is set, false if not.
 	 *
@@ -130,4 +132,22 @@ interface SegmentInterface
 	 * @return  void
 	 */
 	public function save();
+
+	/**
+	 * Sets the encoder to be used for encoding and decoding data stored in the session storage.
+	 *
+	 * @param   EncoderInterface  $encoder  The encoder used for encoding and decoding session  data.
+	 *
+	 * @since 1.1.2
+	 */
+	public function setEncoder(EncoderInterface $encoder);
+
+	/**
+	 * Returns the encoder object used for encoding and decoding session data.
+	 *
+	 * @return EncoderInterface The encoder object used for encoding and decoding session data.
+	 *
+	 * @since 1.1.2
+	 */
+	public function getEncoder(): EncoderInterface;
 }
