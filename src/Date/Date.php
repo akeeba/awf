@@ -6,33 +6,37 @@
  */
 
 namespace Awf\Date;
+
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Database\Driver;
 use Awf\Exception\App;
+use DateTime;
+use DateTimeZone;
+use ReturnTypeWillChange;
 
 /**
  * Date is a class that stores a date and provides logic to manipulate
  * and render that date in a variety of formats.
  *
- * @property-read  string   $daysinmonth   t - Number of days in the given month.
- * @property-read  string   $dayofweek     N - ISO-8601 numeric representation of the day of the week.
- * @property-read  string   $dayofyear     z - The day of the year (starting from 0).
- * @property-read  boolean  $isleapyear    L - Whether it's a leap year.
- * @property-read  string   $day           d - Day of the month, 2 digits with leading zeros.
- * @property-read  string   $hour          H - 24-hour format of an hour with leading zeros.
- * @property-read  string   $minute        i - Minutes with leading zeros.
- * @property-read  string   $second        s - Seconds with leading zeros.
- * @property-read  string   $month         m - Numeric representation of a month, with leading zeros.
- * @property-read  string   $ordinal       S - English ordinal suffix for the day of the month, 2 characters.
- * @property-read  string   $week          W - Numeric representation of the day of the week.
- * @property-read  string   $year          Y - A full numeric representation of a year, 4 digits.
+ * @property-read  string  $daysinmonth   t - Number of days in the given month.
+ * @property-read  string  $dayofweek     N - ISO-8601 numeric representation of the day of the week.
+ * @property-read  string  $dayofyear     z - The day of the year (starting from 0).
+ * @property-read  boolean $isleapyear    L - Whether it's a leap year.
+ * @property-read  string  $day           d - Day of the month, 2 digits with leading zeros.
+ * @property-read  string  $hour          H - 24-hour format of an hour with leading zeros.
+ * @property-read  string  $minute        i - Minutes with leading zeros.
+ * @property-read  string  $second        s - Seconds with leading zeros.
+ * @property-read  string  $month         m - Numeric representation of a month, with leading zeros.
+ * @property-read  string  $ordinal       S - English ordinal suffix for the day of the month, 2 characters.
+ * @property-read  string  $week          W - Numeric representation of the day of the week.
+ * @property-read  string  $year          Y - A full numeric representation of a year, 4 digits.
  *
  * This class is adapted from the Joomla! Framework
  */
-class Date extends \DateTime implements ContainerAwareInterface
+class Date extends DateTime implements ContainerAwareInterface
 {
 	use ContainerAwareTrait;
 
@@ -46,7 +50,7 @@ class Date extends \DateTime implements ContainerAwareInterface
 	/**
 	 * Placeholder for a DateTimeZone object with GMT as the time zone.
 	 *
-	 * @var    \DateTimeZone
+	 * @var    DateTimeZone
 	 */
 	protected static $gmt;
 
@@ -54,16 +58,24 @@ class Date extends \DateTime implements ContainerAwareInterface
 	 * Placeholder for a DateTimeZone object with the default server
 	 * time zone as the time zone.
 	 *
-	 * @var    \DateTimeZone
+	 * @var    DateTimeZone
 	 */
 	protected static $stz;
 
 	/**
 	 * The DateTimeZone object for usage in rending dates as strings.
 	 *
-	 * @var    \DateTimeZone
+	 * @var    DateTimeZone
 	 */
 	protected $tz;
+
+	private const REPLACE_DAY_ABBR = "\x021\x03";
+
+	private const REPLACE_DAY_NAME = "\x022\x03";
+
+	private const REPLACE_MONTH_ABBR = "\x023\x03";
+
+	private const REPLACE_MONTH_NAME = "\x024\x03";
 
 	/**
 	 * Constructor.
@@ -81,8 +93,7 @@ class Date extends \DateTime implements ContainerAwareInterface
 		if (empty($container))
 		{
 			trigger_error(
-				sprintf('The container argument is mandatory in %s', __METHOD__),
-				E_USER_DEPRECATED
+				sprintf('The container argument is mandatory in %s', __METHOD__), E_USER_DEPRECATED
 			);
 
 			$container = Application::getInstance()->getContainer();
@@ -93,12 +104,12 @@ class Date extends \DateTime implements ContainerAwareInterface
 		// Create the base GMT and server time zone objects.
 		if (empty(self::$gmt) || empty(self::$stz))
 		{
-			self::$gmt = new \DateTimeZone('GMT');
-			self::$stz = new \DateTimeZone(@date_default_timezone_get());
+			self::$gmt = new DateTimeZone('GMT');
+			self::$stz = new DateTimeZone(@date_default_timezone_get());
 		}
 
 		// If the time zone object is not set, attempt to build it.
-		if (!($tz instanceof \DateTimeZone))
+		if (!($tz instanceof DateTimeZone))
 		{
 			if ($tz === null)
 			{
@@ -106,7 +117,7 @@ class Date extends \DateTime implements ContainerAwareInterface
 			}
 			elseif (is_string($tz))
 			{
-				$tz = new \DateTimeZone($tz);
+				$tz = new DateTimeZone($tz);
 			}
 		}
 
@@ -215,11 +226,19 @@ class Date extends \DateTime implements ContainerAwareInterface
 	 *
 	 * @return  string   The date string in the specified format format.
 	 */
-	#[\ReturnTypeWillChange]
-	public function format($format, $local = false)
+	#[ReturnTypeWillChange]
+	public function format($format, bool $local = false, bool $translate = true)
 	{
+		if ($translate)
+		{
+			$format = preg_replace('/(^|[^\\\])D/', "\\1" . self::REPLACE_DAY_ABBR, $format);
+			$format = preg_replace('/(^|[^\\\])l/', "\\1" . self::REPLACE_DAY_NAME, $format);
+			$format = preg_replace('/(^|[^\\\])M/', "\\1" . self::REPLACE_MONTH_ABBR, $format);
+			$format = preg_replace('/(^|[^\\\])F/', "\\1" . self::REPLACE_MONTH_NAME, $format);
+		}
+
 		// If the returned time should not be local use GMT.
-		if ($local == false)
+		if (!$local)
 		{
 			parent::setTimezone(self::$gmt);
 		}
@@ -227,7 +246,32 @@ class Date extends \DateTime implements ContainerAwareInterface
 		// Format the date.
 		$return = parent::format($format);
 
-		if ($local == false)
+		if ($translate)
+		{
+			if (strpos($return, self::REPLACE_DAY_ABBR) !== false)
+			{
+				$return = str_replace(self::REPLACE_DAY_ABBR, $this->dayToString(parent::format('w'), true), $return);
+			}
+
+			if (strpos($return, self::REPLACE_DAY_NAME) !== false)
+			{
+				$return = str_replace(self::REPLACE_DAY_NAME, $this->dayToString(parent::format('w')), $return);
+			}
+
+			if (strpos($return, self::REPLACE_MONTH_ABBR) !== false)
+			{
+				$return = str_replace(
+					self::REPLACE_MONTH_ABBR, $this->monthToString(parent::format('n'), true), $return
+				);
+			}
+
+			if (strpos($return, self::REPLACE_MONTH_NAME) !== false)
+			{
+				$return = str_replace(self::REPLACE_MONTH_NAME, $this->monthToString(parent::format('n')), $return);
+			}
+		}
+
+		if (!$local)
 		{
 			parent::setTimezone($this->tz);
 		}
@@ -250,13 +294,13 @@ class Date extends \DateTime implements ContainerAwareInterface
 	/**
 	 * Method to wrap the setTimezone() function and set the internal time zone object.
 	 *
-	 * @param   \DateTimeZone  $tz  The new DateTimeZone object.
+	 * @param   DateTimeZone  $tz  The new DateTimeZone object.
 	 *
 	 * @return  Date
 	 *
 	 * @note    This method can't be type hinted due to a PHP bug: https://bugs.php.net/bug.php?id=61483
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function setTimezone($tz)
 	{
 		$this->tz = $tz;
@@ -264,34 +308,84 @@ class Date extends \DateTime implements ContainerAwareInterface
 		return parent::setTimezone($tz);
 	}
 
-	/**
-	 * Gets the date as an ISO 8601 string.  IETF RFC 3339 defines the ISO 8601 format
-	 * and it can be found at the IETF Web site.
-	 *
-	 * @param   boolean  $local  True to return the date string in the local time zone, false to return it in GMT.
-	 *
-	 * @return  string  The date string in ISO 8601 format.
-	 *
-	 * @link    http://www.ietf.org/rfc/rfc3339.txt
-	 */
-	public function toISO8601($local = false)
+	public function toAtom($local = false)
 	{
-		return $this->format(\DateTime::RFC3339, $local);
+		return $this->format(DateTime::ATOM, $local, false);
 	}
 
-	/**
-	 * Gets the date as an RFC 822 string.  IETF RFC 2822 supercedes RFC 822 and its definition
-	 * can be found at the IETF Web site.
-	 *
-	 * @param   boolean  $local  True to return the date string in the local time zone, false to return it in GMT.
-	 *
-	 * @return  string   The date string in RFC 822 format.
-	 *
-	 * @link    http://www.ietf.org/rfc/rfc2822.txt
-	 */
+	public function toCookie($local = false)
+	{
+		return $this->format(DateTime::COOKIE, $local, false);
+	}
+
+	public function toISO8601_WrongPHP($local = false)
+	{
+		return $this->format('Y-m-d\TH:i:sO', $local, false);
+	}
+
+	public function toISO8601($local = false)
+	{
+		return $this->format(DateTime::RFC3339, $local, false);
+	}
+
+	public function toISO8601Expanded($local = false)
+	{
+		if (PHP_VERSION_ID < 80200)
+		{
+			return $this->toISO8601($local);
+		}
+
+		return $this->format(DateTime::ISO8601_EXPANDED, $local, false);
+	}
+
 	public function toRFC822($local = false)
 	{
-		return $this->format(\DateTime::RFC2822, $local);
+		return $this->format(DateTime::RFC2822, $local, false);
+	}
+
+	public function toRFC850($local = false)
+	{
+		return $this->format(DateTime::RFC850, $local, false);
+	}
+
+	public function toRFC1036($local = false)
+	{
+		return $this->format(DateTime::RFC1036, $local, false);
+	}
+
+	public function toRFC1123($local = false)
+	{
+		return $this->format(DateTime::RFC1123, $local, false);
+	}
+
+	public function toRFC2822($local = false)
+	{
+		return $this->toRFC822($local);
+	}
+
+	public function toRFC3339($local = false)
+	{
+		return $this->format(DateTime::RFC3339, $local, false);
+	}
+
+	public function toRFC3339Extended($local = false)
+	{
+		return $this->format(DateTime::RFC3339_EXTENDED, $local, false);
+	}
+
+	public function toRFC7231($local = false)
+	{
+		return $this->format(DateTime::RFC7231, $local, false);
+	}
+
+	public function toRSS($local = false)
+	{
+		return $this->format(DateTime::RSS, $local, false);
+	}
+
+	public function toW3C($local = false)
+	{
+		return $this->format(DateTime::W3C, $local, false);
 	}
 
 	/**
@@ -318,6 +412,93 @@ class Date extends \DateTime implements ContainerAwareInterface
 	{
 		$db = $db ?? $this->container->db;
 
-		return $this->format($db->getDateFormat(), $local);
+		return $this->format($db->getDateFormat(), $local, false);
+	}
+
+	protected function dayToString($day, $abbr = false)
+	{
+		switch ($day)
+		{
+			case 0 :
+				$string = $abbr ? 'Sun' : 'Sunday';
+
+				break;
+			case 1 :
+				$string = $abbr ? 'Mon' : 'Monday';
+
+				break;
+			case 2 :
+				$string = $abbr ? 'Tue' : 'Tuesday';
+
+				break;
+			case 3 :
+				$string = $abbr ? 'Wed' : 'Wednesday';
+
+				break;
+			case 4 :
+				$string = $abbr ? 'Thu' : 'Thursday';
+
+				break;
+			case 5 :
+				$string = $abbr ? 'Fri' : 'Friday';
+
+				break;
+			case 6 :
+				$string = $abbr ? 'Sat' : 'Saturday';
+
+				break;
+		}
+
+		$translated = $this->getContainer()->language->text($string);
+
+		return strtolower($translated) !== strtolower($string) ? $translated : $string;
+	}
+
+	protected function monthToString($month, $abbr = false)
+	{
+		switch ($month)
+		{
+			case 1 :
+				$string = $abbr ? 'Jan' : 'January';
+				break;
+			case 2 :
+				$string = $abbr ? 'Feb' : 'February';
+				break;
+			case 3 :
+				$string = $abbr ? 'Mar' : 'March';
+				break;
+			case 4 :
+				$string = $abbr ? 'Apr' : 'April';
+				break;
+			case 5 :
+				$string = 'May';
+				break;
+			case 6 :
+				$string = $abbr ? 'Jun' : 'June';
+				break;
+			case 7 :
+				$string = $abbr ? 'Jul' : 'July';
+				break;
+			case 8 :
+				$string = $abbr ? 'Aug' : 'August';
+				break;
+			case 9 :
+				$string = $abbr ? 'Sep' : 'September';
+				break;
+			case 10 :
+				$string = $abbr ? 'Oct' : 'October';
+				break;
+			case 11 :
+				$string = $abbr ? 'Nov' : 'November';
+				break;
+			case 12 :
+				$string = $abbr ? 'Dec' : 'December';
+				break;
+		}
+
+		$key        = $string . ($abbr ? '_short' : '_genitive');
+		$translated = $this->getContainer()->language->text($key);
+
+		return strtolower($translated) !== strtolower($key) ? $translated : $string;
 	}
 }
