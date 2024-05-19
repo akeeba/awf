@@ -82,7 +82,7 @@ class Manager
 	 *
 	 * @since  1.1.2
 	 */
-	private $sessionCreateParameters = [];
+	protected $sessionCreateParameters = [];
 
 	/**
 	 *
