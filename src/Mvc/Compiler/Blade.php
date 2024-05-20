@@ -102,6 +102,22 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected $usingTokenizer = false;
 
 	/**
+	 * Maps the name of `repeatable` blocks to the method names generated for them, therefore allowing overrides.
+	 *
+	 * @var   array
+	 * @since 1.2.0
+	 */
+	protected $repeatableMap = [];
+
+	/**
+	 * List of `repeatableOverride` sections which prevent future `repeatable` statements from overriding them.
+	 *
+	 * @var   array
+	 * @since 1.2.0
+	 */
+	protected $repeatableOverrides = [];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param   Container  $container  The application container.
@@ -661,22 +677,45 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	}
 
 	/**
-	 * Compile the end repeatable statements into valid PHP.
+	 * Compile the repeatable statements into valid PHP.
 	 *
 	 * @param   string  $expression
 	 *
 	 * @return  string
 	 * @since   1.0.0
 	 */
-	protected function compileRepeatable(string $expression): string
+	protected function compileRepeatable(string $expression, bool $isOverride = false): string
 	{
-		$expression = trim($expression, '()');
-		$parts      = explode(',', $expression, 2);
+		$expression    = trim($expression, '()');
+		$parts         = explode(',', $expression, 2);
+		$argumentsList = $parts[1] ?? '';
 
-		$functionName  = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
-		$argumentsList = isset($parts[1]) ? $parts[1] : '';
+		$key = md5(strtolower(trim($parts[0])));
 
-		return "<?php @\$$functionName = function($argumentsList) { ?>";
+		if ($isOverride)
+		{
+			$this->repeatableOverrides[] = $key;
+		}
+
+		if (!$isOverride && in_array($key, $this->repeatableOverrides))
+		{
+			$key = "SKIP_" . $key;
+		}
+
+		return "<?php @\$this->repeatableMap['$key'] = function($argumentsList) { ?>";
+	}
+
+	/**
+	 * Compile the repeatableOverride statements into valid PHP.
+	 *
+	 * @param   string  $expression
+	 *
+	 * @return  string
+	 * @since   1.2.0
+	 */
+	protected function compileRepeatableOverride(string $expression): string
+	{
+		return $this->compileRepeatable($expression, true);
 	}
 
 	/**
@@ -702,13 +741,12 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected function compileYieldRepeatable(string $expression): string
 	{
-		$expression = trim($expression, '()');
-		$parts      = explode(',', $expression, 2);
+		$expression    = trim($expression, '()');
+		$parts         = explode(',', $expression, 2);
+		$argumentsList = $parts[1] ?? '';
+		$key           = md5(strtolower(trim($parts[0])));
 
-		$functionName  = '_awf_blade_repeatable_' . md5($this->path . trim($parts[0]));
-		$argumentsList = isset($parts[1]) ? $parts[1] : '';
-
-		return "<?php \$$functionName($argumentsList); ?>";
+		return "<?php try { \$this->repeatableMap['$key']($argumentsList); } catch (\Throwable \$e) { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', {$parts[0]}), 500, \$e); } ?>";
 	}
 
 	/**
