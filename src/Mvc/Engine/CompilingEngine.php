@@ -7,6 +7,7 @@
 
 namespace Awf\Mvc\Engine;
 
+use Awf\Filesystem\File;
 use Awf\Mvc\Compiler\CompilerInterface;
 use Awf\Utils\Buffer;
 
@@ -181,17 +182,39 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	}
 
 	/**
-	 * Returns the cached compiled version of the template file
+	 * Returns the path to cached, compiled version of the template file.
 	 *
-	 * @param   string  $path  The full path to the template file which needs to be compiled
+	 * As of 1.2.0 the cached files are distributed into two subfolder levels for performance reasons, i.e.
+	 * `/path/to/tmp/compiled_templates/a/b/abcdef0123456789abcdef0123456789.php` instead of the legacy storage scheme
+	 * of `/path/to/tmp/compiled_templates/abcdef0123456789abcdef0123456789.php`.
+	 *
+	 * @param   string  $path   The full path to the template file which needs to be compiled.
+	 * @param   bool    $legacy Should I use legacy storage (all compiled files in the same folder)?
 	 *
 	 * @return  string  The full path to the cached compiled file
 	 */
-	protected function getCachePath($path)
+	protected function getCachePath(string $path, bool $legacy = false): string
 	{
 		$id = $this->getIdentifier($path);
 
-		return $this->view->getContainer()->temporaryPath . '/compiled_templates/' . $id . '.php';
+		// In legacy mode all files were under the same folder
+		if ($legacy)
+		{
+			return sprintf(
+				'%s/compiled_templates/%s.php',
+				$this->view->getContainer()->temporaryPath,
+				$id
+			);
+		}
+
+		// In modern mode files are distributed into two folder levels
+		return sprintf(
+			'%s/compiled_templates/%s/%s/%s.php',
+			$this->view->getContainer()->temporaryPath,
+			substr($id, 0, 1),
+			substr($id, 1, 1),
+			$id
+		);
 	}
 
 	/**
@@ -209,13 +232,41 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			return false;
 		}
 
-		$cachePath = $this->getCachePath($path);
-
 		clearstatcache();
+
+		$cachePath    = $this->getCachePath($path);
 
 		if (!file_exists($cachePath))
 		{
-			return false;
+			// If the legacy file does not exist we return false immediately.
+			$oldCachePath = $this->getCachePath($path, true);
+
+			if (!file_exists($oldCachePath))
+			{
+				return false;
+			}
+
+			// Try to move the file from the legacy into the new location.
+			$lastModTime = filemtime($cachePath);
+			$fs = $this->view->getContainer()->fileSystem;
+
+			// If the move failed try to delete the old file and return false anyway; we'll have to recompile.
+			if (!$fs->move($oldCachePath, $cachePath))
+			{
+				$fs->delete($oldCachePath);
+
+				return false;
+			}
+
+			/**
+			 * Try to change the last modification time of the file we moved if we're using the local filesystem.
+			 * Other filesystem adapters do not have the equivalent of touch() as it's not reliably implemented across
+			 * FTP / SFTP servers :(
+			 */
+			if ($fs instanceof File)
+			{
+				touch($cachePath, $lastModTime);
+			}
 		}
 
 		$cacheTime = filemtime($cachePath);
