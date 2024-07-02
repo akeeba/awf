@@ -11,6 +11,8 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\User\Exception\InvalidCredentials;
+use Awf\User\Exception\InvalidUser;
 
 /**
  * The User Manager class allows you to load, save, log in and log out users
@@ -244,12 +246,12 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 
 		if (is_null($user))
 		{
-			throw new \RuntimeException($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
+			throw new InvalidUser($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
 		}
 
 		if (!$user->verifyPassword($password, $params))
 		{
-			throw new \RuntimeException($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
+			throw new InvalidCredentials($this->getContainer()->language->text('AWF_USER_ERROR_AUTHERROR'), 403);
 		}
 
 		$this->container->segment->set('user_id', $user->getId());
