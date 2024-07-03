@@ -256,6 +256,9 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 
 		$this->container->segment->set('user_id', $user->getId());
 		$this->currentUser = $user;
+
+		// Regenerate the session ID after logging in the user
+		$this->container->session->regenerateId();
 	}
 
 	/**
@@ -267,6 +270,9 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 	{
 		$this->currentUser = null;
 		$this->container->segment->clear();
+
+		// Regenerate the session ID after logging out the user
+		$this->container->session->regenerateId();
 	}
 
 	/**
