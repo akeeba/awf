@@ -6,8 +6,10 @@
  */
 
 /**
- * The Session package in Awf is based on the Session package in Aura for PHP. Please consult the LICENSE file in the
- * Awf\Session package for copyright and license information.
+ * The Session package in Awf is based on the Session package in Aura for PHP, and has been modified to suit our needs.
+ *
+ * Please consult the LICENSE file in the Awf\Session package for copyright and license information of the original
+ * library.
  */
 
 namespace Awf\Session;
@@ -16,6 +18,7 @@ if (!defined('PHP_SESSION_NONE'))
 {
 	define('PHP_SESSION_NONE', 0);
 }
+
 if (!defined('PHP_SESSION_ACTIVE'))
 {
 	define('PHP_SESSION_ACTIVE', 1);
@@ -28,51 +31,45 @@ if (!defined('PHP_SESSION_ACTIVE'))
 class Manager
 {
 	/**
-	 *
-	 * A session segment factory.
+	 * The session segment factory object.
 	 *
 	 * @var SegmentFactory
-	 *
 	 */
 	protected $segment_factory;
 
 	/**
-	 *
-	 * The CSRF token for this session.
+	 * The CSRF token object for this session.
 	 *
 	 * @var CsrfToken
-	 *
 	 */
 	protected $csrf_token;
 
 	/**
-	 *
 	 * A CSRF token factory, for lazy-creating the CSRF token.
 	 *
 	 * @var CsrfTokenFactory
-	 *
 	 */
 	protected $csrf_token_factory;
 
 	/**
-	 *
-	 * Incoming cookies from the client, typically a copy of the $_COOKIE
-	 * superglobal.
+	 * Incoming cookies from the client, typically a copy of the $_COOKIE superglobal.
 	 *
 	 * @var array
-	 *
 	 */
 	protected $cookies;
 
 	/**
-	 *
 	 * Session cookie parameters.
 	 *
 	 * @var array
-	 *
 	 */
 	protected $cookie_params = [];
 
+	/**
+	 * Array to hold already created session segments.
+	 *
+	 * @var array
+	 */
 	protected $segments = [];
 
 	/**
@@ -85,16 +82,13 @@ class Manager
 	protected $sessionCreateParameters = [];
 
 	/**
-	 *
-	 * Constructor
+	 * Public constructor.
 	 *
 	 * @param   SegmentFactory  $segment_factory  A session segment factory.
 	 *
 	 * @param   CsrfTokenFactory A CSRF token factory.
 	 *
-	 * @param   array           $cookies          An arry of cookies from the client, typically a
-	 *                                            copy of $_COOKIE.
-	 *
+	 * @param   array           $cookies          An array of cookies from the client, typically a copy of $_COOKIE.
 	 */
 	public function __construct(
 		SegmentFactory $segment_factory,
@@ -111,11 +105,10 @@ class Manager
 	}
 
 	/**
+	 * Gets a new session segment instance by name.
 	 *
-	 * Gets a new session segment instance by name. Segments with the same
-	 * name will be different objects but will reference the same $_SESSION
-	 * values, so it is possible to have two or more objects that share state.
-	 * For good or bad, this a function of how $_SESSION works.
+	 * Segments with the same name will be different objects but will reference the same $_SESSION values, so it is
+	 * possible to have two or more objects that share state.
 	 *
 	 * @param   string  $name  The name of the session segment, typically a
 	 *                         fully-qualified class name.
@@ -134,11 +127,10 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Tells us if a session is available to be reactivated, but not if it has
 	 * started yet.
 	 *
-	 * @return bool
+	 * @return  bool
 	 *
 	 */
 	public function isAvailable(): bool
@@ -149,10 +141,9 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Tells us if a session has started.
 	 *
-	 * @return bool
+	 * @return  bool
 	 *
 	 */
 	public function isStarted(): bool
@@ -161,10 +152,9 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Starts a new session, or resumes an existing one.
 	 *
-	 * @return bool
+	 * @return  bool
 	 *
 	 */
 	public function start(): bool
@@ -189,10 +179,9 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Clears all session variables across all segments.
 	 *
-	 * @return void
+	 * @return  void
 	 *
 	 */
 	public function clear(): void
@@ -203,10 +192,9 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Writes session data from all segments and ends the session.
 	 *
-	 * @return void
+	 * @return  void
 	 *
 	 */
 	public function commit(): void
@@ -224,7 +212,6 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Destroys the session entirely.
 	 *
 	 * @return bool
@@ -242,6 +229,13 @@ class Manager
 		return @session_destroy();
 	}
 
+	/**
+	 * Set the algorithm for generating CSRF tokens.
+	 *
+	 * @param   string  $algorithm
+	 *
+	 * @return  void
+	 */
 	public function setCsrfTokenAlgorithm(string $algorithm): void
 	{
 		$this->csrf_token_factory->setAlgorithm($algorithm);
@@ -249,11 +243,9 @@ class Manager
 	}
 
 	/**
+	 * Returns the CSRF token, creating it if needed, thereby starting a session.
 	 *
-	 * Returns the CSRF token, creating it if needed (and thereby starting a
-	 * session).
-	 *
-	 * @return CsrfToken
+	 * @return  CsrfToken
 	 *
 	 */
 	public function getCsrfToken(): CsrfToken
@@ -272,14 +264,16 @@ class Manager
 	//
 
 	/**
+	 * Sets the HTTP cache expire time.
 	 *
-	 * Sets the session cache expire time.
+	 * This has nothing to do with the session lifetime. It is the value used in the Expires: and Cache-Control:
+	 * max-age headers.
 	 *
 	 * @param   int  $expire  The expiration time in seconds.
 	 *
 	 * @return  int
 	 *
-	 * @see session_cache_expire()
+	 * @see     session_cache_expire()
 	 *
 	 */
 	public function setCacheExpire(int $expire): int
@@ -288,12 +282,14 @@ class Manager
 	}
 
 	/**
+	 * Gets the HTTP cache expire time.
 	 *
-	 * Gets the session cache expire time.
+	 * This has nothing to do with the session lifetime. It is the value used in the Expires: and Cache-Control:
+	 * max-age headers.
 	 *
-	 * @return int The cache expiration time in seconds.
+	 * @return  int  The cache expiration time in seconds.
 	 *
-	 * @see session_cache_expire()
+	 * @see     session_cache_expire()
 	 *
 	 */
 	public function getCacheExpire(): int
@@ -302,14 +298,15 @@ class Manager
 	}
 
 	/**
+	 * Sets the cache limiter value.
 	 *
-	 * Sets the session cache limiter value.
+	 * This has nothing to do with the session lifetime. It controls the Expires: and Cache-Control: max-age headers.
 	 *
 	 * @param   string  $limiter  The limiter value.
 	 *
-	 * @return string
+	 * @return  string
 	 *
-	 * @see session_cache_limiter()
+	 * @see     session_cache_limiter()
 	 *
 	 */
 	public function setCacheLimiter(string $limiter): string
@@ -318,12 +315,13 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Gets the session cache limiter value.
 	 *
-	 * @return string The limiter value.
+	 * This has nothing to do with the session lifetime. It controls the Expires: and Cache-Control: max-age headers.
 	 *
-	 * @see session_cache_limiter()
+	 * @return  string The limiter value.
+	 *
+	 * @see     session_cache_limiter()
 	 *
 	 */
 	public function getCacheLimiter(): string
@@ -332,7 +330,17 @@ class Manager
 	}
 
 	/**
+	 * Gets the session cookie params.
 	 *
+	 * @return  array
+	 *
+	 */
+	public function getCookieParams(): array
+	{
+		return $this->cookie_params;
+	}
+
+	/**
 	 * Sets the session cookie params.  Param array keys are:
 	 *
 	 * - `lifetime` : Lifetime of the session cookie, defined in seconds.
@@ -349,16 +357,26 @@ class Manager
 	 * - `httponly` : If set to TRUE then PHP will attempt to send the httponly
 	 *   flag when setting the session cookie.
 	 *
+	 * - `samesite` : See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
+	 *
 	 * @param   array  $params  The array of session cookie param keys and values.
 	 *
-	 * @return void
+	 * @return  void
 	 *
-	 * @see session_set_cookie_params()
+	 * @see     session_set_cookie_params()
 	 *
 	 */
 	public function setCookieParams(array $params)
 	{
 		$this->cookie_params = array_merge($this->cookie_params, $params);
+
+		// On PHP 7.3+ we need to use the alternative syntax so that we can pass the `samesite` option, if it's defined.
+		if (version_compare(PHP_VERSION, '7.3.0', 'ge'))
+		{
+			@session_set_cookie_params($params);
+
+			return;
+		}
 
 		@session_set_cookie_params(
 			$this->cookie_params['lifetime'],
@@ -370,23 +388,11 @@ class Manager
 	}
 
 	/**
-	 *
-	 * Gets the session cookie params.
-	 *
-	 * @return array
-	 *
-	 */
-	public function getCookieParams(): array
-	{
-		return $this->cookie_params;
-	}
-
-	/**
-	 *
 	 * Gets the current session ID.
 	 *
-	 * @return string
+	 * This is the unique identifier of the session.
 	 *
+	 * @return  string
 	 */
 	public function getId(): string
 	{
@@ -394,12 +400,12 @@ class Manager
 	}
 
 	/**
+	 * Regenerates and replaces the current session ID; also regenerates the CSRF token value if one exists.
 	 *
-	 * Regenerates and replaces the current session id; also regenerates the
-	 * CSRF token value if one exists.
+	 * This should be called every time the security context of the session changes. It's also a good idea to
+	 * periodically regenerate the session ID to prevent session hijacking.
 	 *
 	 * @return  bool  True if regeneration worked, false if not.
-	 *
 	 */
 	public function regenerateId(): bool
 	{
@@ -414,15 +420,17 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Sets the current session name.
+	 *
+	 * This is just the name of the cookie which holds the session ID. By default, it's something like PHPSESSID. It
+	 * should be set to something more descriptive, per application, to make it easier for users to identify the cookies
+	 * stored by their browser.
 	 *
 	 * @param   string  $name  The session name to use.
 	 *
 	 * @return  string
 	 *
-	 * @see session_name()
-	 *
+	 * @see     session_name()
 	 */
 	public function setName(string $name): string
 	{
@@ -430,11 +438,13 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Returns the current session name.
 	 *
-	 * @return string
+	 * This is just the name of the cookie which holds the session ID. By default, it's something like PHPSESSID. It
+	 * should be set to something more descriptive, per application, to make it easier for users to identify the cookies
+	 * stored by their browser.
 	 *
+	 * @return  string
 	 */
 	public function getName(): string
 	{
@@ -442,52 +452,63 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Sets the session save path.
 	 *
-	 * @param   string  $path  The new save path.
+	 * If you use a non-zero $levels parameter, every time you call this method we have to check if all the necessary
+	 * subdirectories of the session save path are created (e.g. foo/a/a, foo/a/b, ...). This is SLOW. It's advisable
+	 * to keep the number of levels low (1 or 2). If you have a massive amount of concurrent sessions it might be better
+	 * overriding the whole Session package with something that uses a different kind of storage, e.g. Redis, Memcached,
+	 * or something similar.
+	 *
+	 * @param   string  $path   The new save path.
+	 * @param   int     $levels How many folder levels do you want for saving the sessions.
 	 *
 	 * @return  string  The actual session save path
 	 *
-	 * @see session_save_path()
-	 *
+	 * @see     session_save_path()
 	 */
-	public function setSavePath(string $path): string
+	public function setSavePath(string $path, int $levels = 0): string
 	{
-		// Workaround for some servers where the call to session_save_path() is ignored (yeah, there ARE broken servers out there...)
+		// Workaround for some servers where the call to session_save_path() is ignored.
 		$usedIniSet = false;
+
+		$levels          = max(0, $levels);
+		$prefixForLevels = '';
+
+		if ($levels > 0)
+		{
+			$this->makeSubpaths($path, $levels);
+			$prefixForLevels = $levels . ';';
+		}
 
 		if (function_exists('ini_set'))
 		{
 			$usedIniSet = true;
-			ini_set('session.save_path', $path);
+			ini_set('session.save_path', $prefixForLevels . $path);
 		}
 
 		if (function_exists('session_save_path'))
 		{
 			// session_save_path exists, return its output
-			return session_save_path($path);
+			return session_save_path($prefixForLevels . $path);
 		}
-		elseif ($usedIniSet)
+
+		if ($usedIniSet)
 		{
 			// session_save_path does not exist, but we used ini_set, i.e. we're using $path
 			return $path;
 		}
-		else
-		{
-			// session_save_path does not exist, and we could not use ini_set, all bets are off...
-			return $this->getSavePath();
-		}
+
+		// session_save_path does not exist, and we could not use ini_set, all bets are off...
+		return $this->getSavePath();
 	}
 
 	/**
-	 *
 	 * Gets the session save path.
 	 *
-	 * @return string
+	 * @return  string
 	 *
-	 * @see session_save_path()
-	 *
+	 * @see     session_save_path()
 	 */
 	public function getSavePath(): string
 	{
@@ -511,17 +532,15 @@ class Manager
 	}
 
 	/**
-	 *
 	 * Returns the current session status:
 	 *
 	 * - `PHP_SESSION_DISABLED` if sessions are disabled.
 	 * - `PHP_SESSION_NONE` if sessions are enabled, but none exists.
 	 * - `PHP_SESSION_ACTIVE` if sessions are enabled, and one exists.
 	 *
-	 * @return int
+	 * @return  int
 	 *
-	 * @see session_status()
-	 *
+	 * @see     session_status()
 	 */
 	public function getStatus(): int
 	{
@@ -532,13 +551,35 @@ class Manager
 
 		$sid = session_id();
 
-		if (empty($sid))
+		return empty($sid) ? PHP_SESSION_NONE : PHP_SESSION_ACTIVE;
+	}
+
+	/**
+	 * Create subpaths for storing sessions under multiple directories
+	 *
+	 * @param   string  $baseDir
+	 * @param   int     $levels
+	 *
+	 * @return  void
+	 * @since   1.2.0
+	 */
+	private function makeSubpaths(string $baseDir, int $levels = 2)
+	{
+		$allChars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTYZ-,';
+
+		foreach (str_split($allChars) as $char)
 		{
-			return PHP_SESSION_NONE;
-		}
-		else
-		{
-			return PHP_SESSION_ACTIVE;
+			$newDir = $baseDir . '/' . $char;
+
+			if (!@is_dir($newDir))
+			{
+				@mkdir($newDir, 0700, true);
+			}
+
+			if ($levels > 1)
+			{
+				$this->makeSubpaths($newDir, $levels - 1);
+			}
 		}
 	}
 }
