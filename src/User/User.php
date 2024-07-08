@@ -7,6 +7,7 @@
 
 namespace Awf\User;
 use Awf\Registry\Registry;
+use Awf\Utils\HashHelper;
 
 class User implements UserInterface
 {
@@ -224,12 +225,12 @@ class User implements UserInterface
 			// ...then SHA-1...
 			elseif (function_exists('sha1'))
 			{
-				$this->password = 'SHA1:' . sha1($password . $salt);
+				$this->password = 'SHA1:' . HashHelper::sha1($password . $salt);
 			}
 			// ...then MD5...
 			elseif (function_exists('md5'))
 			{
-				$this->password = 'MD5:' . md5($password . $salt);
+				$this->password = 'MD5:' . HashHelper::md5($password . $salt);
 			}
 			// ...and if all else fails throw an exception: your server is trash!
 			else
