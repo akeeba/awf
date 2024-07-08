@@ -46,6 +46,7 @@ use Awf\Session\Segment as SessionSegment;
 use Awf\Text\Language;
 use Awf\User\ManagerInterface as UserManagerInterface;
 use Awf\User\UserInterface;
+use Awf\Utils\HashHelper;
 
 /**
  * Dependency injection container for Awf's Application
@@ -180,12 +181,12 @@ class Container extends Pimple
 
 				if (function_exists('md5'))
 				{
-					$installationId = md5($this->application_name);
+					$installationId = HashHelper::md5($this->application_name);
 				}
 
 				if (function_exists('sha1'))
 				{
-					$installationId = sha1($this->application_name);
+					$installationId = HashHelper::sha1($this->application_name);
 				}
 
 				return $this->application_name . '_' . $installationId;

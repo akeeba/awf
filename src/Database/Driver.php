@@ -10,6 +10,7 @@ namespace Awf\Database;
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Database\Iterator\AbstractIterator;
+use Awf\Utils\HashHelper;
 use RuntimeException;
 
 /**
@@ -305,7 +306,7 @@ abstract class Driver implements DatabaseInterface
 		$options = $options ?? Application::getInstance();
 
 		// Get the options signature for the database connector.
-		$signature = md5(serialize($options));
+		$signature = HashHelper::md5(serialize($options));
 
 		self::$instances[$signature] = self::$instances[$signature] ??
 			($options instanceof Container ? self::fromContainer($options) : self::fromOptions($options));

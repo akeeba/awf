@@ -10,6 +10,7 @@ namespace Awf\Mvc\Engine;
 use Awf\Filesystem\File;
 use Awf\Mvc\Compiler\CompilerInterface;
 use Awf\Utils\Buffer;
+use Awf\Utils\HashHelper;
 
 /**
  * View engine for compiling PHP template files.
@@ -175,10 +176,10 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	{
 		if (function_exists('sha1'))
 		{
-			return sha1($path);
+			return HashHelper::sha1($path);
 		}
 
-		return md5($path);
+		return HashHelper::md5($path);
 	}
 
 	/**
