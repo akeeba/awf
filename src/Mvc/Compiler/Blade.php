@@ -13,6 +13,7 @@ use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Text\Text;
+use Awf\Utils\HashHelper;
 
 require_once __DIR__ . '/../../Utils/helpers.php';
 
@@ -690,7 +691,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		$parts         = explode(',', $expression, 2);
 		$argumentsList = $parts[1] ?? '';
 
-		$key = md5(strtolower(trim($parts[0])));
+		$key = HashHelper::md5(strtolower(trim($parts[0])));
 
 		if ($isOverride)
 		{
@@ -744,7 +745,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		$expression    = trim($expression, '()');
 		$parts         = explode(',', $expression, 2);
 		$argumentsList = $parts[1] ?? '';
-		$key           = md5(strtolower(trim($parts[0])));
+		$key           = HashHelper::md5(strtolower(trim($parts[0])));
 
 		return "<?php try { \$this->repeatableMap['$key']($argumentsList); } catch (\Throwable \$e) { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', {$parts[0]}), 500, \$e); } ?>";
 	}

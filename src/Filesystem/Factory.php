@@ -10,6 +10,7 @@ use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Utils\HashHelper;
 
 final class Factory
 {
@@ -74,7 +75,7 @@ final class Factory
 			$className = $classPrefix . 'Hybrid';
 		}
 
-		$signature = md5($container->application_name . $className . ($hybrid ? 'hybrid' : ''));
+		$signature = HashHelper::md5($container->application_name . $className . ($hybrid ? 'hybrid' : ''));
 
 		if (!isset(self::$instances[$signature]))
 		{

@@ -8,6 +8,7 @@
 namespace Awf\Mvc;
 
 use Awf\Container\Container;
+use Awf\Utils\HashHelper;
 use Awf\Utils\StringHandling;
 
 /**
@@ -70,7 +71,7 @@ class TreeModel extends DataModel
 		// advantage of MySQL's optimised searching for fixed size CHAR columns)
 		if ($this->hasField('hash') && $this->hasField('slug'))
 		{
-			$this->hash = sha1($this->slug);
+			$this->hash = HashHelper::sha1($this->slug);
 		}
 
 		// Reset cached values
@@ -2098,7 +2099,7 @@ class TreeModel extends DataModel
 
 		foreach ($pathParts as $part)
 		{
-			$pathHashesQuoted[] = $db->q(sha1($part));
+			$pathHashesQuoted[] = $db->q(HashHelper::sha1($part));
 		}
 
 		// Get all nodes with slugs matching our path
