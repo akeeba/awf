@@ -217,6 +217,11 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
+
 		$result = pg_escape_string($this->connection, $text);
 
 		if ($extra)

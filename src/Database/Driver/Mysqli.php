@@ -312,7 +312,7 @@ class Mysqli extends Driver
 	/**
 	 * Method to escape a string for usage in an SQL statement.
 	 *
-	 * @param   string   $text   The string to be escaped.
+	 * @param   mixed    $text   The string to be escaped.
 	 * @param   boolean  $extra  Optional parameter to provide extra escaping.
 	 *
 	 * @return  string  The escaped string.
@@ -321,6 +321,11 @@ class Mysqli extends Driver
 	public function escape($text, $extra = false)
 	{
 		$this->connect();
+
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
 
 		$result = mysqli_real_escape_string($this->getConnection(), $text);
 

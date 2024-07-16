@@ -108,6 +108,11 @@ class Sqlite extends Pdo
 			return $text;
 		}
 
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
+
 		return SQLite3::escapeString($text);
 	}
 
