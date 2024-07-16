@@ -8,6 +8,7 @@
 namespace Awf\Registry\Format;
 
 use Awf\Registry\AbstractRegistryFormat;
+use Awf\Utils\HashHelper;
 use stdClass;
 
 /**
@@ -79,7 +80,7 @@ class Ini extends AbstractRegistryFormat
 		$sections = (isset($options['processSections'])) ? $options['processSections'] : false;
 
 		// Check the memory cache for already processed strings.
-		$hash = md5($data . ':' . (int) $sections);
+		$hash = HashHelper::md5($data . ':' . (int) $sections);
 
 		if (isset(self::$cache[$hash]))
 		{

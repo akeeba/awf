@@ -7,6 +7,7 @@
 
 namespace Awf\Input;
 
+use Awf\Utils\HashHelper;
 use Awf\Utils\Utf8;
 
 /**
@@ -125,7 +126,7 @@ class Filter
 	 */
 	public static function &getInstance($tagsArray = array(), $attrArray = array(), $tagsMethod = 0, $attrMethod = 0, $xssAuto = 1)
 	{
-		$sig = md5(serialize(array($tagsArray, $attrArray, $tagsMethod, $attrMethod, $xssAuto)));
+		$sig = HashHelper::md5(serialize(array($tagsArray, $attrArray, $tagsMethod, $attrMethod, $xssAuto)));
 
 		if (empty(self::$instances[$sig]))
 		{
