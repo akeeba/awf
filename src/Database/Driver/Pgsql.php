@@ -268,6 +268,11 @@ class Pgsql extends Postgresql
 			return $text;
 		}
 
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
+
 		$result = substr($this->connection->quote($text), 1, -1);
 
 		if ($extra)

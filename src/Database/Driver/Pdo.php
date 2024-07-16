@@ -528,6 +528,11 @@ abstract class Pdo extends Driver
 			return $text;
 		}
 
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
+
 		$text = str_replace("'", "''", $text);
 
 		return addcslashes($text, "\000\n\r\\\032");

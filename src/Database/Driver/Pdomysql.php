@@ -368,7 +368,7 @@ class Pdomysql extends Pdo
      * Note: Using query objects with bound variables is
      * preferable to the below.
      *
-     * @param   string   $text   The string to be escaped.
+     * @param   mixed    $text   The string to be escaped.
      * @param   boolean  $extra  Unused optional parameter to provide extra escaping.
      *
      * @return  string  The escaped string.
@@ -383,6 +383,11 @@ class Pdomysql extends Pdo
         {
             return $text;
         }
+
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
 
         $result = substr($this->connection->quote($text), 1, -1);
 

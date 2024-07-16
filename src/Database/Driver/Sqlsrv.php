@@ -215,6 +215,11 @@ class Sqlsrv extends Driver
 	 */
 	public function escape($text, $extra = false)
 	{
+		if ($text === NULL)
+		{
+			return 'NULL';
+		}
+
 		$result = addslashes($text);
 		$result = str_replace("\'", "''", $result);
 		$result = str_replace('\"', '"', $result);
