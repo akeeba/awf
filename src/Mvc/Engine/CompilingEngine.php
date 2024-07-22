@@ -248,7 +248,7 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			}
 
 			// Try to move the file from the legacy into the new location.
-			$lastModTime = filemtime($cachePath);
+			$lastModTime = @filemtime($oldCachePath) ?: 0;
 			$fs = $this->view->getContainer()->fileSystem;
 
 			// If the move failed try to delete the old file and return false anyway; we'll have to recompile.
@@ -270,8 +270,8 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 			}
 		}
 
-		$cacheTime = filemtime($cachePath);
-		$fileTime  = filemtime($path);
+		$cacheTime = filemtime($cachePath) ?: 0;
+		$fileTime  = filemtime($path) ?: 0;
 
 		return $fileTime <= $cacheTime;
 	}
