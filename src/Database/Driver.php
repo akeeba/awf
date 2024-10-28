@@ -208,7 +208,7 @@ abstract class Driver implements DatabaseInterface
 			'user'     => $config->get('dbuser', ''),
 			'password' => $config->get('dbpass', ''),
 			'charset'  => $config->get('dbcharset', 'utf8'),
-			'prefix'   => $config->get('prefix', 'solo_'),
+			'prefix'   => $config->get('prefix', ''),
 			'ssl'      => [],
 		];
 
@@ -406,7 +406,7 @@ abstract class Driver implements DatabaseInterface
 		// Initialise object variables.
 		$this->_database = (isset($options['database'])) ? $options['database'] : '';
 
-		$this->tablePrefix = (isset($options['prefix'])) ? $options['prefix'] : 'solo_';
+		$this->tablePrefix = (isset($options['prefix'])) ? $options['prefix'] : '';
 		$this->count = 0;
 		$this->errorNum = 0;
 		$this->log = array();
