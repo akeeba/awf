@@ -134,7 +134,7 @@ abstract class Query
 	 *
 	 * @param   Driver  $db  The database driver.
 	 */
-	public function __construct(Driver $db = null)
+	public function __construct(?Driver $db = null)
 	{
 		$this->db = $db;
 	}

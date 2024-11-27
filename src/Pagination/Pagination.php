@@ -227,7 +227,7 @@ class Pagination implements ContainerAwareInterface
 	 *
 	 * @return  void
 	 */
-	public function setAdditionalUrlParamsFromInput(Input $input = null)
+	public function setAdditionalUrlParamsFromInput(?Input $input = null)
 	{
 		// Make sure we have an input
 		if (!is_object($input))

@@ -728,7 +728,7 @@ class Select extends AbstractHelper
 	 * @return  string  HTML for the select list
 	 */
 	public function radioList(
-		array $data, string $name, array $attribs = null, string $optKey = 'value', string $optText = 'text',
+		array $data, string $name, ?array $attribs = null, string $optKey = 'value', string $optText = 'text',
 		$selected = null, $idTag = false, bool $translate = false
 	): string
 	{

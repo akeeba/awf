@@ -17,6 +17,7 @@ use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
 use Awf\Text\Language;
 use Awf\Text\LanguageAwareInterface;
 use Awf\Text\LanguageAwareTrait;
+use Awf\Utils\Collection as AwfCollection;
 use RuntimeException;
 
 class RelationManager implements ContainerAwareInterface, LanguageAwareInterface
@@ -342,15 +343,15 @@ class RelationManager implements ContainerAwareInterface, LanguageAwareInterface
 	 *
 	 * @param string                $name           The name of the relation to return data for
 	 * @param callable              $callback       A callback to customise the returned data
-	 * @param \Awf\Utils\Collection $dataCollection Used when fetching the data of an eager loaded relation
-	 *
-	 * @see Relation::getData()
+	 * @param AwfCollection $dataCollection Used when fetching the data of an eager loaded relation
 	 *
 	 * @return Collection|DataModel
 	 *
 	 * @throws Relation\Exception\RelationNotFound
+	 *@see Relation::getData()
+	 *
 	 */
-	public function getData($name, $callback = null, \Awf\Utils\Collection $dataCollection = null)
+	public function getData(string $name, ?callable $callback = null, ?AwfCollection $dataCollection = null)
 	{
 		if (!isset($this->relations[$name]))
 		{

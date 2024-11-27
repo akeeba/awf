@@ -1603,7 +1603,7 @@ abstract class Driver implements DatabaseInterface
 	 *
 	 * @throws  RuntimeException
 	 */
-	public function getIterator(string $column = null, string $class = 'stdClass'): AbstractIterator
+	public function getIterator(?string $column = null, string $class = 'stdClass'): AbstractIterator
 	{
 		// Derive the class name from the driver.
 		$iteratorClass = __NAMESPACE__ . '\\Iterator\\' . ucfirst($this->name);

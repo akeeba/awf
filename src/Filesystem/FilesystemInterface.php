@@ -28,7 +28,7 @@ interface FilesystemInterface
 	 *
 	 * @return  FilesystemInterface
 	 */
-	public function __construct(array $options, Container $container = null);
+	public function __construct(array $options, ?Container $container = null);
 
 	/**
 	 * Write the contents into the file

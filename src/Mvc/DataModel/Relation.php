@@ -177,7 +177,7 @@ abstract class Relation implements ContainerAwareInterface, LanguageAwareInterfa
 	 *
 	 * @return Collection|DataModel
 	 */
-	public function getData(?callable $callback = null, Collection $dataCollection = null)
+	public function getData(?callable $callback = null, ?Collection $dataCollection = null)
 	{
 		if (is_null($this->data))
 		{
@@ -291,5 +291,5 @@ abstract class Relation implements ContainerAwareInterface, LanguageAwareInterfa
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	abstract protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null);
+	abstract protected function filterForeignModel(DataModel $foreignModel, ?Collection $dataCollection = null);
 }

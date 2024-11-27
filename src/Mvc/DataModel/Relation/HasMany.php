@@ -59,7 +59,7 @@ class HasMany extends DataModel\Relation
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null)
+	protected function filterForeignModel(DataModel $foreignModel, ?Collection $dataCollection = null)
 	{
 		// Decide how to proceed, based on eager or lazy loading
 		if (is_object($dataCollection))

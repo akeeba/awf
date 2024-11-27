@@ -8,6 +8,7 @@
 namespace Awf\Mvc;
 
 use Awf\Container\Container;
+use Awf\Text\Language;
 use Awf\Utils\HashHelper;
 use Awf\Utils\StringHandling;
 
@@ -44,9 +45,9 @@ class TreeModel extends DataModel
 	 *
 	 * @throws \RuntimeException When lft/rgt columns are not found
 	 */
-	public function __construct(\Awf\Container\Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
-		parent::__construct($container);
+		parent::__construct($container, $language);
 
 		if (!$this->hasField('lft') || !$this->hasField('rgt'))
 		{

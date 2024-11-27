@@ -306,7 +306,7 @@ class BelongsToMany extends DataModel\Relation
 	 *
 	 * @return boolean Return false to force an empty data collection
 	 */
-	protected function filterForeignModel(DataModel $foreignModel, Collection $dataCollection = null)
+	protected function filterForeignModel(DataModel $foreignModel, ?Collection $dataCollection = null)
 	{
 		$db = $this->parentModel->getDbo();
 
