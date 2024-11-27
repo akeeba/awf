@@ -23,6 +23,7 @@ use Awf\Mvc\DataModel\Exception\SpecialColumnMissing;
 use Awf\Mvc\DataModel\Relation\Exception\ForeignModelNotFound;
 use Awf\Mvc\DataModel\Relation\Exception\RelationTypeNotFound;
 use Awf\Mvc\DataModel\RelationManager;
+use Awf\Text\Language;
 
 /**
  * Data-aware model, implementing a convenient ORM
@@ -138,7 +139,7 @@ class DataModel extends Model
 	 *
 	 * @see \Awf\Mvc\Model::__construct()
 	 */
-	public function __construct(?Container $container = null)
+	public function __construct(?Container $container = null, ?Language $language = null)
 	{
 		/** @deprecated 2.0 You must provide the container */
 		if (empty($container))
@@ -152,7 +153,7 @@ class DataModel extends Model
 		}
 
 		// First call the parent constructor. It also populates $this->config from $container['mvc_config']
-		parent::__construct($container);
+		parent::__construct($container, $language);
 
 		// Should I use a different database object?
 		$this->dbo = $container->db;
