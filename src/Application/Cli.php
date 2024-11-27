@@ -9,6 +9,7 @@ namespace Awf\Application;
 
 
 use Awf\Container\Container;
+use Awf\Text\Language;
 
 abstract class Cli extends Application
 {
@@ -19,7 +20,7 @@ abstract class Cli extends Application
 	 *
 	 * @return   Cli
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(?Container $container = null, ?Language $languageObject = null)
 	{
 		// Close the application if we are not executed from the command line, Akeeba style (allow for PHP CGI)
 		if (array_key_exists('REQUEST_METHOD', $_SERVER))
@@ -33,7 +34,7 @@ abstract class Cli extends Application
 			$this->name = 'cli';
 		}
 
-		parent::__construct($container);
+		parent::__construct($container, $languageObject);
 
 		if (!($container->input instanceof \Awf\Input\Cli))
 		{

@@ -35,7 +35,7 @@ class Cli extends Input
 	 * @param   array  $source   Source data (Optional, default is $_REQUEST)
 	 * @param   array  $options  Array of configuration parameters (Optional)
 	 */
-	public function __construct(array $source = null, array $options = array())
+	public function __construct(?array $source = null, array $options = [])
 	{
 		$this->options = $options;
 

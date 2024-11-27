@@ -149,7 +149,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	 *
 	 * @return mixed|null
 	 */
-	public function first(Closure $callback = null, $default = null)
+	public function first(?Closure $callback = null, $default = null)
 	{
 		if (is_null($callback))
 		{
@@ -164,7 +164,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 	/**
 	 * Get a flattened array of the items in the collection.
 	 *
-	 * @return array
+	 * @return  static
 	 */
 	public function flatten()
 	{

@@ -52,7 +52,7 @@ class Totp
 	 * @param   int    $secretLength   The length of the secret key. Default: 10 bytes (80 bits).
 	 * @param   Base32 $base32         The base32 en/decrypter
 	 */
-	public function __construct($timeStep = 30, $passCodeLength = 6, $secretLength = 10, Base32 $base32 = null)
+	public function __construct($timeStep = 30, $passCodeLength = 6, $secretLength = 10, ?Base32 $base32 = null)
 	{
 		$this->timeStep = $timeStep;
 		$this->passCodeLength = $passCodeLength;

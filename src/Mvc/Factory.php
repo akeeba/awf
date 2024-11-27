@@ -184,7 +184,7 @@ class Factory implements ContainerAwareInterface, LanguageAwareInterface
 	 *
 	 * @return  View
 	 */
-	public function makeView(string $viewName = null, string $viewType = null, ?Language $language = null): View
+	public function makeView(?string $viewName = null, ?string $viewType = null, ?Language $language = null): View
 	{
 		// Make sure I have a view name
 		$viewName = $viewName ?? $this->container->input->getCmd('view', '');

@@ -49,7 +49,7 @@ class Language implements ContainerAwareInterface
 	 * @since   1.2.0
 	 */
 	public function loadLanguage(
-		string $langCode = null, ?string $languagePath = null, bool $overwrite = true, bool $useDefault = true,
+		?string $langCode = null, ?string $languagePath = null, bool $overwrite = true, bool $useDefault = true,
 		$callbacks = []
 	): void
 	{

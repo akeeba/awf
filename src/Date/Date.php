@@ -408,7 +408,7 @@ class Date extends DateTime implements ContainerAwareInterface
 	 *
 	 * @link    http://dev.mysql.com/doc/refman/5.0/en/datetime.html
 	 */
-	public function toSql($local = false, Driver $db = null)
+	public function toSql($local = false, ?Driver $db = null)
 	{
 		$db = $db ?? $this->container->db;
 

@@ -28,7 +28,7 @@ class File implements FilesystemInterface, ContainerAwareInterface
 	 *
 	 * @return  void
 	 */
-	public function __construct(array $options, Container $container = null)
+	public function __construct(array $options, ?Container $container = null)
 	{
 		$this->setContainer($container);
 	}

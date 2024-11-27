@@ -60,7 +60,7 @@ class Input implements \Serializable, \Countable
 	 *
 	 * @return  \Awf\Input\Input
 	 */
-	public function __construct($source = null, $options = [])
+	public function __construct(?array $source = null, array $options = [])
 	{
 		$this->options = $options;
 
