@@ -196,6 +196,24 @@ class Router implements ContainerAwareInterface
 			$uri = $rebaseURI;
 		}
 
+		/**
+		 * WordPress: URL-encode the slash in wp-admin/admin.php?page=plugin/file.php&... URLs.
+		 *
+		 * When calling $uri->toString() the results of http_build_query() are passed through urldecode() first.
+		 * However, we must preserve the encoded forward slash in the page parameter since some servers will throw a
+		 * 403 if it's not encoded. Yeah, this is totally WP's fault, but we have to work around it with ugly code
+		 * because WordPress is written as if it's still 2001. Bleh!
+		 */
+		if (
+			defined('WPINC')
+			&& substr($uri->getPath(), -10) === '/admin.php'
+			&& $uri->hasVar('page')
+			&& strpos($uri->getVar('page'), '/') !== false
+		)
+		{
+			$uri->setVar('page', urlencode($uri->getVar('page')));
+		}
+
 		return $uri->toString();
 	}
 
