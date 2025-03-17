@@ -1299,10 +1299,22 @@ abstract class Driver implements DatabaseInterface
 
 			if (strlen($q) == 1)
 			{
+				// MySQL: Escape a backtick as two backticks
+				if (strpos($part, $q) !== false)
+				{
+					$part = str_replace($q, $q . $q, $part);
+				}
+
 				$parts[] = $q . $part . $q;
 			}
 			else
 			{
+				// SQL Server: Escape a closing square bracket as two closing square brackets
+				if (strpos($part, $q[1]) !== false)
+				{
+					$part = str_replace($q[1], $q[1] . $q[1], $part);
+				}
+
 				$parts[] = $q[0] . $part . $q[1];
 			}
 		}
