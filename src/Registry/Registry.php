@@ -406,7 +406,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
-		return (boolean) ($this->get($offset) !== null);
+		return $this->get($offset) !== null;
 	}
 
 	/**

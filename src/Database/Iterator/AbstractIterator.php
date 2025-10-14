@@ -181,7 +181,7 @@ abstract class AbstractIterator implements Countable, Iterator
 	#[ReturnTypeWillChange]
 	public function valid()
 	{
-		return (boolean)$this->_current;
+		return (bool)$this->_current;
 	}
 
 }
