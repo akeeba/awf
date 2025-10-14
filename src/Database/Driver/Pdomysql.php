@@ -67,7 +67,11 @@ class Pdomysql extends Pdo
         $options['charset']       = (isset($options['charset'])) ? $options['charset'] : 'utf8';
 
         // As soon as PDO connect set the sql_mode to '' (avoids issues with the date being NULL/zero
-        $options['driverOptions'] = [\PDO::MYSQL_ATTR_INIT_COMMAND => 'SET sql_mode=""'];
+	    $MySQLAttrInitCommand = version_compare(PHP_VERSION, '8.4.9999', '>=')
+		    ? \Pdo\Mysql::ATTR_INIT_COMMAND
+		    : \PDO::MYSQL_ATTR_INIT_COMMAND;
+
+        $options['driverOptions'] = [$MySQLAttrInitCommand => 'SET sql_mode=""'];
 
         $this->charset = $options['charset'];
 
