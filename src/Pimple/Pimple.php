@@ -173,7 +173,14 @@ class Pimple implements \ArrayAccess
 			throw new \InvalidArgumentException('Service definition is not a Closure or invokable object.');
 		}
 
-		$this->factories->attach($callable);
+		if (version_compare(PHP_VERSION, '8.4.999', '>='))
+		{
+			$this->factories->offsetSet($callable);
+		}
+		else
+		{
+			$this->factories->attach($callable);
+		}
 
 		return $callable;
 	}
@@ -195,7 +202,14 @@ class Pimple implements \ArrayAccess
 			throw new \InvalidArgumentException('Callable is not a Closure or invokable object.');
 		}
 
-		$this->protected->attach($callable);
+		if (version_compare(PHP_VERSION, '8.4.999', '>='))
+		{
+			$this->protected->offsetSet($callable);
+		}
+		else
+		{
+			$this->protected->attach($callable);
+		}
 
 		return $callable;
 	}
@@ -257,7 +271,15 @@ class Pimple implements \ArrayAccess
 
 		if (isset($this->factories[$factory])) {
 			$this->factories->detach($factory);
-			$this->factories->attach($extended);
+
+			if (version_compare(PHP_VERSION, '8.4.999', '>='))
+			{
+				$this->factories->offsetSet($extended);
+			}
+			else
+			{
+				$this->factories->attach($extended);
+			}
 		}
 
 		return $this[$id] = $extended;
