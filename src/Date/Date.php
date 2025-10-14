@@ -161,7 +161,7 @@ class Date extends DateTime implements ContainerAwareInterface
 				break;
 
 			case 'isleapyear':
-				$value = (boolean) $this->format('L', true);
+				$value = (bool) $this->format('L', true);
 				break;
 
 			case 'day':
