@@ -1,2 +1,3 @@
 ### Composer dependencies
 /vendor
+/.idea/laravel-idea.xml
