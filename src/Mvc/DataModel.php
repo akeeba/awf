@@ -1470,9 +1470,9 @@ class DataModel extends Model
 		// Apply ordering unless we are called to override limits
 		if (!$overrideLimits)
 		{
-			$order = $this->getState('filter_order', null, 'cmd');
+			$order = $this->getState('filter_order', null, 'cmd') ?? '';
 
-			if (!array_key_exists($order, $this->knownFields))
+			if ($order === '' || !array_key_exists($order, $this->knownFields))
 			{
 				$order = $this->getIdFieldName();
 			}
