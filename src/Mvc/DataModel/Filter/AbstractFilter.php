@@ -129,6 +129,9 @@ abstract class AbstractFilter
 			[$type,] = explode('(', $type);
 		}
 
+		// Normalise to lowercase so that drivers (e.g. SQLite) returning upper-case type names are handled correctly.
+		$type = strtolower(trim((string) $type));
+
 		$detectedType = null;
 
 		switch (trim($type))
