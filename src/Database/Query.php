@@ -1572,6 +1572,13 @@ abstract class Query
 	{
 		foreach ($this as $k => $v)
 		{
+			// The database driver reference is intentionally shared (not deep-copied)
+			// because drivers may hold non-serialisable resources such as PDO cursors.
+			if ($k === 'db')
+			{
+				continue;
+			}
+
 			if (is_object($v) || is_array($v))
 			{
 				$this->{$k} = unserialize(serialize($v));
