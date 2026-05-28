@@ -288,7 +288,7 @@ class Date extends DateTime implements ContainerAwareInterface
 	 */
 	public function getOffsetFromGMT($hours = false)
 	{
-		return (float) $hours ? ($this->tz->getOffset($this) / 3600) : $this->tz->getOffset($this);
+		return (float) ($hours ? ($this->tz->getOffset($this) / 3600) : $this->tz->getOffset($this));
 	}
 
 	/**
