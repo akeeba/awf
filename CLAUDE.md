@@ -106,8 +106,9 @@ AWF's Blade implementation (`src/Mvc/Compiler/Blade.php`) is a **custom, indepen
 
 **Echo**
 - `{{ $var }}` — HTML-escaped output
-- `{{{ $var }}}` — raw unescaped output (three braces, not `{!! !!}`)
+- `{{{ $var }}}` — raw unescaped output (three braces)
 - `{{ $var or 'default' }}` — with fallback
+- `{!! $var !!}` — raw unescaped output (Laravel-style)
 - `{{-- comment --}}` — compiled away
 
 **AWF-specific directives (not in Laravel)**
@@ -140,7 +141,6 @@ The following Laravel Blade features **do not exist** in AWF:
 - Stack prepend: `@prepend` / `@endprepend`
 - Conditional includes: `@includeIf`, `@includeWhen`, `@includeFirst`
 - Section checks: `@hasSection`
-- Raw output shorthand: `{!! $var !!}` — use `{{{ $var }}}` instead
 - Livewire integration
 
 ### Compiler Notes

@@ -62,23 +62,29 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected $compilers = [
 		'Extensions',
 		'Statements',
-		'Comments',
-		'Echos',
+		'Content',
 	];
 
-	/**
-	 * Array of opening and closing tags for escaped echos.
-	 *
-	 * @var array
-	 */
-	protected $contentTags = ['{{', '}}'];
+	private const TAG_COMMENT = 0;
+
+	private const TAG_RAW = 1;
+
+	private const TAG_ESCAPED = 2;
 
 	/**
-	 * Array of opening and closing tags for escaped echos.
+	 * Tuples of content tags.
 	 *
-	 * @var array
+	 * Content tags are processed in the order presented in this array. Shorter tags which may be a subset of a longer
+	 * tag (e.g. `{{` versus `{{{`) MUST appear AFTER the longer tag.
+	 *
+	 * @var array[]
 	 */
-	protected $escapedTags = ['{{{', '}}}'];
+	protected $tags = [
+		['{{--', '--}}', self::TAG_COMMENT],
+		['{{{', '}}}', self::TAG_RAW],
+		['{!!', '!!}', self::TAG_RAW],
+		['{{', '}}', self::TAG_ESCAPED],
+	];
 
 	/**
 	 * Array of footer lines to be added to template.
@@ -314,59 +320,6 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	}
 
 	/**
-	 * Sets the escaped content tags used for the compiler.
-	 *
-	 * @param   string  $openTag
-	 * @param   string  $closeTag
-	 *
-	 * @return  void
-	 * @since   1.0.0
-	 */
-	public function setEscapedContentTags(string $openTag, string $closeTag): void
-	{
-		$this->setContentTags($openTag, $closeTag, true);
-	}
-
-	/**
-	 * Gets the content tags used for the compiler.
-	 *
-	 * @return  array
-	 * @since   1.0.0
-	 */
-	public function getContentTags(): array
-	{
-		return $this->getTags();
-	}
-
-	/**
-	 * Sets the content tags used for the compiler.
-	 *
-	 * @param   string  $openTag
-	 * @param   string  $closeTag
-	 * @param   bool    $escaped
-	 *
-	 * @return  void
-	 * @since   1.0.0
-	 */
-	public function setContentTags(string $openTag, string $closeTag, bool $escaped = false): void
-	{
-		$property = ($escaped === true) ? 'escapedTags' : 'contentTags';
-
-		$this->{$property} = [preg_quote($openTag), preg_quote($closeTag)];
-	}
-
-	/**
-	 * Gets the escaped content tags used for the compiler.
-	 *
-	 * @return  array
-	 * @since   1.0.0
-	 */
-	public function getEscapedContentTags(): array
-	{
-		return $this->getTags(true);
-	}
-
-	/**
 	 * Returns the file extension supported by this compiler
 	 *
 	 * @return  string
@@ -418,6 +371,29 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		return $value;
 	}
 
+	protected function compileContent(string $value): string
+	{
+		foreach ($this->tags as [$openTag, $closeTag, $type])
+		{
+			switch ($type)
+			{
+				case self::TAG_COMMENT:
+					$value = $this->compileComments($value, $openTag, $closeTag);
+					break;
+
+				case self::TAG_RAW:
+					$value = $this->compileRegularEchos($value, $openTag, $closeTag);
+					break;
+
+				case self::TAG_ESCAPED:
+					$value = $this->compileEscapedEchos($value, $openTag, $closeTag);
+					break;
+			}
+		}
+
+		return $value;
+	}
+
 	/**
 	 * Compile Blade comments into valid PHP.
 	 *
@@ -426,31 +402,59 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @return  string
 	 * @since   1.0.0
 	 */
-	protected function compileComments(string $value): string
+	protected function compileComments(string $value, string $openTag, string $closeTag): string
 	{
-		$pattern = sprintf('/%s--((.|\s)*?)--%s/', $this->contentTags[0], $this->contentTags[1]);
-
-		return preg_replace($pattern, '<?php /*$1*/ ?>', $value);
+		return preg_replace(
+			sprintf('/%s((.|\s)*?)%s/', $openTag, $closeTag),
+			'<?php /*$1*/ ?>',
+			$value
+		);
 	}
 
 	/**
-	 * Compile Blade echos into valid PHP.
+	 * Compile the "regular" echo statements.
 	 *
 	 * @param   string  $value
 	 *
 	 * @return  string
 	 * @since   1.0.0
 	 */
-	protected function compileEchos(string $value): string
+	protected function compileRegularEchos(string $value, string $openTag, string $closeTag): string
 	{
-		$difference = strlen($this->contentTags[0]) - strlen($this->escapedTags[0]);
+		return preg_replace_callback(
+			sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $openTag, $closeTag),
+			function(array $matches)
+			{
+				return $matches[1]
+					? substr($matches[0], 1)
+					: '<?php echo ' . $this->compileEchoDefaults($matches[2]) . '; ?>' .
+					  // Whitespaces
+					  (empty($matches[3]) ? '' : $matches[3] . $matches[3]);
+			},
+			$value
+		);
+	}
 
-		if ($difference > 0)
-		{
-			return $this->compileEscapedEchos($this->compileRegularEchos($value));
-		}
-
-		return $this->compileRegularEchos($this->compileEscapedEchos($value));
+	/**
+	 * Compile the escaped echo statements.
+	 *
+	 * @param   string  $value
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	protected function compileEscapedEchos(string $value, string $openTag, string $closeTag): string
+	{
+		return preg_replace_callback(
+			sprintf('/%s\s*(.+?)\s*%s(\r?\n)?/s', $openTag, $closeTag),
+			function(array $matches)
+			{
+				return '<?php echo $this->escape(' . $this->compileEchoDefaults($matches[1]) . '); ?>'
+				       // Whitespace
+				       . (empty($matches[2]) ? '' : $matches[2] . $matches[2]);
+			},
+			$value
+		);
 	}
 
 	/**
@@ -484,67 +488,6 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		}
 
 		return isset($match[3]) ? $match[0] : $match[0] . $match[2];
-	}
-
-	/**
-	 * Compile the "regular" echo statements.
-	 *
-	 * @param   string  $value
-	 *
-	 * @return  string
-	 * @since   1.0.0
-	 */
-	protected function compileRegularEchos(string $value): string
-	{
-		$pattern = sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $this->contentTags[0], $this->contentTags[1]);
-
-		return preg_replace_callback($pattern, [$this, 'compileRegularEchosCallback'], $value);
-	}
-
-	/**
-	 * Callback for compileRegularEchos, since $this is not allowed in Closures under PHP 5.3.
-	 *
-	 * @param   array  $matches
-	 *
-	 * @return  string
-	 * @since   1.0.0
-	 */
-	protected function compileRegularEchosCallback(array $matches): string
-	{
-		$whitespace = empty($matches[3]) ? '' : $matches[3] . $matches[3];
-
-		return $matches[1] ? substr($matches[0], 1)
-			: '<?php echo ' . $this->compileEchoDefaults($matches[2]) . '; ?>' . $whitespace;
-	}
-
-	/**
-	 * Compile the escaped echo statements.
-	 *
-	 * @param   string  $value
-	 *
-	 * @return  string
-	 * @since   1.0.0
-	 */
-	protected function compileEscapedEchos(string $value): string
-	{
-		$pattern = sprintf('/%s\s*(.+?)\s*%s(\r?\n)?/s', $this->escapedTags[0], $this->escapedTags[1]);
-
-		return preg_replace_callback($pattern, [$this, 'compileEscapedEchosCallback'], $value);
-	}
-
-	/**
-	 * Callback for compileEscapedEchos, since $this is not allowed in Closures under PHP 5.3.
-	 *
-	 * @param   array  $matches
-	 *
-	 * @return  string
-	 * @since   1.0.0
-	 */
-	protected function compileEscapedEchosCallback(array $matches): string
-	{
-		$whitespace = empty($matches[2]) ? '' : $matches[2] . $matches[2];
-
-		return '<?php echo $this->escape(' . $this->compileEchoDefaults($matches[1]) . '); ?>' . $whitespace;
 	}
 
 	/**
@@ -1160,21 +1103,6 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected function compileMedia(string $expression): string
 	{
 		return "<?php echo \\Awf\\Utils\\Template::parsePath{$expression}; ?>";
-	}
-
-	/**
-	 * Gets the tags used for the compiler.
-	 *
-	 * @param   bool  $escaped
-	 *
-	 * @return  array
-	 * @since   1.0.0
-	 */
-	protected function getTags(bool $escaped = false): array
-	{
-		$tags = $escaped ? $this->escapedTags : $this->contentTags;
-
-		return array_map('stripcslashes', $tags);
 	}
 
 	/**
