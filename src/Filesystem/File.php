@@ -30,7 +30,10 @@ class File implements FilesystemInterface, ContainerAwareInterface
 	 */
 	public function __construct(array $options, ?Container $container = null)
 	{
-		$this->setContainer($container);
+		if ($container !== null)
+		{
+			$this->setContainer($container);
+		}
 	}
 
 	/**
@@ -204,7 +207,7 @@ class File implements FilesystemInterface, ContainerAwareInterface
 		// Get a raw directory listing (hoping it's a UNIX server!)
 		$list = array();
 
-		$handle = opendir($dir);
+		$handle = @opendir($dir);
 
 		if (!is_resource($handle))
 		{
