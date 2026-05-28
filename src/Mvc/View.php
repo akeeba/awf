@@ -405,7 +405,7 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 		// If $model is null we use the default model
 		if (is_null($modelName))
 		{
-			$model = $this->defaultModel;
+			$model = $this->defaultModel !== null ? strtolower($this->defaultModel) : null;
 		}
 		else
 		{
@@ -413,7 +413,7 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 		}
 
 		// First check to make sure the model requested exists
-		if (isset($this->modelInstances[$model]))
+		if ($model !== null && isset($this->modelInstances[$model]))
 		{
 			// Model exists, let's build the method name
 			$method = 'get' . ucfirst($property);
