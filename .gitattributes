@@ -35,3 +35,11 @@ RELEASENOTES text eol=lf
 *.zip binary
 *.phar binary
 *.dat binary
+
+# Declade which directories to NOT include in Packagist's generated package
+/tests              export-ignore
+/.claude            export-ignore
+/.github            export-ignore
+/phpunit.xml.dist   export-ignore
+/phpunit.xml        export-ignore
+/rector.php         export-ignore
