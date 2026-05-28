@@ -113,6 +113,11 @@ abstract class Driver implements DatabaseInterface
 	protected $utf = true;
 
 	/**
+	 * @var    string|null  The character set used by the database connection.
+	 */
+	protected $charset = null;
+
+	/**
 	 * @var    integer  The database error number
 	 */
 	protected $errorNum = 0;
@@ -407,6 +412,7 @@ abstract class Driver implements DatabaseInterface
 		$this->_database = (isset($options['database'])) ? $options['database'] : '';
 
 		$this->tablePrefix = (isset($options['prefix'])) ? $options['prefix'] : '';
+		$this->charset = (isset($options['charset'])) ? $options['charset'] : null;
 		$this->count = 0;
 		$this->errorNum = 0;
 		$this->log = array();
