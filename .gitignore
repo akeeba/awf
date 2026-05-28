@@ -4,3 +4,6 @@
 
 ### PHPUnit
 /.phpunit.cache
+
+### Unit-test generation work queue
+/pending_work
