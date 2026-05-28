@@ -116,6 +116,12 @@ class Sqlite extends Pdo implements QueryPreparable, QueryLimitable
 				return $this->bounded[$key];
 			}
 		}
+
+		// Return a null reference for missing keys to avoid "only variable
+		// references should be returned by reference" notices in PHP 8.x.
+		$null = null;
+
+		return $null;
 	}
 
 	/**
