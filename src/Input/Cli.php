@@ -59,8 +59,9 @@ class Cli extends Input
 	 * Method to serialize the input.
 	 *
 	 * @return  string  The serialized input.
+	 * @deprecated
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		// Load all of the inputs.
 		$this->loadAllInputs();
@@ -79,14 +80,65 @@ class Cli extends Input
 	 *
 	 * @param   string  $input  The serialized input.
 	 *
-	 * @return  Input  The input object.
+	 * @return  void
+	 * @deprecated
 	 */
-	public function unserialize($input)
+	public function unserialize($input): void
 	{
 		// Unserialize the executable, args, options, data, and inputs.
 		list($this->executable, $this->args, $this->options, $this->data, $this->inputs) = unserialize($input);
 
 		// Load the filter.
+		if (isset($this->options['filter']))
+		{
+			$this->filter = $this->options['filter'];
+		}
+		else
+		{
+			$this->filter = Filter::getInstance();
+		}
+	}
+
+	/**
+	 * Method to serialize the input (PHP 8+ magic method).
+	 *
+	 * @return  array
+	 */
+	public function __serialize(): array
+	{
+		// Load all of the inputs.
+		$this->loadAllInputs();
+
+		// Remove $_ENV and $_SERVER from the inputs.
+		$inputs = $this->inputs;
+		unset($inputs['env']);
+		unset($inputs['server']);
+
+		return [
+			'executable' => $this->executable,
+			'args'       => $this->args,
+			'options'    => $this->options,
+			'data'       => $this->data,
+			'inputs'     => $inputs,
+		];
+	}
+
+	/**
+	 * Method to unserialize the input (PHP 8+ magic method).
+	 *
+	 * @param   array  $data  The unserialized data.
+	 *
+	 * @return  void
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->executable = $data['executable'];
+		$this->args       = $data['args'];
+		$this->options    = $data['options'];
+		$this->data       = $data['data'];
+		$this->inputs     = $data['inputs'];
+
+		// Re-initialise the filter (it is not serialized).
 		if (isset($this->options['filter']))
 		{
 			$this->filter = $this->options['filter'];
