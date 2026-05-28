@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>sqlite</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <!-- This action should only run when SELECT 1 equals '1' (always true) -->
+        <action table="#__equals_test">
+            <condition type="equals" value="1">SELECT 1</condition>
+            <query>CREATE TABLE #__equals_test (id INTEGER PRIMARY KEY)</query>
+        </action>
+        <!-- This action should NOT run when SELECT 1 equals '99' (never true) -->
+        <action table="#__equals_test_no">
+            <condition type="equals" value="99">SELECT 1</condition>
+            <query>CREATE TABLE #__equals_test_no (id INTEGER PRIMARY KEY)</query>
+        </action>
+    </sql>
+</schema>

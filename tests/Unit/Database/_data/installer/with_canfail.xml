@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>sqlite</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__canfail_test">
+            <condition type="true" />
+            <query canfail="true">DROP TABLE nonexistent_table_that_does_not_exist_xyz</query>
+        </action>
+    </sql>
+</schema>
