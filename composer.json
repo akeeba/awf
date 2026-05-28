@@ -14,8 +14,7 @@
     "ext-pdo": "*",
     "ext-libxml": "*",
     "ext-mysqli": "*",
-    "ext-pgsql": "*",
-    "ext-sqlsrv": "*"
+    "ext-pgsql": "*"
   },
   "keywords": [
     "framework",
