@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>mysqli</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__test_items">
+            <condition type="missing" />
+            <query>CREATE TABLE #__test_items (id INTEGER PRIMARY KEY)</query>
+        </action>
+    </sql>
+</schema>
