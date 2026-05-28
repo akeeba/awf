@@ -46,6 +46,13 @@ abstract class AbstractFilter
 	protected $filterZero = true;
 
 	/**
+	 * Optional table alias to prefix the field name in generated SQL.
+	 *
+	 * @var string|null
+	 */
+	protected $tableAlias = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @param   Driver  $db     The database object
