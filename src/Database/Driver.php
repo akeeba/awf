@@ -890,6 +890,11 @@ abstract class Driver implements DatabaseInterface
 	 */
 	public function isMinimumVersion()
 	{
+		if (static::$dbMinimum === null)
+		{
+			return true;
+		}
+
 		return version_compare($this->getVersion(), static::$dbMinimum) >= 0;
 	}
 
