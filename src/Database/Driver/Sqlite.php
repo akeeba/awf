@@ -50,7 +50,7 @@ class Sqlite extends Pdo
 	public function __destruct()
 	{
 		$this->freeResult();
-		unset($this->connection);
+		$this->connection = null;
 	}
 
 	/**
@@ -63,7 +63,7 @@ class Sqlite extends Pdo
 	public function disconnect()
 	{
 		$this->freeResult();
-		unset($this->connection);
+		$this->connection = null;
 	}
 
 	/**
