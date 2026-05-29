@@ -16,7 +16,7 @@ trait LanguageAwareTrait
 		$this->languageObject = $language;
 	}
 
-	public function getLanguage(): Language
+	public function getLanguage(): ?Language
 	{
 		return $this->languageObject;
 	}

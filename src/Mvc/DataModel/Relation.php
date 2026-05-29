@@ -103,12 +103,13 @@ abstract class Relation implements ContainerAwareInterface, LanguageAwareInterfa
 		$this->foreignModelLanguage  = $foreignModelLanguage;
 		$this->foreignModelClass     = $foreignModelClass;
 
+		$class                = ltrim($foreignModelClass, '\\');
+		$foreignParts         = explode('\\', $class);
+		$this->foreignModelName = $foreignParts[2] ?? null;
+
 		if (empty($foreignModelContainer))
 		{
-			$class = ltrim($foreignModelClass, '\\');
-			$foreignParts           = explode('\\', $class);
-			$this->foreignModelApp  = $foreignParts[0];
-			$this->foreignModelName = $foreignParts[2];
+			$this->foreignModelApp = $foreignParts[0];
 		}
 		else
 		{

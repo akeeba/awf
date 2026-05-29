@@ -1,3 +1,9 @@
 ### Composer dependencies
 /vendor
 /.idea/laravel-idea.xml
+
+### PHPUnit
+/.phpunit.cache
+
+### Unit-test generation work queue
+/pending_work

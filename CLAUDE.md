@@ -80,7 +80,7 @@ Application::render()     → Document wraps output (HTML/JSON/CSV/Raw)
 
 ### Database Layer
 
-Abstracted drivers in `src/Database/Driver/` (Mysqli, Pdomysql, Postgresql, Pgsql, Sqlite, Sqlsrv, Sqlazure). Query builder in `src/Database/Query/` with driver-specific subclasses. Schema management via `src/Database/Installer.php`.
+Abstracted drivers in `src/Database/Driver/` (Mysqli, Pdomysql, Postgresql, Pgsql, Sqlite). Query builder in `src/Database/Query/` with driver-specific subclasses. Schema management via `src/Database/Installer.php`.
 
 ### Language System
 

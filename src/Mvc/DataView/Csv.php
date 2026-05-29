@@ -158,12 +158,15 @@ class Csv extends Raw
 		{
             $items = $this->items;
 
+            if (is_array($items))
+            {
+                $items = \Awf\Mvc\DataModel\Collection::make($items);
+            }
+
 			// Default CSV behaviour in case the template isn't there!
 			$item    = $items->last();
 			$keys    = $item->getData();
 			$keys    = array_keys($keys);
-
-			reset($items);
 
 			if (!empty($this->csvFields))
 			{

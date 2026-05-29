@@ -14,8 +14,7 @@
     "ext-pdo": "*",
     "ext-libxml": "*",
     "ext-mysqli": "*",
-    "ext-pgsql": "*",
-    "ext-sqlsrv": "*"
+    "ext-pgsql": "*"
   },
   "keywords": [
     "framework",
@@ -32,9 +31,12 @@
       "role": "Lead Developer"
     }
   ],
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
   "config": {
     "platform": {
-      "php": "7.4.999"
+      "php": "8.2.0"
     }
   },
   "autoload": {
@@ -44,6 +46,11 @@
     "files": [
       "src/Utils/helpers.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Awf\\Tests\\": "tests/"
+    }
   },
   "archive": {
     "exclude": [

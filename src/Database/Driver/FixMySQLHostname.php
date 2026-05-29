@@ -63,7 +63,7 @@ trait FixMySQLHostname
 		// Special case: Windows named pipe (\\.\something\or\another), with or without parentheses.
 		$isNamedPipe = false;
 
-		if (preg_match("#^\(?\\\\\\\\\.\\\\#", $host))
+		if ($host !== null && preg_match("#^\(?\\\\\\\\\.\\\\#", $host))
 		{
 			$isNamedPipe = true;
 			$socket = $host;
@@ -76,7 +76,11 @@ trait FixMySQLHostname
 		 */
 		$port = !empty($port) ? $port : 3306;
 
-		if ($host === 'localhost')
+		if ($host === null)
+		{
+			// Host was already resolved to a socket path above; skip hostname parsing.
+		}
+		elseif ($host === 'localhost')
 		{
 			$port = null;
 		}

@@ -1112,7 +1112,7 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 * @since   1.1.0
 	 * @see     https://www.akeeba.com/support/akeeba-backup-wordpress/39513-user-interface-shows-code-instead-of-control-element-texts.html
 	 */
-	private function conditionallyEnableTokenizer(): void
+	protected function conditionallyEnableTokenizer(): void
 	{
 		$this->usingTokenizer = function_exists('token_get_all') && defined('T_INLINE_HTML');
 

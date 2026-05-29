@@ -264,7 +264,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 	#[\ReturnTypeWillChange]
 	public function getIterator()
 	{
-		return new \ArrayIterator($this->data);
+		return new \ArrayIterator(get_object_vars($this->data));
 	}
 
 	/**
@@ -599,7 +599,7 @@ class Registry implements \JsonSerializable, \ArrayAccess, \IteratorAggregate, \
 			if (!is_array($node))
 				// Convert the node to array to make append possible
 			{
-				$node = get_object_vars($node);
+				$node = is_object($node) ? get_object_vars($node) : [];
 			}
 
 			array_push($node, $value);

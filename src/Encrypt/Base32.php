@@ -51,6 +51,11 @@ class Base32
 			throw new \Exception('Length must be divisible by 8');
 		}
 
+		if ($str === '')
+		{
+			return '';
+		}
+
 		if (!preg_match('/^[01]+$/', $str))
 		{
 			throw new \Exception('Only 0\'s and 1\'s are permitted');
@@ -79,6 +84,11 @@ class Base32
 		if (strlen($str) % 8 > 0)
 		{
 			throw new \Exception('Length must be divisible by 8');
+		}
+
+		if ($str === '')
+		{
+			return '';
 		}
 
 		if (!preg_match('/^[01]+$/', $str))
@@ -118,6 +128,11 @@ class Base32
 	 */
 	private function toBin($str)
 	{
+		if ($str === '')
+		{
+			return '';
+		}
+
 		if (!preg_match('/^[' . self::CSRFC3548 . ']+$/', $str))
 		{
 			throw new \Exception('Base64 string must match character set');
