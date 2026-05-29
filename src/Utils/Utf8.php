@@ -16,11 +16,6 @@ class Utf8
 {
 	public static function utf8_encode($s)
 	{
-		if (version_compare(PHP_VERSION, '8.1.999', 'le'))
-		{
-			return utf8_encode($s);
-		}
-
 		if (function_exists('mb_convert_encoding'))
 		{
 			return mb_convert_encoding($s, 'UTF-8', 'ISO-8859-1');
@@ -57,11 +52,6 @@ class Utf8
 
 	public static function utf8_decode($s)
 	{
-		if (version_compare(PHP_VERSION, '8.1.999', 'le'))
-		{
-			return utf8_decode($s);
-		}
-
 		if (function_exists('mb_convert_encoding'))
 		{
 			return mb_convert_encoding($s, 'ISO-8859-1', 'UTF-8');
