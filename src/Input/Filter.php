@@ -639,13 +639,11 @@ class Filter
 		$source = strtr($source, $ttr);
 
 		// Convert decimal
-		$source = preg_replace_callback('/&#(\d+);/m', 'utf8_encode', $source);  // decimal notation
+		$source = preg_replace_callback('/&#(\d+);/m', static fn($m) => Utf8::utf8_encode(chr((int) $m[1])), $source);
 
 		// Convert hex
 		$source = preg_replace_callback('/&#x([a-f0-9]+);/mi',
-			function($x) {
-				return Utf8::utf8_encode(chr('0x' . $x));
-			}, $source); // hex notation
+			static fn($x) => Utf8::utf8_encode(chr((int) hexdec($x[1]))), $source);
 		return $source;
 	}
 
