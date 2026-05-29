@@ -579,17 +579,17 @@ class Select extends AbstractHelper
 				$key  = $options['option.key'] === null ? $elementKey : $element[$options['option.key']];
 				$text = $element[$options['option.text']];
 
-				if (isset($element[$options['option.attr']]))
+				if ($options['option.attr'] !== null && isset($element[$options['option.attr']]))
 				{
 					$attr = $element[$options['option.attr']];
 				}
 
-				if (isset($element[$options['option.id']]))
+				if ($options['option.id'] !== null && isset($element[$options['option.id']]))
 				{
 					$id = $element[$options['option.id']];
 				}
 
-				if (isset($element[$options['option.label']]))
+				if ($options['option.label'] !== null && isset($element[$options['option.label']]))
 				{
 					$label = $element[$options['option.label']];
 				}
