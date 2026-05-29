@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vendor/bin/phpunit *)",
+      "Bash(vendor/bin/rector *)",
+      "Bash(git commit --amend *)",
+      "Bash(git rm *)",
+      "Bash(composer *)",
+      "Bash(php --version)",
+      "Bash(composer update *)",
+      "Skill(commit-commands:commit)",
+      "Bash(git commit -m ' *)",
+      "Bash(php -v)",
+      "Bash(git stash *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
