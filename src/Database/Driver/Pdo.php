@@ -151,7 +151,7 @@ abstract class Pdo extends Driver
 	public function __destruct()
 	{
 		$this->freeResult();
-		unset($this->connection);
+		$this->connection = null;
 	}
 
 	/**
@@ -497,7 +497,7 @@ abstract class Pdo extends Driver
 	public function disconnect()
 	{
 		$this->freeResult();
-		unset($this->connection);
+		$this->connection = null;
 	}
 
 	/**

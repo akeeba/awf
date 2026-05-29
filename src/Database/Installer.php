@@ -212,7 +212,7 @@ class Installer implements ContainerAwareInterface
 				{
 					$query = (string) $node;
 
-					$canFail = $node->attributes->canfail ? (string) $node->attributes->canfail : $canFailAction;
+					$canFail = $node->attributes()->canfail ? (string) $node->attributes()->canfail : $canFailAction;
 
 					if (is_string($canFail))
 					{
@@ -316,6 +316,11 @@ class Installer implements ContainerAwareInterface
 		}
 
 		// Get all XML files in the schema directory
+		if (!is_dir($this->xmlDirectory))
+		{
+			return $xml;
+		}
+
 		$filesystem = new File([], $this->getContainer());
 		$xmlFiles   = $filesystem->directoryFiles($this->xmlDirectory, '\.xml$');
 

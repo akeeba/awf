@@ -46,6 +46,13 @@ abstract class AbstractFilter
 	protected $filterZero = true;
 
 	/**
+	 * Optional table alias to prefix the field name in generated SQL.
+	 *
+	 * @var string|null
+	 */
+	protected $tableAlias = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @param   Driver  $db     The database object
@@ -128,6 +135,9 @@ abstract class AbstractFilter
 		{
 			[$type,] = explode('(', $type);
 		}
+
+		// Normalise to lowercase so that drivers (e.g. SQLite) returning upper-case type names are handled correctly.
+		$type = strtolower(trim((string) $type));
 
 		$detectedType = null;
 

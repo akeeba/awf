@@ -147,7 +147,7 @@ class Buffer
 	public function stream_open($path, $mode, $options, &$opened_path)
 	{
 		$url            = parse_url($path);
-		$this->name     = $url['host'] . $url['path'];
+		$this->name     = ($url['host'] ?? '') . ($url['path'] ?? '');
 		$this->position = 0;
 
 		if (!isset(static::$buffers[$this->name]))
@@ -167,6 +167,8 @@ class Buffer
 		{
 			unset (static::$buffers[$name]);
 		}
+
+		return true;
 	}
 
 	public function stream_stat()

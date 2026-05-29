@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+    <meta>
+        <drivers>
+            <driver>sqlite</driver>
+        </drivers>
+    </meta>
+    <sql>
+        <action table="#__nofail_test">
+            <condition type="true" />
+            <query>THIS IS INVALID SQL THAT WILL DEFINITELY FAIL</query>
+        </action>
+    </sql>
+</schema>

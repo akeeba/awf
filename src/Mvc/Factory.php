@@ -121,8 +121,8 @@ class Factory implements ContainerAwareInterface, LanguageAwareInterface
 		}
 
 		/** @var Model $model */
-		$model  = new $className($this->container, $language ?? $language ?? $this->getLanguage());
-		$config = $container['mvc_config'] ?? [];
+		$model  = new $className($this->container, $language ?? $this->getLanguage());
+		$config = $this->container['mvc_config'] ?? [];
 		$isDeprecated = false;
 
 		if ($config['modelTemporaryInstance'] ?? false)

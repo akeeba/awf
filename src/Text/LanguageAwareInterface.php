@@ -11,5 +11,5 @@ interface LanguageAwareInterface
 {
 	public function setLanguage(Language $language);
 
-	public function getLanguage(): Language;
+	public function getLanguage(): ?Language;
 }

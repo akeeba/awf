@@ -449,6 +449,17 @@ class Model implements ContainerAwareInterface, LanguageAwareInterface
 	}
 
 	/**
+	 * Deep-clone the state object so that a cloned model has independent state.
+	 */
+	public function __clone()
+	{
+		if (is_object($this->state))
+		{
+			$this->state = clone $this->state;
+		}
+	}
+
+	/**
 	 * Magic getter; allows to use the name of model state keys as properties
 	 *
 	 * @param   string $name The state variable key

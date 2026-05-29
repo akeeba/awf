@@ -532,7 +532,7 @@ class DataModel extends Model
 		elseif (substr($name, 0, 5) == 'scope')
 		{
 			$isScope = true;
-			$name    = strtolower(substr($name, 5, 1)) . substr($name, 5);
+			$name    = strtolower(substr($name, 5, 1)) . substr($name, 6);
 		}
 
 		// If $name is a field name, set its value

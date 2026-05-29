@@ -32,10 +32,8 @@ namespace Awf\Input;
  * @method    string     getUsername($name, $default)
  *
  * Based on the Joomla! Platform and FOF
- *
- * TODO Remove the Serializable interface which will be removed in PHP 9
  */
-class Input implements \Serializable, \Countable
+class Input implements \Countable
 {
 	/** @var   \Awf\Input\Filter  Filter object to use. */
 	protected $filter = null;
@@ -170,8 +168,7 @@ class Input implements \Serializable, \Countable
 	 *
 	 * @see     \Countable::count()
 	 */
-	#[\ReturnTypeWillChange]
-	public function count()
+	public function count(): int
 	{
 		return count($this->data);
 	}
@@ -314,8 +311,7 @@ class Input implements \Serializable, \Countable
 	 * @return  string  The serialized input.
 	 * @deprecated
 	 */
-	#[\ReturnTypeWillChange]
-	public function serialize()
+	public function serialize(): string
 	{
 		// Load all of the inputs.
 		$this->loadAllInputs();
@@ -337,8 +333,7 @@ class Input implements \Serializable, \Countable
 	 * @return  \Awf\Input\Input  The input object.
 	 * @deprecated
 	 */
-	#[\ReturnTypeWillChange]
-	public function unserialize($input)
+	public function unserialize($input): void
 	{
 		// Unserialize the data, and inputs.
 		list($this->options, $this->data, $this->inputs) = unserialize($input);
@@ -347,7 +342,6 @@ class Input implements \Serializable, \Countable
 		$this->filter = \Awf\Input\Filter::getInstance();
 	}
 
-	#[\ReturnTypeWillChange]
 	public function __serialize(): array
 	{
 		// Load all of the inputs.
@@ -366,12 +360,21 @@ class Input implements \Serializable, \Countable
 		];
 	}
 
-	#[\ReturnTypeWillChange]
 	public function __unserialize(array $data): void
 	{
 		$this->options = $data['options'];
 		$this->data    = $data['data'];
 		$this->inputs  = $data['inputs'];
+
+		// Re-initialise the filter (it is not serialized).
+		if (isset($this->options['filter']))
+		{
+			$this->filter = $this->options['filter'];
+		}
+		else
+		{
+			$this->filter = \Awf\Input\Filter::getInstance();
+		}
 	}
 
 	/**
