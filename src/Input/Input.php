@@ -32,8 +32,6 @@ namespace Awf\Input;
  * @method    string     getUsername($name, $default)
  *
  * Based on the Joomla! Platform and FOF
- *
- * TODO Remove the Serializable interface which will be removed in PHP 9
  */
 class Input implements \Countable
 {
