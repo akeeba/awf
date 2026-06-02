@@ -81,9 +81,8 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	 */
 	protected $tags = [
 		['{{--', '--}}', self::TAG_COMMENT],
-		['{{{', '}}}', self::TAG_RAW],
-		['{!!', '!!}', self::TAG_RAW],
-		['{{', '}}', self::TAG_ESCAPED],
+		['{{{', '}}}', self::TAG_ESCAPED],
+		['{{', '}}', self::TAG_RAW],
 	];
 
 	/**
