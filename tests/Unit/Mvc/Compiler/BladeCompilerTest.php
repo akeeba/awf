@@ -126,32 +126,32 @@ class BladeCompilerTest extends TestCase
 	// Echo / content tags
 	// -------------------------------------------------------------------------
 
-	public function testEscapedEcho(): void
+	public function testRawEcho(): void
 	{
-		$this->assertBothPaths('<?php echo $this->escape($name); ?>', '{{ $name }}');
+		$this->assertBothPaths('<?php echo $name; ?>', '{{ $name }}');
 	}
 
-	public function testEscapedEchoTrimsInternalWhitespace(): void
+	public function testRawEchoTrimsInternalWhitespace(): void
 	{
-		$this->assertBothPaths('<?php echo $this->escape($name); ?>', '{{  $name  }}');
+		$this->assertBothPaths('<?php echo $name; ?>', '{{  $name  }}');
 	}
 
-	public function testEscapedEchoWithOrDefault(): void
+	public function testRawEchoWithOrDefault(): void
 	{
 		$this->assertBothPaths(
-			"<?php echo \$this->escape(isset(\$name) ? \$name : 'Guest'); ?>",
+			"<?php echo isset(\$name) ? \$name : 'Guest'; ?>",
 			"{{ \$name or 'Guest' }}"
 		);
 	}
 
-	public function testTripleBraceRawEcho(): void
+	public function testTripleBraceEscapedEcho(): void
 	{
-		$this->assertBothPaths('<?php echo $name; ?>', '{{{ $name }}}');
+		$this->assertBothPaths('<?php echo $this->escape($name); ?>', '{{{ $name }}}');
 	}
 
-	public function testDoubleBangRawEcho(): void
+	public function testDoubleBangPassesThrough(): void
 	{
-		$this->assertBothPaths('<?php echo $name; ?>', '{!! $name !!}');
+		$this->assertBothPaths('{!! $name !!}', '{!! $name !!}');
 	}
 
 	public function testBladeComment(): void
@@ -169,8 +169,8 @@ class BladeCompilerTest extends TestCase
 
 	public function testAtPrefixEscapesDoubleBangEcho(): void
 	{
-		// @{!! ... !!} should emit the literal {!! ... !!} (@ is stripped).
-		$this->assertBothPaths('{!! $name !!}', '@{!! $name !!}');
+		// {!! ... !!} is not a supported tag; both the prefixed and unprefixed forms pass through unchanged.
+		$this->assertBothPaths('@{!! $name !!}', '@{!! $name !!}');
 	}
 
 	public function testPlainTextPassesThrough(): void
@@ -542,18 +542,18 @@ class BladeCompilerTest extends TestCase
 
 	public function testMixedDirectivesAndEcho(): void
 	{
-		// compileEscapedEchos doubles the newline that follows a closing }} —
+		// compileRegularEchos doubles the newline that follows a closing }} —
 		// it consumes the original \n and then re-emits it twice as whitespace
 		// preservation, producing a blank line after the echo statement.
 		$template = "@if(\$show)\n{{ \$message }}\n@endif";
-		$expected = "<?php if(\$show): ?>\n<?php echo \$this->escape(\$message); ?>\n\n<?php endif; ?>";
+		$expected = "<?php if(\$show): ?>\n<?php echo \$message; ?>\n\n<?php endif; ?>";
 		$this->assertBothPaths($expected, $template);
 	}
 
 	public function testForeachWithEchoBody(): void
 	{
 		$template = "@foreach(\$items as \$item)\n{{ \$item }}\n@endforeach";
-		$expected = "<?php foreach(\$items as \$item): ?>\n<?php echo \$this->escape(\$item); ?>\n\n<?php endforeach; ?>";
+		$expected = "<?php foreach(\$items as \$item): ?>\n<?php echo \$item; ?>\n\n<?php endforeach; ?>";
 		$this->assertBothPaths($expected, $template);
 	}
 }

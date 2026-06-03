@@ -508,7 +508,7 @@ class BladeDirectivesTest extends TestCase
 		$result   = $this->blade->compileString($template);
 
 		self::assertStringContainsString('foreach($items as $item):', $result);
-		self::assertStringContainsString('$this->escape($item->name)', $result);
+		self::assertStringContainsString('echo $item->name', $result);
 		self::assertStringContainsString('endforeach;', $result);
 	}
 
