@@ -783,7 +783,7 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 		$tokenValue = $this->container->session->getCsrfToken()->getValue();
 		$token      = $this->input->get('token', '', 'raw');
 
-		if ($token == $tokenValue)
+		if (is_string($token) && hash_equals((string) $tokenValue, $token))
 		{
 			$isValidToken = true;
 		}
