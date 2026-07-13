@@ -10,10 +10,12 @@ declare(strict_types=1);
 
 namespace Awf\Tests\Integration\Mailer;
 
+use Awf\Application\Application;
 use Awf\Application\Configuration;
 use Awf\Container\Container;
 use Awf\Mailer\Mailer;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
+use Awf\Text\Language;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -214,6 +216,75 @@ final class MailerTest extends AbstractIntegrationTestCase
 
         $this->assertSame($mailer, $result);
         $this->assertNotEmpty($mailer->getReplyToAddresses());
+    }
+
+    /**
+     * Mailer::addCC() adds a CC recipient and NOTHING else.  A CC'd address must never end up in the BCC or, worse, in
+     * the publicly visible Reply-To header.
+     */
+    public function testAddCCDoesNotAddBccOrReplyTo(): void
+    {
+        $mailer = $this->buildMailer();
+
+        $mailer->addCC('cc@example.com', 'CC Recipient');
+
+        $this->assertCount(1, $mailer->getCcAddresses(), 'The CC address must be registered as a CC.');
+        $this->assertEmpty($mailer->getBccAddresses(), 'A CC address must not be registered as a BCC.');
+        $this->assertEmpty($mailer->getReplyToAddresses(), 'A CC address must not be registered as a Reply-To.');
+    }
+
+    /**
+     * Mailer::addBCC() adds a BCC recipient and NOTHING else.  A BCC'd address leaking into the Reply-To header would
+     * expose it to every recipient of the message, which is the exact opposite of what a BCC is for.
+     */
+    public function testAddBCCDoesNotAddReplyTo(): void
+    {
+        $mailer = $this->buildMailer();
+
+        $mailer->addBCC('bcc@example.com', 'BCC Recipient');
+
+        $this->assertCount(1, $mailer->getBccAddresses(), 'The BCC address must be registered as a BCC.');
+        $this->assertEmpty($mailer->getReplyToAddresses(), 'A BCC address must not be registered as a Reply-To.');
+    }
+
+    /**
+     * Mailer::addRecipient() with parallel arrays of addresses and names pairs them up, in order.
+     */
+    public function testAddRecipientWithArraysPairsNames(): void
+    {
+        $mailer = $this->buildMailer();
+
+        $mailer->addRecipient(
+            ['a@example.com', 'b@example.com'],
+            ['Name A', 'Name B']
+        );
+
+        // PHPMailer stores each address as [address, name].
+        $this->assertSame(
+            [
+                ['a@example.com', 'Name A'],
+                ['b@example.com', 'Name B'],
+            ],
+            $mailer->getToAddresses()
+        );
+    }
+
+    /**
+     * Mailer::addRecipient() with an array of addresses and a single name applies that name to each of them.
+     */
+    public function testAddRecipientWithArrayAndSingleName(): void
+    {
+        $mailer = $this->buildMailer();
+
+        $mailer->addRecipient(['a@example.com', 'b@example.com'], 'Shared Name');
+
+        $this->assertSame(
+            [
+                ['a@example.com', 'Shared Name'],
+                ['b@example.com', 'Shared Name'],
+            ],
+            $mailer->getToAddresses()
+        );
     }
 
     /**
@@ -477,6 +548,14 @@ final class MailerTest extends AbstractIntegrationTestCase
             'mail.online'   => false,
         ]);
 
+        // Sending while offline must tell the user why. Swap in an application which expects that message.
+        $application = $this->createMock(Application::class);
+        $application->expects($this->once())
+            ->method('enqueueMessage')
+            ->with('AWF_MAIL_FUNCTION_OFFLINE');
+
+        $container['application'] = $application;
+
         $mailer = new Mailer($container);
         $mailer
             ->setSubject('Offline test')
@@ -490,8 +569,123 @@ final class MailerTest extends AbstractIntegrationTestCase
     }
 
     // =========================================================================
+    // sendMail() — the all-in-one convenience method
+    //
+    // These run against an offline container: Send() short-circuits to false without touching the network, but the
+    // message it assembled can still be inspected.
+    // =========================================================================
+
+    /**
+     * Mailer::sendMail() must carry the Reply-To name through to the message, not just the address.
+     */
+    public function testSendMailPreservesReplyToName(): void
+    {
+        $mailer = $this->buildOfflineMailer();
+
+        $mailer->sendMail(
+            'from@example.com', 'From Name',
+            'to@example.com',
+            'Subject', 'Body',
+            false,
+            null, null, null,
+            'reply@example.com', 'Reply Name'
+        );
+
+        // getReplyToAddresses() is keyed by lowercase address; each value is [address, name].
+        $this->assertSame(
+            ['reply@example.com' => ['reply@example.com', 'Reply Name']],
+            $mailer->getReplyToAddresses()
+        );
+    }
+
+    /**
+     * Mailer::sendMail() with parallel arrays of Reply-To addresses and names pairs them up.
+     */
+    public function testSendMailPreservesMultipleReplyToNames(): void
+    {
+        $mailer = $this->buildOfflineMailer();
+
+        $mailer->sendMail(
+            'from@example.com', 'From Name',
+            'to@example.com',
+            'Subject', 'Body',
+            false,
+            null, null, null,
+            ['reply1@example.com', 'reply2@example.com'],
+            ['Reply One', 'Reply Two']
+        );
+
+        $this->assertSame(
+            [
+                'reply1@example.com' => ['reply1@example.com', 'Reply One'],
+                'reply2@example.com' => ['reply2@example.com', 'Reply Two'],
+            ],
+            $mailer->getReplyToAddresses()
+        );
+    }
+
+    /**
+     * Mailer::sendMail() files CC and BCC recipients in their own lists, and nowhere else.
+     */
+    public function testSendMailSetsCcAndBccWithoutPollutingReplyTo(): void
+    {
+        $mailer = $this->buildOfflineMailer();
+
+        $mailer->sendMail(
+            'from@example.com', 'From Name',
+            'to@example.com',
+            'Subject', 'Body',
+            false,
+            'cc@example.com',
+            'bcc@example.com'
+        );
+
+        $this->assertCount(1, $mailer->getToAddresses());
+        $this->assertSame([['cc@example.com', '']], $mailer->getCcAddresses());
+        $this->assertSame([['bcc@example.com', '']], $mailer->getBccAddresses());
+
+        // No explicit Reply-To was given, so sendMail() lets setSender() auto-add the sender as the Reply-To. The CC
+        // and BCC addresses must not be in there.
+        $replyTo = array_keys($mailer->getReplyToAddresses());
+
+        $this->assertNotContains('cc@example.com', $replyTo, 'A CC address must not become a Reply-To.');
+        $this->assertNotContains('bcc@example.com', $replyTo, 'A BCC address must not become a Reply-To.');
+    }
+
+    /**
+     * Mailer::sendMail() returns false when offline, without throwing.
+     */
+    public function testSendMailReturnsFalseWhenOffline(): void
+    {
+        $mailer = $this->buildOfflineMailer();
+
+        $result = $mailer->sendMail(
+            'from@example.com', 'From Name',
+            'to@example.com',
+            'Subject', 'Body'
+        );
+
+        $this->assertFalse($result);
+    }
+
+    // =========================================================================
     // Private helpers
     // =========================================================================
+
+    /**
+     * Build a Mailer whose application is offline, so Send() returns false instead of trying to deliver anything.
+     */
+    private function buildOfflineMailer(): Mailer
+    {
+        $container = $this->buildContainerWithConfig([
+            'mail.mailer'   => 'mail',
+            'mail.mailfrom' => 'noreply@example.com',
+            'mail.fromname' => 'AWF Test',
+            'mail.online'   => false,
+        ]);
+
+        return new Mailer($container);
+    }
 
     /**
      * Build a Mailer configured with only the bare minimum (no real SMTP) to
@@ -572,15 +766,34 @@ final class MailerTest extends AbstractIntegrationTestCase
      * The Mailer constructor reads from `$container->appConfig`, which is an
      * AppConfiguration (a Registry subclass).  We build a minimal container
      * and then load flat key/value pairs into the configuration registry.
+     *
+     * Mailer::Send() also reads `$container->application` and `$container->language` when mail.online is false, so we
+     * give the container a mocked application and language.  Without the former the container would try to instantiate
+     * the (non-existent) `\awf_test\Application` class and throw.
+     *
+     * All of the container's scalar keys are provided; omitting any of them makes the Container constructor emit an
+     * E_USER_WARNING, which PHPUnit reports as a warning against every single test in this class.
      */
     private function buildContainerWithConfig(array $data): Container
     {
+        $tmpDir = sys_get_temp_dir();
+
+        $language = $this->createMock(Language::class);
+        $language->method('text')->willReturnCallback(static fn(string $key): string => $key);
+
         $container = new Container(
             [
-                'application_name' => 'awf_test',
-                'basePath'         => sys_get_temp_dir(),
-                'filesystemBase'   => sys_get_temp_dir(),
-                'temporaryPath'    => sys_get_temp_dir(),
+                'application_name'     => 'awf_test',
+                'applicationNamespace' => '\\Awf_test',
+                'session_segment_name' => 'awf_test_seg',
+                'basePath'             => $tmpDir,
+                'filesystemBase'       => $tmpDir,
+                'temporaryPath'        => $tmpDir,
+                'templatePath'         => $tmpDir,
+                'languagePath'         => $tmpDir,
+                'sqlPath'              => $tmpDir,
+                'language'             => $language,
+                'application'          => $this->createMock(Application::class),
             ]
         );
 

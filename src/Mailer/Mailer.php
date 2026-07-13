@@ -187,82 +187,74 @@ class Mailer extends PHPMailer implements ContainerAwareInterface
 	 */
 	protected function add($recipient, $name = '', $method = 'AddAddress')
 	{
-		// If the recipient is an array, add each recipient... otherwise just add the one
-		if (is_array($recipient))
+		// A single recipient. Just add the one.
+		if (!is_array($recipient))
 		{
-			if (is_array($name))
-			{
-				$combined = array_combine($recipient, $name);
+			$this->addOne($method, $recipient, $name);
 
-				if ($combined === false)
-				{
-					throw new \InvalidArgumentException("The number of elements for each array isn't equal.");
-				}
-
-				foreach ($combined as $recipientEmail => $recipientName)
-				{
-					switch ($method)
-					{
-						case 'AddAddress':
-						default:
-							parent::AddAddress($recipientEmail, $recipientName);
-							break;
-
-						case 'AddCC':
-							parent::AddCC($recipientEmail, $recipientName);
-
-						case 'AddBCC':
-							parent::AddBCC($recipientEmail, $recipientName);
-
-						case 'AddReplyTo':
-							parent::AddReplyTo($recipientEmail, $recipientName);
-					}
-				}
-			}
-			else
-			{
-				foreach ($recipient as $to)
-				{
-					switch ($method)
-					{
-						case 'AddAddress':
-						default:
-							parent::AddAddress($to, $name);
-							break;
-
-						case 'AddCC':
-							parent::AddCC($to, $name);
-
-						case 'AddBCC':
-							parent::AddBCC($to, $name);
-
-						case 'AddReplyTo':
-							parent::AddReplyTo($to, $name);
-					}
-				}
-			}
+			return $this;
 		}
-		else
+
+		// Several recipients, each with its own name. Pair them up, in order.
+		if (is_array($name))
 		{
-			switch ($method)
+			/**
+			 * Check the lengths ourselves. Since PHP 8.0 array_combine() throws a ValueError on a length mismatch; it
+			 * no longer returns false, so checking its return value would be checking for something which cannot
+			 * happen.
+			 */
+			if (count($recipient) !== count($name))
 			{
-				case 'AddAddress':
-				default:
-					parent::AddAddress($recipient, $name);
-					break;
-
-				case 'AddCC':
-					parent::AddCC($recipient, $name);
-
-				case 'AddBCC':
-					parent::AddBCC($recipient, $name);
-
-				case 'AddReplyTo':
-					parent::AddReplyTo($recipient, $name);
+				throw new \InvalidArgumentException("The number of elements for each array isn't equal.");
 			}
+
+			foreach (array_combine($recipient, $name) as $recipientEmail => $recipientName)
+			{
+				$this->addOne($method, $recipientEmail, $recipientName);
+			}
+
+			return $this;
+		}
+
+		// Several recipients sharing the same name.
+		foreach ($recipient as $recipientEmail)
+		{
+			$this->addOne($method, $recipientEmail, $name);
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Add a single recipient to the email, using the PHPMailer method named by $method.
+	 *
+	 * @param   string  $method          The parent method's name. Anything unknown adds a plain recipient.
+	 * @param   mixed   $recipientEmail  The email address to add.
+	 * @param   mixed   $recipientName   The name of the recipient.
+	 *
+	 * @return  void
+	 */
+	private function addOne(string $method, $recipientEmail, $recipientName = ''): void
+	{
+		switch ($method)
+		{
+			case 'AddCC':
+				parent::addCC($recipientEmail, $recipientName);
+				break;
+
+			case 'AddBCC':
+				parent::addBCC($recipientEmail, $recipientName);
+				break;
+
+			case 'AddReplyTo':
+				parent::addReplyTo($recipientEmail, $recipientName);
+				break;
+
+			case 'AddAddress':
+			default:
+				parent::addAddress($recipientEmail, $recipientName);
+				break;
+		}
 	}
 
 	/**
@@ -493,19 +485,22 @@ class Mailer extends PHPMailer implements ContainerAwareInterface
 		$this->addBCC($bcc);
 		$this->addAttachment($attachment);
 
-		// Take care of reply email addresses
+		/**
+		 * Take care of reply email addresses.
+		 *
+		 * The address and the name are two separate arguments. Passing them as a single array would have addReplyTo()
+		 * treat the array as a list of addresses, i.e. the name would be added as if it were an email address.
+		 */
 		if (is_array($replyTo))
 		{
-			$numReplyTo = count($replyTo);
-
-			for ($i = 0; $i < $numReplyTo; $i++)
+			foreach ($replyTo as $i => $replyToAddress)
 			{
-				$this->addReplyTo(array($replyTo[$i], $replyToName[$i]));
+				$this->addReplyTo($replyToAddress, $replyToName[$i] ?? '');
 			}
 		}
 		elseif (isset($replyTo))
 		{
-			$this->addReplyTo(array($replyTo, $replyToName));
+			$this->addReplyTo($replyTo, $replyToName ?? '');
 		}
 
 		// Add sender to replyTo only if no replyTo received
