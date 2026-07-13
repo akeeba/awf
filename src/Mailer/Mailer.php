@@ -24,11 +24,6 @@ class Mailer extends PHPMailer implements ContainerAwareInterface
 	use ContainerAwareTrait;
 
 	/**
-	 * @var    array[Mailer]  Mailer instances
-	 */
-	protected static $instances = array();
-
-	/**
 	 * @var    string  Character set of the message
 	 */
 	public $CharSet = 'utf-8';
