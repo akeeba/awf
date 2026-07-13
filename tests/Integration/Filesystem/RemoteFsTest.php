@@ -592,15 +592,29 @@ final class RemoteFsTest extends AbstractIntegrationTestCase
      *
      * We use a plain array-access object (Pimple-compatible) to avoid
      * coupling these integration tests to the full Container bootstrap.
+     *
+     * All of the Container's scalar keys are provided, even though the filesystem drivers only ever read
+     * `filesystemBase`. Omitting any of them makes the Container constructor fall back to a default AND emit an
+     * E_USER_WARNING, which PHPUnit reports as a warning against the test which built the container.
      */
     private function buildMinimalContainer(string $filesystemBase): \Awf\Container\Container
     {
+        $tmpDir = sys_get_temp_dir();
+
         // Use a real Container configured with just what the drivers need.
         $container = new \Awf\Container\Container(
             [
-                'filesystemBase' => $filesystemBase,
+                'application_name'     => 'awf_test',
+                'applicationNamespace' => '\\Awf_test',
+                'session_segment_name' => 'awf_test_seg',
+                'basePath'             => $tmpDir,
+                'templatePath'         => $tmpDir,
+                'languagePath'         => $tmpDir,
+                'temporaryPath'        => $tmpDir,
+                'sqlPath'              => $tmpDir,
+                'filesystemBase'       => $filesystemBase,
                 // Provide a no-op appConfig so the Container does not error.
-                'appConfig'      => new class {
+                'appConfig'            => new class {
                     public function get(string $key, mixed $default = null): mixed
                     {
                         return $default;
