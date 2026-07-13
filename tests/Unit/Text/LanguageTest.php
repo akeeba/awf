@@ -141,6 +141,47 @@ class LanguageTest extends TestCase
         }
     }
 
+    public function testLoadLanguageApplicationSubdirectoryLayout(): void
+    {
+        // $dir/testapp/en-GB.ini — the application_name is TestApp.
+        $tmpBase = sys_get_temp_dir() . '/awf_lang_test_' . uniqid();
+        $subDir  = $tmpBase . '/testapp';
+        mkdir($subDir, 0777, true);
+        copy($this->dataDir . '/en-GB.ini', $subDir . '/en-GB.ini');
+
+        try {
+            $lang = $this->makeLanguage();
+            $lang->loadLanguage('en-GB', $tmpBase, true, false);
+
+            self::assertSame('Hello, World!', $lang->text('GREETING'));
+        } finally {
+            @unlink($subDir . '/en-GB.ini');
+            @rmdir($subDir);
+            @rmdir($tmpBase);
+        }
+    }
+
+    public function testLoadLanguageApplicationSubdirectoryPerLanguageLayout(): void
+    {
+        // $dir/testapp/en-GB/en-GB.ini — the application_name is TestApp.
+        $tmpBase = sys_get_temp_dir() . '/awf_lang_test_' . uniqid();
+        $subDir  = $tmpBase . '/testapp/en-GB';
+        mkdir($subDir, 0777, true);
+        copy($this->dataDir . '/en-GB.ini', $subDir . '/en-GB.ini');
+
+        try {
+            $lang = $this->makeLanguage();
+            $lang->loadLanguage('en-GB', $tmpBase, true, false);
+
+            self::assertSame('Hello, World!', $lang->text('GREETING'));
+        } finally {
+            @unlink($subDir . '/en-GB.ini');
+            @rmdir($subDir);
+            @rmdir($tmpBase . '/testapp');
+            @rmdir($tmpBase);
+        }
+    }
+
     // -------------------------------------------------------------------------
     // loadLanguage — overwrite behaviour
     // -------------------------------------------------------------------------

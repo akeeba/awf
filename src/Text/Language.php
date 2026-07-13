@@ -34,6 +34,27 @@ use Awf\Utils\ParseIni;
  * they contain will either be ignored, or be picked up under a language code which does not match what the browser
  * asks for.
  *
+ * ### Language directory layout
+ *
+ * Language files live either directly in the application's language directory:
+ *
+ * ```
+ * language/el-GR.ini
+ * language/en-GB.ini
+ * ```
+ *
+ * or in one directory per language, named after the language it contains:
+ *
+ * ```
+ * language/el-GR/el-GR.ini
+ * language/en-GB/en-GB.ini
+ * ```
+ *
+ * Both layouts are understood, and they can be mixed in the same language directory. Moreover, either layout may be
+ * nested inside a directory named after the application, e.g. `language/myapp/el-GR.ini` or
+ * `language/myapp/el-GR/el-GR.ini`. If a directory named after the application exists, it is used to the exclusion of
+ * the language directory itself.
+ *
  * @package Awf\Text
  */
 class Language implements ContainerAwareInterface
@@ -419,11 +440,16 @@ class Language implements ContainerAwareInterface
 	/**
 	 * Get the languages known to the application by iterating the application's language folder.
 	 *
-	 * Each language file MUST be named `«full BCP 47 language code».ini`, e.g. `el-GR.ini`; see the naming convention
-	 * documented in this class' docblock. The language code is taken verbatim from the file name, so a file which does
-	 * not follow the convention will yield a language code which no browser will ever ask for. Files with an uppercase
-	 * or mixed case extension, e.g. `el-GR.INI`, must likewise not be used: they are matched by the extension check,
-	 * but their extension is not stripped, resulting in the nonsensical language code `el-GR.INI`.
+	 * Both directory layouts documented in this class' docblock are detected: a language file sitting directly in the
+	 * language directory (`el-GR.ini`), and a language directory containing the language file named after itself
+	 * (`el-GR/el-GR.ini`). A language provided in both layouts is only reported once. A subdirectory which does not
+	 * contain the INI file named after itself is not a language directory and is ignored, which is what tells a language
+	 * directory apart from, say, a `media` directory.
+	 *
+	 * The language code is taken verbatim from the file, or directory, name, so anything which does not follow the
+	 * naming convention will yield a language code which no browser will ever ask for. Files with an uppercase or mixed
+	 * case extension, e.g. `el-GR.INI`, must likewise not be used: they are matched by the extension check, but their
+	 * extension is not stripped, resulting in the nonsensical language code `el-GR.INI`.
 	 *
 	 * @param   string|null  $languagePath
 	 *
@@ -459,16 +485,43 @@ class Language implements ContainerAwareInterface
 		/** @var \DirectoryIterator $file */
 		foreach ($di as $file)
 		{
-			// TODO This is wrong. We may also have the directory structure .../langCode/langCode.ini
-			if ($file->isDot() || !$file->isFile() || strtolower($file->getExtension() ?? '') !== 'ini')
+			if ($file->isDot())
 			{
 				continue;
 			}
 
-			$ret[] = $file->getBasename('.ini');
+			// Flat layout: the language file itself, e.g. `.../el-GR.ini`.
+			if ($file->isFile())
+			{
+				if (strtolower($file->getExtension() ?? '') !== 'ini')
+				{
+					continue;
+				}
+
+				$ret[] = $file->getBasename('.ini');
+
+				continue;
+			}
+
+			// One directory per language: a directory named after the language, e.g. `.../el-GR/el-GR.ini`.
+			if ($file->isDir())
+			{
+				$langCode = $file->getFilename();
+				$iniFile  = $file->getPathname() . '/' . $langCode . '.ini';
+
+				// A directory is only a language directory if it contains the INI file named after itself. This is what
+				// tells a language directory apart from any other directory, e.g. a `media` or an `overrides` one.
+				if (@is_file($iniFile) && @is_readable($iniFile))
+				{
+					$ret[] = $langCode;
+				}
+			}
 		}
 
-		asort($ret);
+		// A language may exist in both layouts; it is still just the one language.
+		$ret = array_unique($ret);
+
+		sort($ret);
 
 		return $ret;
 	}

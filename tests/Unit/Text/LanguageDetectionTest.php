@@ -385,16 +385,66 @@ class LanguageDetectionTest extends TestCase
         self::assertSame([], $this->getKnownLanguages($lang, sys_get_temp_dir() . '/awf_does_not_exist_' . uniqid()));
     }
 
-    /**
-     * The one-directory-per-language layout (`en-GB/en-GB.ini`) is NOT detected. This is the TODO noted in
-     * getKnownLanguages(); the test pins the current behaviour so a future fix is a deliberate change.
-     */
-    public function testGetKnownLanguagesDoesNotDetectThePerLanguageSubdirectoryLayout(): void
+    public function testGetKnownLanguagesDetectsThePerLanguageSubdirectoryLayout(): void
     {
-        $dir  = $this->makeLangDir(['en-GB/en-GB.ini', 'fr-FR/fr-FR.ini']);
+        $dir  = $this->makeLangDir(['en-GB/en-GB.ini', 'el-GR/el-GR.ini']);
         $lang = $this->makeLanguage();
 
-        self::assertSame([], $this->getKnownLanguages($lang, $dir));
+        self::assertSame(['el-GR', 'en-GB'], array_values($this->getKnownLanguages($lang, $dir)));
+    }
+
+    public function testGetKnownLanguagesDetectsBothLayoutsSideBySide(): void
+    {
+        $dir  = $this->makeLangDir(['en-GB.ini', 'el-GR/el-GR.ini']);
+        $lang = $this->makeLanguage();
+
+        self::assertSame(['el-GR', 'en-GB'], array_values($this->getKnownLanguages($lang, $dir)));
+    }
+
+    /**
+     * A language present in both layouts is a single known language. loadLanguage() resolves the flat file first, but
+     * either way it is the same language code.
+     */
+    public function testGetKnownLanguagesReportsALanguageInBothLayoutsOnlyOnce(): void
+    {
+        $dir  = $this->makeLangDir(['en-GB.ini', 'en-GB/en-GB.ini']);
+        $lang = $this->makeLanguage();
+
+        self::assertSame(['en-GB'], array_values($this->getKnownLanguages($lang, $dir)));
+    }
+
+    /**
+     * A subdirectory is only a language directory if it contains the INI file named after itself. This is what keeps us
+     * from mistaking, say, a `media` or `overrides` directory for a language.
+     */
+    public function testGetKnownLanguagesIgnoresASubdirectoryWithoutAMatchingIniFile(): void
+    {
+        $dir  = $this->makeLangDir(['en-GB.ini', 'el-GR/fr-FR.ini', 'media/', 'overrides/readme.txt']);
+        $lang = $this->makeLanguage();
+
+        self::assertSame(['en-GB'], array_values($this->getKnownLanguages($lang, $dir)));
+    }
+
+    public function testGetKnownLanguagesDetectsThePerLanguageSubdirectoryLayoutInsideTheApplicationDirectory(): void
+    {
+        $dir  = $this->makeLangDir(['testapp/el-GR/el-GR.ini', 'testapp/fr-FR.ini']);
+        $lang = $this->makeLanguage();
+
+        self::assertSame(['el-GR', 'fr-FR'], array_values($this->getKnownLanguages($lang, $dir)));
+    }
+
+    /**
+     * End to end: a browser asking for Greek gets el-GR when the language directory uses the one-directory-per-language
+     * layout — the language is both detected and loadable.
+     */
+    public function testDetectLanguageFindsAPerLanguageSubdirectoryLanguage(): void
+    {
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'el-GR,el;q=0.9,en;q=0.8';
+
+        $dir  = $this->makeLangDir(['en-GB/en-GB.ini', 'el-GR/el-GR.ini']);
+        $lang = $this->makeLanguage('en-GB', $dir);
+
+        self::assertSame('el-GR', $lang->detectLanguage($dir));
     }
 
     /**
