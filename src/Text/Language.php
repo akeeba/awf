@@ -15,6 +15,27 @@ use Awf\Mvc\Factory;
 use Awf\User\UserInterface;
 use Awf\Utils\ParseIni;
 
+/**
+ * Class Language
+ *
+ * Internationalisation class for Awf applications: loads INI language files and translates language keys.
+ *
+ * ### Language file naming convention
+ *
+ * A language file MUST be named after the full BCP 47 language code of the language it contains, followed by a
+ * lowercase `.ini` extension, e.g. `el-GR.ini`.
+ *
+ * The full BCP 47 language code consists of the lowercase, two–letter ISO 639-1 language code (`el`), a dash, and the
+ * UPPERCASE, two–letter ISO 3166-1 alpha-2 country code (`GR`). The country part is NOT optional, and the casing of
+ * both parts is significant — this is the same convention Joomla! uses, and we follow it deliberately.
+ *
+ * Therefore, `el-GR.ini` is the one and only correct spelling of a Greek (Greece) language file. All of `el.ini`,
+ * `el-gr.ini`, `EL-GR.ini`, `EL.ini`, `EL-gr.ini` and `el-GR.INI` are WRONG. They are not supported, and the language
+ * they contain will either be ignored, or be picked up under a language code which does not match what the browser
+ * asks for.
+ *
+ * @package Awf\Text
+ */
 class Language implements ContainerAwareInterface
 {
 	use ContainerAwareTrait;
@@ -398,6 +419,12 @@ class Language implements ContainerAwareInterface
 	/**
 	 * Get the languages known to the application by iterating the application's language folder.
 	 *
+	 * Each language file MUST be named `«full BCP 47 language code».ini`, e.g. `el-GR.ini`; see the naming convention
+	 * documented in this class' docblock. The language code is taken verbatim from the file name, so a file which does
+	 * not follow the convention will yield a language code which no browser will ever ask for. Files with an uppercase
+	 * or mixed case extension, e.g. `el-GR.INI`, must likewise not be used: they are matched by the extension check,
+	 * but their extension is not stripped, resulting in the nonsensical language code `el-GR.INI`.
+	 *
 	 * @param   string|null  $languagePath
 	 *
 	 * @return  array
@@ -451,6 +478,24 @@ class Language implements ContainerAwareInterface
 	 * is in both arrays. Unlike shifting from an array intersection, this works by doing a partial language match. For
 	 * example, the accepted language `el` will match the known language `el-GR`.
 	 *
+	 * The accepted language ranges are examined in the order they are given, i.e. by descending quality (q) value, and
+	 * the first one we can satisfy wins. A range is matched as-is; it is never broadened to its primary language subtag.
+	 * This is what RFC 9110 §12.5.4 requires:
+	 *
+	 * - A range which carries a region, e.g. `en-US`, may only be satisfied by that exact language code. If we do not
+	 *   know about `en-US` we move on to the next range; we may NOT serve `en-GB` in its place.
+	 * - A range which the client sent region-less, e.g. `en`, is a request for _any_ locale of that language, so it is
+	 *   satisfied by the first locale of it we know about. Since $knownLanguages is sorted ascending that is the
+	 *   lexicographically first one, e.g. `en-GB` rather than `en-US`.
+	 *
+	 * Hence, given the known languages `en-GB` and `en-US`, the header `en-US,en;q=0.9` returns `en-US` (the exact match
+	 * outranks the catch-all), whereas `en,en-US;q=0.9` returns `en-GB` (the client told us it prefers _any_ English
+	 * over `en-US` specifically, so it gets the first English we have).
+	 *
+	 * The RFC's own examples imply that the less specific language range should carry the lower q value, which is what
+	 * most browsers do. Clients which do not (Microsoft Edge being the notable offender) will therefore be served an
+	 * arbitrary, if lexicographically predictable, locale of their preferred language.
+	 *
 	 * @param   array  $acceptedLanguages
 	 * @param   array  $knownLanguages
 	 *
@@ -469,14 +514,16 @@ class Language implements ContainerAwareInterface
 			return null;
 		}
 
-		// Create a map of possible BCP 47 language codes to the actual language code used in the application.
+		// Create a map of acceptable language ranges to the actual language code used in the application.
 		$langMap = [];
 
 		foreach ($knownLanguages as $item)
 		{
-			$parts = explode('-', $item, 2);
-			$lang = $parts[0];
+			// The full, lowercase BCP 47 language code, e.g. `en-gb` for the known language `en-GB`.
 			$bcp47 = strtolower($item);
+			// The primary language subtag, e.g. `en` for the known language `en-GB`. Since $knownLanguages is sorted
+			// ascending, the first locale of each language wins, e.g. `en` maps to `en-GB` and not to `en-US`.
+			$lang = explode('-', $bcp47, 2)[0];
 
 			if (!isset($langMap[$lang]))
 			{
@@ -489,17 +536,15 @@ class Language implements ContainerAwareInterface
 			}
 		}
 
-		// Walk through the array of accepted languages and find the most relevant language.
+		// Walk through the accepted language ranges, in order of preference, and return the first one we can satisfy.
+		//
+		// We deliberately match each range as-is, without broadening it to its primary language subtag. A range with a
+		// region (`en-us`) may only be satisfied by that exact language code; only a range the client actually sent
+		// region-less (`en`) may be satisfied by an arbitrary locale of that language, courtesy of the primary subtag
+		// keys we added to $langMap above.
 		foreach (array_keys($acceptedLanguages) as $item)
 		{
-			$parts = explode('-', $item, 2);
-			$lang = $parts[0];
 			$bcp47 = strtolower($item);
-
-			if (isset($langMap[$lang]))
-			{
-				return $langMap[$lang];
-			}
 
 			if (isset($langMap[$bcp47]))
 			{
