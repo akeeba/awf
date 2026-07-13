@@ -10,6 +10,7 @@ namespace Awf\Text;
 use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Filesystem\File;
 use Awf\Mvc\Factory;
 use Awf\User\UserInterface;
 use Awf\Utils\ParseIni;
@@ -288,82 +289,124 @@ class Language implements ContainerAwareInterface
 	}
 
 	/**
-	 * Detect the best matching language from the browser settings
+	 * Returns the weighted list of accepted language given the content of the `Accept-Language` HTTP header.
 	 *
-	 * @param   string|null  $languagePath  The path we're going to be looking for language files in.
+	 * The header content is in the format `fr-ch;q=0.3, da, en-us;q=0.8, en;q=0.5, fr;q=0.3`. If omitted, we use the
+	 * Accept-Language header passed through the `$_SERVER` superglobal.
 	 *
-	 * @return  string|null  The detected language. NULL if there are no matches, or we hit an error.
-	 * @since   1.2.0
+	 * IMPORTANT: We only expect a value to be passed during unit testing. In regular use the parameter is NULL to force
+	 * automatic detection from the browser-provided HTTP header.
+	 *
+	 * It is possible for the language code to be a star (`*`). This is replaced with the $defaultLanguage.
+	 *
+	 * If the $defaultLanguage is not present, it is added with a minimal 0.001 weight as a "last resort".
+	 *
+	 * @param   string|null  $acceptLanguage  The content of the `Accept-Language` HTTP header to parse.
+	 * @param   string|null  $defaultLanguage The default language to use, see above.
+	 *
+	 * @return  array|float[]  Key is BCP 47 language code, value is the weight 0 to 1. Sorted by weight descending.
+	 * @link    https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept-Language
+	 * @since   1.2.2
 	 */
-	private function detectLanguageFromBrowser(?string $languagePath): ?string
+	private function getAcceptedLanguages(?string $acceptLanguage = null, ?string $defaultLanguage = null): array
 	{
-		if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+		// Default return if all else fails.
+		$defaultLanguage ??= $this->getContainer()->appConfig->get('language', 'en-GB') ?: 'en-GB';
+		$defaultLanguage = strtolower($defaultLanguage);
+		$defaultLanguageList = [$defaultLanguage => 1.0];
+
+		// If no accept language string passed, get from server environment
+		$acceptLanguage ??= $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+
+		// Normalise
+		$acceptLanguage = strtolower(trim($acceptLanguage ?: ''));
+
+		// If it's empty, we don't have a preference order from the browser.
+		if (empty($acceptLanguage))
 		{
-			return null;
+			return $defaultLanguageList;
 		}
 
-		/**
-		 * Get the language preference from the Accept-Language HTTP header.
-		 *
-		 * We get something like:
-		 * fr-ch;q=0.3, da, en-us;q=0.8, en;q=0.5, fr;q=0.3
-		 */
-		$languages = strtolower($_SERVER["HTTP_ACCEPT_LANGUAGE"]);
-		// Remove spaces from strings to avoid errors
-		$languages = str_replace(' ', '', $languages);
-		$languages = explode(",", $languages);
+		// Convert to an array, e.g. `['fr-ch;q=0.3', 'da', 'en-us;q=0.8', 'en;q=0.5', 'fr;q=0.3']`.
+		$rawList = array_map('trim', explode(',', $acceptLanguage));
 
-		// First we need to sort languages by their weight
-		$temp = [];
-
-		foreach ($languages as $lang)
+		// We must have at least one item on the list...
+		if (empty($rawList))
 		{
-			$parts = explode(';', $lang);
+			return $defaultLanguageList;
+		}
 
-			$q = 1;
+		$ret = [];
 
-			if ((count($parts) > 1) && (substr($parts[1], 0, 2) == 'q='))
+		foreach ($rawList as $item)
+		{
+			// Parse the item (e.g. `en-us;q=0.8`) to a BCP 47 language (`en-us`) and a possible quality code (`q=0.8`).
+			$parts  = explode(';', $item, 2);
+			$lang   = trim($parts[0] ?? '');
+			$qParam = trim($parts[1] ?? '');
+
+			// If no BCP 47 language code was found, skip over this item.
+			if (empty($lang))
 			{
-				$q = floatval(substr($parts[1], 2));
+				continue;
 			}
 
-			$temp[$parts[0]] = $q;
-		}
-
-		arsort($temp);
-		$languages = $temp;
-
-		foreach ($languages as $language => $weight)
-		{
-			// Pull out the language, place languages into array of full and primary string structure.
-			$temp_array = [];
-			// Slice out the part before the dash, place into array
-			$temp_array[0] = $language; //full language
-			$parts         = explode('-', $language);
-			$temp_array[1] = $parts[0]; // cut out primary language
-
-			if ((strlen($temp_array[0]) == 5)
-			    && ((substr($temp_array[0], 2, 1) == '-')
-			        || (substr(
-				            $temp_array[0], 2, 1
-			            ) == '_')))
+			// If the language code is star (`*`), replace it with $defaultLanguage BUT ONLY if it's not already present.
+			if ($lang === '*')
 			{
-				$langLocation  = strtoupper(substr($temp_array[0], 3, 2));
-				$temp_array[0] = $temp_array[1] . '-' . $langLocation;
+				if (isset($ret[$defaultLanguage]))
+				{
+					continue;
+				}
+
+				$lang = $defaultLanguage;
 			}
 
-			// Place this array into main $user_languages language array
-			$user_languages[] = $temp_array;
+			// If the quality param is empty or does not start with `q=`, assume the weight is 1.0.
+			if (!str_starts_with($qParam ?? '', 'q='))
+			{
+				$ret[$lang] = 1.0;
+
+				continue;
+			}
+
+			// Parse the weight and clamp it to the range 0-1 inclusive.
+			$q = @floatval(trim(substr($qParam, 2)));
+			$q = min(max(0.0, $q), 1.0);
+
+			// If the weight is less than 0.001 it's effectively 0, i.e. "do not use".
+			if ($q < 0.001)
+			{
+				continue;
+			}
+
+			$ret[$lang] = $q;
 		}
 
-		if (!isset($user_languages))
+		// If we have at least one language other than $defaultLanguage, add it with a minimum weight (fallback).
+		if (!empty($ret) && !isset($ret[$defaultLanguage]))
 		{
-			return null;
+			$ret[$defaultLanguage] = 0.001;
 		}
 
-		$appName      = $this->getContainer()->application_name;
+		// Sort the array by weight descending.
+		arsort($ret, SORT_NUMERIC);
+
+		return $ret ?: $defaultLanguageList;
+	}
+
+	/**
+	 * Get the languages known to the application by iterating the application's language folder.
+	 *
+	 * @param   string|null  $languagePath
+	 *
+	 * @return  array
+	 * @since   1.2.2
+	 */
+	private function getKnownLanguages(?string $languagePath): array
+	{
 		$languagePath = $languagePath ?: $this->getContainer()->languagePath;
-		$baseName     = $languagePath . '/' . strtolower($appName) . '/';
+		$baseName     = $languagePath . '/' . strtolower($this->getContainer()->application_name) . '/';
 
 		if (!@is_dir($baseName))
 		{
@@ -372,41 +415,8 @@ class Language implements ContainerAwareInterface
 
 		if (!@is_dir($baseName))
 		{
-			return null;
+			return [];
 		}
-
-		// Look for classic file layout
-		foreach ($user_languages as $languageStruct)
-		{
-			// Search for exact language
-			$langFilename = $baseName . $languageStruct[0] . '.ini';
-
-			if (!file_exists($langFilename))
-			{
-				$langFilename = '';
-
-				if (function_exists('glob'))
-				{
-					$allFiles = glob($baseName . $languageStruct[1] . '-*.ini');
-
-					// Cover both failure cases: false (filesystem error) and empty array (no file found)
-					if (!is_array($allFiles) || empty($allFiles))
-					{
-						continue;
-					}
-
-					$langFilename = array_shift($allFiles);
-				}
-			}
-
-			if (!empty($langFilename) && file_exists($langFilename))
-			{
-				return basename($langFilename, '.ini');
-			}
-		}
-
-		// Look for subdirectory layout
-		$allFolders = [];
 
 		try
 		{
@@ -414,42 +424,106 @@ class Language implements ContainerAwareInterface
 		}
 		catch (\Exception $e)
 		{
-			return null;
+			return [];
 		}
+
+		$ret = [];
 
 		/** @var \DirectoryIterator $file */
 		foreach ($di as $file)
 		{
-			if ($di->isDot())
+			// TODO This is wrong. We may also have the directory structure .../langCode/langCode.ini
+			if ($file->isDot() || !$file->isFile() || strtolower($file->getExtension() ?? '') !== 'ini')
 			{
 				continue;
 			}
 
-			if (!$di->isDir())
-			{
-				continue;
-			}
-
-			$allFolders[] = $file->getFilename();
+			$ret[] = $file->getBasename('.ini');
 		}
 
-		foreach ($user_languages as $languageStruct)
+		asort($ret);
+
+		return $ret;
+	}
+
+	/**
+	 * Given a weighted list of accepted languages and a list of known languages, find the most relevant language which
+	 * is in both arrays. Unlike shifting from an array intersection, this works by doing a partial language match. For
+	 * example, the accepted language `el` will match the known language `el-GR`.
+	 *
+	 * @param   array  $acceptedLanguages
+	 * @param   array  $knownLanguages
+	 *
+	 * @return string|null
+	 * @since   1.2.2
+	 */
+	private function findMostRelevantLanguage(array $acceptedLanguages, array $knownLanguages): ?string
+	{
+		if (empty($acceptedLanguages))
 		{
-			if (array_key_exists($languageStruct[0], $allFolders))
+			return null;
+		}
+
+		if (empty($knownLanguages))
+		{
+			return null;
+		}
+
+		// Create a map of possible BCP 47 language codes to the actual language code used in the application.
+		$langMap = [];
+
+		foreach ($knownLanguages as $item)
+		{
+			$parts = explode('-', $item, 2);
+			$lang = $parts[0];
+			$bcp47 = strtolower($item);
+
+			if (!isset($langMap[$lang]))
 			{
-				return $languageStruct[0];
+				$langMap[$lang] = $item;
 			}
 
-			foreach ($allFolders as $folder)
+			if (!isset($langMap[$bcp47]))
 			{
-				if (strpos($folder, $languageStruct[1]) === 0)
-				{
-					return $folder;
-				}
+				$langMap[$bcp47] = $item;
+			}
+		}
+
+		// Walk through the array of accepted languages and find the most relevant language.
+		foreach (array_keys($acceptedLanguages) as $item)
+		{
+			$parts = explode('-', $item, 2);
+			$lang = $parts[0];
+			$bcp47 = strtolower($item);
+
+			if (isset($langMap[$lang]))
+			{
+				return $langMap[$lang];
+			}
+
+			if (isset($langMap[$bcp47]))
+			{
+				return $langMap[$bcp47];
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Detect the best matching language from the browser settings.
+	 *
+	 * @param   string|null  $languagePath  The path we're going to be looking for language files in.
+	 *
+	 * @return  string|null  The detected language. NULL if there are no matches, or we hit an error.
+	 * @since   1.2.0
+	 */
+	private function detectLanguageFromBrowser(?string $languagePath): ?string
+	{
+		$acceptedLanguages = $this->getAcceptedLanguages();
+		$knownLanguages    = $this->getKnownLanguages($languagePath);
+
+		return $this->findMostRelevantLanguage($acceptedLanguages, $knownLanguages);
 	}
 
 }
