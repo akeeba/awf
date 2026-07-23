@@ -9,6 +9,7 @@ namespace Awf\Mvc;
 
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
+use Awf\Exception\LayoutNotFoundException;
 use Awf\Inflector\Inflector;
 use Awf\Utils\Path;
 
@@ -273,7 +274,7 @@ class ViewTemplateFinder implements ContainerAwareInterface
 			}
 		}
 
-		throw new \Exception($this->getContainer()->language->sprintf('AWF_APPLICATION_ERROR_LAYOUTFILE_NOT_FOUND', $uri), 500);
+		throw new LayoutNotFoundException($this->getContainer()->language->sprintf('AWF_APPLICATION_ERROR_LAYOUTFILE_NOT_FOUND', $uri), 500);
 	}
 
 	/**

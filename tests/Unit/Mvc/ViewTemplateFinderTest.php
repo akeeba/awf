@@ -10,6 +10,7 @@ require_once __DIR__ . '/Fixtures/ViewStubs.php';
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Event\Dispatcher as EventDispatcher;
+use Awf\Exception\LayoutNotFoundException;
 use Awf\Input\Input;
 use Awf\Mvc\View;
 use Awf\Mvc\ViewTemplateFinder;
@@ -685,15 +686,19 @@ class ViewTemplateFinderTest extends TestCase
     }
 
     /**
-     * When no file can be found, an \Exception is thrown.
+     * When no file can be found, a LayoutNotFoundException (code 500) is thrown. This dedicated type is what lets
+     * View::loadTemplate() distinguish a missing layout (fall back) from a render-time error (propagate).
      */
     public function testResolveUriThrowsWhenNotFound(): void
     {
         $finder = $this->makeFinder('Nonexistent');
 
-        $this->expectException(\Exception::class);
-
-        $finder->resolveUriToPath('Nonexistent/missing_template');
+        try {
+            $finder->resolveUriToPath('Nonexistent/missing_template');
+            self::fail('Expected a LayoutNotFoundException to be thrown.');
+        } catch (LayoutNotFoundException $e) {
+            self::assertSame(500, $e->getCode());
+        }
     }
 
     /**
