@@ -12,6 +12,7 @@ use Awf\Container\Container;
 use Awf\Container\ContainerAwareInterface;
 use Awf\Container\ContainerAwareTrait;
 use Awf\Exception\App;
+use Awf\Exception\LayoutNotFoundException;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\EngineInterface;
 use Awf\Text\Language;
@@ -637,7 +638,9 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 			{
 				$result = $this->loadAnyTemplate($path);
 			}
-			catch (Exception $e)
+			// Only a missing layout file triggers the fallback to the next candidate. A genuine render-time
+			// exception from a layout that DOES exist must propagate, not be masked by falling back to 'default'.
+			catch (LayoutNotFoundException $e)
 			{
 				$result = $e;
 			}

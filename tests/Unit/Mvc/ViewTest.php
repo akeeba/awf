@@ -10,6 +10,7 @@ require_once __DIR__ . '/Fixtures/ViewStubs.php';
 use Awf\Application\Application;
 use Awf\Container\Container;
 use Awf\Event\Dispatcher as EventDispatcher;
+use Awf\Exception\LayoutNotFoundException;
 use Awf\Input\Input;
 use Awf\Mvc\Engine\BladeEngine;
 use Awf\Mvc\Engine\PhpEngine;
@@ -482,9 +483,44 @@ class ViewTest extends TestCase
     {
         $view = $this->makeView();
 
-        $this->expectException(\Exception::class);
+        $this->expectException(LayoutNotFoundException::class);
 
         $view->loadAnyTemplate('Item/nonexistent_template_xyz');
+    }
+
+    /**
+     * A genuine render-time exception from a layout that DOES exist must propagate out of loadTemplate(), not be
+     * swallowed and masked by falling back to the 'default' layout. Regression guard for the bug behind
+     * akeeba/panopticon#1035.
+     */
+    public function testLoadTemplatePropagatesRenderTimeException(): void
+    {
+        $view = $this->makeView();
+        $view->setDoTask('display');
+        $view->setLayout('throwing');
+
+        // The PHP engine wraps a throwable raised while executing a template into an ErrorException (annotated with
+        // the template location). The point of the fix is that it PROPAGATES rather than being swallowed and masked
+        // by a fallback to the 'default' layout — so the original message must survive.
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessage('Boom from throwing layout');
+
+        $view->loadTemplate();
+    }
+
+    /**
+     * A missing layout still falls back to the 'default' layout (the LayoutNotFoundException fallback contract is
+     * preserved): asking for a layout that does not exist renders 'default' rather than erroring.
+     */
+    public function testLoadTemplateFallsBackToDefaultWhenLayoutMissing(): void
+    {
+        $view = $this->makeView();
+        $view->setDoTask('display');
+        $view->setLayout('nonexistent_layout_xyz');
+
+        $output = $view->loadTemplate();
+
+        self::assertSame('HELLO FROM DEFAULT', $output);
     }
 
     // =========================================================================
