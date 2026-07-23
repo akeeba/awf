@@ -142,7 +142,7 @@ class Basic extends AbstractHelper
 			$format = $this->getContainer()->language->text($format);
 		}
 
-		return $date->format($format, true);
+		return $date->format($format, true, true);
 	}
 
 	/**
