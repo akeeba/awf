@@ -210,6 +210,31 @@ class DateTest extends TestCase
         self::assertSame('Thursday', $result);
     }
 
+    public function testFormatDefaultDoesNotTranslate(): void
+    {
+        // Translation is opt-in: without an explicit $translate argument the
+        // day/month name tokens are emitted verbatim (English), matching native
+        // DateTime::format(). This is what keeps machine formats (e.g. DATE_RSS)
+        // parseable. A language that actually translates must NOT be consulted.
+        $language = $this->createMock(Language::class);
+        $language->method('text')->willReturnCallback(static function (string $key): string {
+            return match ($key) {
+                'Thursday' => 'Donnerstag',
+                'June'     => 'Juni',
+                default    => $key,
+            };
+        });
+        $this->container['language'] = $language;
+
+        $date = $this->makeRefDate();
+
+        // No third argument → default (false) → English, untranslated.
+        self::assertSame('Thursday', $date->format('l'));
+        self::assertSame('June', $date->format('F'));
+        // DATE_RSS must round-trip: no localised tokens leak into the output.
+        self::assertSame('Thu, 15 Jun 2023 12:34:56 +0000', $date->format(DATE_RSS));
+    }
+
     public function testFormatTranslateDayAbbr(): void
     {
         // Language stub returns keys unchanged, so abbreviated day will be the

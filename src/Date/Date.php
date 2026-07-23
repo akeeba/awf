@@ -221,13 +221,17 @@ class Date extends DateTime implements ContainerAwareInterface
 	/**
 	 * Gets the date as a formatted string.
 	 *
-	 * @param   string   $format  The date format specification string (see {@link PHP_MANUAL#date})
-	 * @param   boolean  $local   True to return the date string in the local time zone, false to return it in GMT.
+	 * @param   string   $format     The date format specification string (see {@link PHP_MANUAL#date})
+	 * @param   boolean  $local      True to return the date string in the local time zone, false to return it in GMT.
+	 * @param   boolean  $translate  True to localise the day/month name tokens (D, l, M, F) into the current
+	 *                               interface language. Defaults to false, matching native DateTime::format(), so
+	 *                               machine-readable formats (e.g. DATE_RSS) round-trip through a date parser. Opt in
+	 *                               with true when rendering a human-facing, localised date.
 	 *
 	 * @return  string   The date string in the specified format format.
 	 */
 	#[ReturnTypeWillChange]
-	public function format($format, bool $local = false, bool $translate = true)
+	public function format($format, bool $local = false, bool $translate = false)
 	{
 		if ($translate)
 		{
