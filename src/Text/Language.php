@@ -405,7 +405,7 @@ class Language implements ContainerAwareInterface
 			}
 
 			// If the quality param is empty or does not start with `q=`, assume the weight is 1.0.
-			if (!str_starts_with($qParam ?? '', 'q='))
+			if (substr($qParam ?? '', 0, 2) !== 'q=')
 			{
 				$ret[$lang] = 1.0;
 
