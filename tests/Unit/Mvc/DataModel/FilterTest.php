@@ -271,6 +271,98 @@ class FilterTest extends TestCase
     }
 
     // =========================================================================
+    // AbstractFilter::search — operator allow-list (SQL injection hardening)
+    // =========================================================================
+
+    public static function allowedOperatorProvider(): array
+    {
+        // NOTE: '!=' is intentionally excluded here. Any operator with a leading '!'
+        // is stripped to a "NOT " prefix *before* normalisation (pre-existing
+        // behaviour, preserved by this fix) — see
+        // testSearchNegationPrefixStillWorksAfterNormalisation() for that case.
+        return [
+            '='        => ['='],
+            '<>'       => ['<>'],
+            '>'        => ['>'],
+            '>='       => ['>='],
+            '<'        => ['<'],
+            '<='       => ['<='],
+            'LIKE'     => ['LIKE'],
+            'NOT LIKE' => ['NOT LIKE'],
+        ];
+    }
+
+    #[DataProvider('allowedOperatorProvider')]
+    public function testSearchAllowedOperatorSurvivesVerbatim(string $operator): void
+    {
+        $filter = new TextFilter($this->db, $this->field('description', 'varchar'));
+        $sql    = $filter->search('x', $operator);
+
+        self::assertSame("(`description` " . $operator . " 'x')", $sql);
+    }
+
+    public static function hostileOperatorProvider(): array
+    {
+        return [
+            'sleep injection'        => ["= 'x') OR (SELECT 1 FROM (SELECT SLEEP(5))a) -- "],
+            'union injection'        => ["\") UNION SELECT password FROM ak_users -- "],
+            'or 1'                   => ['= 1 OR 1'],
+            'empty string'           => [''],
+            'null'                   => [null],
+            'array'                  => [['=', 'OR 1=1']],
+        ];
+    }
+
+    #[DataProvider('hostileOperatorProvider')]
+    public function testSearchHostileOperatorCollapsesToEquals(mixed $operator): void
+    {
+        $filter = new TextFilter($this->db, $this->field('description', 'varchar'));
+        $sql    = $filter->search('x', $operator);
+
+        self::assertSame("(`description` = 'x')", $sql);
+    }
+
+    public function testSearchNegationPrefixStillWorksAfterNormalisation(): void
+    {
+        // A leading '!' is stripped to a "NOT " prefix, then the remainder ('=') is
+        // normalised. This is the pre-existing behaviour of '!='; it must survive
+        // the operator allow-list unchanged.
+        $filter = new NumberFilter($this->db, $this->field('n', 'int'));
+        $sql    = $filter->search(5, '!=');
+
+        self::assertSame("NOT (`n` = '5')", $sql);
+    }
+
+    public function testSearchLowercaseOperatorIsUppercased(): void
+    {
+        $filter = new TextFilter($this->db, $this->field('description', 'varchar'));
+        $sql    = $filter->search('x', 'like');
+
+        self::assertSame("(`description` LIKE 'x')", $sql);
+    }
+
+    public static function getSearchMethodsProvider(): array
+    {
+        return [
+            'Text'    => [TextFilter::class, 'title', 'varchar'],
+            'Number'  => [NumberFilter::class, 'n', 'int'],
+            'Date'    => [DateFilter::class, 'created_at', 'datetime'],
+            'Boolean' => [BooleanFilter::class, 'enabled', 'tinyint'],
+        ];
+    }
+
+    #[DataProvider('getSearchMethodsProvider')]
+    public function testGetSearchMethodsReturnsExactExplicitList(string $filterClass, string $name, string $type): void
+    {
+        $filter = new $filterClass($this->db, $this->field($name, $type));
+
+        self::assertSame(
+            ['exact', 'partial', 'between', 'outside', 'interval', 'search'],
+            $filter->getSearchMethods()
+        );
+    }
+
+    // =========================================================================
     // Number filter
     // =========================================================================
 
@@ -432,6 +524,95 @@ class FilterTest extends TestCase
         self::assertSame('', $filter->modulo(3, null));
     }
 
+    // =========================================================================
+    // Number filter — range()/modulo() cast+sanitise (SQL injection hardening)
+    //
+    // range()/modulo() are not reachable from request state (getSearchMethods()
+    // does not list them — see AbstractFilter), but they remain a live hazard for
+    // any direct $model->where('field', 'range'/'modulo', ...) call.
+    // =========================================================================
+
+    public static function hostileNumberBoundProvider(): array
+    {
+        return [
+            'or injection'      => ['1 OR 1=1'],
+            'stacked query'     => ['1); DROP TABLE x; --'],
+        ];
+    }
+
+    #[DataProvider('hostileNumberBoundProvider')]
+    public function testNumberRangeHostileFromBoundIsNeutralised(string $hostile): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('price', 'int'));
+        $sql    = $filter->range($hostile, 100, true);
+
+        // (float) cast takes only the leading numeric portion; the hostile suffix never
+        // reaches the query. Bounds are not quoted here — same as the pre-existing
+        // between()/outside()/interval() output — because sanitiseValue() guarantees a
+        // float-safe numeric string.
+        self::assertSame('((`price` >= 1) AND (`price` <= 100))', $sql);
+    }
+
+    #[DataProvider('hostileNumberBoundProvider')]
+    public function testNumberRangeHostileToBoundIsNeutralised(string $hostile): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('price', 'int'));
+        $sql    = $filter->range(5, $hostile, true);
+
+        self::assertSame('((`price` >= 5) AND (`price` <= 1))', $sql);
+    }
+
+    /**
+     * Pins the truthiness semantics of range(): a bound of int 0 is falsy and is
+     * therefore NOT emitted, even though it is not "empty" for isEmpty() purposes
+     * (isEmpty() only treats string "0" as non-empty; int 0 is empty via empty()).
+     * This test exists to make that decision visible per the plan's requirement,
+     * and to catch any future change that casts-then-tests truthiness (which would
+     * change nothing here since isEmpty(0) is already true — see the next test for
+     * the case that actually distinguishes cast-before vs cast-after truthiness).
+     */
+    public function testNumberRangeZeroBoundIsEmptyAndProducesNoClause(): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('price', 'int'));
+
+        self::assertSame('', $filter->range(0, 0, true));
+    }
+
+    /**
+     * A string "0.0" bound is not "empty" for isEmpty() (only the literal string "0" is
+     * special-cased), so range() proceeds — but the *truthiness* test in range() must
+     * still be evaluated on the original value, not a float-cast copy, or a bound this
+     * test doesn't cover could silently vanish. This pins that only the untouched
+     * original value's truthiness decides whether a bound is emitted.
+     */
+    public function testNumberRangeStringZeroPointZeroBoundTruthiness(): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('price', 'int'));
+        // "0.0" is truthy as a PHP string (non-empty, non-"0"), so the bound IS emitted,
+        // even though it sanitises down to the numeric string "0".
+        $sql = $filter->range('0.0', null, true);
+
+        self::assertSame('((`price` >= 0))', $sql);
+    }
+
+    #[DataProvider('hostileNumberBoundProvider')]
+    public function testNumberModuloHostileValueIsNeutralised(string $hostile): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('n', 'int'));
+        $sql    = $filter->modulo($hostile, 7, true);
+
+        self::assertSame('(`n` >= 1 AND (`n` - 1) % 7 = 0)', $sql);
+    }
+
+    #[DataProvider('hostileNumberBoundProvider')]
+    public function testNumberModuloHostileIntervalIsNeutralised(string $hostile): void
+    {
+        $filter = new NumberFilter($this->db, $this->field('n', 'int'));
+        $sql    = $filter->modulo(3, $hostile, true);
+
+        self::assertSame('(`n` >= 3 AND (`n` - 3) % 1 = 0)', $sql);
+    }
+
     public function testNumberPartialDelegatesToExact(): void
     {
         $filter = new NumberFilter($this->db, $this->field('n', 'int'));
@@ -585,6 +766,98 @@ class FilterTest extends TestCase
         self::assertSame('', $filter->exact(''));
     }
 
+    // =========================================================================
+    // Text filter — LIKE wildcard escaping (SQL injection hardening)
+    //
+    // The in-memory SqliteDriver used elsewhere in this file cannot exercise this fix:
+    // Awf\Database\Driver\Sqlite::escape() documents its $extra parameter as "Unused" and
+    // never applies the addcslashes($result, '%_') step that Mysqli/Pdomysql/Pgsql do (see
+    // src/Database/Driver/Sqlite.php). That is a pre-existing gap in the SQLite driver,
+    // reported separately — it is out of scope for this plan to fix. To test the actual
+    // escaping behaviour (and the "don't double-escape" requirement) these tests use a
+    // small local double that reproduces the real MySQL-style driver contract:
+    // escape($text, $extra) applies quote/backslash escaping always, and %/_ escaping only
+    // when $extra is true; quote($text, $escape) re-escapes only when $escape is true.
+    // =========================================================================
+
+    /**
+     * A minimal DB double reproducing the escape()/quote() contract of the real
+     * Mysqli/Pdomysql drivers (unlike the SqliteDriver used elsewhere in this file, whose
+     * escape() ignores the $extra flag entirely).
+     */
+    private function mysqlStyleDb(): object
+    {
+        return new class {
+            public function escape($text, $extra = false): string
+            {
+                $text = addslashes((string) $text);
+
+                return $extra ? addcslashes($text, '%_') : $text;
+            }
+
+            public function quote($text, $escape = true): string
+            {
+                return "'" . ($escape ? $this->escape($text) : $text) . "'";
+            }
+
+            public function qn($name): string
+            {
+                return '`' . $name . '`';
+            }
+        };
+    }
+
+    public function testTextPartialEscapesPercentAndUnderscoreWildcards(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
+        $sql    = $filter->partial('50%_foo');
+
+        self::assertSame("(`password` LIKE '%50\\%\\_foo%')", $sql);
+    }
+
+    /**
+     * Reproduces the confirmed PoC payload for case E: without escaping, a bcrypt hash
+     * fragment ending in '%' would widen the match into a row-presence oracle.
+     */
+    public function testTextPartialEscapesTrailingPercentInBcryptLikePayload(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
+        $sql    = $filter->partial('$2y$10$a%');
+
+        self::assertSame("(`password` LIKE '%\$2y\$10\$a\\%%')", $sql);
+        self::assertStringNotContainsString("a%%", $sql);
+    }
+
+    public function testTextExactEscapesPercentAndUnderscoreWildcards(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
+        $sql    = $filter->exact('50%_foo');
+
+        self::assertSame("(`title` LIKE '50\\%\\_foo')", $sql);
+    }
+
+    /**
+     * A value containing a single quote and a backslash must be escaped exactly once.
+     * This is the assertion that catches a wrong quote() second argument: if quote()
+     * were called with its default $escape=true, the already-escaped backslash/quote
+     * from escape() would be escaped a second time here.
+     */
+    public function testTextPartialQuoteAndBackslashAreNotDoubleEscaped(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
+        $sql    = $filter->partial("O'Brien\\test");
+
+        self::assertSame("(`title` LIKE '%O\\'Brien\\\\test%')", $sql);
+    }
+
+    public function testTextExactQuoteAndBackslashAreNotDoubleEscaped(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
+        $sql    = $filter->exact("O'Brien\\test");
+
+        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test')", $sql);
+    }
+
     public function testTextBetweenAlwaysEmpty(): void
     {
         $filter = new TextFilter($this->db, $this->field('title', 'varchar'));
@@ -618,6 +891,72 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->db, $this->field('title', 'varchar'));
 
         self::assertSame('', $filter->modulo('from', 'interval'));
+    }
+
+    // =========================================================================
+    // AbstractFilter::search — LIKE wildcard escaping (SQL injection hardening)
+    //
+    // search() is a third LIKE emitter besides Text::partial()/exact(): the operator
+    // allow-list in AbstractFilter deliberately permits 'LIKE'/'NOT LIKE', so a caller
+    // reaching search() with one of those operators (e.g. via a filter descriptor of
+    // ['method' => 'search', 'operator' => 'LIKE', ...]) can turn a value containing '%'
+    // or '_' into a pattern probe unless those wildcards are escaped. As with the Text
+    // filter tests above, the in-memory SqliteDriver's escape() ignores $extra, so these
+    // use the mysqlStyleDb() double defined earlier in this file.
+    // =========================================================================
+
+    public function testSearchWithLikeOperatorEscapesWildcard(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
+        $sql    = $filter->search('$2y$10$a%', 'LIKE');
+
+        self::assertSame("(`password` LIKE '\$2y\$10\$a\\%')", $sql);
+        self::assertStringNotContainsString("a%'", $sql);
+    }
+
+    public function testSearchWithNotLikeOperatorEscapesWildcard(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
+        $sql    = $filter->search('$2y$10$a%', 'NOT LIKE');
+
+        self::assertSame("(`password` NOT LIKE '\$2y\$10\$a\\%')", $sql);
+        self::assertStringNotContainsString("a%'", $sql);
+    }
+
+    /**
+     * A value containing a single quote and a backslash must be escaped exactly once.
+     * This is the assertion that catches a wrong quote() second argument: if quote()
+     * were called with its default $escape=true, the already-escaped backslash/quote
+     * from escape() would be escaped a second time here.
+     */
+    public function testSearchWithLikeOperatorDoesNotDoubleEscapeQuoteAndBackslash(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
+        $sql    = $filter->search("O'Brien\\test", 'LIKE');
+
+        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test')", $sql);
+    }
+
+    /**
+     * Non-pattern operators must be unaffected by the wildcard escaping: '%' in an
+     * equality-style comparison is a literal character, not a LIKE wildcard, and must
+     * survive verbatim. A regression here would silently corrupt every equality filter
+     * on a value containing a percent sign.
+     */
+    public function testSearchWithEqualsOperatorLeavesPercentUnescaped(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('discount', 'varchar'));
+        $sql    = $filter->search('50%', '=');
+
+        self::assertSame("(`discount` = '50%')", $sql);
+    }
+
+    public function testSearchWithNegatedLikeOperatorEscapesWildcard(): void
+    {
+        $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
+        $sql    = $filter->search('$2y$10$a%', '!LIKE');
+
+        self::assertSame("NOT (`password` LIKE '\$2y\$10\$a\\%')", $sql);
     }
 
     // =========================================================================
@@ -819,6 +1158,148 @@ class FilterTest extends TestCase
         $sql      = $filter->interval('2024-01-01', $interval);
 
         self::assertSame('', $sql);
+    }
+
+    // =========================================================================
+    // Date filter — interval unit whitelist (SQL injection hardening)
+    // =========================================================================
+
+    public static function allowedIntervalUnitProvider(): array
+    {
+        return [
+            'MICROSECOND' => ['MICROSECOND'],
+            'SECOND'      => ['SECOND'],
+            'MINUTE'      => ['MINUTE'],
+            'HOUR'        => ['HOUR'],
+            'DAY'         => ['DAY'],
+            'WEEK'        => ['WEEK'],
+            'MONTH'       => ['MONTH'],
+            'QUARTER'     => ['QUARTER'],
+            'YEAR'        => ['YEAR'],
+        ];
+    }
+
+    #[DataProvider('allowedIntervalUnitProvider')]
+    public function testDateIntervalAllowedUnitStringFormProducesExpectedSql(string $unit): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $sql    = $filter->interval('2024-06-01', '+1 ' . $unit, true);
+
+        self::assertSame(
+            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 " . $unit . "))",
+            $sql
+        );
+    }
+
+    #[DataProvider('allowedIntervalUnitProvider')]
+    public function testDateIntervalAllowedUnitArrayFormProducesExpectedSql(string $unit): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => '+', 'value' => 1, 'unit' => $unit];
+        $sql      = $filter->interval('2024-06-01', $interval, true);
+
+        self::assertSame(
+            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 " . $unit . "))",
+            $sql
+        );
+    }
+
+    public static function hostileIntervalUnitProvider(): array
+    {
+        return [
+            'operator injection'  => ['MONTH))OR(1=1)--'],
+            'stacked query'       => ['MONTH; DROP TABLE x'],
+            'empty string'        => [''],
+        ];
+    }
+
+    #[DataProvider('hostileIntervalUnitProvider')]
+    public function testDateIntervalHostileUnitStringFormReturnsEmpty(string $unit): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $sql    = $filter->interval('2024-06-01', '+1 ' . $unit, true);
+
+        self::assertSame('', $sql);
+    }
+
+    #[DataProvider('hostileIntervalUnitProvider')]
+    public function testDateIntervalHostileUnitArrayFormReturnsEmpty(string $unit): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => '+', 'value' => 1, 'unit' => $unit];
+        $sql      = $filter->interval('2024-06-01', $interval, true);
+
+        self::assertSame('', $sql);
+    }
+
+    public function testDateIntervalLowercaseValidUnitIsAcceptedAndNormalised(): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $sql    = $filter->interval('2024-06-01', '+1 month', true);
+
+        self::assertSame(
+            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 MONTH))",
+            $sql
+        );
+    }
+
+    public function testDateIntervalNonNumericValueIsCastToIntegerStringForm(): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        // "+1 OR 1=1 MONTH" — the numeric-ish leading token is what gets cast; the interval
+        // string only has two whitespace-delimited tokens by construction of getInterval(),
+        // so we exercise the cast via a value that isn't purely numeric.
+        $sql = $filter->interval('2024-06-01', '+abc MONTH', true);
+
+        // (int) "abc" === 0
+        self::assertSame(
+            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 0 MONTH))",
+            $sql
+        );
+    }
+
+    public function testDateIntervalNonNumericValueIsCastToIntegerArrayForm(): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => '+', 'value' => '1 OR 1=1', 'unit' => 'MONTH'];
+        $sql      = $filter->interval('2024-06-01', $interval, true);
+
+        // (int) "1 OR 1=1" === 1 — the hostile suffix is dropped, not injected.
+        self::assertSame(
+            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 MONTH))",
+            $sql
+        );
+        self::assertStringNotContainsString('OR 1=1', $sql);
+    }
+
+    public static function nonMinusSignProvider(): array
+    {
+        return [
+            'plus'        => ['+'],
+            'empty'       => [''],
+            'garbage'     => ['x'],
+            'plus word'   => ['plus'],
+        ];
+    }
+
+    #[DataProvider('nonMinusSignProvider')]
+    public function testDateIntervalNonMinusSignProducesDateAdd(string $sign): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => $sign, 'value' => 1, 'unit' => 'MONTH'];
+        $sql      = $filter->interval('2024-06-01', $interval, true);
+
+        self::assertStringContainsString('DATE_ADD', $sql);
+        self::assertStringNotContainsString('DATE_SUB', $sql);
+    }
+
+    public function testDateIntervalMinusSignProducesDateSub(): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => '-', 'value' => 1, 'unit' => 'MONTH'];
+        $sql      = $filter->interval('2024-06-01', $interval, true);
+
+        self::assertStringContainsString('DATE_SUB', $sql);
     }
 
     // =========================================================================

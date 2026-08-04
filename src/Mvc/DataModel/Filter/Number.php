@@ -167,13 +167,16 @@ class Number extends AbstractFilter
 
 		$sql = [];
 
+		// Note: truthiness is deliberately tested on the *original* $from / $to, not on a
+		// float-cast copy — casting first would make a bound of 0 falsy and silently drop
+		// it, changing which bounds get emitted. The cast only happens for concatenation.
 		if ($from)
 		{
-			$sql[] = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $from . ')';
+			$sql[] = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $this->sanitiseValue((float) $from) . ')';
 		}
 		if ($to)
 		{
-			$sql[] = '(' . $this->getFieldName() . ' <' . $extra . ' ' . $to . ')';
+			$sql[] = '(' . $this->getFieldName() . ' <' . $extra . ' ' . $this->sanitiseValue((float) $to) . ')';
 		}
 
 		return '(' . implode(' AND ', $sql) . ')';
@@ -203,6 +206,9 @@ class Number extends AbstractFilter
 		{
 			$extra = '=';
 		}
+
+		$value    = $this->sanitiseValue((float) $value);
+		$interval = $this->sanitiseValue((float) $interval);
 
 		$sql = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $value . ' AND ';
 
