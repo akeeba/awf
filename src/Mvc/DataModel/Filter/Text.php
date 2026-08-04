@@ -49,7 +49,13 @@ class Text extends AbstractFilter
 			return '';
 		}
 
-		return '(' . $this->getFieldName() . ' LIKE ' . $this->db->quote('%' . $value . '%') . ')';
+		// escape($value, true) additionally addcslashes()-escapes '%' and '_', the two LIKE
+		// wildcard characters, so a value cannot widen its own match pattern (e.g. turn a
+		// substring search into a full-table scan / oracle for column contents). quote(...,
+		// false) suppresses a second round of escaping — quote() would otherwise re-escape
+		// what escape() already escaped, corrupting values containing quotes or backslashes.
+		// Note: '\' is the default LIKE escape character on MySQL/PostgreSQL but not SQLite.
+		return '(' . $this->getFieldName() . ' LIKE ' . $this->db->quote('%' . $this->db->escape($value, true) . '%', false) . ')';
 	}
 
 	/**
@@ -76,7 +82,8 @@ class Text extends AbstractFilter
 			return '(' . $this->getFieldName() . ' IN (' . implode(',', $value) . '))';
 		}
 
-		return '(' . $this->getFieldName() . ' LIKE ' . $this->db->quote($value) . ')';
+		// See the comment in partial() — same wildcard-escaping / double-escaping caveats apply.
+		return '(' . $this->getFieldName() . ' LIKE ' . $this->db->quote($this->db->escape($value, true), false) . ')';
 	}
 
 	/**

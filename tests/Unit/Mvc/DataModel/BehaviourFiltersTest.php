@@ -87,12 +87,16 @@ class BehaviourFiltersTest extends TestCase
         $this->db->connect();
 
         // Main table
+        // "last_run_start" is DATETIME so that Behaviour\Filters resolves it to a Date
+        // filter, matching #__ak_schedules.last_run_start in the reachable Solo "crons"
+        // view — used by the Date-interval SQL-injection regression tests below.
         $this->db->setQuery(
             'CREATE TABLE items (
-                item_id  INTEGER PRIMARY KEY AUTOINCREMENT,
-                title    TEXT    NOT NULL,
-                enabled  INTEGER NOT NULL DEFAULT 1,
-                ordering INTEGER NOT NULL DEFAULT 0
+                item_id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+                title           TEXT     NOT NULL,
+                enabled         INTEGER  NOT NULL DEFAULT 1,
+                ordering        INTEGER  NOT NULL DEFAULT 0,
+                last_run_start  DATETIME NULL
             )'
         )->execute();
 
@@ -1070,5 +1074,284 @@ class BehaviourFiltersTest extends TestCase
 
         $sql = (string) $query;
         self::assertStringContainsString('`enabled`', $sql);
+    }
+
+    // =========================================================================
+    // Behaviour\Filters — SQL injection hardening: operator allow-list
+    // =========================================================================
+
+    /**
+     * A hostile 'operator' key in request-shaped filter state (method=search) must not
+     * be concatenated verbatim into the generated WHERE clause. It must collapse to '='.
+     */
+    public function testFiltersSearchOperatorInjectionIsNeutralised(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('title', [
+            'method'   => 'search',
+            'value'    => 'x',
+            'operator' => "= 'x') OR (SELECT 1 FROM (SELECT SLEEP(5))a) -- ",
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringContainsString('`title`', $sql);
+        self::assertSame("(`title` = 'x')", $this->extractWhereFragment($sql));
+        self::assertStringNotContainsString('SLEEP', $sql);
+        self::assertStringNotContainsString('OR (SELECT', $sql);
+    }
+
+    /**
+     * Same as above but against a numeric column, mirroring the confirmed PoC payload
+     * for case B (operator injection on an int column).
+     */
+    public function testFiltersSearchOperatorInjectionOnNumericColumnIsNeutralised(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('ordering', [
+            'method'   => 'search',
+            'value'    => 1,
+            'operator' => '= 1) UNION SELECT password FROM ak_users -- ',
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringNotContainsString('UNION', $sql);
+        self::assertStringNotContainsString('ak_users', $sql);
+    }
+
+    /**
+     * Helper: pulls out the single WHERE fragment appended by the Filters behaviour
+     * for assertions that need the exact generated clause rather than substring checks.
+     */
+    private function extractWhereFragment(string $sql): string
+    {
+        if (!preg_match('/WHERE\s+(.*)$/is', $sql, $m)) {
+            return '';
+        }
+
+        return trim($m[1]);
+    }
+
+    // =========================================================================
+    // Behaviour\Filters — SQL injection hardening: Date interval unit whitelist
+    // =========================================================================
+
+    /**
+     * End-to-end via the real Filters behaviour: a hostile interval unit, given as the
+     * single-string interval form, on a DATETIME column must not appear anywhere in the
+     * built query. Mirrors PoC case C.
+     */
+    public function testFiltersDateIntervalStringFormInjectionIsNeutralisedEndToEnd(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('last_run_start', [
+            'method'   => 'interval',
+            'value'    => '2020-01-01',
+            'interval' => '+1 MONTH))OR(1=1)--',
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        // The hostile unit was rejected by the whitelist, so interval() returned '' and no
+        // WHERE clause referencing last_run_start was added at all.
+        self::assertStringNotContainsString('last_run_start', $sql);
+        self::assertStringNotContainsString('OR(1=1)', $sql);
+        self::assertStringNotContainsString('DATE_ADD', $sql);
+    }
+
+    /**
+     * Same as above but with the interval given in array form. Mirrors PoC case D.
+     */
+    public function testFiltersDateIntervalArrayFormInjectionIsNeutralisedEndToEnd(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('last_run_start', [
+            'method'   => 'interval',
+            'value'    => '2020-01-01',
+            'interval' => ['sign' => '+', 'value' => '1', 'unit' => 'MONTH))OR(1=1)--'],
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringNotContainsString('last_run_start', $sql);
+        self::assertStringNotContainsString('OR(1=1)', $sql);
+        self::assertStringNotContainsString('DATE_ADD', $sql);
+    }
+
+    /**
+     * Sanity check that the DATETIME column is genuinely reachable through the behaviour
+     * with a legitimate interval — i.e. the two tests above are neutralising a real
+     * attack, not merely failing to reach the field at all.
+     */
+    public function testFiltersDateIntervalLegitimateValueProducesWhereEndToEnd(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('last_run_start', [
+            'method'   => 'interval',
+            'value'    => '2020-01-01',
+            'interval' => '+1 MONTH',
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringContainsString('last_run_start', $sql);
+        self::assertStringContainsString('DATE_ADD', $sql);
+        self::assertStringContainsString('MONTH', $sql);
+    }
+
+    // =========================================================================
+    // Behaviour\Filters — 'range'/'modulo' are unreachable (dead switch cases removed)
+    // =========================================================================
+
+    /**
+     * Requesting method=range from state falls back to 'exact' (getSearchMethods() does
+     * not list 'range', and the now-deleted 'range' switch label can no longer be reached
+     * even if the fallback logic changed). A hostile 'from'/'to' pair must not appear in
+     * the built query — only 'value', via exact(), can.
+     */
+    public function testFiltersMethodRangeFallsBackToExactAndIgnoresFromTo(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('ordering', [
+            'method' => 'range',
+            'from'   => '1) OR (1=1',
+            'to'     => '999',
+            'value'  => 5,
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringNotContainsString('OR (1=1', $sql);
+        self::assertStringContainsString("(`ordering` = '5')", $sql);
+    }
+
+    /**
+     * Requesting method=modulo from state falls back to 'exact'. A hostile 'interval'
+     * value must not appear in the built query — only 'value', via exact(), can.
+     */
+    public function testFiltersMethodModuloFallsBackToExactAndIgnoresInterval(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('ordering', [
+            'method'   => 'modulo',
+            'value'    => 3,
+            'interval' => '7) OR (1=1',
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringNotContainsString('OR (1=1', $sql);
+        self::assertStringContainsString("(`ordering` = '3')", $sql);
+    }
+
+    // =========================================================================
+    // Behaviour\Filters — end-to-end LIKE wildcard escaping
+    // =========================================================================
+
+    /**
+     * A '%'-bearing value against a text column, driven through the real Filters
+     * behaviour and the real SqliteDriver, produces a structurally correct LIKE clause.
+     *
+     * NOTE ON COVERAGE: this test does NOT verify that '%'/'_' end up backslash-escaped —
+     * that is impossible to observe through this test's DB pipeline. Awf\Database\Driver\
+     * Sqlite::escape() ignores its $extra parameter entirely (its own doc comment says
+     * "Unused optional parameter to provide extra escaping"), unlike Mysqli/Pdomysql/Pgsql/
+     * Postgresql, which all apply addcslashes($result, '%_') when $extra is true. That is a
+     * pre-existing gap in the SQLite driver, out of scope for this plan (reported
+     * separately) — it means Text::partial()/exact() silently does not escape wildcards
+     * when running on SQLite specifically. Solo's own tables are MySQL in practice, so this
+     * does not affect production, but it does mean the wildcard-escaping behaviour itself
+     * can only be verified with a driver that implements the $extra contract — see
+     * FilterTest::testTextPartialEscapesPercentAndUnderscoreWildcards() and its siblings,
+     * which use a small MySQL-style double for exactly this reason. This test is kept to
+     * confirm the behaviour-level plumbing (state -> Filters -> Text::partial() -> WHERE)
+     * still produces a well-formed query end-to-end after the fix.
+     */
+    public function testFiltersPartialWildcardValueProducesWellFormedWhereEndToEnd(): void
+    {
+        $this->insertItem('A%B');
+        $this->insertItem('AXB');
+
+        $model = $this->makeModel();
+        $model->where('title', 'like', 'A%B');
+
+        $query = $model->buildQuery(true);
+        $sql   = (string) $query;
+
+        self::assertStringContainsString('`title` LIKE', $sql);
+        self::assertStringContainsString('A%B', $sql);
+    }
+
+    /**
+     * End-to-end via the real Filters behaviour: a filter descriptor of
+     * ['method' => 'search', 'operator' => 'LIKE', ...] reaches
+     * AbstractFilter::search(), a third LIKE emitter besides Text::partial()/exact()
+     * (plan 03 only fixed those two). Confirms the plumbing (state -> Filters ->
+     * search() -> WHERE) still produces a well-formed LIKE clause end-to-end.
+     *
+     * NOTE ON COVERAGE: as with testFiltersPartialWildcardValueProducesWellFormedWhereEndToEnd()
+     * above, this does NOT verify that '%'/'_' end up backslash-escaped — the real
+     * SqliteDriver used here ignores escape()'s $extra parameter (see that test's docblock
+     * for the full explanation), so no backslash can appear in the generated SQL regardless
+     * of whether the fix is present. The actual escaping behaviour of search() is pinned by
+     * FilterTest::testSearchWithLikeOperatorEscapesWildcard() and its siblings, which use a
+     * MySQL-style double for exactly this reason. This test only confirms that the 'search'
+     * method with a 'LIKE' operator is reachable from state and produces a structurally
+     * correct LIKE clause containing the field and value.
+     */
+    public function testFiltersSearchLikeOperatorProducesWellFormedWhereEndToEnd(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('title', [
+            'method'   => 'search',
+            'operator' => 'LIKE',
+            'value'    => 'A%B',
+        ]);
+        $query = $this->db->getQuery(true)->select('*')->from('`items`');
+
+        $dispatcher = $model->getBehavioursDispatcher();
+        $behaviour  = new FiltersBehaviour($dispatcher);
+        $behaviour->onAfterBuildQuery($model, $query);
+
+        $sql = (string) $query;
+
+        self::assertStringContainsString('`title` LIKE', $sql);
+        self::assertStringContainsString('A%B', $sql);
     }
 }
