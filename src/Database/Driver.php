@@ -526,6 +526,22 @@ abstract class Driver implements DatabaseInterface
 	abstract public function escape($text, $extra = false);
 
 	/**
+	 * Returns the ` ESCAPE '...'` fragment to append to a LIKE clause whose pattern was escaped
+	 * with escape($value, true).
+	 *
+	 * The escape character is a backslash on every supported server, but the way a backslash is
+	 * written inside a string literal is not portable, so the fragment has to come from the
+	 * driver. It also makes the behaviour explicit rather than relying on a server default that
+	 * MySQL drops under NO_BACKSLASH_ESCAPES and SQLite does not have at all.
+	 *
+	 * @return  string
+	 */
+	public function getLikeEscapeSql()
+	{
+		return " ESCAPE '\\\\'";
+	}
+
+	/**
 	 * Method to fetch a row from the result set cursor as an array.
 	 *
 	 * @param   mixed  $cursor  The optional result set cursor from which to fetch the row.

@@ -388,7 +388,7 @@ abstract class AbstractFilter
 		// equality-style match into a pattern probe. Escape them; see Text::partial().
 		if ($operator === 'LIKE' || $operator === 'NOT LIKE')
 		{
-			$quotedValue = $this->db->quote($this->db->escape($value, true), false);
+			$quotedValue = $this->db->quote($this->db->escape($value, true), false) . $this->db->getLikeEscapeSql();
 		}
 		else
 		{

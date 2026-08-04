@@ -140,7 +140,7 @@ class Date extends Text
 
 		$sql = '(' . $this->getFieldName() . ' >' . $extra . ' ' . $function;
 
-		return $sql . ('(' . $this->getFieldName() . ', INTERVAL ' . $interval['value'] . ' ' . $interval['unit'] . '))');
+		return $sql . ('(' . $this->db->q($value) . ', INTERVAL ' . $interval['value'] . ' ' . $interval['unit'] . '))');
 	}
 
 	/**

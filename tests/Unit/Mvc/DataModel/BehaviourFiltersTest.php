@@ -1223,6 +1223,15 @@ class BehaviourFiltersTest extends TestCase
         self::assertStringContainsString('last_run_start', $sql);
         self::assertStringContainsString('DATE_ADD', $sql);
         self::assertStringContainsString('MONTH', $sql);
+
+        // Gap B: DATE_ADD/DATE_SUB must be anchored to the quoted $value, not to a second
+        // reference of the column itself — the column now appears exactly once (as the
+        // left-hand side of the comparison), and the anchor date appears inside DATE_ADD().
+        self::assertSame(
+            "(`last_run_start` >= DATE_ADD('2020-01-01', INTERVAL 1 MONTH))",
+            $this->extractWhereFragment($sql)
+        );
+        self::assertSame(1, substr_count($sql, '`last_run_start`'));
     }
 
     // =========================================================================
@@ -1281,27 +1290,89 @@ class BehaviourFiltersTest extends TestCase
     }
 
     // =========================================================================
+    // Behaviour\Filters — strict method / blacklist comparison (Gap C)
+    //
+    // Filters::onAfterBuildQuery() used loose in_array() to validate the requested
+    // 'method' against the field's allowed search methods. On PHP 7.4, 0 == 'exact' is
+    // true, so a state of ['method' => 0, ...] would pass the (loose) allow-list check,
+    // leave $method as the integer 0, and then reach $field->{0}(...) — an undefined
+    // method call, i.e. a fatal Error reachable from request state (title[method]=0).
+    // Making the comparison strict forces any non-matching method — including 0, '0'
+    // and null — to fall back to 'exact' instead.
+    //
+    // NOTE: on PHP 8 (this suite's runtime), int-to-non-numeric-string comparison
+    // semantics changed so that 0 == 'exact' is already false; these payloads therefore
+    // do not reproduce a fatal error on PHP 8 even without this fix. The tests still
+    // pin the intended behaviour (silent fallback to 'exact', not a crash) so a future
+    // change back to loose comparison — which WOULD reintroduce the PHP 7.4 fatal — is
+    // caught by inspection even where a PHP 8 test run can't demonstrate the crash.
+    // =========================================================================
+
+    public function testFiltersMethodIntegerZeroFallsBackToExactWithoutFatal(): void
+    {
+        $this->insertItem('Alpha');
+        $this->insertItem('Beta');
+
+        $model = $this->makeModel();
+        $model->addBehaviour('filters');
+        $model->setState('title', ['method' => 0, 'value' => 'Alpha']);
+
+        $items = $model->getItemsArray();
+
+        self::assertCount(1, $items);
+        $item = reset($items);
+        self::assertSame('Alpha', $item->title);
+    }
+
+    public function testFiltersMethodStringZeroFallsBackToExactWithoutFatal(): void
+    {
+        $this->insertItem('Alpha');
+        $this->insertItem('Beta');
+
+        $model = $this->makeModel();
+        $model->addBehaviour('filters');
+        $model->setState('title', ['method' => '0', 'value' => 'Alpha']);
+
+        $items = $model->getItemsArray();
+
+        self::assertCount(1, $items);
+        $item = reset($items);
+        self::assertSame('Alpha', $item->title);
+    }
+
+    public function testFiltersMethodNullFallsBackToExactWithoutFatal(): void
+    {
+        $this->insertItem('Alpha');
+        $this->insertItem('Beta');
+
+        $model = $this->makeModel();
+        $model->addBehaviour('filters');
+        $model->setState('title', ['method' => null, 'value' => 'Alpha']);
+
+        $items = $model->getItemsArray();
+
+        self::assertCount(1, $items);
+        $item = reset($items);
+        self::assertSame('Alpha', $item->title);
+    }
+
+    // =========================================================================
     // Behaviour\Filters — end-to-end LIKE wildcard escaping
     // =========================================================================
 
     /**
      * A '%'-bearing value against a text column, driven through the real Filters
-     * behaviour and the real SqliteDriver, produces a structurally correct LIKE clause.
+     * behaviour and the real SqliteDriver, produces a structurally correct LIKE clause
+     * AND genuinely filters by the literal value, not the widened pattern.
      *
-     * NOTE ON COVERAGE: this test does NOT verify that '%'/'_' end up backslash-escaped —
-     * that is impossible to observe through this test's DB pipeline. Awf\Database\Driver\
-     * Sqlite::escape() ignores its $extra parameter entirely (its own doc comment says
-     * "Unused optional parameter to provide extra escaping"), unlike Mysqli/Pdomysql/Pgsql/
-     * Postgresql, which all apply addcslashes($result, '%_') when $extra is true. That is a
-     * pre-existing gap in the SQLite driver, out of scope for this plan (reported
-     * separately) — it means Text::partial()/exact() silently does not escape wildcards
-     * when running on SQLite specifically. Solo's own tables are MySQL in practice, so this
-     * does not affect production, but it does mean the wildcard-escaping behaviour itself
-     * can only be verified with a driver that implements the $extra contract — see
-     * FilterTest::testTextPartialEscapesPercentAndUnderscoreWildcards() and its siblings,
-     * which use a small MySQL-style double for exactly this reason. This test is kept to
-     * confirm the behaviour-level plumbing (state -> Filters -> Text::partial() -> WHERE)
-     * still produces a well-formed query end-to-end after the fix.
+     * Gap A fixed two things that both had to land together for this to work on SQLite:
+     * Sqlite::escape($value, true) now actually addcslashes()-escapes '%'/'_' (previously
+     * a documented no-op — "Unused optional parameter to provide extra escaping"), and the
+     * generated LIKE clause now carries an explicit ESCAPE '\' clause, because SQLite has
+     * no default LIKE escape character at all. Before this fix, this exact scenario (a
+     * value containing a literal '%') silently behaved as a wildcard: 'A%B' would match
+     * both the literal row and 'AXB'. Confirmed empirically (see the plan verification
+     * script) that after the fix only the literal 'A%B' row matches.
      */
     public function testFiltersPartialWildcardValueProducesWellFormedWhereEndToEnd(): void
     {
@@ -1315,28 +1386,33 @@ class BehaviourFiltersTest extends TestCase
         $sql   = (string) $query;
 
         self::assertStringContainsString('`title` LIKE', $sql);
-        self::assertStringContainsString('A%B', $sql);
+        // The '%' is now escaped ('\%'), so the raw unescaped literal is deliberately
+        // NOT present verbatim in the SQL — that escaping is the whole point of the fix.
+        self::assertStringContainsString('A\\%B', $sql);
+        self::assertStringContainsString("ESCAPE '\\'", $sql);
+
+        // The escaped '%' must no longer act as a wildcard: only the literal 'A%B' row
+        // matches, not 'AXB'.
+        $items = $model->getItemsArray();
+
+        self::assertCount(1, $items);
+        $item = reset($items);
+        self::assertSame('A%B', $item->title);
     }
 
     /**
      * End-to-end via the real Filters behaviour: a filter descriptor of
      * ['method' => 'search', 'operator' => 'LIKE', ...] reaches
-     * AbstractFilter::search(), a third LIKE emitter besides Text::partial()/exact()
-     * (plan 03 only fixed those two). Confirms the plumbing (state -> Filters ->
-     * search() -> WHERE) still produces a well-formed LIKE clause end-to-end.
-     *
-     * NOTE ON COVERAGE: as with testFiltersPartialWildcardValueProducesWellFormedWhereEndToEnd()
-     * above, this does NOT verify that '%'/'_' end up backslash-escaped — the real
-     * SqliteDriver used here ignores escape()'s $extra parameter (see that test's docblock
-     * for the full explanation), so no backslash can appear in the generated SQL regardless
-     * of whether the fix is present. The actual escaping behaviour of search() is pinned by
-     * FilterTest::testSearchWithLikeOperatorEscapesWildcard() and its siblings, which use a
-     * MySQL-style double for exactly this reason. This test only confirms that the 'search'
-     * method with a 'LIKE' operator is reachable from state and produces a structurally
-     * correct LIKE clause containing the field and value.
+     * AbstractFilter::search(), a third LIKE emitter besides Text::partial()/exact().
+     * Confirms the plumbing (state -> Filters -> search() -> WHERE) produces a
+     * well-formed LIKE clause end-to-end, with the same genuine escaping as partial()/
+     * exact() now that Gap A also fixed the Sqlite driver's escape($value, true).
      */
     public function testFiltersSearchLikeOperatorProducesWellFormedWhereEndToEnd(): void
     {
+        $this->insertItem('A%B');
+        $this->insertItem('AXB');
+
         $model = $this->makeModel();
         $model->setState('title', [
             'method'   => 'search',
@@ -1352,6 +1428,13 @@ class BehaviourFiltersTest extends TestCase
         $sql = (string) $query;
 
         self::assertStringContainsString('`title` LIKE', $sql);
-        self::assertStringContainsString('A%B', $sql);
+        self::assertStringContainsString('A\\%B', $sql);
+        self::assertStringContainsString("ESCAPE '\\'", $sql);
+
+        // search()'s LIKE clause must genuinely match the literal value only.
+        $this->db->setQuery('SELECT title FROM items WHERE ' . $this->extractWhereFragment($sql));
+        $rows = $this->db->loadColumn();
+
+        self::assertSame(['A%B'], $rows);
     }
 }

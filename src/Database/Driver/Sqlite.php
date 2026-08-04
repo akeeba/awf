@@ -113,7 +113,28 @@ class Sqlite extends Pdo
 			return 'NULL';
 		}
 
-		return SQLite3::escapeString($text);
+		$result = SQLite3::escapeString($text);
+
+		if ($extra)
+		{
+			$result = addcslashes($result, '%_');
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Returns the ` ESCAPE '...'` fragment to append to a LIKE clause whose pattern was escaped
+	 * with escape($value, true).
+	 *
+	 * SQLite does not process backslash escapes in string literals, so the escape character is
+	 * written as a single backslash rather than the doubled form MySQL requires.
+	 *
+	 * @return  string
+	 */
+	public function getLikeEscapeSql()
+	{
+		return " ESCAPE '\\'";
 	}
 
 	/**
