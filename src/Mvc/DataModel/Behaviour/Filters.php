@@ -35,7 +35,7 @@ class Filters extends Observer
 
 		foreach ($fields as $fieldname => $fieldmeta)
 		{
-			if (in_array($fieldname, $blacklist))
+			if (in_array($fieldname, $blacklist, true))
 			{
 				continue;
 			}
@@ -95,7 +95,7 @@ class Filters extends Observer
 			$methods = $field->getSearchMethods();
 			$method  = $options->get('method', $field->getDefaultSearchMethod());
 
-			if (!in_array($method, $methods))
+			if (!in_array($method, $methods, true))
 			{
 				$method = 'exact';
 			}

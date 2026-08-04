@@ -233,6 +233,20 @@ class Postgresql extends Driver
 	}
 
 	/**
+	 * Returns the ` ESCAPE '...'` fragment to append to a LIKE clause whose pattern was escaped
+	 * with escape($value, true).
+	 *
+	 * `standard_conforming_strings` is on by default since PostgreSQL 9.1, so the escape
+	 * character is written as a single backslash rather than the doubled form MySQL requires.
+	 *
+	 * @return  string
+	 */
+	public function getLikeEscapeSql()
+	{
+		return " ESCAPE '\\'";
+	}
+
+	/**
 	 * Execute the SQL statement.
 	 *
 	 * @return  mixed  A database cursor resource on success, boolean false on failure.

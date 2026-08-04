@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Awf\Tests\Unit\Mvc\DataModel;
 
+use Awf\Database\Driver\Mysqli as MysqliDriver;
+use Awf\Database\Driver\Postgresql as PostgresqlDriver;
 use Awf\Database\Driver\Sqlite as SqliteDriver;
 use Awf\Mvc\DataModel\Filter\AbstractFilter;
 use Awf\Mvc\DataModel\Filter\Boolean as BooleanFilter;
@@ -298,7 +300,12 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->db, $this->field('description', 'varchar'));
         $sql    = $filter->search('x', $operator);
 
-        self::assertSame("(`description` " . $operator . " 'x')", $sql);
+        // LIKE / NOT LIKE append the SQLite-flavoured ESCAPE clause (a single backslash,
+        // since SQLite does not double backslashes inside string literals — see
+        // Awf\Database\Driver\Sqlite::getLikeEscapeSql()).
+        $escapeSuffix = ($operator === 'LIKE' || $operator === 'NOT LIKE') ? " ESCAPE '\\'" : '';
+
+        self::assertSame("(`description` " . $operator . " 'x'" . $escapeSuffix . ")", $sql);
     }
 
     public static function hostileOperatorProvider(): array
@@ -338,7 +345,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->db, $this->field('description', 'varchar'));
         $sql    = $filter->search('x', 'like');
 
-        self::assertSame("(`description` LIKE 'x')", $sql);
+        self::assertSame("(`description` LIKE 'x' ESCAPE '\\')", $sql);
     }
 
     public static function getSearchMethodsProvider(): array
@@ -767,15 +774,74 @@ class FilterTest extends TestCase
     }
 
     // =========================================================================
+    // Driver::getLikeEscapeSql() — LIKE ESCAPE clause per driver (SQL injection hardening)
+    //
+    // The string-literal syntax for a backslash differs per driver: MySQL requires it
+    // doubled (a lone backslash is itself an escape character inside a MySQL string
+    // literal), SQLite and PostgreSQL do not. Instantiating a live connection isn't
+    // needed for this — getLikeEscapeSql() reads no connection state — so these tests
+    // use ReflectionClass::newInstanceWithoutConstructor() to call it on an
+    // unconnected driver instance, plus a reflection check of the declaring class to
+    // pin which classes inherit the Driver default vs. override it.
+    // =========================================================================
+
+    public function testGetLikeEscapeSqlDriverDefaultIsDoubledBackslash(): void
+    {
+        $driver = (new \ReflectionClass(MysqliDriver::class))->newInstanceWithoutConstructor();
+
+        // MySQL: the escape backslash must be doubled inside the string literal.
+        self::assertSame(" ESCAPE '\\\\'", $driver->getLikeEscapeSql());
+    }
+
+    public function testGetLikeEscapeSqlSqliteOverrideIsSingleBackslash(): void
+    {
+        $driver = (new \ReflectionClass(SqliteDriver::class))->newInstanceWithoutConstructor();
+
+        // SQLite does not process backslash escapes in string literals.
+        self::assertSame(" ESCAPE '\\'", $driver->getLikeEscapeSql());
+    }
+
+    public function testGetLikeEscapeSqlPostgresqlOverrideIsSingleBackslash(): void
+    {
+        $driver = (new \ReflectionClass(PostgresqlDriver::class))->newInstanceWithoutConstructor();
+
+        // standard_conforming_strings is on by default since PostgreSQL 9.1.
+        self::assertSame(" ESCAPE '\\'", $driver->getLikeEscapeSql());
+    }
+
+    public function testGetLikeEscapeSqlIsNotOverriddenOnPdo(): void
+    {
+        // Pdomysql extends Pdo and Sqlite extends Pdo, and those two need *different*
+        // clauses. Pdo itself must not declare getLikeEscapeSql() so that Pdomysql
+        // inherits the MySQL-flavoured Driver default while Sqlite's own override wins
+        // for the Sqlite branch.
+        self::assertFalse(
+            (new \ReflectionClass(\Awf\Database\Driver\Pdo::class))->hasMethod('getLikeEscapeSql')
+            && (new \ReflectionMethod(\Awf\Database\Driver\Pdo::class, 'getLikeEscapeSql'))->getDeclaringClass()->getName() === \Awf\Database\Driver\Pdo::class
+        );
+    }
+
+    public function testGetLikeEscapeSqlPdomysqlInheritsDriverDefault(): void
+    {
+        $driver = (new \ReflectionClass(\Awf\Database\Driver\Pdomysql::class))->newInstanceWithoutConstructor();
+
+        self::assertSame(" ESCAPE '\\\\'", $driver->getLikeEscapeSql());
+        self::assertSame(
+            \Awf\Database\Driver::class,
+            (new \ReflectionMethod($driver, 'getLikeEscapeSql'))->getDeclaringClass()->getName()
+        );
+    }
+
+    // =========================================================================
     // Text filter — LIKE wildcard escaping (SQL injection hardening)
     //
-    // The in-memory SqliteDriver used elsewhere in this file cannot exercise this fix:
-    // Awf\Database\Driver\Sqlite::escape() documents its $extra parameter as "Unused" and
-    // never applies the addcslashes($result, '%_') step that Mysqli/Pdomysql/Pgsql do (see
-    // src/Database/Driver/Sqlite.php). That is a pre-existing gap in the SQLite driver,
-    // reported separately — it is out of scope for this plan to fix. To test the actual
-    // escaping behaviour (and the "don't double-escape" requirement) these tests use a
-    // small local double that reproduces the real MySQL-style driver contract:
+    // Awf\Database\Driver\Sqlite::escape() now honours $extra (Gap A1 — it used to be a
+    // documented no-op: "Unused optional parameter to provide extra escaping"), so it
+    // could be used here too. These tests still use a small local double that reproduces
+    // the MySQL-flavoured driver contract (doubled-backslash ESCAPE clause), specifically
+    // to pin the MySQL-style byte-for-byte output (distinct from SQLite's single-backslash
+    // form, covered separately via the real SqliteDriver — see the end-to-end SQLite tests
+    // in BehaviourFiltersTest and the getLikeEscapeSql() tests above):
     // escape($text, $extra) applies quote/backslash escaping always, and %/_ escaping only
     // when $extra is true; quote($text, $escape) re-escapes only when $escape is true.
     // =========================================================================
@@ -804,6 +870,14 @@ class FilterTest extends TestCase
             {
                 return '`' . $name . '`';
             }
+
+            public function getLikeEscapeSql(): string
+            {
+                // Mirrors Awf\Database\Driver::getLikeEscapeSql()'s default (MySQL-style: the
+                // escape backslash is doubled because a lone backslash is itself an escape
+                // character inside a MySQL string literal).
+                return " ESCAPE '\\\\'";
+            }
         };
     }
 
@@ -812,7 +886,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
         $sql    = $filter->partial('50%_foo');
 
-        self::assertSame("(`password` LIKE '%50\\%\\_foo%')", $sql);
+        self::assertSame("(`password` LIKE '%50\\%\\_foo%' ESCAPE '\\\\')", $sql);
     }
 
     /**
@@ -824,7 +898,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
         $sql    = $filter->partial('$2y$10$a%');
 
-        self::assertSame("(`password` LIKE '%\$2y\$10\$a\\%%')", $sql);
+        self::assertSame("(`password` LIKE '%\$2y\$10\$a\\%%' ESCAPE '\\\\')", $sql);
         self::assertStringNotContainsString("a%%", $sql);
     }
 
@@ -833,7 +907,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
         $sql    = $filter->exact('50%_foo');
 
-        self::assertSame("(`title` LIKE '50\\%\\_foo')", $sql);
+        self::assertSame("(`title` LIKE '50\\%\\_foo' ESCAPE '\\\\')", $sql);
     }
 
     /**
@@ -847,7 +921,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
         $sql    = $filter->partial("O'Brien\\test");
 
-        self::assertSame("(`title` LIKE '%O\\'Brien\\\\test%')", $sql);
+        self::assertSame("(`title` LIKE '%O\\'Brien\\\\test%' ESCAPE '\\\\')", $sql);
     }
 
     public function testTextExactQuoteAndBackslashAreNotDoubleEscaped(): void
@@ -855,7 +929,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
         $sql    = $filter->exact("O'Brien\\test");
 
-        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test')", $sql);
+        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test' ESCAPE '\\\\')", $sql);
     }
 
     public function testTextBetweenAlwaysEmpty(): void
@@ -910,7 +984,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
         $sql    = $filter->search('$2y$10$a%', 'LIKE');
 
-        self::assertSame("(`password` LIKE '\$2y\$10\$a\\%')", $sql);
+        self::assertSame("(`password` LIKE '\$2y\$10\$a\\%' ESCAPE '\\\\')", $sql);
         self::assertStringNotContainsString("a%'", $sql);
     }
 
@@ -919,7 +993,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
         $sql    = $filter->search('$2y$10$a%', 'NOT LIKE');
 
-        self::assertSame("(`password` NOT LIKE '\$2y\$10\$a\\%')", $sql);
+        self::assertSame("(`password` NOT LIKE '\$2y\$10\$a\\%' ESCAPE '\\\\')", $sql);
         self::assertStringNotContainsString("a%'", $sql);
     }
 
@@ -934,7 +1008,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('title', 'varchar'));
         $sql    = $filter->search("O'Brien\\test", 'LIKE');
 
-        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test')", $sql);
+        self::assertSame("(`title` LIKE 'O\\'Brien\\\\test' ESCAPE '\\\\')", $sql);
     }
 
     /**
@@ -956,7 +1030,7 @@ class FilterTest extends TestCase
         $filter = new TextFilter($this->mysqlStyleDb(), $this->field('password', 'varchar'));
         $sql    = $filter->search('$2y$10$a%', '!LIKE');
 
-        self::assertSame("NOT (`password` LIKE '\$2y\$10\$a\\%')", $sql);
+        self::assertSame("NOT (`password` LIKE '\$2y\$10\$a\\%' ESCAPE '\\\\')", $sql);
     }
 
     // =========================================================================
@@ -1186,7 +1260,7 @@ class FilterTest extends TestCase
         $sql    = $filter->interval('2024-06-01', '+1 ' . $unit, true);
 
         self::assertSame(
-            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 " . $unit . "))",
+            "(`created_at` >= DATE_ADD('2024-06-01', INTERVAL 1 " . $unit . "))",
             $sql
         );
     }
@@ -1199,7 +1273,7 @@ class FilterTest extends TestCase
         $sql      = $filter->interval('2024-06-01', $interval, true);
 
         self::assertSame(
-            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 " . $unit . "))",
+            "(`created_at` >= DATE_ADD('2024-06-01', INTERVAL 1 " . $unit . "))",
             $sql
         );
     }
@@ -1238,7 +1312,7 @@ class FilterTest extends TestCase
         $sql    = $filter->interval('2024-06-01', '+1 month', true);
 
         self::assertSame(
-            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 MONTH))",
+            "(`created_at` >= DATE_ADD('2024-06-01', INTERVAL 1 MONTH))",
             $sql
         );
     }
@@ -1253,7 +1327,7 @@ class FilterTest extends TestCase
 
         // (int) "abc" === 0
         self::assertSame(
-            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 0 MONTH))",
+            "(`created_at` >= DATE_ADD('2024-06-01', INTERVAL 0 MONTH))",
             $sql
         );
     }
@@ -1266,7 +1340,7 @@ class FilterTest extends TestCase
 
         // (int) "1 OR 1=1" === 1 — the hostile suffix is dropped, not injected.
         self::assertSame(
-            "(`created_at` >= DATE_ADD(`created_at`, INTERVAL 1 MONTH))",
+            "(`created_at` >= DATE_ADD('2024-06-01', INTERVAL 1 MONTH))",
             $sql
         );
         self::assertStringNotContainsString('OR 1=1', $sql);
@@ -1300,6 +1374,56 @@ class FilterTest extends TestCase
         $sql      = $filter->interval('2024-06-01', $interval, true);
 
         self::assertStringContainsString('DATE_SUB', $sql);
+    }
+
+    // =========================================================================
+    // Date filter — interval() anchored to the given value (Gap B: previously compared
+    // the column to a function of itself, discarding $value entirely)
+    // =========================================================================
+
+    /**
+     * Pins the full anchored SQL for a '-' sign: DATE_SUB(<quoted anchor>, INTERVAL ...).
+     */
+    public function testDateIntervalMinusSignProducesAnchoredDateSub(): void
+    {
+        $filter   = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $interval = ['sign' => '-', 'value' => 2, 'unit' => 'MONTH'];
+        $sql      = $filter->interval('2026-01-01', $interval, true);
+
+        self::assertSame(
+            "(`created_at` >= DATE_SUB('2026-01-01', INTERVAL 2 MONTH))",
+            $sql
+        );
+    }
+
+    /**
+     * $include = false must produce a strict '>' comparison, not '>='; the anchor value
+     * must still appear inside the DATE_ADD/DATE_SUB call, not the column self-reference.
+     */
+    public function testDateIntervalIncludeFalseProducesStrictGreaterThan(): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $sql    = $filter->interval('2024-06-01', '+1 MONTH', false);
+
+        self::assertSame(
+            "(`created_at` > DATE_ADD('2024-06-01', INTERVAL 1 MONTH))",
+            $sql
+        );
+    }
+
+    /**
+     * String-form interval, anchored SQL sanity check (representative subset: a single
+     * unit exercised end to end with a non-default anchor date).
+     */
+    public function testDateIntervalStringFormProducesAnchoredSql(): void
+    {
+        $filter = new DateFilter($this->db, $this->field('created_at', 'datetime'));
+        $sql    = $filter->interval('2026-03-15', '+1 WEEK', true);
+
+        self::assertSame(
+            "(`created_at` >= DATE_ADD('2026-03-15', INTERVAL 1 WEEK))",
+            $sql
+        );
     }
 
     // =========================================================================
