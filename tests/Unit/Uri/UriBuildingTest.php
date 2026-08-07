@@ -463,51 +463,28 @@ class UriBuildingTest extends TestCase
     // isInternal()
     // -------------------------------------------------------------------------
 
-    public function testIsInternalReturnsTrueForSameHost(): void
+    /**
+     * Seed $_SERVER with a synthetic request so Uri::getInstance('SERVER')
+     * builds the right base URL, then yield a callable that restores the
+     * original values. The caller MUST invoke the returned closure (typically
+     * in a finally block) so we never leak $_SERVER mutations across tests.
+     *
+     * @param   string  $host       Value for $_SERVER['HTTP_HOST'].
+     * @param   string  $requestUri Value for $_SERVER['REQUEST_URI'].
+     *
+     * @return  \Closure
+     */
+    private function seedServer(string $host, string $requestUri = '/'): \Closure
     {
-        // Simulate the "current" request by injecting a SERVER instance
-        Uri::getInstance('http://example.com/');
-        // The static method compares with Uri::getInstance() (SERVER) — we need to
-        // seed the SERVER instance via the singleton cache with key 'SERVER'.
-        // Since we cannot override SERVER directly, seed via reset + inject an instance
-        // by parsing through getInstance() with our test URL.
-        // We work around this by testing a URL that shares the host of what getInstance('SERVER')
-        // would return in a non-server context — instead check the negative case for a known external host.
-        self::assertTrue(true); // Placeholder: covered by positive case below
-    }
-
-    public function testIsInternalReturnsFalseForDifferentHost(): void
-    {
-        // Seed a "current" URL as the SERVER instance
-        $serverUri = Uri::getInstance('http://mysite.example.com/');
-        // Now test a URL with a different host
-        // isInternal() compares the base of the tested URL against the current SERVER instance
-        // Since we cannot easily override the SERVER key without $_SERVER, we test the logic
-        // directly: a URL sharing mysite.example.com's root is internal, another host is not.
-        // Because getInstance('SERVER') reads $_SERVER, we test the behaviour by seeding a
-        // non-SERVER instance and verifying getHost() gives the right answer.
-        $external = new Uri('http://attacker.com/path');
-        self::assertSame('attacker.com', $external->getHost());
-    }
-
-    public function testIsInternalWithEmptyHost(): void
-    {
-        // A relative URL (no host) should be treated as internal.
-        // isInternal() calls Uri::getInstance() (SERVER) which reads $_SERVER.
-        // Seed the minimum required $_SERVER keys so no PHP warning is triggered.
         $origHttpHost   = $_SERVER['HTTP_HOST']   ?? null;
-        $origPhpSelf    = $_SERVER['PHP_SELF']     ?? null;
-        $origRequestUri = $_SERVER['REQUEST_URI']  ?? null;
+        $origPhpSelf    = $_SERVER['PHP_SELF']    ?? null;
+        $origRequestUri = $_SERVER['REQUEST_URI'] ?? null;
 
-        $_SERVER['HTTP_HOST']   = 'example.com';
+        $_SERVER['HTTP_HOST']   = $host;
         $_SERVER['PHP_SELF']    = '/index.php';
-        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['REQUEST_URI'] = $requestUri;
 
-        try {
-            $result = Uri::isInternal('/path/to/page');
-            self::assertTrue($result);
-        } finally {
-            // Restore original values
+        return static function () use ($origHttpHost, $origPhpSelf, $origRequestUri): void {
             if ($origHttpHost === null) {
                 unset($_SERVER['HTTP_HOST']);
             } else {
@@ -523,6 +500,93 @@ class UriBuildingTest extends TestCase
             } else {
                 $_SERVER['REQUEST_URI'] = $origRequestUri;
             }
+        };
+    }
+
+    public function testIsInternalReturnsTrueForSameHost(): void
+    {
+        $restore = $this->seedServer('example.com', '/');
+
+        try {
+            self::assertTrue(Uri::isInternal('http://example.com/admin'));
+            self::assertTrue(Uri::isInternal('http://example.com'));
+            // Same scheme+host, different (non-default) port — still our site.
+            self::assertTrue(Uri::isInternal('http://example.com:8080/x'));
+        } finally {
+            $restore();
+        }
+    }
+
+    public function testIsInternalReturnsFalseForDifferentHost(): void
+    {
+        $restore = $this->seedServer('example.com', '/');
+
+        try {
+            self::assertFalse(Uri::isInternal('http://attacker.com/path'));
+            self::assertFalse(Uri::isInternal('http://example.org/path'));
+            // HTTPS-downgrade guard: a different scheme on the same host must
+            // be rejected, otherwise an attacker who controls a "return URL"
+            // parameter could silently strip TLS off the user's redirect
+            // target. This is a load-bearing security guarantee — do not relax.
+            self::assertFalse(Uri::isInternal('https://example.com/admin'));
+        } finally {
+            $restore();
+        }
+    }
+
+    /**
+     * Same-host / different-scheme case from the opposite direction: an
+     * http://example.com return URL must be rejected when the site is served
+     * over HTTPS. Pair with testIsInternalReturnsFalseForDifferentHost() —
+     * together they pin both directions of the downgrade guard.
+     */
+    public function testIsInternalRejectsHttpDowngradeFromHttpsSite(): void
+    {
+        $restore = $this->seedServer('example.com', '/');
+        // Force the SERVER instance to advertise HTTPS by setting $_SERVER['HTTPS'].
+        $origHttps = $_SERVER['HTTPS'] ?? null;
+        $_SERVER['HTTPS'] = 'on';
+
+        try {
+            self::assertFalse(Uri::isInternal('http://example.com/admin'));
+            // Same scheme — must still be accepted (sanity check the harness).
+            self::assertTrue(Uri::isInternal('https://example.com/admin'));
+        } finally {
+            if ($origHttps === null) {
+                unset($_SERVER['HTTPS']);
+            } else {
+                $_SERVER['HTTPS'] = $origHttps;
+            }
+            $restore();
+        }
+    }
+
+    public function testIsInternalRejectsPrefixAttack(): void
+    {
+        // Regression test for the open-redirect bug: isInternal() used a bare
+        // stripos() prefix match, so a URL like http://example.com.evil.tld/x
+        // was treated as internal when the site is http://example.com.
+        $restore = $this->seedServer('example.com', '/');
+
+        try {
+            self::assertFalse(Uri::isInternal('http://example.com.evil.tld/x'));
+            self::assertFalse(Uri::isInternal('http://example-com.evil.tld/x'));
+            self::assertFalse(Uri::isInternal('http://example.comA/x'));
+        } finally {
+            $restore();
+        }
+    }
+
+    public function testIsInternalWithEmptyHost(): void
+    {
+        // A relative URL (no host) should be treated as internal.
+        $restore = $this->seedServer('example.com', '/');
+
+        try {
+            self::assertTrue(Uri::isInternal('/path/to/page'));
+            self::assertTrue(Uri::isInternal('index.php?foo=bar'));
+        } finally {
+            $restore();
         }
     }
 

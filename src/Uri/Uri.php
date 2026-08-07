@@ -710,7 +710,24 @@ class Uri
 	}
 
 	/**
-	 * Checks if the supplied URL is internal
+	 * Checks if the supplied URL is internal, i.e. belongs to the same site
+	 * as the current request.
+	 *
+	 * The URL is considered internal only when its scheme, host AND port all
+	 * match the current request's scheme, host and port. Anything less is
+	 * rejected on purpose:
+	 *
+	 *   - A different host (or a host that merely starts with our host string,
+	 *     e.g. http://example.com.evil.tld/) is the classic open-redirect
+	 *     payload — see the prefix-match guard below.
+	 *   - A different scheme on the same host enables an HTTPS downgrade
+	 *     attack: if the consumer of this method uses the result to gate a
+	 *     "return URL" redirect, treating an http://example.com return URL as
+	 *     "internal" when the site runs on https://example.com would let an
+	 *     attacker silently strip TLS off the redirect target. The scheme
+	 *     MUST match.
+	 *   - Relative URLs (no host) are always treated as internal because they
+	 *     resolve against the current request anyway.
 	 *
 	 * @param   string $url The URL to check.
 	 *
@@ -725,13 +742,28 @@ class Uri
 
 		// We have to get current HOST only, not the path. Otherwise in WordPress we could have issues, since Akeeba Backup
 		// is installed in a nested folder that is recognized as "base" or "root" from URI. So we assume that the link
-		// is internal if they share the same host
+		// is internal if they share the same scheme, host and port (see method docblock for why all three are required).
 		$site = self::getInstance();
 		$root = $site->toString(array('scheme', 'host', 'port'));
 
-		if (stripos($base, $root) !== 0 && !empty($host))
+		if (!empty($host))
 		{
-			return false;
+			if (stripos($base, $root) !== 0)
+			{
+				return false;
+			}
+
+			// Prefix-match guard: a bare stripos() prefix match accepts URLs like
+			// http://example.com.evil.tld/ when $root is http://example.com, because
+			// the host of the tested URL only needs to *start with* our host string.
+			// The byte right after $root must be a host-terminator (/, :, ?, #) or
+			// end-of-string for the URL to actually belong to our site.
+			$after = $base[strlen($root)] ?? '';
+
+			if ($after !== '' && strpos('/:?&=#', $after) === false)
+			{
+				return false;
+			}
 		}
 
 		return true;
