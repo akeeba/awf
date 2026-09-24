@@ -43,3 +43,4 @@ RELEASENOTES text eol=lf
 /phpunit.xml.dist   export-ignore
 /phpunit.xml        export-ignore
 /rector.php         export-ignore
+/AGENTS.md          export-ignore
