@@ -301,6 +301,26 @@ class TotpTest extends TestCase
         self::assertGreaterThan(1, count(array_unique($secrets)));
     }
 
+    public function testGenerateSecretDoesNotDependOnTheSeededMersenneTwister(): void
+    {
+        // rand()/mt_rand() are seeded with only 32 bits, so a secret derived from them can be brute-forced.
+        // A CSPRNG-backed secret must not be reproducible by re-seeding the Mersenne Twister.
+        $totp = new Totp(30, 6, 10);
+
+        mt_srand(42);
+        $first = $totp->generateSecret();
+        mt_srand(42);
+        $second = $totp->generateSecret();
+
+        self::assertNotSame($first, $second);
+
+        // The format must be unchanged: valid Base32 decoding to exactly secretLength bytes
+        foreach ([$first, $second] as $secret) {
+            self::assertMatchesRegularExpression('/^[A-Z2-7]+$/', $secret);
+            self::assertSame(10, strlen((new Base32())->decode($secret)));
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Custom timeStep – different step sizes produce correct periods
     // -------------------------------------------------------------------------

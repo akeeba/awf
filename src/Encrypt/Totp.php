@@ -177,21 +177,12 @@ class Totp
 	}
 
 	/**
-	 * Generates a (semi-)random Secret Key for TOTP generation
+	 * Generates a random Secret Key for TOTP generation, using a cryptographically secure random number generator
 	 *
 	 * @return  string
 	 */
 	public function generateSecret()
 	{
-		$secret = "";
-
-		for ($i = 1; $i <= $this->secretLength; $i++)
-		{
-			$c = rand(0, 255);
-			$secret .= pack("c", $c);
-		}
-		$base32 = new Base32();
-
-		return $this->base32->encode($secret);
+		return $this->base32->encode(random_bytes($this->secretLength));
 	}
 }
