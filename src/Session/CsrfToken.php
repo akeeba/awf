@@ -122,7 +122,7 @@ class CsrfToken
 	 */
 	public function isValid($value)
 	{
-		return $value === $this->getValue();
+		return is_string($value) && hash_equals((string) $this->getValue(), $value);
 	}
 
 	/**

@@ -168,6 +168,25 @@ class CsrfTokenTest extends TestCase
         $this->assertFalse($token->isValid('0'));
     }
 
+    /** isValid() rejects anything which is not a string, even if it loosely equals the value. */
+    #[DataProvider('nonStringProvider')]
+    public function testIsValidRejectsNonStrings($value): void
+    {
+        $token = new CsrfToken($this->makeSegment());
+
+        $this->assertFalse($token->isValid($value));
+    }
+
+    public static function nonStringProvider(): array
+    {
+        return [
+            'null'  => [null],
+            'int'   => [0],
+            'true'  => [true],
+            'array' => [['x']],
+        ];
+    }
+
     // =======================================================================
     // CsrfToken — algorithm selection
     // =======================================================================

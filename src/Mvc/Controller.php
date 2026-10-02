@@ -780,17 +780,39 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 	protected function csrfProtection($useCMS = false)
 	{
 		$inCMS      = $this->container->segment->get('insideCMS', false);
-		$tokenValue = $this->container->session->getCsrfToken()->getValue();
+		$csrfToken  = $this->container->session->getCsrfToken();
+		$tokenValue = $csrfToken->getValue();
 		$token      = $this->input->get('token', '', 'raw');
 
-		if (is_string($token) && hash_equals((string) $tokenValue, $token))
+		// The token object decides what is valid; it may accept more than just its current value (e.g. WordPress nonces)
+		if (is_string($token) && $token !== '' && $csrfToken->isValid($token))
 		{
 			$isValidToken = true;
 		}
 		else
 		{
+			// Fast path: a variable named after the current token value, set to 1
 			$altToken     = $this->input->get($tokenValue, 0, 'int');
 			$isValidToken = $altToken == 1;
+
+			// Otherwise: a variable set to 1 whose name is a token value the token object accepts
+			if (!$isValidToken)
+			{
+				foreach ($this->input->getData() as $name => $value)
+				{
+					if (!is_string($name) || $name === '' || $name === 'token')
+					{
+						continue;
+					}
+
+					if ($this->input->get($name, 0, 'int') === 1 && $csrfToken->isValid($name))
+					{
+						$isValidToken = true;
+
+						break;
+					}
+				}
+			}
 		}
 
 		// TODO Maybe we should create a real provider for supporting all CMS etc etc but in reality we're only in WordPress, so...

@@ -61,7 +61,8 @@ class ControllerRedirectTest extends TestCase
     private function makeContainer(
         array  $inputData  = [],
         string $tokenValue = 'test-token-abc',
-        bool   $insideCMS  = false
+        bool   $insideCMS  = false,
+        ?CsrfToken $csrfTokenOverride = null
     ): Container {
         $tmpDir = sys_get_temp_dir();
 
@@ -93,8 +94,14 @@ class ControllerRedirectTest extends TestCase
         );
 
         // CSRF token stub.
-        $csrfToken = $this->createMock(CsrfToken::class);
-        $csrfToken->method('getValue')->willReturn($tokenValue);
+        $csrfToken = $csrfTokenOverride ?? $this->createMock(CsrfToken::class);
+
+        if ($csrfTokenOverride === null) {
+            $csrfToken->method('getValue')->willReturn($tokenValue);
+            $csrfToken->method('isValid')->willReturnCallback(
+                static fn($value) => is_string($value) && hash_equals($tokenValue, $value)
+            );
+        }
 
         // Session manager stub — returns our CSRF token stub.
         $session = $this->createMock(SessionManager::class);
@@ -135,6 +142,31 @@ class ControllerRedirectTest extends TestCase
         bool   $insideCMS  = false
     ): CsrfExposed {
         return new CsrfExposed($this->makeContainer($inputData, $tokenValue, $insideCMS));
+    }
+
+    /**
+     * Instantiate the CSRF-exposed controller with a token object which, like the WordPress nonce
+     * implementation, hands out only the current value but also accepts the previous one.
+     */
+    private function makeRotatingTokenCsrfController(array $inputData, string $current, string $previous): CsrfExposed
+    {
+        $token = new class($current, $previous) extends CsrfToken {
+            public function __construct(private string $current, private string $previous)
+            {
+            }
+
+            public function getValue()
+            {
+                return $this->current;
+            }
+
+            public function isValid($value)
+            {
+                return is_string($value) && ($value === $this->current || $value === $this->previous);
+            }
+        };
+
+        return new CsrfExposed($this->makeContainer($inputData, $current, false, $token));
     }
 
     // -------------------------------------------------------------------------
@@ -561,6 +593,73 @@ class ControllerRedirectTest extends TestCase
         );
 
         $this->expectException(Exception::class);
+        $ctrl->checkCsrf();
+    }
+
+    // -------------------------------------------------------------------------
+    // csrfProtection() — tokens which are valid without being the current value
+    // -------------------------------------------------------------------------
+
+    public function testCsrfProtectionAcceptsPreviousTokenAcceptedByIsValid(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['token' => 'previous-tick'], 'current-tick', 'previous-tick');
+
+        $ctrl->checkCsrf();
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCsrfProtectionAcceptsAltFormNamedAfterPreviousToken(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['previous-tick' => '1'], 'current-tick', 'previous-tick');
+
+        $ctrl->checkCsrf();
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCsrfProtectionAcceptsAltFormNamedAfterCurrentTokenWithRotatingToken(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['current-tick' => '1'], 'current-tick', 'previous-tick');
+
+        $ctrl->checkCsrf();
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCsrfProtectionRejectsWrongTokenWithRotatingToken(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['token' => 'ancient-tick'], 'current-tick', 'previous-tick');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid security token');
+
+        $ctrl->checkCsrf();
+    }
+
+    public function testCsrfProtectionRejectsAltFormNamedAfterWrongTokenWithRotatingToken(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['ancient-tick' => '1'], 'current-tick', 'previous-tick');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid security token');
+
+        $ctrl->checkCsrf();
+    }
+
+    public function testCsrfProtectionRejectsAltFormNamedAfterPreviousTokenWhenValueIsNotOne(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['previous-tick' => '0'], 'current-tick', 'previous-tick');
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid security token');
+
+        $ctrl->checkCsrf();
+    }
+
+    public function testCsrfProtectionRejectsPreviousTokenSentAsNonString(): void
+    {
+        $ctrl = $this->makeRotatingTokenCsrfController(['token' => ['previous-tick']], 'current-tick', 'previous-tick');
+
+        $this->expectException(Exception::class);
+
         $ctrl->checkCsrf();
     }
 

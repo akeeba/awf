@@ -103,6 +103,9 @@ class DataControllerTest extends TestCase
         // CSRF token always validates.
         $csrfToken = $this->createMock(CsrfToken::class);
         $csrfToken->method('getValue')->willReturn(self::TOKEN);
+        $csrfToken->method('isValid')->willReturnCallback(
+            static fn($value) => is_string($value) && hash_equals(self::TOKEN, $value)
+        );
         $csrfToken->method('regenerateValue')->willReturn(null);
 
         $session = $this->createMock(SessionManager::class);
