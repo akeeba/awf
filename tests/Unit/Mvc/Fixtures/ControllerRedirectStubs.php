@@ -44,7 +44,7 @@ namespace CtrlRedirectApp\Controller {
         {
             public function noop(): void {}
 
-            public function checkCsrf(bool $useCms = false): void
+            public function checkCsrf(bool|string $useCms = false): void
             {
                 $this->csrfProtection($useCms);
             }

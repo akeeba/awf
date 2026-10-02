@@ -8,6 +8,7 @@ namespace Awf\Tests\Unit\Mvc;
 // The file uses bracketed namespace syntax (required when mixing namespaces),
 // which cannot be combined with an unbracketed declaration in the same file.
 require_once __DIR__ . '/Fixtures/ControllerRedirectStubs.php';
+require_once __DIR__ . '/Fixtures/WordPressNonceStub.php';
 
 use Awf\Application\Application;
 use Awf\Container\Container;
@@ -661,6 +662,139 @@ class ControllerRedirectTest extends TestCase
         $this->expectException(Exception::class);
 
         $ctrl->checkCsrf();
+    }
+
+    // -------------------------------------------------------------------------
+    // csrfProtection() — CMS (WordPress) nonce with a caller-pinned action
+    // -------------------------------------------------------------------------
+
+    private function setWpNonces(array $nonces): void
+    {
+        $GLOBALS['awf_test_wp_nonces']      = $nonces;
+        $GLOBALS['awf_test_wp_nonce_calls'] = [];
+    }
+
+    protected function tearDown(): void
+    {
+        unset($GLOBALS['awf_test_wp_nonces'], $GLOBALS['awf_test_wp_nonce_calls']);
+
+        parent::tearDown();
+    }
+
+    public function testCsrfProtectionRejectsNonceForAnotherActionWhenActionIsPinned(): void
+    {
+        $this->setWpNonces(['nonce-other' => 'other-action']);
+
+        // The attacker has a valid nonce for some other action and names that action in the request.
+        $ctrl = $this->makeCsrfController(
+            ['_wpnonce' => 'nonce-other', '_wpaction' => 'other-action'],
+            'test-token-abc',
+            true
+        );
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid security token');
+
+        $ctrl->checkCsrf('upgrade-core');
+    }
+
+    public function testCsrfProtectionVerifiesCmsNonceAgainstThePinnedActionOnly(): void
+    {
+        $this->setWpNonces(['nonce-other' => 'other-action']);
+
+        $ctrl = $this->makeCsrfController(
+            ['_wpnonce' => 'nonce-other', '_wpaction' => 'other-action'],
+            'test-token-abc',
+            true
+        );
+
+        try {
+            $ctrl->checkCsrf('upgrade-core');
+        } catch (Exception) {
+            // Expected
+        }
+
+        self::assertSame([['nonce-other', 'upgrade-core']], $GLOBALS['awf_test_wp_nonce_calls']);
+    }
+
+    public function testCsrfProtectionAcceptsCmsNonceForThePinnedAction(): void
+    {
+        $this->setWpNonces(['nonce-core' => 'upgrade-core']);
+
+        $ctrl = $this->makeCsrfController(['_wpnonce' => 'nonce-core'], 'test-token-abc', true);
+
+        $ctrl->checkCsrf('upgrade-core');
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCsrfProtectionIgnoresCmsNonceOutsideTheCms(): void
+    {
+        $this->setWpNonces(['nonce-core' => 'upgrade-core']);
+
+        $ctrl = $this->makeCsrfController(['_wpnonce' => 'nonce-core'], 'test-token-abc', false);
+
+        $this->expectException(Exception::class);
+
+        $ctrl->checkCsrf('upgrade-core');
+    }
+
+    public function testCsrfProtectionLegacyTrueNoLongerAcceptsAnyCmsNonceAndIsDeprecated(): void
+    {
+        $this->setWpNonces(['nonce-other' => 'other-action']);
+
+        $ctrl = $this->makeCsrfController(
+            ['_wpnonce' => 'nonce-other', '_wpaction' => 'other-action'],
+            'test-token-abc',
+            true
+        );
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            if ($errno === E_USER_DEPRECATED) {
+                $deprecations[] = $errstr;
+                return true;
+            }
+            return false;
+        });
+
+        try {
+            $ctrl->checkCsrf(true);
+            self::fail('A legacy csrfProtection(true) call must not accept a CMS nonce');
+        } catch (Exception $e) {
+            self::assertSame('Invalid security token', $e->getMessage());
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertCount(1, $deprecations);
+        self::assertStringContainsString('nonce action', $deprecations[0]);
+        self::assertSame([], $GLOBALS['awf_test_wp_nonce_calls'], 'wp_verify_nonce() must not be consulted');
+    }
+
+    public function testCsrfProtectionLegacyTrueStillAcceptsRegularToken(): void
+    {
+        $ctrl = $this->makeCsrfController(['token' => 'test-token-abc'], 'test-token-abc', true);
+
+        set_error_handler(static fn(int $errno): bool => $errno === E_USER_DEPRECATED);
+
+        try {
+            $ctrl->checkCsrf(true);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testCsrfProtectionPinnedActionStillAcceptsRegularToken(): void
+    {
+        $this->setWpNonces([]);
+
+        $ctrl = $this->makeCsrfController(['token' => 'test-token-abc'], 'test-token-abc', true);
+
+        $ctrl->checkCsrf('upgrade-core');
+        $this->addToAssertionCount(1);
+        self::assertSame([], $GLOBALS['awf_test_wp_nonce_calls']);
     }
 
     public function testCsrfProtectionThrowsWhenAltTokenFieldIsZero(): void

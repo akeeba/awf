@@ -771,7 +771,11 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 	 * Provides CSRF protection through the forced use of a secure token. If the token doesn't match the one in the
 	 * session we die() immediately.
 	 *
-	 * @param   bool  $useCMS  If a token is not found, should we try to use CMS functions?
+	 * @param   bool|string  $useCMS  False (default) to only accept the AWF session token. A non-empty string is the
+	 *                                CMS nonce action: if no AWF token is valid and we are running inside a CMS, the
+	 *                                `_wpnonce` request variable is verified against exactly this action. The action is
+	 *                                always chosen by the caller, never by the request. Passing `true` is deprecated; it
+	 *                                no longer enables the CMS nonce (fail closed) and raises E_USER_DEPRECATED.
 	 *
 	 * @return  void
 	 *
@@ -779,6 +783,14 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 	 */
 	protected function csrfProtection($useCMS = false)
 	{
+		if ($useCMS === true)
+		{
+			trigger_error(
+				'Passing true to ' . __METHOD__ . '() is deprecated and no longer enables CMS nonce checks; pass the CMS nonce action instead of true, e.g. csrfProtection(\'upgrade-core\').',
+				E_USER_DEPRECATED
+			);
+		}
+
 		$inCMS      = $this->container->segment->get('insideCMS', false);
 		$csrfToken  = $this->container->session->getCsrfToken();
 		$tokenValue = $csrfToken->getValue();
@@ -817,15 +829,14 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 
 		// TODO Maybe we should create a real provider for supporting all CMS etc etc but in reality we're only in WordPress, so...
 		// We didn't found any valid token, but we're inside a CMS and we were asked to check with CSRF functions
-		if (!$isValidToken && $useCMS && $inCMS)
+		if (!$isValidToken && is_string($useCMS) && $useCMS !== '' && $inCMS)
 		{
-			// If we're inside WordPress, let's get the nonce and the action used to generate it
+			// If we're inside WordPress, verify the nonce against the action pinned by the caller (never the request's)
 			if (\function_exists('wp_verify_nonce'))
 			{
-				$wp_token  = $this->input->get('_wpnonce', '', 'raw');
-				$wp_action = $this->input->get('_wpaction', '');
+				$wp_token = $this->input->get('_wpnonce', '', 'raw');
 
-				$isValidToken = \wp_verify_nonce($wp_token, $wp_action);
+				$isValidToken = is_string($wp_token) && $wp_token !== '' && \wp_verify_nonce($wp_token, $useCMS) !== false;
 			}
 		}
 
