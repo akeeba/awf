@@ -126,21 +126,11 @@ class Json extends Raw
 
 			$json = json_encode($result);
 
-			// JSONP support
-			$callback = $this->input->get('callback', null, 'raw');
+			$defaultName = $this->input->get('view', 'main', 'cmd');
+			$filename = $this->input->get('basename', $defaultName, 'cmd');
 
-			if (!empty($callback))
-			{
-				echo $callback . '(' . $json . ')';
-			}
-			else
-			{
-				$defaultName = $this->input->get('view', 'main', 'cmd');
-				$filename = $this->input->get('basename', $defaultName, 'cmd');
-
-				$document->setName($filename);
-				echo $json;
-			}
+			$document->setName($filename);
+			echo $json;
 		}
 		else
 		{
@@ -212,21 +202,11 @@ class Json extends Raw
                 $json = json_encode($this->item);
             }
 
-			// JSONP support
-			$callback = $this->input->get('callback', null);
+			$defaultName = $this->input->get('view', 'main', 'cmd');
+			$filename = $this->input->get('basename', $defaultName, 'cmd');
+			$document->setName($filename);
 
-			if (!empty($callback))
-			{
-				echo $callback . '(' . $json . ')';
-			}
-			else
-			{
-				$defaultName = $this->input->get('view', 'main', 'cmd');
-				$filename = $this->input->get('basename', $defaultName, 'cmd');
-				$document->setName($filename);
-
-				echo $json;
-			}
+			echo $json;
 		}
 		else
 		{

@@ -31,13 +31,13 @@ use PHPUnit\Framework\TestCase;
  *  - onBeforeBrowse() — alreadyLoaded=true: uses pre-set items, skips model load
  *  - onBeforeBrowse() — items are DataModel instances: each serialised via toArray()
  *  - onBeforeBrowse() — items without toArray(): serialised as-is
- *  - onBeforeBrowse() — JSONP callback wrapping
+ *  - onBeforeBrowse() — a callback parameter is ignored (no JSONP)
  *  - onBeforeBrowse() — document mime type / setUseHashes set when doc is JsonDocument
  *  - onBeforeRead() — no template fall-through: outputs single-item JSON
  *  - onBeforeRead() — alreadyLoaded=true: uses pre-set item
  *  - onBeforeRead() — item is a DataModel: serialised via toArray()
  *  - onBeforeRead() — plain array item
- *  - onBeforeRead() — JSONP callback wrapping
+ *  - onBeforeRead() — a callback parameter is ignored (no JSONP)
  *  - onBeforeRead() — document mime type / setUseHashes set when doc is JsonDocument
  *  - alreadyLoaded defaults to false; can be toggled to true
  */
@@ -413,10 +413,10 @@ class JsonViewTest extends TestCase
     }
 
     // =========================================================================
-    // onBeforeBrowse() — JSONP
+    // onBeforeBrowse() — JSONP is not supported
     // =========================================================================
 
-    public function testOnBeforeBrowseWrapsOutputInCallbackForJsonp(): void
+    public function testOnBeforeBrowseIgnoresCallbackParameter(): void
     {
         $view                = $this->makeView('browse', ['callback' => 'myCallback']);
         $view->alreadyLoaded = true;
@@ -426,14 +426,8 @@ class JsonViewTest extends TestCase
         $view->display();
         $output = ob_get_clean();
 
-        self::assertStringStartsWith('myCallback(', (string) $output);
-        self::assertStringEndsWith(')', (string) $output);
-
-        $json    = substr((string) $output, strlen('myCallback('), -1);
-        $decoded = json_decode($json, true);
-
-        self::assertIsArray($decoded);
-        self::assertCount(1, $decoded);
+        self::assertSame(json_encode([['id' => 1, 'value' => 'x']]), (string) $output);
+        self::assertStringNotContainsString('myCallback', (string) $output);
     }
 
     // =========================================================================
@@ -529,10 +523,10 @@ class JsonViewTest extends TestCase
     }
 
     // =========================================================================
-    // onBeforeRead() — JSONP
+    // onBeforeRead() — JSONP is not supported
     // =========================================================================
 
-    public function testOnBeforeReadWrapsOutputInCallbackForJsonp(): void
+    public function testOnBeforeReadIgnoresCallbackParameter(): void
     {
         $view                = $this->makeView('read', ['callback' => 'cb']);
         $view->alreadyLoaded = true;
@@ -542,13 +536,8 @@ class JsonViewTest extends TestCase
         $view->display();
         $output = ob_get_clean();
 
-        self::assertStringStartsWith('cb(', (string) $output);
-        self::assertStringEndsWith(')', (string) $output);
-
-        $json    = substr((string) $output, strlen('cb('), -1);
-        $decoded = json_decode($json, true);
-
-        self::assertSame(['key' => 'value'], $decoded);
+        self::assertSame(json_encode(['key' => 'value']), (string) $output);
+        self::assertStringNotContainsString('cb(', (string) $output);
     }
 
     // =========================================================================
