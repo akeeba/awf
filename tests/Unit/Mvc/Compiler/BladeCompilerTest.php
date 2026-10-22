@@ -28,15 +28,14 @@ class TestBlade extends Blade
 		$this->usingTokenizer = $value;
 	}
 
-	/** Full reset — also clears repeatableOverrides. */
+	/** Full reset of the per-compilation state. */
 	public function resetCompilerState(): void
 	{
-		$this->footer              = [];
-		$this->forelseCounter      = 0;
-		$this->repeatableOverrides = [];
+		$this->footer         = [];
+		$this->forelseCounter = 0;
 	}
 
-	/** Partial reset — preserves repeatableOverrides across compile calls. */
+	/** Partial reset, as compile() does between two templates compiled by the same instance. */
 	public function resetFooterAndCounter(): void
 	{
 		$this->footer         = [];
@@ -451,7 +450,7 @@ class BladeCompilerTest extends TestCase
 		$key    = HashHelper::md5("'myblock'");
 		$result = $this->blade->compileString("@repeatable('myBlock')");
 
-		self::assertSame("<?php @\$this->repeatableMap['$key'] = function() { ?>", $result);
+		self::assertSame("<?php \$this->repeatableMap['$key'] ??= function() { ?>", $result);
 	}
 
 	public function testRepeatableWithArguments(): void
@@ -460,7 +459,7 @@ class BladeCompilerTest extends TestCase
 		$result = $this->blade->compileString("@repeatable('myBlock', \$arg1, \$arg2)");
 
 		self::assertSame(
-			"<?php @\$this->repeatableMap['$key'] = function( \$arg1, \$arg2) { ?>",
+			"<?php \$this->repeatableMap['$key'] ??= function( \$arg1, \$arg2) { ?>",
 			$result
 		);
 	}
@@ -474,26 +473,38 @@ class BladeCompilerTest extends TestCase
 	{
 		$key      = HashHelper::md5("'myblock'");
 		$result   = $this->blade->compileString("@yieldRepeatable('myBlock')");
-		$expected = "<?php try { \$this->repeatableMap['$key'](); } catch (\Throwable \$e)"
+		$expected = "<?php if (!is_callable(\$this->repeatableMap['$key'] ?? null))"
+		            . " { throw new \RuntimeException(sprintf('Repeatable \"%s\" is not defined', 'myBlock'), 500); }"
+		            . " try { \$this->repeatableMap['$key'](); } catch (\Throwable \$e)"
 		            . " { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', 'myBlock'), 500, \$e); } ?>";
 
 		self::assertSame($expected, $result);
 	}
 
-	public function testRepeatableOverridePreventsFutureNonOverrides(): void
+	public function testRepeatableOverrideAlwaysAssigns(): void
+	{
+		$key    = HashHelper::md5("'myblock'");
+		$result = $this->blade->compileString("@repeatableOverride('myBlock', \$item)");
+
+		self::assertSame("<?php \$this->repeatableMap['$key'] = function( \$item) { ?>", $result);
+	}
+
+	public function testRepeatableAfterOverrideIsNotAffectedByCompileHistory(): void
 	{
 		$key = HashHelper::md5("'myblock'");
 
-		// First call registers the override and records the key.
-		$first = $this->blade->compileString("@repeatableOverride('myBlock')");
-		self::assertStringContainsString("repeatableMap['$key']", $first);
-
-		// Clear footer but keep $repeatableOverrides intact.
+		$fresh = $this->blade->compileString("@repeatable('myBlock')");
 		$this->blade->resetFooterAndCounter();
 
-		// A subsequent @repeatable for the same block is suppressed with SKIP_.
-		$second = $this->blade->compileString("@repeatable('myBlock')");
-		self::assertStringContainsString("repeatableMap['SKIP_$key']", $second);
+		// Compiling an override first must not change how a later plain @repeatable compiles.
+		$this->blade->compileString("@repeatableOverride('myBlock')");
+		$this->blade->resetFooterAndCounter();
+
+		$afterOverride = $this->blade->compileString("@repeatable('myBlock')");
+
+		self::assertSame($fresh, $afterOverride);
+		self::assertSame("<?php \$this->repeatableMap['$key'] ??= function() { ?>", $afterOverride);
+		self::assertStringNotContainsString('SKIP_', $afterOverride);
 	}
 
 	// -------------------------------------------------------------------------

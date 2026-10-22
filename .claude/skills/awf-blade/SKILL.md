@@ -39,11 +39,30 @@ code. Assume nothing from Laravel Blade works unless it is listed below.
 - `@css('file')`, `@js('file')` — enqueue CSS/JS assets
 - `@inlineCss('style')`, `@inlineJs('script')` — inline asset blocks
 - `@jhtml('helper.method', $args)` / `@html(...)` — call an HTML helper
-- `@repeatable('name')` / `@endrepeatable` — define a reusable block
-- `@yieldRepeatable('name', $args)` — invoke a repeatable block
-- `@repeatableOverride('name')` / `@endrepeatableOverride` — override a repeatable without being overridden again
+- `@repeatable('name', $arg…)` / `@endrepeatable` — define a reusable block, unless it's already defined
+- `@yieldRepeatable('name', $arg…)` — invoke a repeatable block
+- `@repeatableOverride('name', $arg…)` / `@endrepeatable` — (re)define a block unconditionally; closed by
+  `@endrepeatable` (there is no `@endrepeatableOverride`)
 
 Custom directives can be registered with `$blade->extend(callable $compiler)`.
+
+### Repeatables
+
+Repeatables are closures stored at **runtime** in the View's `$repeatableMap`, keyed by the md5 of the
+lowercased name expression. The compiled output never depends on other templates compiled before it.
+
+- `@repeatable` compiles to `$this->repeatableMap['<key>'] ??= function(…) {` — the **first** definition
+  on a View instance wins. Defining the same plain repeatable twice on one View keeps the first one.
+- `@repeatableOverride` compiles to `$this->repeatableMap['<key>'] = function(…) {` — always wins over
+  plain definitions that run after it.
+- Overriding a parent's block: the child does `@extends('Parent')` + `@repeatableOverride('name', …)`.
+  `@extends` compiles to a footer `loadAnyTemplate()` call, so the child body runs **before** the parent on
+  the same View; the parent's plain `@repeatable` then leaves the override in place.
+- The map lives as long as the View instance: rendering several templates on one View shares their
+  repeatables (first plain definition wins; an override sticks).
+- `@yieldRepeatable` of an undefined block throws `RuntimeException('Repeatable "name" is not defined')`.
+  Anything thrown inside the block is wrapped in `RuntimeException('Error calling repeatable "name"', 500)`
+  with the original as `previous`. The View wraps both in an `ErrorException` naming the template.
 
 ### Not Implemented (present in modern Laravel Blade)
 
@@ -65,6 +84,7 @@ The following Laravel Blade features **do not exist** in AWF:
 ### Compiler Notes
 
 - The compiler uses PHP's `token_get_all()` when available (preferred) and falls back to regex-based compilation on hosts without the Tokenizer extension.
-- Compiled templates are cached under `tmp/` with two-level folder structure; the cache is invalidated on source file modification and OPcache is busted automatically.
+- Compiled templates are cached under `tmp/` with two-level folder structure; the cache is invalidated on source file modification and the compiled file's OPcache entry is busted automatically.
+- The cache identifier is `sha1(path . "\0" . Blade::OUTPUT_FORMAT_VERSION)` (`VersionedCompilerInterface`). **Bump `OUTPUT_FORMAT_VERSION` whenever the compiled output changes incompatibly**, so stale compiled files are never reused. Compilers not implementing the interface keep the plain `sha1(path)` identifier.
 - Content tag delimiters can be customised via `setContentTags()` / `setEscapedContentTags()` if the defaults conflict with another template syntax.
 

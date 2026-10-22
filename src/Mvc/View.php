@@ -174,6 +174,20 @@ class View implements ContainerAwareInterface, LanguageAwareInterface
 	protected $sectionStack = [];
 
 	/**
+	 * The closures of the Blade `@repeatable` blocks defined while rendering templates on this View, keyed by the
+	 * hashed name of each block.
+	 *
+	 * A plain `@repeatable` only defines a block which is not already defined (the first definition wins), whereas
+	 * `@repeatableOverride` always (re)defines it. A template using `@extends` executes its own body before the parent
+	 * template it extends, so an override in the child is already in place when the parent's plain definition runs,
+	 * and the parent's definition does not replace it.
+	 *
+	 * @var   callable[]
+	 * @since 1.3.1
+	 */
+	protected $repeatableMap = [];
+
+	/**
 	 * The number of active rendering operations.
 	 *
 	 * @var int

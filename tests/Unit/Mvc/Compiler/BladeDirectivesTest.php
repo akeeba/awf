@@ -224,7 +224,7 @@ class BladeDirectivesTest extends TestCase
 		$result = $this->blade->compileString("@repeatable('myBlock')");
 
 		// No argument list — the closure signature has no parameters
-		self::assertSame("<?php @\$this->repeatableMap['$key'] = function() { ?>", $result);
+		self::assertSame("<?php \$this->repeatableMap['$key'] ??= function() { ?>", $result);
 	}
 
 	public function testRepeatableKeyIsLowercased(): void
@@ -247,7 +247,7 @@ class BladeDirectivesTest extends TestCase
 		$result = $this->blade->compileString("@repeatable('card', \$title, \$body, \$footer)");
 
 		self::assertSame(
-			"<?php @\$this->repeatableMap['$key'] = function( \$title, \$body, \$footer) { ?>",
+			"<?php \$this->repeatableMap['$key'] ??= function( \$title, \$body, \$footer) { ?>",
 			$result
 		);
 	}
@@ -269,7 +269,9 @@ class BladeDirectivesTest extends TestCase
 		$key    = HashHelper::md5("'card'");
 		$result = $this->blade->compileString("@yieldRepeatable('card', \$t, \$b)");
 
-		$expected = "<?php try { \$this->repeatableMap['$key']( \$t, \$b); } catch (\Throwable \$e)"
+		$expected = "<?php if (!is_callable(\$this->repeatableMap['$key'] ?? null))"
+		            . " { throw new \RuntimeException(sprintf('Repeatable \"%s\" is not defined', 'card'), 500); }"
+		            . " try { \$this->repeatableMap['$key']( \$t, \$b); } catch (\Throwable \$e)"
 		            . " { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', 'card'), 500, \$e); } ?>";
 
 		self::assertSame($expected, $result);
@@ -280,7 +282,9 @@ class BladeDirectivesTest extends TestCase
 		$key = HashHelper::md5("'widget'");
 		$this->blade->forceUsingTokenizer(false);
 		$result   = $this->blade->compileString("@yieldRepeatable('widget')");
-		$expected = "<?php try { \$this->repeatableMap['$key'](); } catch (\Throwable \$e)"
+		$expected = "<?php if (!is_callable(\$this->repeatableMap['$key'] ?? null))"
+		            . " { throw new \RuntimeException(sprintf('Repeatable \"%s\" is not defined', 'widget'), 500); }"
+		            . " try { \$this->repeatableMap['$key'](); } catch (\Throwable \$e)"
 		            . " { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', 'widget'), 500, \$e); } ?>";
 
 		self::assertSame($expected, $result);
@@ -308,28 +312,27 @@ class BladeDirectivesTest extends TestCase
 		self::assertStringContainsString("repeatableMap['$key']", $result);
 	}
 
-	public function testRepeatableOverrideKeepsBlockWhenCalledFirst(): void
+	public function testRepeatableOverrideIsAnUnconditionalAssignment(): void
 	{
-		// The override itself must NOT use SKIP_ prefix
+		// The override always (re)defines the block at runtime; no SKIP_ prefix, no null-coalescing assignment.
 		$key    = HashHelper::md5("'nav'");
 		$result = $this->blade->compileString("@repeatableOverride('nav')");
 
-		self::assertStringNotContainsString('SKIP_', $result);
-		self::assertStringContainsString("repeatableMap['$key']", $result);
+		self::assertSame("<?php \$this->repeatableMap['$key'] = function() { ?>", $result);
 	}
 
-	public function testRepeatableAfterOverrideGetsSuppressedOnRegexPath(): void
+	public function testRepeatableAfterOverrideIsNotSuppressedOnRegexPath(): void
 	{
 		$key = HashHelper::md5("'nav'");
 
-		// Register the override on the regex path
+		// Compile an override on the regex path
 		$this->blade->forceUsingTokenizer(false);
 		$this->blade->compileString("@repeatableOverride('nav')");
 		$this->blade->resetFooterAndCounter();
 
-		// Subsequent @repeatable should get SKIP_ prefix
+		// A subsequent @repeatable compiles exactly as it would on a fresh compiler: the override is resolved at runtime
 		$second = $this->blade->compileString("@repeatable('nav')");
-		self::assertStringContainsString("repeatableMap['SKIP_$key']", $second);
+		self::assertSame("<?php \$this->repeatableMap['$key'] ??= function() { ?>", $second);
 	}
 
 	public function testRepeatableOverrideThenADifferentBlockIsNotSuppressed(): void

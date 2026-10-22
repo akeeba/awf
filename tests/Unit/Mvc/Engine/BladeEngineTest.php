@@ -134,10 +134,12 @@ class BladeEngineTest extends TestCase
     /**
      * Returns the expected cache path for a given source path, given the
      * two-level subfolder scheme used by CompilingEngine::getCachePath().
+     *
+     * The identifier mixes in the Blade compiler's output format version.
      */
     private function expectedCachePath(string $sourcePath, string $tmpDir): string
     {
-        $id = HashHelper::sha1($sourcePath);
+        $id = HashHelper::sha1($sourcePath . "\0" . Blade::OUTPUT_FORMAT_VERSION);
 
         return sprintf(
             '%s/compiled_templates/%s/%s/%s.php',

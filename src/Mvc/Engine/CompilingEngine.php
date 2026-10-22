@@ -9,6 +9,7 @@ namespace Awf\Mvc\Engine;
 
 use Awf\Filesystem\File;
 use Awf\Mvc\Compiler\CompilerInterface;
+use Awf\Mvc\Compiler\VersionedCompilerInterface;
 use Awf\Utils\Buffer;
 use Awf\Utils\HashHelper;
 
@@ -52,15 +53,14 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 		$content        .= $this->compile($path, $forceParams);
 		$cacheFolder    = $this->view->getContainer()->temporaryPath;
 		$cachedFilePath = $this->putToCache($path, $content);
-		$isPHPFile      = substr($path, -4) == '.php';
 
 		// If we could cache it, return the cached file's path
 		if ($cachedFilePath !== false)
 		{
-			// Bust the opcode cache for .php files
-			if ($isPHPFile)
+			// Bust the opcode cache for the compiled file we just wrote (not the source template!)
+			if (substr($cachedFilePath, -4) == '.php')
 			{
-				$this->bustOpCache($path);
+				$this->bustOpCache($cachedFilePath);
 			}
 
 			return [
@@ -80,10 +80,10 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 
 			file_put_contents($streamPath, $content);
 
-			// Bust the opcode cache for .php files
-			if ($isPHPFile)
+			// Bust the opcode cache for the compiled file we just wrote (not the source template!)
+			if (substr($streamPath, -4) == '.php')
 			{
-				$this->bustOpCache($path);
+				$this->bustOpCache($streamPath);
 			}
 
 			return [
@@ -168,18 +168,31 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	/**
 	 * Returns a unique identifier for the template file being compiled
 	 *
+	 * If the compiler reports the version of its output format (VersionedCompilerInterface) the version is part of the
+	 * identifier. Changing the compiler's output format version therefore changes the identifier, so that files
+	 * compiled by an older version of the compiler are never used again, and new compiled files get new paths (which
+	 * also sidesteps stale opcode cache entries for the old paths).
+	 *
 	 * @param   string  $path  The full path to the template file which needs to be compiled
 	 *
 	 * @return  string  The unique identifier of the file
 	 */
 	protected function getIdentifier($path)
 	{
-		if (function_exists('sha1'))
+		$source = $path;
+
+		if ($this->compiler instanceof VersionedCompilerInterface)
 		{
-			return HashHelper::sha1($path);
+			// The NUL byte cannot appear in a filesystem path, so the source string is unambiguous.
+			$source .= "\0" . $this->compiler->getOutputFormatVersion();
 		}
 
-		return HashHelper::md5($path);
+		if (function_exists('sha1'))
+		{
+			return HashHelper::sha1($source);
+		}
+
+		return HashHelper::md5($source);
 	}
 
 	/**
@@ -239,6 +252,16 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 
 		if (!file_exists($cachePath))
 		{
+			/**
+			 * Only a compiler without an output format version can have written a file using the legacy storage
+			 * scheme. A versioned compiler's files have never been stored that way, and any legacy file was compiled
+			 * by an older compiler with an incompatible output format; it must never be migrated and reused.
+			 */
+			if ($this->compiler instanceof VersionedCompilerInterface)
+			{
+				return false;
+			}
+
 			// If the legacy file does not exist we return false immediately.
 			$oldCachePath = $this->getCachePath($path, true);
 
@@ -350,11 +373,11 @@ abstract class CompilingEngine extends AbstractEngine implements EngineInterface
 	 * - Windows Cache Extension for PHP (versions lower than 2.0.0)
 	 * - XCache (now defunct)
 	 *
-	 * @param   string  $path  The file to bus the cache for
+	 * @param   string  $path  The compiled file to bust the cache for. NOT the source template file.
 	 *
 	 * @return  void
 	 */
-	private function bustOpCache($path)
+	protected function bustOpCache($path)
 	{
 		if (function_exists('opcache_invalidate'))
 		{

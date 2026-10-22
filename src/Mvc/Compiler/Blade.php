@@ -22,9 +22,22 @@ require_once __DIR__ . '/../../Utils/helpers.php';
  *
  * @since        1.0.0
  */
-class Blade implements CompilerInterface, ContainerAwareInterface
+class Blade implements CompilerInterface, VersionedCompilerInterface, ContainerAwareInterface
 {
 	use ContainerAwareTrait;
+
+	/**
+	 * The version of the format of the compiled output.
+	 *
+	 * Bump it whenever the compiled output changes in a way which makes templates compiled by earlier versions unsafe
+	 * or incorrect to reuse. The compiling engine mixes it into the compiled templates' cache identifier.
+	 *
+	 * Version 1 (implicit, unversioned): up to and including AWF 1.3.0.
+	 * Version 2: repeatables are resolved at runtime; no compile-time `SKIP_` keys.
+	 *
+	 * @since  1.3.1
+	 */
+	public const OUTPUT_FORMAT_VERSION = '2';
 
 	/**
 	 * Are the results of this engine cacheable?
@@ -108,20 +121,17 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	protected $usingTokenizer = false;
 
 	/**
-	 * Maps the name of `repeatable` blocks to the method names generated for them, therefore allowing overrides.
+	 * Unused. Kept for backwards compatibility with subclasses.
 	 *
-	 * @var   array
-	 * @since 1.2.0
+	 * Repeatable blocks are not tracked at compile time. The compiled code stores their closures in the
+	 * `repeatableMap` property of the View instance rendering the template; see View::$repeatableMap for the runtime
+	 * semantics.
+	 *
+	 * @var        array
+	 * @since      1.2.0
+	 * @deprecated 1.3.1 Repeatables live in View::$repeatableMap at runtime.
 	 */
 	protected $repeatableMap = [];
-
-	/**
-	 * List of `repeatableOverride` sections which prevent future `repeatable` statements from overriding them.
-	 *
-	 * @var   array
-	 * @since 1.2.0
-	 */
-	protected $repeatableOverrides = [];
 
 	/**
 	 * Constructor.
@@ -157,6 +167,17 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	public function isCacheable(): bool
 	{
 		return $this->isCacheable;
+	}
+
+	/**
+	 * Returns the version of the format of the compiled output.
+	 *
+	 * @return  string
+	 * @since   1.3.1
+	 */
+	public function getOutputFormatVersion(): string
+	{
+		return self::OUTPUT_FORMAT_VERSION;
 	}
 
 	/**
@@ -622,7 +643,13 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	/**
 	 * Compile the repeatable statements into valid PHP.
 	 *
-	 * @param   string  $expression
+	 * A plain `@repeatable` only defines the block if it is not already defined on the View (`??=`). An
+	 * `@repeatableOverride` always (re)defines it. The compiled output does not depend on any other template having
+	 * been compiled before; the override resolution happens entirely at runtime. It works because a template using
+	 * `@extends` executes its own body before the parent template it extends, on the same View instance.
+	 *
+	 * @param   string  $expression  The directive's expression, e.g. `('name', $arg1, $arg2)`
+	 * @param   bool    $isOverride  Is this a `@repeatableOverride` directive?
 	 *
 	 * @return  string
 	 * @since   1.0.0
@@ -632,24 +659,16 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		$expression    = trim($expression, '()');
 		$parts         = explode(',', $expression, 2);
 		$argumentsList = $parts[1] ?? '';
+		$key           = HashHelper::md5(strtolower(trim($parts[0])));
+		$operator      = $isOverride ? '=' : '??=';
 
-		$key = HashHelper::md5(strtolower(trim($parts[0])));
-
-		if ($isOverride)
-		{
-			$this->repeatableOverrides[] = $key;
-		}
-
-		if (!$isOverride && in_array($key, $this->repeatableOverrides))
-		{
-			$key = "SKIP_" . $key;
-		}
-
-		return "<?php @\$this->repeatableMap['$key'] = function($argumentsList) { ?>";
+		return "<?php \$this->repeatableMap['$key'] $operator function($argumentsList) { ?>";
 	}
 
 	/**
 	 * Compile the repeatableOverride statements into valid PHP.
+	 *
+	 * The override unconditionally (re)defines the repeatable on the View. It is closed with `@endrepeatable`.
 	 *
 	 * @param   string  $expression
 	 *
@@ -675,9 +694,14 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 	}
 
 	/**
-	 * Compile the end yieldRepeatable statements into valid PHP.
+	 * Compile the yieldRepeatable statements into valid PHP.
 	 *
-	 * @param   string  $expression
+	 * Throws a RuntimeException naming the repeatable if it is not defined on the View. Any exception or error thrown
+	 * from within the repeatable is wrapped in a RuntimeException naming the repeatable.
+	 *
+	 * The generated code must stay on a single line, so that the compiled template's line numbers match the source.
+	 *
+	 * @param   string  $expression  The directive's expression, e.g. `('name', $arg1, $arg2)`
 	 *
 	 * @return  string
 	 * @since   1.0.0
@@ -688,8 +712,18 @@ class Blade implements CompilerInterface, ContainerAwareInterface
 		$parts         = explode(',', $expression, 2);
 		$argumentsList = $parts[1] ?? '';
 		$key           = HashHelper::md5(strtolower(trim($parts[0])));
+		$name          = $parts[0];
+		$closure       = "\$this->repeatableMap['$key']";
 
-		return "<?php try { \$this->repeatableMap['$key']($argumentsList); } catch (\Throwable \$e) { throw new \RuntimeException(sprintf('Error calling repeatable \"%s\"', {$parts[0]}), 500, \$e); } ?>";
+		// The generated code MUST be a single line of PHP.
+		return '<?php '
+			. "if (!is_callable($closure ?? null)) { "
+			. "throw new \\RuntimeException(sprintf('Repeatable \"%s\" is not defined', $name), 500); "
+			. '} '
+			. "try { $closure($argumentsList); } "
+			. "catch (\\Throwable \$e) { "
+			. "throw new \\RuntimeException(sprintf('Error calling repeatable \"%s\"', $name), 500, \$e); "
+			. '} ?>';
 	}
 
 	/**
