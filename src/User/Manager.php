@@ -280,7 +280,7 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 	 *
 	 * @param   UserInterface  $user  The user to save
 	 *
-	 * @return  void
+	 * @return  bool  True on success
 	 *
 	 * @throws  \RuntimeException  If an error occurs when saving the user
 	 */
@@ -324,6 +324,8 @@ class Manager implements ManagerInterface, ContainerAwareInterface
 		$db->execute();
 
 		$user->triggerEvent('onAfterSave');
+
+		return true;
 	}
 
 	/**

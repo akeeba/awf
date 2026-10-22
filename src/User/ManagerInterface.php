@@ -58,7 +58,7 @@ interface ManagerInterface
 	 *
 	 * @param   UserInterface  $user  The user to save
 	 *
-	 * @return  boolean  True on success
+	 * @return  bool  True on success. Failures throw an exception instead of returning false.
 	 *
 	 * @throws  \RuntimeException  If an error occurs when saving the user
 	 */

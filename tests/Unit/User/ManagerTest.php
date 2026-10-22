@@ -548,6 +548,38 @@ class ManagerTest extends TestCase
     }
 
     // =========================================================================
+    // saveUser()
+    // =========================================================================
+
+    public function testSaveUserReturnsTrueWhenInsertingANewUser(): void
+    {
+        $manager = $this->makeManager();
+        $user    = $manager->getUser(0);
+        $user->setUsername('newbie');
+        $user->setName('New B.');
+        $user->setEmail('newbie@example.com');
+
+        // Callers such as `if ($manager->saveUser($user))` must see success.
+        self::assertTrue($manager->saveUser($user));
+    }
+
+    public function testSaveUserReturnsTrueWhenUpdatingAnExistingUser(): void
+    {
+        $row           = new stdClass();
+        $row->id       = 12;
+        $row->username = 'kate';
+        $row->name     = 'Kate K.';
+        $row->email    = 'kate@example.com';
+        $row->password = '';
+
+        $manager = $this->makeManager(userRow: $row);
+        $user    = $manager->getUser(12);
+        $user->setName('Kate Updated');
+
+        self::assertTrue($manager->saveUser($user));
+    }
+
+    // =========================================================================
     // logoutUser()
     // =========================================================================
 
