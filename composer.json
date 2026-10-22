@@ -52,6 +52,11 @@
       "Awf\\Tests\\": "tests/"
     }
   },
+  "scripts": {
+    "test": "phpunit",
+    "test:unit": "phpunit --testsuite Unit",
+    "test:integration": "phpunit --testsuite Integration"
+  },
   "archive": {
     "exclude": [
       "/.idea",
