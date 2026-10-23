@@ -229,16 +229,106 @@ class ConfigurationTest extends TestCase
         self::assertNull($config->get('existing'));
     }
 
-    public function testLoadConfigurationWithSingleLineFileLeavesEmptyRegistry(): void
+    public function testLoadConfigurationWithHeaderOnlyFileThrows(): void
     {
-        // A file without a newline means there is no JSON part to load.
+        // A file without a newline has no JSON part: it is a truncated write, not "not configured yet".
         $filePath = $this->tmpDir . '/single_line.php';
         file_put_contents($filePath, '<?php die; ?>');
+
+        $config = $this->makeConfig();
+
+        $this->expectException(RuntimeException::class);
+        $config->loadConfiguration($filePath);
+    }
+
+    public function testLoadConfigurationWithEmptyFileThrows(): void
+    {
+        $filePath = $this->tmpDir . '/empty.php';
+        file_put_contents($filePath, '');
+
+        $config = $this->makeConfig();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('empty or unparsable');
+        $config->loadConfiguration($filePath);
+    }
+
+    public function testLoadConfigurationWithHeaderAndNoJsonThrows(): void
+    {
+        $filePath = $this->tmpDir . '/header_newline.php';
+        file_put_contents($filePath, "<?php die; ?>\n");
+
+        $config = $this->makeConfig();
+
+        $this->expectException(RuntimeException::class);
+        $config->loadConfiguration($filePath);
+    }
+
+    public function testLoadConfigurationWithTruncatedJsonThrows(): void
+    {
+        $filePath = $this->tmpDir . '/truncated.php';
+        file_put_contents($filePath, "<?php die; ?>\n{\n    \"dbhost\": \"localhost\",\n    \"dbna");
+
+        $config = $this->makeConfig(['key' => 'value']);
+
+        try {
+            $config->loadConfiguration($filePath);
+            self::fail('A truncated configuration file must not load as an empty configuration');
+        } catch (RuntimeException $e) {
+            self::assertStringContainsString($filePath, $e->getMessage());
+        }
+    }
+
+    public function testLoadConfigurationAcceptsAnEmptyJsonObject(): void
+    {
+        // This is what saving an empty configuration produces; it is a valid configuration.
+        $filePath = $this->tmpDir . '/empty_object.php';
+        file_put_contents($filePath, "<?php die; ?>\n{}");
 
         $config = $this->makeConfig(['key' => 'value']);
         $config->loadConfiguration($filePath);
 
         self::assertNull($config->get('key'));
+    }
+
+    public function testLoadConfigurationRetriesOnceWhenTheFileIsBeingRewritten(): void
+    {
+        // The first read sees an empty file (a writer has just truncated it), the second one the finished file
+        FlakyConfigStream::$contents = ['', "<?php die; ?>\n" . json_encode(['name' => 'Settled'])];
+        FlakyConfigStream::$reads    = 0;
+        stream_wrapper_register('awfflaky', FlakyConfigStream::class);
+
+        try {
+            $config = $this->makeConfig();
+            $config->loadConfiguration('awfflaky://config.php');
+        } finally {
+            stream_wrapper_unregister('awfflaky');
+        }
+
+        self::assertSame('Settled', $config->get('name'));
+        self::assertSame(2, FlakyConfigStream::$reads);
+    }
+
+    public function testLoadConfigurationGivesUpAfterOneRetry(): void
+    {
+        FlakyConfigStream::$contents = ['', '', "<?php die; ?>\n" . json_encode(['name' => 'TooLate'])];
+        FlakyConfigStream::$reads    = 0;
+        stream_wrapper_register('awfflaky', FlakyConfigStream::class);
+
+        try {
+            $config = $this->makeConfig();
+
+            try {
+                $config->loadConfiguration('awfflaky://config.php');
+                self::fail('Expected an exception');
+            } catch (RuntimeException $e) {
+                self::assertStringContainsString('empty or unparsable', $e->getMessage());
+            }
+        } finally {
+            stream_wrapper_unregister('awfflaky');
+        }
+
+        self::assertSame(2, FlakyConfigStream::$reads);
     }
 
     // -------------------------------------------------------------------------
@@ -340,5 +430,51 @@ class ConfigurationTest extends TestCase
 
         self::assertSame('original', $config->get('existing'));
         self::assertSame('default_value', $config->get('fresh'));
+    }
+}
+
+/**
+ * A stream wrapper which serves a different file content on each successive read of the "file"
+ */
+class FlakyConfigStream
+{
+    /** @var string[] */
+    public static array $contents = [];
+    public static int $reads = 0;
+
+    public $context;
+    private string $data = '';
+    private int $pos = 0;
+
+    public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
+    {
+        $this->data = self::$contents[min(self::$reads, count(self::$contents) - 1)];
+        self::$reads++;
+        $this->pos = 0;
+
+        return true;
+    }
+
+    public function stream_read(int $count): string
+    {
+        $chunk = substr($this->data, $this->pos, $count);
+        $this->pos += strlen($chunk);
+
+        return $chunk;
+    }
+
+    public function stream_eof(): bool
+    {
+        return $this->pos >= strlen($this->data);
+    }
+
+    public function stream_stat(): array
+    {
+        return [];
+    }
+
+    public function stream_set_option(int $option, int $arg1, ?int $arg2): bool
+    {
+        return false;
     }
 }

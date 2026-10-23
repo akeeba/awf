@@ -17,6 +17,9 @@ class Configuration extends Registry implements ContainerAwareInterface
 {
 	use ContainerAwareTrait;
 
+	/** @var int How long to wait before re-reading a configuration file which looked empty or damaged */
+	private const RETRY_DELAY_MICROSECONDS = 50000;
+
 	/** @var string The path to the default JSON configuration file */
 	protected $defaultPath = null;
 
@@ -36,9 +39,17 @@ class Configuration extends Registry implements ContainerAwareInterface
 	/**
 	 * Loads the configuration off a JSON file
 	 *
-	 * @param string  $filePath The path to the JSON file (optional)
+	 * A file which does not exist (or cannot be read at all) results in an empty configuration: that is the
+	 * "application not configured yet" case. A file which exists but is empty, or does not hold a complete JSON
+	 * document, is a different matter: it is either being rewritten by a concurrent request, or it is damaged. Treating
+	 * it as "not configured" would have the application overwrite the real configuration with a stub. Therefore we read
+	 * it a second time after a short pause, and throw an exception if it is still unusable.
+	 *
+	 * @param   string  $filePath  The path to the JSON file (optional)
 	 *
 	 * @return  void
+	 *
+	 * @throws  \RuntimeException  When the file exists but is empty or does not contain valid configuration data
 	 */
 	public function loadConfiguration($filePath = null)
 	{
@@ -53,18 +64,68 @@ class Configuration extends Registry implements ContainerAwareInterface
 		// Try to open the file
 		$fileData = @\file_get_contents($filePath);
 
-		if ($fileData !== false)
+		// A missing or unreadable file is the "not configured yet" case: leave the configuration empty.
+		if ($fileData === false)
 		{
-			$fileData = explode("\n", $fileData, 2);
+			return;
+		}
 
-			if (count($fileData) < 2)
+		$json = $this->extractJson($fileData);
+
+		if ($json === null)
+		{
+			// Possibly caught in the middle of someone else's write. Give it a moment and try again.
+			\usleep(self::RETRY_DELAY_MICROSECONDS);
+
+			$fileData = @\file_get_contents($filePath);
+
+			if ($fileData === false)
 			{
 				return;
 			}
 
-			$fileData = $fileData[1];
-			$this->loadString($fileData);
+			$json = $this->extractJson($fileData);
 		}
+
+		if ($json === null)
+		{
+			throw new \RuntimeException(sprintf('The configuration file %s is empty or unparsable', $filePath), 500);
+		}
+
+		$this->loadString($json);
+	}
+
+	/**
+	 * Returns the JSON part of the contents of a configuration file, or null if they are not a complete configuration
+	 *
+	 * @param   string  $fileData  The raw contents of the configuration file
+	 *
+	 * @return  string|null
+	 */
+	private function extractJson($fileData)
+	{
+		// The first line is the PHP "die" guard. Without a second line there is no configuration (e.g. truncated file).
+		$parts = explode("\n", $fileData, 2);
+
+		if (count($parts) < 2)
+		{
+			return null;
+		}
+
+		$json = trim($parts[1]);
+
+		if ($json === '')
+		{
+			return null;
+		}
+
+		// A document which looks like JSON must actually decode to an object, otherwise it is truncated or mangled.
+		if ($json[0] === '{' && !(\json_decode($json) instanceof \stdClass))
+		{
+			return null;
+		}
+
+		return $parts[1];
 	}
 
 	/**
