@@ -218,6 +218,75 @@ class FileTest extends TestCase
         self::assertSame(['link.php', 'real.php'], $this->dirListing());
     }
 
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function temporaryNameProvider(): array
+    {
+        return [
+            'php file'         => ['/x/y/config.php', '/x/y/.config.%s.tmp.php'],
+            'no extension'     => ['/x/y/config', '/x/y/.config.%s.tmp'],
+            'double extension' => ['/x/y/a.tar.gz', '/x/y/.a.tar.%s.tmp.gz'],
+        ];
+    }
+
+    #[DataProvider('temporaryNameProvider')]
+    public function testTemporaryFileKeepsTheExtensionOfTheTarget(string $target, string $pattern): void
+    {
+        $file = new class ([]) extends File {
+            public function tempName(string $fileName): string
+            {
+                return $this->getTemporaryName($fileName);
+            }
+        };
+
+        $expected = '#^' . str_replace('%s', '[0-9a-f]{12}', preg_quote($pattern, '#')) . '$#';
+        // preg_quote escapes the placeholder's brackets; undo that for the character class
+        $expected = str_replace('\\[0\\-9a\\-f\\]\\{12\\}', '[0-9a-f]{12}', $expected);
+
+        self::assertMatchesRegularExpression($expected, str_replace('\\', '/', $file->tempName($target)));
+        self::assertNotSame($file->tempName($target), $file->tempName($target));
+    }
+
+    public function testWriteDoesNotReplaceAReadOnlyFile(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'old');
+        chmod($path, 0444);
+
+        if (is_writable($path)) {
+            self::markTestSkipped('Running as a user who can write to read-only files');
+        }
+
+        self::assertFalse($this->file->write($path, 'new'));
+
+        self::assertSame('old', file_get_contents($path));
+        self::assertSame(['config.php'], $this->dirListing());
+        clearstatcache();
+        self::assertSame('0444', substr(sprintf('%o', fileperms($path)), -4));
+    }
+
+    public function testWriteNeverMakesAPrivateFileWiderThanItWas(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'old');
+        chmod($path, 0600);
+        $umask = umask(0);
+
+        try {
+            self::assertTrue($this->file->write($path, 'secret'));
+        } finally {
+            umask($umask);
+        }
+
+        clearstatcache();
+        self::assertSame('0600', substr(sprintf('%o', fileperms($path)), -4));
+    }
+
     public function testFailedWriteLeavesTheTargetAndNoTemporaryFileBehind(): void
     {
         // Make both the atomic and the direct write fail: the target is a directory

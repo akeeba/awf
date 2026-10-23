@@ -63,6 +63,30 @@ class File implements FilesystemInterface, ContainerAwareInterface
 	}
 
 	/**
+	 * Returns the name of the temporary file used to replace $fileName.
+	 *
+	 * It lives in the same directory (so rename() is atomic) and ends in the same extension as the target: a web
+	 * server must treat a half-written config.php the way it treats config.php itself, and not serve it as plain text
+	 * because it ends in ".tmp". A target without an extension gets a temporary file without one.
+	 *
+	 * @param   string  $fileName  The full path to the target file
+	 *
+	 * @return  string
+	 *
+	 * @throws  \Exception  When no random bytes can be had
+	 */
+	protected function getTemporaryName($fileName)
+	{
+		$dir       = dirname($fileName);
+		$base      = basename($fileName);
+		$extension = pathinfo($base, PATHINFO_EXTENSION);
+		$stem      = ($extension === '') ? $base : substr($base, 0, -(strlen($extension) + 1));
+
+		return $dir . DIRECTORY_SEPARATOR . '.' . $stem . '.' . bin2hex(random_bytes(6)) . '.tmp'
+			. (($extension === '') ? '' : ('.' . $extension));
+	}
+
+	/**
 	 * Write the contents to a temporary file next to the target, then rename it over the target.
 	 *
 	 * @param   string  $fileName  The full path to the file
@@ -91,29 +115,72 @@ class File implements FilesystemInterface, ContainerAwareInterface
 			return false;
 		}
 
+		// rename() replaces a read-only file as long as its directory is writable. A direct write would have failed.
+		if (@file_exists($fileName) && !@is_writable($fileName))
+		{
+			return false;
+		}
+
 		try
 		{
-			$tempName = $fileName . '.' . bin2hex(random_bytes(6)) . '.tmp';
+			$tempName = $this->getTemporaryName($fileName);
 		}
 		catch (\Exception $e)
 		{
 			return false;
 		}
 
-		$bytes = @file_put_contents($tempName, $contents);
+		// The temporary file gets the permissions the target has (or would have)
+		$currentUmask = umask();
+		$exists       = @is_file($fileName);
+		$perms        = $exists ? @fileperms($fileName) : false;
+		$perms        = ($perms === false) ? (0666 & ~$currentUmask) : ($perms & 07777);
 
-		if ($bytes === false || $bytes !== strlen($contents))
+		// Create it readable by its owner only, so that no data is ever in a file wider than the target will be
+		umask(0077);
+		$fp = @fopen($tempName, 'xb');
+		umask($currentUmask);
+
+		if ($fp === false)
 		{
+			return false;
+		}
+
+		// Set the final permissions BEFORE writing any data. If we can't, we must not write secrets in there.
+		if (!@chmod($tempName, $perms))
+		{
+			@fclose($fp);
 			@unlink($tempName);
 
 			return false;
 		}
 
-		// The temporary file is created with the default umask: give it the permissions the target has (or would have)
-		$perms = @is_file($fileName) ? @fileperms($fileName) : false;
-		$perms = ($perms === false) ? (0666 & ~umask()) : ($perms & 07777);
+		// Keep the owner and group where we are allowed to (best effort)
+		if ($exists)
+		{
+			$owner = @fileowner($fileName);
+			$group = @filegroup($fileName);
 
-		@chmod($tempName, $perms);
+			if ($owner !== false && $owner !== @fileowner($tempName))
+			{
+				@chown($tempName, $owner);
+			}
+
+			if ($group !== false && $group !== @filegroup($tempName))
+			{
+				@chgrp($tempName, $group);
+			}
+		}
+
+		$bytes = ($contents === '') ? 0 : @fwrite($fp, $contents);
+		$closed = @fclose($fp);
+
+		if ($bytes === false || $bytes !== strlen($contents) || !$closed)
+		{
+			@unlink($tempName);
+
+			return false;
+		}
 
 		if (!@rename($tempName, $fileName))
 		{
