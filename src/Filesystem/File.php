@@ -39,6 +39,12 @@ class File implements FilesystemInterface, ContainerAwareInterface
 	/**
 	 * Write the contents into the file
 	 *
+	 * The contents are first written to a temporary file in the same directory, which then replaces the target with a
+	 * single rename(). A plain file_put_contents() truncates the target before writing it, so a concurrent request can
+	 * read an empty or half-written file. With rename() readers see either the complete old file or the complete new
+	 * one. If a temporary file cannot be created or renamed over the target (read-only directory, Windows locking an
+	 * open file, ...) we fall back to writing the target directly.
+	 *
 	 * @param   string  $fileName  The full path to the file
 	 * @param   string  $contents  The contents to write to the file
 	 *
@@ -46,9 +52,77 @@ class File implements FilesystemInterface, ContainerAwareInterface
 	 */
 	public function write($fileName, $contents)
 	{
+		if ($this->writeAtomically($fileName, $contents))
+		{
+			return true;
+		}
+
 		$bytes = @file_put_contents($fileName, $contents);
 
 		return ($bytes !== false);
+	}
+
+	/**
+	 * Write the contents to a temporary file next to the target, then rename it over the target.
+	 *
+	 * @param   string  $fileName  The full path to the file
+	 * @param   string  $contents  The contents to write to the file
+	 *
+	 * @return  boolean  True on success. On failure no temporary file is left behind and the target is untouched.
+	 */
+	private function writeAtomically($fileName, $contents)
+	{
+		// Replace the file a symbolic link points to, not the link itself
+		if (@is_link($fileName))
+		{
+			$real = @realpath($fileName);
+
+			if ($real === false)
+			{
+				return false;
+			}
+
+			$fileName = $real;
+		}
+
+		// Never replace a directory (or anything else which is not a regular file) by renaming over it
+		if (@file_exists($fileName) && !@is_file($fileName))
+		{
+			return false;
+		}
+
+		try
+		{
+			$tempName = $fileName . '.' . bin2hex(random_bytes(6)) . '.tmp';
+		}
+		catch (\Exception $e)
+		{
+			return false;
+		}
+
+		$bytes = @file_put_contents($tempName, $contents);
+
+		if ($bytes === false || $bytes !== strlen($contents))
+		{
+			@unlink($tempName);
+
+			return false;
+		}
+
+		// The temporary file is created with the default umask: give it the permissions the target has (or would have)
+		$perms = @is_file($fileName) ? @fileperms($fileName) : false;
+		$perms = ($perms === false) ? (0666 & ~umask()) : ($perms & 07777);
+
+		@chmod($tempName, $perms);
+
+		if (!@rename($tempName, $fileName))
+		{
+			@unlink($tempName);
+
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

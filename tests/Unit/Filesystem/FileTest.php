@@ -109,6 +109,151 @@ class FileTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // write: atomic replacement
+    // -------------------------------------------------------------------------
+
+    private function skipOnWindows(): void
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            self::markTestSkipped('POSIX file semantics (inodes, open handles on replaced files, modes)');
+        }
+    }
+
+    /**
+     * @return string[]  Everything in the temp directory
+     */
+    private function dirListing(): array
+    {
+        return array_values(array_diff(scandir($this->tmpDir), ['.', '..']));
+    }
+
+    public function testWriteLeavesNoTemporaryFileBehind(): void
+    {
+        $path = $this->tmpDir . '/config.php';
+
+        self::assertTrue($this->file->write($path, 'one'));
+        self::assertTrue($this->file->write($path, 'two'));
+
+        self::assertSame(['config.php'], $this->dirListing());
+        self::assertSame('two', file_get_contents($path));
+    }
+
+    public function testWriteDoesNotTruncateTheFileAReaderHasOpen(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'the complete old contents');
+
+        // A reader which opened the file before the write must still see all of the old contents afterwards: the
+        // file is replaced, never truncated in place.
+        $reader = fopen($path, 'rb');
+
+        self::assertTrue($this->file->write($path, 'new'));
+
+        self::assertSame('the complete old contents', stream_get_contents($reader));
+        fclose($reader);
+        self::assertSame('new', file_get_contents($path));
+    }
+
+    public function testWriteReplacesTheFileInsteadOfRewritingItInPlace(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'old');
+        $inodeBefore = fileinode($path);
+        clearstatcache();
+
+        $this->file->write($path, 'new');
+        clearstatcache();
+
+        self::assertNotSame($inodeBefore, fileinode($path));
+    }
+
+    public function testWritePreservesThePermissionsOfAnExistingFile(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'old');
+        chmod($path, 0640);
+
+        self::assertTrue($this->file->write($path, 'new'));
+        clearstatcache();
+
+        self::assertSame('0640', substr(sprintf('%o', fileperms($path)), -4));
+    }
+
+    public function testWriteCreatesNewFilesWithTheDefaultUmask(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/new.php';
+        $umask = umask(0022);
+
+        try {
+            self::assertTrue($this->file->write($path, 'new'));
+        } finally {
+            umask($umask);
+        }
+
+        clearstatcache();
+        self::assertSame('0644', substr(sprintf('%o', fileperms($path)), -4));
+    }
+
+    public function testWriteThroughASymlinkUpdatesTheLinkTarget(): void
+    {
+        $this->skipOnWindows();
+
+        $real = $this->tmpDir . '/real.php';
+        $link = $this->tmpDir . '/link.php';
+        file_put_contents($real, 'old');
+        symlink($real, $link);
+
+        self::assertTrue($this->file->write($link, 'new'));
+
+        self::assertTrue(is_link($link));
+        self::assertSame('new', file_get_contents($real));
+        self::assertSame(['link.php', 'real.php'], $this->dirListing());
+    }
+
+    public function testFailedWriteLeavesTheTargetAndNoTemporaryFileBehind(): void
+    {
+        // Make both the atomic and the direct write fail: the target is a directory
+        $path = $this->tmpDir . '/target';
+        mkdir($path);
+
+        self::assertFalse($this->file->write($path, 'data'));
+
+        self::assertSame(['target'], $this->dirListing());
+        self::assertTrue(is_dir($path));
+    }
+
+    public function testWriteFallsBackToADirectWriteWhenTheDirectoryIsReadOnly(): void
+    {
+        $this->skipOnWindows();
+
+        $path = $this->tmpDir . '/config.php';
+        file_put_contents($path, 'old');
+        chmod($this->tmpDir, 0555);
+
+        try {
+            if (is_writable($this->tmpDir)) {
+                self::markTestSkipped('Running as a user who can write to read-only directories');
+            }
+
+            // No temporary file can be created, but the file itself is writable
+            self::assertTrue($this->file->write($path, 'new'));
+            self::assertSame('new', file_get_contents($path));
+        } finally {
+            chmod($this->tmpDir, 0755);
+        }
+
+        self::assertSame(['config.php'], $this->dirListing());
+    }
+
+    // -------------------------------------------------------------------------
     // delete
     // -------------------------------------------------------------------------
 
