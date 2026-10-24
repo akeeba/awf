@@ -224,6 +224,8 @@ class Mysqli extends Driver
 		// Attempt to connect to the server.
 		if (!$connected)
 		{
+			$this->connection = null;
+
 			throw new \RuntimeException('Could not connect to MySQL.', 500, isset($e) ? $e : null);
 		}
 

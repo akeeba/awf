@@ -279,6 +279,18 @@ class ConfigurationTest extends TestCase
         }
     }
 
+    public function testLoadConfigurationWithNonJsonBodyThrows(): void
+    {
+        $filePath = $this->tmpDir . '/non_json_body.php';
+        file_put_contents($filePath, "<?php die; ?>\nthis is not a configuration");
+
+        $config = $this->makeConfig(['key' => 'value']);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('empty or unparsable');
+        $config->loadConfiguration($filePath);
+    }
+
     public function testLoadConfigurationAcceptsAnEmptyJsonObject(): void
     {
         // This is what saving an empty configuration produces; it is a valid configuration.

@@ -812,7 +812,7 @@ class Controller implements ContainerAwareInterface, LanguageAwareInterface
 			{
 				foreach ($this->input->getData() as $name => $value)
 				{
-					if (!is_string($name) || $name === '' || $name === 'token')
+					if (!is_string($name) || $name === '' || $name === 'token' || !is_scalar($value))
 					{
 						continue;
 					}

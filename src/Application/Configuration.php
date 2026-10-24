@@ -119,8 +119,8 @@ class Configuration extends Registry implements ContainerAwareInterface
 			return null;
 		}
 
-		// A document which looks like JSON must actually decode to an object, otherwise it is truncated or mangled.
-		if ($json[0] === '{' && !(\json_decode($json) instanceof \stdClass))
+		// The configuration body must decode to a JSON object, otherwise it is truncated or mangled.
+		if (!(\json_decode($json) instanceof \stdClass))
 		{
 			return null;
 		}

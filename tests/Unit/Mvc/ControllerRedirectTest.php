@@ -664,6 +664,28 @@ class ControllerRedirectTest extends TestCase
         $ctrl->checkCsrf();
     }
 
+    public function testCsrfProtectionSkipsArrayValuedFieldsWithoutWarning(): void
+    {
+        $ctrl = $this->makeCsrfController(['cid' => [1, 2, 3]], 'test-token-abc');
+
+        $warnings = [];
+        set_error_handler(static function (int $severity, string $message) use (&$warnings): bool {
+            $warnings[] = $message;
+            return true;
+        });
+
+        try {
+            $ctrl->checkCsrf();
+            self::fail('A request without a valid token must be rejected');
+        } catch (Exception $e) {
+            self::assertSame('Invalid security token', $e->getMessage());
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $warnings);
+    }
+
     // -------------------------------------------------------------------------
     // csrfProtection() — CMS (WordPress) nonce with a caller-pinned action
     // -------------------------------------------------------------------------
