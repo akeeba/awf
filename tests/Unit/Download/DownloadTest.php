@@ -367,6 +367,42 @@ class DownloadTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // getFromURL — reporting the adapter's error
+    // -------------------------------------------------------------------------
+
+    public function testGetFromUrlReportsTheAdapterErrorThroughTheOutParameter(): void
+    {
+        $dl = new Download($this->makeContainer());
+        $dl->setAdapter(Stub\FailingAdapter::class);
+
+        $error  = null;
+        $result = $dl->getFromURL('http://example.com/file.zip', $error);
+
+        $this->assertFalse($result);
+        $this->assertSame(Stub\FailingAdapter::MESSAGE, $error);
+    }
+
+    public function testGetFromUrlStillReturnsFalseWhenCalledWithoutTheOutParameter(): void
+    {
+        $dl = new Download($this->makeContainer());
+        $dl->setAdapter(Stub\FailingAdapter::class);
+
+        $this->assertFalse($dl->getFromURL('http://example.com/file.zip'));
+    }
+
+    public function testGetFromUrlClearsTheOutParameterOnSuccess(): void
+    {
+        $dl = new Download($this->makeContainer());
+        $dl->setAdapter(Stub\SucceedingAdapter::class);
+
+        $error  = 'left over from an earlier call';
+        $result = $dl->getFromURL('http://example.com/file.zip', $error);
+
+        $this->assertSame(Stub\SucceedingAdapter::CONTENT, $result);
+        $this->assertNull($error);
+    }
+
+    // -------------------------------------------------------------------------
     // Adapter options (setAdapterOptions / getAdapterOptions)
     // -------------------------------------------------------------------------
 

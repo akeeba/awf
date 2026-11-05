@@ -176,12 +176,15 @@ class Download implements ContainerAwareInterface
 	/**
 	 * Download data from a URL and return it
 	 *
-	 * @param   string  $url  The URL to download from
+	 * @param   string       $url    The URL to download from
+	 * @param   string|null  $error  Out: the adapter's error message on failure, NULL otherwise
 	 *
 	 * @return  bool|string  The downloaded data or false on failure
 	 */
-	public function getFromURL($url)
+	public function getFromURL($url, &$error = null)
 	{
+		$error = null;
+
 		if (is_null($this->adapter))
 		{
 			throw new \RuntimeException("No downloader adapter available. Please check your server configuration");
@@ -193,6 +196,8 @@ class Download implements ContainerAwareInterface
 		}
 		catch (\Exception $e)
 		{
+			$error = $e->getMessage();
+
 			return false;
 		}
 	}
