@@ -30,8 +30,11 @@ with `--no-gpg-sign`, `-c commit.gpgsign=false` or unsigned tags.
 Project memory lives in `.claude/memory/`, committed with the code, so that it is shared across machines
 and across agentic harnesses (Claude Code, Codex, Qwen Code, Kimi Code, Junie, …).
 
-There are no memory files yet. When there is something worth remembering, create `.claude/memory/`,
-the topic file, and a table here mapping each file to a concrete trigger ("Before you… | Read").
+Read the relevant file **before** starting work that matches its trigger:
+
+| Before you… | Read |
+|---|---|
+| add, change or translate language strings (`language/*.ini`), or any change touching `en-GB.ini` keys | `.claude/memory/translations.md` |
 
 ### Recording new memories
 
