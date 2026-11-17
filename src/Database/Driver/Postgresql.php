@@ -157,8 +157,6 @@ class Postgresql extends Driver
 	 */
 	public function connected()
 	{
-		$this->connect();
-
 		if ($this->hasConnection())
 		{
 			return pg_ping($this->connection);
