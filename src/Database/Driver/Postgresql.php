@@ -574,7 +574,7 @@ class Postgresql extends Driver
 		/* Change Postgresql's NULL::* type with PHP's null one */
 		foreach ($fields as $field)
 		{
-			if (preg_match("/^NULL::*/", $field->Default))
+			if (is_string($field->Default) && preg_match("/^NULL::*/", $field->Default))
 			{
 				$field->Default = null;
 			}

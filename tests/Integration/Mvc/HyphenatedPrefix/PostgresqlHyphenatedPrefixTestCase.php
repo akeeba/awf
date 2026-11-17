@@ -35,6 +35,38 @@ abstract class PostgresqlHyphenatedPrefixTestCase extends HyphenatedPrefixTestCa
         )->execute();
     }
 
+    public function testGetTableColumnsRaisesNoDeprecationForColumnWithoutDefault(): void
+    {
+        $this->db->setQuery(
+            'CREATE TABLE ' . $this->db->qn('#__nodefaults') . ' (
+                id   SERIAL PRIMARY KEY,
+                note VARCHAR(191)
+            )'
+        )->execute();
+
+        $deprecations = [];
+
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+
+                return true;
+            },
+            E_DEPRECATED | E_USER_DEPRECATED
+        );
+
+        try {
+            $columns = $this->db->getTableColumns('#__nodefaults', false);
+        } finally {
+            restore_error_handler();
+            $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->qn('#__nodefaults'))->execute();
+        }
+
+        self::assertSame(['id', 'note'], array_keys($columns));
+        self::assertNull($columns['note']->Default);
+        self::assertSame([], $deprecations);
+    }
+
     /**
      * @return array{host: string, port: int, dbname: string, user: string, pass: string}
      */
