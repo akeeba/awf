@@ -991,62 +991,71 @@ class Postgresql extends Driver
 	 */
 	public function replacePrefix($query, $prefix = '#__')
 	{
-		$query         = trim($query);
-		$replacedQuery = '';
+		$query  = trim($query);
+		$length = strlen($query);
+		$result = '';
+		$offset = 0;
 
-		if (strpos($query, '\'') !== false)
+		while ($offset < $length)
 		{
-			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'currval') !== false)
+			// The text up to the next string literal: the prefix is always replaced here.
+			$quote = strpos($query, '\'', $offset);
+			$end   = ($quote === false) ? $length : $quote;
+			$chunk = substr($query, $offset, $end - $offset);
+
+			$result .= str_replace($prefix, $this->tablePrefix, $chunk);
+
+			if ($quote === false)
 			{
-				$query = explode('currval', $query);
-				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
-				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
-				}
-				$query = implode('currval', $query);
+				break;
 			}
 
-			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'nextval') !== false)
+			// Find the end of the literal. With standard_conforming_strings off (as set by connect()) a backslash
+			// escapes the next character; a doubled quote is an embedded quote in both modes.
+			$pos = $quote + 1;
+
+			while ($pos < $length)
 			{
-				$query = explode('nextval', $query);
-				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
+				$char = $query[$pos];
+
+				if ($char === '\\')
 				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
+					$pos += 2;
+
+					continue;
 				}
-				$query = implode('nextval', $query);
+
+				if ($char === '\'')
+				{
+					if ($pos + 1 < $length && $query[$pos + 1] === '\'')
+					{
+						$pos += 2;
+
+						continue;
+					}
+
+					break;
+				}
+
+				$pos++;
 			}
 
-			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'setval') !== false)
+			// An unterminated literal runs to the end of the query.
+			$literalEnd = min($pos + 1, $length);
+			$literal    = substr($query, $quote, $literalEnd - $quote);
+
+			// The prefix is replaced inside a literal only when it is the sequence name argument of currval(),
+			// nextval() or setval(), i.e. the literal immediately follows the opening parenthesis.
+			if (preg_match('/\b(?:currval|nextval|setval)\s*\(\s*$/i', $chunk))
 			{
-				$query = explode('setval', $query);
-				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
-				{
-					$query[$nIndex] = str_replace($prefix, $this->tablePrefix, $query[$nIndex]);
-				}
-				$query = implode('setval', $query);
+				$literal = str_replace($prefix, $this->tablePrefix, $literal);
 			}
 
-			$explodedQuery = explode('\'', $query);
-
-			for ($nIndex = 0; $nIndex < count($explodedQuery); $nIndex = $nIndex + 2)
-			{
-				if (strpos($explodedQuery[$nIndex], $prefix) !== false)
-				{
-					$explodedQuery[$nIndex] = str_replace($prefix, $this->tablePrefix, $explodedQuery[$nIndex]);
-				}
-			}
-
-			$replacedQuery = implode('\'', $explodedQuery);
+			$result .= $literal;
+			$offset  = $literalEnd;
 		}
-		else
-		{
-			$replacedQuery = str_replace($prefix, $this->tablePrefix, $query);
-		}
 
-		return $replacedQuery;
+		return $result;
 	}
 
 	/**

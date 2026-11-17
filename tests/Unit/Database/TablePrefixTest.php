@@ -110,6 +110,50 @@ class TablePrefixTest extends TestCase
                 "currval('#__seq') + 1 FROM #__foo",
                 "currval('web-app_seq') + 1 FROM web-app_foo",
             ],
+            'literal after currval is not rewritten' => [
+                "SELECT currval('#__s') FROM #__t WHERE a = '#__lit'",
+                "SELECT currval('web-app_s') FROM web-app_t WHERE a = '#__lit'",
+            ],
+            'keyword inside user data'               => [
+                "INSERT INTO #__t (note) VALUES ('call nextval to get #__id')",
+                "INSERT INTO web-app_t (note) VALUES ('call nextval to get #__id')",
+            ],
+            'literal after nextval is not rewritten' => [
+                "SELECT nextval('#__s'), '#__a' FROM #__t",
+                "SELECT nextval('web-app_s'), '#__a' FROM web-app_t",
+            ],
+            'setval with whitespace'                 => [
+                "SELECT setval( '#__s' , 5) FROM #__t WHERE a = '#__x'",
+                "SELECT setval( 'web-app_s' , 5) FROM web-app_t WHERE a = '#__x'",
+            ],
+            'keyword in literal, then a real call'   => [
+                "SELECT 'nextval(' , nextval('#__s'), '#__x'",
+                "SELECT 'nextval(' , nextval('web-app_s'), '#__x'",
+            ],
+            'literal that follows a keyword-literal' => [
+                "SELECT 'nextval(''#__a'')', '#__b'",
+                "SELECT 'nextval(''#__a'')', '#__b'",
+            ],
+            'doubled quote inside a literal'         => [
+                "SELECT 'it''s #__x', a FROM #__t WHERE b = '#__y'",
+                "SELECT 'it''s #__x', a FROM web-app_t WHERE b = '#__y'",
+            ],
+            'backslash-escaped quote in a literal'   => [
+                "SELECT 'it\\'s #__x', a FROM #__t WHERE b = '#__y'",
+                "SELECT 'it\\'s #__x', a FROM web-app_t WHERE b = '#__y'",
+            ],
+            'literal ending in an escaped backslash' => [
+                "SELECT 'a\\\\' FROM #__t WHERE b = '#__y'",
+                "SELECT 'a\\\\' FROM web-app_t WHERE b = '#__y'",
+            ],
+            'sequence name with an escaped quote'    => [
+                "SELECT nextval('#__s\\'x') FROM #__t WHERE b = '#__y'",
+                "SELECT nextval('web-app_s\\'x') FROM web-app_t WHERE b = '#__y'",
+            ],
+            'unterminated literal'                   => [
+                "SELECT #__a, '#__b",
+                "SELECT web-app_a, '#__b",
+            ],
         ];
     }
 
