@@ -14,6 +14,9 @@ use Awf\Container\Container;
 use Awf\Database\Driver;
 use Awf\Event\Dispatcher as EventDispatcher;
 use Awf\Input\Input;
+use Awf\Mvc\DataModel\Collection;
+use Awf\Mvc\DataModel\Relation\BelongsToMany;
+use Awf\Mvc\DataModel\Relation\HasMany;
 use Awf\Session\Segment;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
 use Awf\Tests\Integration\Mvc\HyphenatedPrefix\Model\Branch;
@@ -22,6 +25,11 @@ use Awf\Tests\Integration\Mvc\HyphenatedPrefix\Model\Widget;
 use Awf\Text\Language;
 use Awf\User\ManagerInterface as UserManagerInterface;
 use Awf\User\UserInterface;
+use Testapp\Model\Echild;
+use Testapp\Model\Eparent;
+use Testapp\Model\Etag;
+
+require_once __DIR__ . '/Model/EagerRelationModels.php';
 
 /**
  * DataModel, TreeModel and driver operations against a real database server, on tables whose name prefix contains a
@@ -35,7 +43,7 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
     protected const PREFIX = 'web-app_';
 
     /** Every table a test may leave behind, with the "#__" placeholder. */
-    private const TABLES = ['#__widgets', '#__gadgets', '#__branches', '#__flags'];
+    private const TABLES = ['#__widgets', '#__gadgets', '#__branches', '#__flags', '#__eparents', '#__echildren', '#__etags', '#__eparent_etag'];
 
     protected ?Driver $db = null;
 
@@ -60,9 +68,13 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         Widget::flushCaches();
         Branch::flushCaches();
         Flag::flushCaches();
+        Eparent::flushCaches();
+        Echild::flushCaches();
+        Etag::flushCaches();
 
         $this->dropTables();
         $this->createSchema();
+        $this->createEagerRelationTables();
 
         $this->container = $this->buildContainer();
     }
@@ -77,6 +89,9 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         Widget::flushCaches();
         Branch::flushCaches();
         Flag::flushCaches();
+        Eparent::flushCaches();
+        Echild::flushCaches();
+        Etag::flushCaches();
 
         $this->db        = null;
         $this->container = null;
@@ -290,6 +305,123 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         $model->where('flag', 'in', 0);
 
         self::assertCount(1, $model->get(true));
+    }
+
+    // -------------------------------------------------------------------------
+    // Eager-loaded relations with blank local keys
+    // -------------------------------------------------------------------------
+
+    private function createEagerRelationTables(): void
+    {
+        $tables = [
+            '#__eparents'     => 'id INTEGER NOT NULL PRIMARY KEY',
+            '#__echildren'    => 'id INTEGER NOT NULL PRIMARY KEY, parent_id INTEGER NOT NULL',
+            '#__etags'        => 'id INTEGER NOT NULL PRIMARY KEY',
+            '#__eparent_etag' => 'parent_id INTEGER NOT NULL, tag_id INTEGER NOT NULL',
+        ];
+
+        foreach ($tables as $table => $columns) {
+            $this->db->setQuery('CREATE TABLE ' . $this->db->qn($table) . ' (' . $columns . ')')->execute();
+        }
+    }
+
+    private function exec(string $sql): void
+    {
+        $this->db->setQuery($sql)->execute();
+    }
+
+    /** @param  array<int, mixed>  $keys  Local key value of each parent in the eager-loaded collection */
+    private function parents(array $keys): Collection
+    {
+        $parents = [];
+
+        foreach ($keys as $key) {
+            $parent = new Eparent($this->container);
+            $parent->setFieldValue('id', $key);
+            $parents[] = $parent;
+        }
+
+        return new Collection($parents);
+    }
+
+    private function hasMany(): HasMany
+    {
+        return new HasMany(
+            new Eparent($this->container), '\\Testapp\\Model\\Echild', 'id', 'parent_id'
+        );
+    }
+
+    private function belongsToMany(): BelongsToMany
+    {
+        return new BelongsToMany(
+            new Eparent($this->container), '\\Testapp\\Model\\Etag', 'id', 'id', '#__eparent_etag', 'parent_id',
+            'tag_id'
+        );
+    }
+
+    private function ids(Collection $items): array
+    {
+        $ids = [];
+
+        foreach ($items as $item) {
+            $ids[] = (int) $item->getId();
+        }
+
+        sort($ids);
+
+        return $ids;
+    }
+
+    private function seedEagerRows(): void
+    {
+        $this->exec('INSERT INTO ' . $this->db->qn('#__eparents') . ' (id) VALUES (5)');
+        $this->exec('INSERT INTO ' . $this->db->qn('#__echildren') . ' (id, parent_id) VALUES (1, 5), (2, 0)');
+        $this->exec('INSERT INTO ' . $this->db->qn('#__etags') . ' (id) VALUES (1), (2)');
+        $this->exec('INSERT INTO ' . $this->db->qn('#__eparent_etag') . ' (parent_id, tag_id) VALUES (5, 1), (0, 2)');
+    }
+
+    public function testEagerHasManySkipsParentsWithBlankLocalKey(): void
+    {
+        $this->seedEagerRows();
+
+        // The blank key must not become IN ('', '5'), which equals 0 on MySQL and is a type error on PostgreSQL
+        $children = $this->hasMany()->getData(null, $this->parents([5, '']));
+
+        self::assertSame([1], $this->ids($children));
+    }
+
+    public function testEagerHasManyWithOnlyBlankLocalKeysLoadsNothing(): void
+    {
+        $this->seedEagerRows();
+
+        self::assertCount(0, $this->hasMany()->getData(null, $this->parents(['', null])));
+    }
+
+    public function testEagerHasManyKeepsIntegerZeroLocalKey(): void
+    {
+        $this->seedEagerRows();
+
+        $children = $this->hasMany()->getData(null, $this->parents([0, '']));
+
+        self::assertSame([2], $this->ids($children));
+    }
+
+    public function testEagerBelongsToManySkipsParentsWithBlankLocalKey(): void
+    {
+        $this->seedEagerRows();
+
+        $tags = $this->belongsToMany()->getData(null, $this->parents([5, '']));
+
+        self::assertSame([1], $this->ids($tags));
+    }
+
+    public function testEagerBelongsToManyKeepsIntegerZeroLocalKey(): void
+    {
+        $this->seedEagerRows();
+
+        $tags = $this->belongsToMany()->getData(null, $this->parents([0, '']));
+
+        self::assertSame([2], $this->ids($tags));
     }
 
     public function testDriverUpdateObjectUpdatesRow(): void

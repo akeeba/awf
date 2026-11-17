@@ -324,7 +324,8 @@ class BelongsToMany extends DataModel\Relation
 				{
 					$v = $item->getFieldValue($this->localKey, null);
 
-					if (!is_null($v))
+					// A missing or blank key relates to nothing. Integer 0 is a real key value.
+					if (!is_null($v) && ($v !== ''))
 					{
 						$values[] = $v;
 					}
@@ -332,6 +333,7 @@ class BelongsToMany extends DataModel\Relation
 
 				// Keep only unique values
 				$values = array_unique($values);
+
 				$values = array_map(
 					function ($x) use (&$db) {
 						return $db->q($x);

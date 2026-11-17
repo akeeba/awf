@@ -75,7 +75,8 @@ class HasMany extends DataModel\Relation
 				{
 					$v = $item->getFieldValue($this->localKey, null);
 
-					if (!is_null($v))
+					// A missing or blank key relates to nothing. Integer 0 is a real key value.
+					if (!is_null($v) && ($v !== ''))
 					{
 						$values[] = $v;
 					}
