@@ -166,6 +166,64 @@ final class MysqliDriverTest extends AbstractIntegrationTestCase
         self::assertFalse($this->db->connected(), 'Driver must report connected() = false after disconnect().');
     }
 
+    public function testDisconnectIsIdempotentAndDriverReconnectsOnDemand(): void
+    {
+        $this->db->connect();
+        $this->db->disconnect();
+        $this->db->disconnect();
+
+        self::assertFalse($this->db->connected());
+
+        // The next query must transparently open a new connection.
+        $this->db->setQuery('SELECT 1');
+        self::assertSame('1', (string) $this->db->loadResult());
+        self::assertTrue($this->db->connected());
+    }
+
+    public function testConnectedReturnsFalseWhenServerDroppedTheConnection(): void
+    {
+        $this->db->connect();
+        $this->db->setQuery('SELECT CONNECTION_ID()');
+        $id = (int) $this->db->loadResult();
+
+        $killer = $this->buildDriver($this->requireMysql());
+        $killer->setQuery('KILL CONNECTION ' . $id);
+        $killer->execute();
+        $killer->disconnect();
+
+        // Give the server a moment to tear the connection down.
+        usleep(200000);
+
+        self::assertFalse($this->db->connected(), 'connected() must return false, not throw, for a dropped connection.');
+    }
+
+    public function testConnectedDoesNotRaiseDeprecations(): void
+    {
+        $this->db->connect();
+
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+                    $deprecations[] = $errstr;
+
+                    return true;
+                }
+
+                return false;
+            }
+        );
+
+        try {
+            $result = $this->db->connected();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertTrue($result);
+        self::assertSame([], $deprecations, 'connected() must not raise deprecation notices.');
+    }
+
     public function testDriverNameIsMysqli(): void
     {
         self::assertSame('mysqli', $this->db->name);

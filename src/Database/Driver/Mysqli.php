@@ -250,12 +250,26 @@ class Mysqli extends Driver
 	 */
 	public function connected()
 	{
-		if (is_object($this->connection))
+		if (!is_object($this->connection))
 		{
-			return mysqli_ping($this->connection);
+			return false;
 		}
 
-		return false;
+		try
+		{
+			if (PHP_VERSION_ID >= 80400)
+			{
+				// mysqli_ping() is deprecated since PHP 8.4. DO 1 is a cheap round trip which returns no result set.
+				return @$this->connection->query('DO 1') === true;
+			}
+
+			return (bool) @mysqli_ping($this->connection);
+		}
+		catch (\Throwable $e)
+		{
+			// Closed handle, or a connection the server dropped (mysqli may throw in exception report mode).
+			return false;
+		}
 	}
 
 	/**
@@ -286,6 +300,9 @@ class Mysqli extends Driver
 		{
 			// We expect an ErrorException under PHP 8 is the connection is already closed
 		}
+
+		// Drop the closed handle so connected() reports false and the next query reconnects.
+		$this->connection = null;
 	}
 
 	/**
