@@ -772,6 +772,9 @@ final class DataModelIntegrationTest extends AbstractIntegrationTestCase
         $userId   = $this->insertUser('PivotUser');
         $groupId1 = $this->insertGroup('G1');
         $groupId2 = $this->insertGroup('G2');
+        $groupId3 = $this->insertGroup('G3');
+        $this->linkUserGroup($userId, $groupId1);
+        $this->linkUserGroup($userId, $groupId2);
 
         $user = $this->makeModel(\IntDm\Model\User::class);
         $user->find($userId);
@@ -785,16 +788,25 @@ final class DataModelIntegrationTest extends AbstractIntegrationTestCase
             'group_id'
         );
 
-        // Load existing (empty) data, then add both groups by ID.
-        $user->getRelations()->getData('groups');
-        $user->getRelations()->set('groups', new Collection([$groupId1, $groupId2]));
+        // As documented in BelongsToMany::getNew(): change the relation data, then save the relation.
+        // Drop G1 (linked), keep G2 (linked) and add G3 (not linked yet).
+        $groups = $user->getRelations()->getData('groups');
+        self::assertCount(2, $groups);
+
+        $groups->removeById($groupId1);
+        $group3 = $this->makeModel(\IntDm\Model\Group::class);
+        $group3->find($groupId3);
+        $groups->add($group3);
+
         $user->getRelations()->save('groups');
 
         $this->db->setQuery(
-            'SELECT COUNT(*) FROM ' . $this->db->quoteName('intdm_user_group')
-            . ' WHERE user_id = ' . $userId
+            'SELECT ' . $this->db->quoteName('group_id') . ' FROM ' . $this->db->quoteName('intdm_user_group')
+            . ' WHERE user_id = ' . $userId . ' ORDER BY group_id'
         );
-        self::assertSame('2', (string) $this->db->loadResult());
+        $linked = array_map('intval', $this->db->loadColumn());
+
+        self::assertSame([$groupId2, $groupId3], $linked);
     }
 
     // =========================================================================
