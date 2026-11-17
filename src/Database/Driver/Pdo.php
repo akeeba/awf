@@ -573,13 +573,7 @@ abstract class Pdo extends Driver
 		}
 
 		// Take a local copy so that we don't modify the original query and cause issues later
-		$sql = $this->replacePrefix((string) $this->sql);
-
-		if ($this->limit > 0 || $this->offset > 0)
-		{
-			// @TODO
-			$sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
-		}
+		$sql = $this->buildSql($this->sql);
 
 		// Increment the query counter.
 		$this->count++;
@@ -680,7 +674,7 @@ abstract class Pdo extends Driver
 					// The statement was prepared on the dead connection. Prepare it again, on the new one. Any bound
 					// parameters are read from the query object when execute() runs, so they survive.
 					$this->prepared = $this->connection->prepare(
-						$this->replacePrefix((string) $this->sql), $this->preparedDriverOptions
+						$this->buildSql($this->sql), $this->preparedDriverOptions
 					);
 
 					// Since we were able to reconnect, run the query again.
@@ -937,17 +931,48 @@ abstract class Pdo extends Driver
 			$query->setLimit($limit, $offset);
 		}
 
-		$sql = $this->replacePrefix((string) $query);
+		// Store reference to the DatabaseQuery instance. This also stores the offset and limit, which buildSql() needs.
+		parent::setQuery($query, $offset, $limit);
 
-		$this->prepared = $this->connection->prepare($sql, $driverOptions);
+		$this->prepared = $this->connection->prepare($this->buildSql($query), $driverOptions);
 
 		// Remember how the statement was prepared, in case it has to be prepared again after a reconnection.
 		$this->preparedDriverOptions = $driverOptions;
 
-		// Store reference to the DatabaseQuery instance:
-		parent::setQuery($query, $offset, $limit);
-
 		return $this;
+	}
+
+	/**
+	 * Returns the SQL to prepare and run for a query: the table prefix replaced, and the offset and limit applied
+	 * exactly once.
+	 *
+	 * A query object renders its own limit, unless it holds raw SQL (Query::__toString() returns that as it is), and a
+	 * plain string cannot. In both cases the limit is appended here. If the SQL already ends with the limit clause, as
+	 * it does for a query object which limited itself, it is left alone.
+	 *
+	 * @param   Query|QueryLimitable|string  $query  The query.
+	 *
+	 * @return  string
+	 */
+	protected function buildSql($query)
+	{
+		$sql = $this->replacePrefix((string) $query);
+
+		if ($this->limit <= 0 && $this->offset <= 0)
+		{
+			return $sql;
+		}
+
+		$clause = ($query instanceof QueryLimitable)
+			? $query->processLimit('', $this->limit, $this->offset)
+			: ' LIMIT ' . $this->offset . ', ' . $this->limit;
+
+		if (substr($sql, -strlen($clause)) !== $clause)
+		{
+			$sql .= $clause;
+		}
+
+		return $sql;
 	}
 
 	/**
