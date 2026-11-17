@@ -105,24 +105,6 @@ final class ReconnectTest extends AbstractIntegrationTestCase
         $db->execute();
     }
 
-    /**
-     * Run the probe query on a connection that is lost.
-     *
-     * The PDO driver prepares the statement in setQuery(), on the old connection, and execute() retries that same
-     * statement after reconnecting, so the retry itself fails there. That is a separate defect; what these tests
-     * check is that execute() still reconnects.
-     */
-    private function createProbeAfterReconnect(Driver $db, string $family): void
-    {
-        try {
-            $this->createProbe($db);
-        } catch (RuntimeException $e) {
-            if ($family !== 'pdomysql') {
-                throw $e;
-            }
-        }
-    }
-
     #[DataProvider('drivers')]
     public function testFailedReconnectDoesNotDisableLaterReconnects(string $family): void
     {
@@ -149,7 +131,7 @@ final class ReconnectTest extends AbstractIntegrationTestCase
 
             // The connection is lost again. execute() must reconnect and run the query again in a new session.
             $db->reportDisconnected = true;
-            $this->createProbeAfterReconnect($db, $family);
+            $this->createProbe($db);
 
             self::assertSame(3, $db->connectCount, 'execute() must reconnect after an earlier reconnection failed.');
         } finally {
@@ -179,7 +161,7 @@ final class ReconnectTest extends AbstractIntegrationTestCase
 
             // The connection is lost again. execute() must reconnect and run the query again in a new session.
             $db->reportDisconnected = true;
-            $this->createProbeAfterReconnect($db, $family);
+            $this->createProbe($db);
 
             self::assertSame(3, $db->connectCount, 'execute() must reconnect after an earlier retried query failed.');
         } finally {

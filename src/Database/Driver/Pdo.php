@@ -83,6 +83,14 @@ abstract class Pdo extends Driver
 	 */
 	protected $prepared;
 
+	/**
+	 * The driver options the current prepared statement was prepared with. Needed to prepare it again after a
+	 * reconnection.
+	 *
+	 * @var    array
+	 */
+	protected $preparedDriverOptions = [];
+
 	private $isReconnecting = false;
 
 	private $checkingConnected = false;
@@ -461,6 +469,7 @@ abstract class Pdo extends Driver
 		$limit    = $this->limit;
 		$offset   = $this->offset;
 		$prepared = $this->prepared;
+		$preparedDriverOptions = $this->preparedDriverOptions;
 
 		try
 		{
@@ -482,6 +491,7 @@ abstract class Pdo extends Driver
 		$this->limit             = $limit;
 		$this->offset            = $offset;
 		$this->prepared          = $prepared;
+		$this->preparedDriverOptions = $preparedDriverOptions;
 		$this->checkingConnected = false;
 
 		return $status;
@@ -654,6 +664,12 @@ abstract class Pdo extends Driver
 						// Throw the normal query exception.
 						throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
 					}
+
+					// The statement was prepared on the dead connection. Prepare it again, on the new one. Any bound
+					// parameters are read from the query object when execute() runs, so they survive.
+					$this->prepared = $this->connection->prepare(
+						$this->replacePrefix((string) $this->sql), $this->preparedDriverOptions
+					);
 
 					// Since we were able to reconnect, run the query again.
 					return $this->execute();
@@ -912,6 +928,9 @@ abstract class Pdo extends Driver
 		$sql = $this->replacePrefix((string) $query);
 
 		$this->prepared = $this->connection->prepare($sql, $driverOptions);
+
+		// Remember how the statement was prepared, in case it has to be prepared again after a reconnection.
+		$this->preparedDriverOptions = $driverOptions;
 
 		// Store reference to the DatabaseQuery instance:
 		parent::setQuery($query, $offset, $limit);

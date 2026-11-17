@@ -12,6 +12,7 @@ namespace Awf\Tests\Integration\Database;
 
 use Awf\Database\Driver;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
+use Awf\Tests\Integration\Database\Fixture\BindingPdomysql;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
@@ -30,7 +31,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
         ];
     }
 
-    private function build(string $family): Driver
+    private function build(string $family, bool $withBinding = false): Driver
     {
         if ($family === 'pdomysql' && !extension_loaded('pdo_mysql')) {
             $this->markTestSkipped('The pdo_mysql extension is not available.');
@@ -72,7 +73,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             return new \Awf\Database\Driver\Mysqli($opts);
         }
 
-        return new \Awf\Database\Driver\Pdomysql($opts);
+        return $withBinding ? new BindingPdomysql($opts) : new \Awf\Database\Driver\Pdomysql($opts);
     }
 
     /** Kill a server-side connection from a second, independent connection. */
@@ -109,7 +110,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
     }
 
     #[DataProvider('mysqlDrivers')]
-    public function testLostConnectionNeverLeaksNativeExceptionAndDriverRecovers(string $family): void
+    public function testReconnectsTransparentlyAfterKill(string $family): void
     {
         $db = $this->build($family);
 
@@ -117,14 +118,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             $oldId = $this->connectionId($db);
             $this->kill($oldId);
 
-            try {
-                $newId = $this->connectionId($db);
-            } catch (RuntimeException $e) {
-                // The PDO driver retries a statement prepared on the dead connection (item 35). A RuntimeException is
-                // acceptable here; a raw PDOException or mysqli_sql_exception (both extend RuntimeException) is not.
-                $this->assertNotNative($e);
-                $newId = $this->connectionId($db);
-            }
+            $newId = $this->connectionId($db);
 
             self::assertNotSame($oldId, $newId, 'The driver must have opened a new connection.');
         } finally {
@@ -132,17 +126,30 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
         }
     }
 
-    public function testMysqliReconnectsTransparentlyAfterKill(): void
+    public function testPdoReconnectKeepsBoundParametersAndLimit(): void
     {
-        $db = $this->build('mysqli');
+        $db = $this->build('pdomysql', true);
 
         try {
             $oldId = $this->connectionId($db);
             $this->kill($oldId);
 
-            $newId = $this->connectionId($db);
+            $value = 'bound value';
+            $query = $db->getQuery(true)
+                ->select('CONNECTION_ID() AS cid')
+                ->select(':val AS val')
+                ->select(':num AS num');
+            $number = 42;
+            $query->bind(':val', $value);
+            $query->bind(':num', $number, \PDO::PARAM_INT);
 
-            self::assertNotSame($oldId, $newId);
+            $db->setQuery($query, 0, 1);
+            $row = $db->loadObject();
+
+            self::assertNotNull($row);
+            self::assertNotSame($oldId, (int) $row->cid, 'The driver must have opened a new connection.');
+            self::assertSame('bound value', $row->val);
+            self::assertSame(42, (int) $row->num);
         } finally {
             $db->disconnect();
         }
