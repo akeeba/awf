@@ -587,4 +587,32 @@ class Postgresql extends Database\Query implements Database\QueryLimitable
 			return "timestamp '" . $date . "' - interval '" . ltrim($interval, '-') . " " . $datePart . "'";
 		}
 	}
+
+	/**
+	 * Bound parameters are not supported by this driver.
+	 *
+	 * @param   mixed  ...$args  Ignored.
+	 *
+	 * @return  void
+	 *
+	 * @throws  \BadMethodCallException  Always.
+	 */
+	public function bind(...$args)
+	{
+		throw new \BadMethodCallException('Bound parameters are not supported by ' . static::class . '; use quote() or quoteName().');
+	}
+
+	/**
+	 * Bound parameters are not supported by this driver.
+	 *
+	 * @param   mixed  ...$args  Ignored.
+	 *
+	 * @return  void
+	 *
+	 * @throws  \BadMethodCallException  Always.
+	 */
+	public function getBounded(...$args)
+	{
+		throw new \BadMethodCallException('Bound parameters are not supported by ' . static::class . '; use quote() or quoteName().');
+	}
 }

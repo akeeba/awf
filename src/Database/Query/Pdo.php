@@ -9,14 +9,17 @@ namespace Awf\Database\Query;
 
 use Awf\Database\Query;
 use Awf\Database\QueryLimitable;
+use Awf\Database\QueryPreparable;
 
 /**
  * Query Building Class.
  *
  * This class is adapted from the Joomla! Framework
  */
-class Pdo extends Query implements QueryLimitable
+class Pdo extends Query implements QueryLimitable, QueryPreparable
 {
+	use Bindable;
+
 	/**
 	 * @var    integer  The offset for the result set.
 	 */

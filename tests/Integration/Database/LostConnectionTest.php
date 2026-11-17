@@ -12,7 +12,6 @@ namespace Awf\Tests\Integration\Database;
 
 use Awf\Database\Driver;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
-use Awf\Tests\Integration\Database\Fixture\BindingPdomysql;
 use Awf\Tests\Integration\Database\Fixture\SilentPdomysql;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
@@ -74,10 +73,6 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             return new \Awf\Database\Driver\Mysqli($opts);
         }
 
-        if ($variant === 'binding') {
-            return new BindingPdomysql($opts);
-        }
-
         if ($variant === 'silent') {
             return new SilentPdomysql($opts);
         }
@@ -137,7 +132,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
 
     public function testPdoReconnectKeepsBoundParametersAndLimit(): void
     {
-        $db = $this->build('pdomysql', 'binding');
+        $db = $this->build('pdomysql');
 
         try {
             $oldId = $this->connectionId($db);
