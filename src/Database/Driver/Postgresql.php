@@ -567,6 +567,12 @@ class Postgresql extends Driver
 		{
 			foreach ($fields as $field)
 			{
+				// Also expose the MySQL (SHOW FULL COLUMNS) property names which DataModel and the Installer read.
+				// The lowercase properties stay for backwards compatibility.
+				$field->Field = $field->column_name;
+				$field->Type  = $field->type;
+				$field->Null  = $field->null;
+
 				$result[$field->column_name] = $field;
 			}
 		}

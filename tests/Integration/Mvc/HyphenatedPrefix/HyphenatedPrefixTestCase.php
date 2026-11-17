@@ -125,6 +125,53 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         self::assertSame('Updated', $this->titleOf($id));
     }
 
+    public function testSaveRejectsEmptyValueInNotNullColumn(): void
+    {
+        $model = new Widget($this->container);
+
+        try {
+            $model->save(['title' => '']);
+            self::fail('Saving an empty value into a NOT NULL column must fail validation.');
+        } catch (\RuntimeException $e) {
+            self::assertSame('Testapp_Widget_ERR_title_EMPTY', $e->getMessage());
+            self::assertSame(500, $e->getCode());
+        }
+
+        self::assertSame(0, $this->countRows('#__widgets'));
+    }
+
+    public function testSaveRaisesNoPhpErrors(): void
+    {
+        $errors = [];
+
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$errors): bool {
+                $errors[] = $errstr;
+
+                return true;
+            }
+        );
+
+        try {
+            $model = new Widget($this->container);
+            $model->getTableFields();
+            $model->save(['title' => 'Created']);
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $errors);
+    }
+
+    public function testTableFieldsExposeMysqlStylePropertyNames(): void
+    {
+        $title = (new Widget($this->container))->getTableFields()['title'];
+
+        self::assertSame('NO', $title->Null);
+        self::assertIsString($title->Type);
+        self::assertStringContainsString('char', strtolower($title->Type));
+    }
+
     public function testFindLoadsRecord(): void
     {
         $id = $this->insertWidget('Findable');
