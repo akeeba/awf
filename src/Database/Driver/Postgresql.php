@@ -253,28 +253,30 @@ class Postgresql extends Driver
 			return 'NULL';
 		}
 
-		$result = pg_escape_string($this->connection, $text);
-
 		if ($extra)
 		{
-			$result = addcslashes($result, '%_');
+			// Escape the LIKE metacharacters in the raw value first, then escape the result as a string literal.
+			// With standard_conforming_strings off, the literal escaping doubles every backslash, so the server
+			// sees \% / \_ / \\ in the pattern. The other order lets the literal parser eat the backslashes.
+			$text = addcslashes((string) $text, '\\%_');
 		}
 
-		return $result;
+		return pg_escape_string($this->connection, $text);
 	}
 
 	/**
 	 * Returns the ` ESCAPE '...'` fragment to append to a LIKE clause whose pattern was escaped
 	 * with escape($value, true).
 	 *
-	 * `standard_conforming_strings` is on by default since PostgreSQL 9.1, so the escape
-	 * character is written as a single backslash rather than the doubled form MySQL requires.
+	 * This driver and its PDO subclass run SET standard_conforming_strings=off on connect, so a backslash in a
+	 * string literal is an escape character and the escape character must be written doubled, exactly like on
+	 * MySQL. The literal '\\' has a single backslash as its value.
 	 *
 	 * @return  string
 	 */
 	public function getLikeEscapeSql()
 	{
-		return " ESCAPE '\\'";
+		return " ESCAPE '\\\\'";
 	}
 
 	/**

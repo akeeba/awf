@@ -801,12 +801,12 @@ class FilterTest extends TestCase
         self::assertSame(" ESCAPE '\\'", $driver->getLikeEscapeSql());
     }
 
-    public function testGetLikeEscapeSqlPostgresqlOverrideIsSingleBackslash(): void
+    public function testGetLikeEscapeSqlPostgresqlOverrideIsDoubledBackslash(): void
     {
         $driver = (new \ReflectionClass(PostgresqlDriver::class))->newInstanceWithoutConstructor();
 
-        // standard_conforming_strings is on by default since PostgreSQL 9.1.
-        self::assertSame(" ESCAPE '\\'", $driver->getLikeEscapeSql());
+        // The driver turns standard_conforming_strings off on connect, so like MySQL the backslash is doubled.
+        self::assertSame(" ESCAPE '\\\\'", $driver->getLikeEscapeSql());
     }
 
     public function testGetLikeEscapeSqlIsNotOverriddenOnPdo(): void
