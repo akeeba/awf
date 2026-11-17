@@ -603,6 +603,16 @@ class Pgsql extends Postgresql
 	 */
 	public function transactionRollback($toSavepoint = null)
 	{
+		if (!is_null($toSavepoint))
+		{
+			// Same SQL as the native Postgresql driver. PDO's transaction state is unaffected: the transaction goes on.
+			$this->connect();
+			$this->setQuery('ROLLBACK TO SAVEPOINT ' . $this->escape($toSavepoint));
+			$this->execute();
+
+			return;
+		}
+
 		$this->connection->rollBack();
 	}
 

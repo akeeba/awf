@@ -242,4 +242,18 @@ final class PgsqlDriverTest extends AbstractIntegrationTestCase
             self::assertSame([], $this->ids($db));
         });
     }
+
+    public function testRollbackToSavepointKeepsEarlierWork(): void
+    {
+        $this->withTable(function (Pgsql $db): void {
+            $db->transactionStart();
+            $db->setQuery('INSERT INTO awf_pgsql_txn_test (id) VALUES (1)')->execute();
+            $db->transactionSavepoint('sp1');
+            $db->setQuery('INSERT INTO awf_pgsql_txn_test (id) VALUES (2)')->execute();
+            $db->transactionRollback('sp1');
+            $db->transactionCommit();
+
+            self::assertSame([1], $this->ids($db));
+        });
+    }
 }
