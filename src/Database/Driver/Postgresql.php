@@ -382,10 +382,10 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 
-		$this->setQuery('SHOW LC_COLLATE');
-		$array = $this->loadAssocList();
+		// PostgreSQL 16 removed the lc_collate setting, so SHOW LC_COLLATE no longer works. The catalogue works on all versions.
+		$this->setQuery('SELECT datcollate FROM pg_database WHERE datname = current_database()');
 
-		return $array[0]['lc_collate'];
+		return $this->loadResult();
 	}
 
 	/**
