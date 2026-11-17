@@ -616,28 +616,33 @@ abstract class Pdo extends Driver
 			{
 				$this->isReconnecting = true;
 
+				// Clear the flag however this ends; otherwise this object would never try to reconnect again.
 				try
 				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
+					try
+					{
+						// Attempt to reconnect.
+						$this->connection = null;
+						$this->connect();
+					}
+					catch (\RuntimeException $e)
+						// If connect fails, ignore that exception and throw the normal exception.
+					{
+						// Use the error captured before reconnecting: the failed connect() left no connection to ask.
+						$this->errorNum = $errorNum;
+						$this->errorMsg = $errorMsg;
+
+						// Throw the normal query exception.
+						throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
+					}
+
+					// Since we were able to reconnect, run the query again.
+					return $this->execute();
 				}
-				catch (\RuntimeException $e)
-					// If connect fails, ignore that exception and throw the normal exception.
+				finally
 				{
-					// Get the error number and message.
-					$this->errorNum = (int) $this->connection->errorCode();
-					$this->errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
-
-					// Throw the normal query exception.
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+					$this->isReconnecting = false;
 				}
-
-				// Since we were able to reconnect, run the query again.
-				$result               = $this->execute();
-				$this->isReconnecting = false;
-
-				return $result;
 			}
 			else
 				// The server was not disconnected.

@@ -406,26 +406,31 @@ class Mysqli extends Driver
 			{
 				$this->isReconnecting = true;
 
+				// Clear the flag however this ends; otherwise this object would never try to reconnect again.
 				try
 				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
+					try
+					{
+						// Attempt to reconnect.
+						$this->connection = null;
+						$this->connect();
+					}
+						// If connect fails, ignore that exception and throw the normal exception.
+					catch (\RuntimeException $e)
+					{
+						throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
+					}
+
+					$this->errorNum = null;
+					$this->errorMsg = null;
+
+					// Since we were able to reconnect, run the query again.
+					return $this->execute();
 				}
-					// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
+				finally
 				{
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+					$this->isReconnecting = false;
 				}
-
-				$this->errorNum = null;
-				$this->errorMsg = null;
-
-				// Since we were able to reconnect, run the query again.
-				$result               = $this->execute();
-				$this->isReconnecting = false;
-
-				return $result;
 			}
 			// The server was not disconnected.
 			else
