@@ -335,20 +335,29 @@ class Pgsql extends Postgresql
 		$this->errorMsg = '';
 
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
+		$nativeException = null;
+
 		try
 		{
 			$this->cursor = $this->connection->query($query);
 		}
-		catch (\Exception $e)
+		catch (\PDOException $nativeException)
 		{
+			// A failed query throws in PDO::ERRMODE_EXCEPTION. Handle it like the false return of the silent mode, but
+			// keep the exception. Anything which is not a PDOException is not a query error and propagates.
+			$this->cursor = false;
 		}
 
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
-			$errorInfo      = $this->connection->errorInfo();
-			$this->errorNum = $errorInfo[1];
-			$this->errorMsg = $errorInfo[2] . ' SQL=' . $query;
+			// Read the error before connected() below runs a query of its own and clears it.
+			$errorInfo = ($nativeException !== null) ? $nativeException->errorInfo : $this->connection->errorInfo();
+			$errorInfo = is_array($errorInfo) ? $errorInfo : [];
+
+			$this->errorNum = isset($errorInfo[1]) ? (int) $errorInfo[1] : 0;
+			$this->errorMsg = (isset($errorInfo[2]) ? (string) $errorInfo[2] : (($nativeException !== null) ? $nativeException->getMessage() : ''))
+				. ' SQL=' . $query;
 
 			// Check if the server was disconnected.
 			if (!$this->connected() && !$this->isReconnecting)
@@ -381,7 +390,7 @@ class Pgsql extends Postgresql
 			// The server was not disconnected.
 			else
 			{
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				throw new \RuntimeException($this->errorMsg, $this->errorNum, $nativeException);
 			}
 		}
 
