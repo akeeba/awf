@@ -663,6 +663,84 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
         }
     }
 
+    public function testRenameTableDoesNotTouchSequencesOfTablesMatchingTheNameAsALikePattern(): void
+    {
+        // "_" is a LIKE wildcard: "awf_rn_a_b" as a pattern also matches "awf_rn_aXb_id_seq".
+        $target    = 'awf_rn_a_b';
+        $bystander = 'awf_rn_aXb';
+        $renamed   = 'awf_rn_renamed';
+
+        foreach ([$target, $bystander, $renamed] as $name) {
+            $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->quoteName($name));
+            $this->db->execute();
+        }
+
+        foreach ([$target, $bystander] as $name) {
+            $this->db->setQuery('CREATE TABLE ' . $this->db->quoteName($name) . ' (id SERIAL PRIMARY KEY)');
+            $this->db->execute();
+        }
+
+        try {
+            $this->db->renameTable($target, $renamed);
+
+            self::assertSame(
+                [$bystander . '_id_seq'],
+                $this->sequenceNamesWithPrefix($bystander),
+                'The sequence of an unrelated table must not be renamed.'
+            );
+            self::assertSame([$renamed . '_id_seq'], $this->sequenceNamesWithPrefix($renamed));
+            self::assertContains($bystander, $this->db->getTableList());
+        } finally {
+            foreach ([$target, $bystander, $renamed] as $name) {
+                $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->quoteName($name));
+                $this->db->execute();
+            }
+        }
+    }
+
+    public function testRenameTableWorksWithASingleQuoteInTheTableName(): void
+    {
+        $old = "awf_rn_o'q";
+        $new = 'awf_rn_quoted_new';
+
+        foreach ([$old, $new] as $name) {
+            $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->quoteName($name));
+            $this->db->execute();
+        }
+
+        $this->db->setQuery('CREATE TABLE ' . $this->db->quoteName($old) . ' (id SERIAL PRIMARY KEY)');
+        $this->db->execute();
+
+        try {
+            $this->db->renameTable($old, $new);
+
+            self::assertContains($new, $this->db->getTableList());
+            self::assertSame([$new . '_id_seq'], $this->sequenceNamesWithPrefix($new));
+        } finally {
+            foreach ([$old, $new] as $name) {
+                $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->quoteName($name));
+                $this->db->execute();
+            }
+        }
+    }
+
+    /**
+     * Names of the sequences whose name starts with $prefix.
+     *
+     * @return string[]
+     */
+    private function sequenceNamesWithPrefix(string $prefix): array
+    {
+        $this->db->setQuery(
+            "SELECT relname FROM pg_class WHERE relkind = 'S' ORDER BY relname"
+        );
+
+        return array_values(array_filter(
+            $this->db->loadColumn(),
+            static fn(string $name): bool => str_starts_with($name, $prefix)
+        ));
+    }
+
     public function testRenameTableOnNonExistentTableThrows(): void
     {
         $this->expectException(RuntimeException::class);

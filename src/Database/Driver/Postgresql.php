@@ -951,7 +951,8 @@ class Postgresql extends Driver
 									WHERE nspname NOT LIKE \'pg_%\'
 									AND nspname != \'information_schema\'
 								)
-								AND relname LIKE \'%' . $oldTable . '%\' ;'
+								AND relname LIKE ' . $this->quote('%' . strtr($oldTable, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%')
+								. ' ESCAPE \'!\' ;'
 			);
 
 			$oldSequences = $this->loadColumn();
