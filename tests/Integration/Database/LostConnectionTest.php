@@ -338,6 +338,41 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
         }
     }
 
+    public function testPgsqlReconnectKeepsBoundParametersAndLimit(): void
+    {
+        $db = $this->buildPgsql();
+
+        try {
+            $db->setQuery('SELECT pg_backend_pid()');
+            $oldPid = (int) $db->loadResult();
+
+            $conn = $this->requirePostgresql();
+            $pdo  = new \PDO($conn['dsn'], $conn['user'], $conn['pass'], [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]);
+            $pdo->query('SELECT pg_terminate_backend(' . $oldPid . ')');
+            $pdo = null;
+            usleep(200000);
+
+            $value  = 'bound value';
+            $number = 42;
+            $query  = $db->getQuery(true)
+                ->select('pg_backend_pid() AS pid')
+                ->select('CAST(:val AS text) AS val')
+                ->select('CAST(:num AS integer) AS num');
+            $query->bind(':val', $value);
+            $query->bind(':num', $number, \PDO::PARAM_INT);
+
+            $db->setQuery($query, 0, 1);
+            $row = $db->loadObject();
+
+            self::assertNotNull($row);
+            self::assertNotSame($oldPid, (int) $row->pid, 'The driver must have opened a new connection.');
+            self::assertSame('bound value', $row->val);
+            self::assertSame(42, (int) $row->num);
+        } finally {
+            $db->disconnect();
+        }
+    }
+
     public function testPgsqlSqlErrorThrowsRuntimeExceptionWithServerMessage(): void
     {
         $db = $this->buildPgsql();

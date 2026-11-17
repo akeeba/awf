@@ -100,13 +100,19 @@ class Mysqli extends Database\Query implements Database\QueryLimitable
 	/**
 	 * Bound parameters are not supported by this driver.
 	 *
-	 * @param   mixed  ...$args  Ignored.
+	 * The signature matches QueryPreparable::bind(), so that a subclass can implement the interface.
+	 *
+	 * @param   mixed  $key            Ignored.
+	 * @param   mixed  &$value         Ignored.
+	 * @param   int    $dataType       Ignored.
+	 * @param   int    $length         Ignored.
+	 * @param   array  $driverOptions  Ignored.
 	 *
 	 * @return  void
 	 *
 	 * @throws  \BadMethodCallException  Always.
 	 */
-	public function bind(...$args)
+	public function bind($key = null, &$value = null, $dataType = \PDO::PARAM_STR, $length = 0, $driverOptions = array())
 	{
 		throw new \BadMethodCallException('Bound parameters are not supported by ' . static::class . '; use quote() or quoteName().');
 	}
@@ -114,13 +120,13 @@ class Mysqli extends Database\Query implements Database\QueryLimitable
 	/**
 	 * Bound parameters are not supported by this driver.
 	 *
-	 * @param   mixed  ...$args  Ignored.
+	 * @param   mixed  $key  Ignored.
 	 *
 	 * @return  void
 	 *
 	 * @throws  \BadMethodCallException  Always.
 	 */
-	public function getBounded(...$args)
+	public function &getBounded($key = null)
 	{
 		throw new \BadMethodCallException('Bound parameters are not supported by ' . static::class . '; use quote() or quoteName().');
 	}

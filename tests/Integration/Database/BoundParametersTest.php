@@ -28,10 +28,6 @@ final class BoundParametersTest extends AbstractIntegrationTestCase
 {
     private function connect(string $family): Driver
     {
-        if ($family === 'pgsql') {
-            $this->markTestSkipped('PDO PostgreSQL binding: item 37 part B.');
-        }
-
         if ($family === 'sqlite') {
             if (!Sqlite::isSupported()) {
                 $this->markTestSkipped('The pdo_sqlite extension is not available.');
@@ -133,8 +129,9 @@ final class BoundParametersTest extends AbstractIntegrationTestCase
         self::assertNotNull($row);
         self::assertSame($string, $row->s);
         self::assertSame(42, (int) $row->i);
-        self::assertSame(1, (int) $row->t);
-        self::assertSame(0, (int) $row->f);
+        // PostgreSQL returns an untyped boolean parameter as 't' / 'f'.
+        self::assertContains($row->t, ['1', 1, 't', true]);
+        self::assertContains($row->f, ['0', 0, 'f', false, '']);
     }
 
     #[DataProvider('families')]

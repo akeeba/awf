@@ -9,6 +9,7 @@ namespace Awf\Database\Driver;
 
 // !!IMPORTANT!! DO NOT PUT use PDO STATEMENTS HERE. IT CAUSES IMMEDIATE CRASH ON PHP INSTALLATIONS WHICH LACK PDO.
 use Awf\Database\Query\Pgsql as QueryBase;
+use Awf\Database\QueryPreparable;
 
 /**
  * PostgreSQL database driver
@@ -337,9 +338,34 @@ class Pgsql extends Postgresql
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
 		$nativeException = null;
 
+		$statement = null;
+
 		try
 		{
-			$this->cursor = $this->connection->query($query);
+			$bounded = ($this->sql instanceof QueryPreparable) ? $this->sql->getBounded() : [];
+
+			if (empty($bounded))
+			{
+				$this->cursor = $this->connection->query($query);
+			}
+			else
+			{
+				// Prepare on the current connection every time: after a reconnection the retry below runs execute()
+				// again, so the statement is never one which was prepared on the dead connection. The parameters are
+				// read from the query object, so they survive as well.
+				$statement    = $this->connection->prepare($query);
+				$this->cursor = false;
+
+				if ($statement instanceof \PDOStatement)
+				{
+					foreach ($bounded as $key => $obj)
+					{
+						$statement->bindParam($key, $obj->value, $obj->dataType, $obj->length, $obj->driverOptions);
+					}
+
+					$this->cursor = $statement->execute() ? $statement : false;
+				}
+			}
 		}
 		catch (\PDOException $nativeException)
 		{
@@ -352,7 +378,20 @@ class Pgsql extends Postgresql
 		if (!$this->cursor)
 		{
 			// Read the error before connected() below runs a query of its own and clears it.
-			$errorInfo = ($nativeException !== null) ? $nativeException->errorInfo : $this->connection->errorInfo();
+			if ($nativeException !== null)
+			{
+				$errorInfo = $nativeException->errorInfo;
+			}
+			elseif ($statement instanceof \PDOStatement)
+			{
+				// The error belongs to the statement which failed, not to the connection.
+				$errorInfo = $statement->errorInfo();
+			}
+			else
+			{
+				$errorInfo = $this->connection->errorInfo();
+			}
+
 			$errorInfo = is_array($errorInfo) ? $errorInfo : [];
 
 			$this->errorNum = isset($errorInfo[1]) ? (int) $errorInfo[1] : 0;
