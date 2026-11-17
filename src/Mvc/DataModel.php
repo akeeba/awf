@@ -2191,11 +2191,11 @@ class DataModel extends Model
 	}
 
 	/**
-	 * Return the first item found or throw a \RuntimeException
+	 * Return the first item found or throw a RecordNotLoaded exception
 	 *
 	 * @return  static
 	 *
-	 * @throws  \RuntimeException
+	 * @throws  RecordNotLoaded  When no item is found (a \RuntimeException with code 404)
 	 */
 	public function firstOrFail()
 	{
@@ -2203,7 +2203,7 @@ class DataModel extends Model
 
 		if (is_null($item))
 		{
-			throw new \RuntimeException('No items found in ' . get_class($this));
+			throw new RecordNotLoaded('No items found in ' . get_class($this), 404);
 		}
 
 		return $item;
@@ -2426,12 +2426,14 @@ class DataModel extends Model
 	 * @param   integer  $userId
 	 *
 	 * @return  $this  Self, for chaining
+	 *
+	 * @throws  RecordNotLoaded  When no record is loaded
 	 */
 	public function lock($userId = null)
 	{
 		if (!$this->getId())
 		{
-			throw new \RuntimeException("Can't lock a not loaded DataModel");
+			throw new RecordNotLoaded("Can't lock a not loaded DataModel");
 		}
 
 		if (!$this->hasField('locked_on') && !$this->hasField('locked_by'))

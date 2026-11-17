@@ -331,6 +331,43 @@ class DataModelCrudTest extends TestCase
         $model->findOrFail(99999);
     }
 
+    public function testFindOrFailThrowsRecordNotLoadedWithCode404(): void
+    {
+        try {
+            $this->makeModel()->findOrFail(99999);
+            self::fail('No exception was thrown');
+        } catch (RecordNotLoaded $e) {
+            self::assertSame(404, $e->getCode());
+        }
+    }
+
+    public function testFirstOrFailReturnsExistingRecord(): void
+    {
+        $id   = $this->insertRaw('FirstOne');
+        $item = $this->makeModel()->where('item_id', '=', $id)->firstOrFail();
+
+        self::assertSame((string) $id, (string) $item->getId());
+    }
+
+    public function testFirstOrFailThrowsRecordNotLoadedWithCode404(): void
+    {
+        try {
+            $this->makeModel()->where('item_id', '=', 99999)->firstOrFail();
+            self::fail('No exception was thrown');
+        } catch (RecordNotLoaded $e) {
+            self::assertSame(404, $e->getCode());
+            self::assertStringStartsWith('No items found in ', $e->getMessage());
+        }
+    }
+
+    public function testLockThrowsRecordNotLoadedOnNotLoadedModel(): void
+    {
+        $this->expectException(RecordNotLoaded::class);
+        $this->expectExceptionMessage("Can't lock a not loaded DataModel");
+
+        $this->makeModel()->lock(1);
+    }
+
     // -------------------------------------------------------------------------
     // reset()
     // -------------------------------------------------------------------------
