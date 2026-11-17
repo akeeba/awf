@@ -395,6 +395,53 @@ class HasManyTest extends TestCase
         self::assertCount(0, $result);
     }
 
+    public function testHasManyLazyLoadReturnsNothingWhenLocalKeyIsBlankString(): void
+    {
+        $userId = $this->insertUser('Alice');
+        $this->insertArticle($userId, 'AliceArticle');
+        $this->insertArticle(0, 'OrphanArticle');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', '');
+
+        $result = $this->makeHasMany($user)->getData();
+
+        self::assertInstanceOf(Collection::class, $result);
+        self::assertCount(0, $result);
+    }
+
+    public function testHasManyLazyLoadWithIntegerZeroLocalKeyReturnsOnlyRowsWithForeignKeyZero(): void
+    {
+        $userId = $this->insertUser('Alice');
+        $this->insertArticle($userId, 'AliceArticle');
+        $this->insertArticle(0, 'Orphan1');
+        $this->insertArticle(0, 'Orphan2');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', 0);
+
+        $titles = [];
+
+        foreach ($this->makeHasMany($user)->getData() as $article) {
+            $titles[] = $article->title;
+        }
+
+        sort($titles);
+
+        self::assertSame(['Orphan1', 'Orphan2'], $titles);
+    }
+
+    public function testHasManyLazyLoadWithIntegerZeroLocalKeyAndNoMatchingRowsReturnsNothing(): void
+    {
+        $userId = $this->insertUser('Alice');
+        $this->insertArticle($userId, 'AliceArticle');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', 0);
+
+        self::assertCount(0, $this->makeHasMany($user)->getData());
+    }
+
     // =========================================================================
     // HasMany — caching (getData called twice)
     // =========================================================================
@@ -773,6 +820,36 @@ class HasManyTest extends TestCase
         $result = $relation->getData();
 
         self::assertNull($result);
+    }
+
+    public function testHasOneBlankStringLocalKeyReturnsNull(): void
+    {
+        $userId = $this->insertUser('Alice');
+        $this->insertProfile($userId, 'Alice bio');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', '');
+
+        self::assertNull($this->makeHasOne($user)->getData());
+    }
+
+    public function testHasOneIntegerZeroLocalKeyReturnsOnlyTheRowWithForeignKeyZero(): void
+    {
+        $userId = $this->insertUser('Alice');
+        $this->insertProfile($userId, 'Alice bio');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', 0);
+
+        // Nothing has a zero foreign key: not "the first profile"
+        self::assertNull($this->makeHasOne($user)->getData());
+
+        $this->insertProfile(0, 'Orphan bio');
+
+        $user = $this->makeUser();
+        $user->setFieldValue('user_id', 0);
+
+        self::assertSame('Orphan bio', $this->makeHasOne($user)->getData()->bio);
     }
 
     // =========================================================================

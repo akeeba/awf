@@ -421,6 +421,35 @@ class BelongsToTest extends TestCase
         self::assertNull($result);
     }
 
+    public function testBelongsToLazyLoadReturnsNullWhenLocalKeyIsBlankString(): void
+    {
+        $this->insertUser('Alice');
+
+        $article = $this->makeArticle();
+        $article->setFieldValue('user_id', '');
+
+        // Not "the first user in the table"
+        self::assertNull($this->makeBelongsTo($article, 'user_id', 'user_id')->getData());
+    }
+
+    public function testBelongsToLazyLoadWithIntegerZeroLocalKeyReturnsOnlyTheUserWithKeyZero(): void
+    {
+        $this->insertUser('Alice');
+
+        $article = $this->makeArticle();
+        $article->setFieldValue('user_id', 0);
+
+        // Not "the first user in the table"
+        self::assertNull($this->makeBelongsTo($article, 'user_id', 'user_id')->getData());
+
+        $this->db->setQuery("INSERT INTO bt_users (user_id, name) VALUES (0, 'Zero')")->execute();
+
+        $article = $this->makeArticle();
+        $article->setFieldValue('user_id', 0);
+
+        self::assertSame('Zero', $this->makeBelongsTo($article, 'user_id', 'user_id')->getData()->name);
+    }
+
     public function testBelongsToLazyLoadReturnsNullWhenNoMatchingUser(): void
     {
         // Article points to a user_id that does not exist
@@ -740,6 +769,41 @@ class BelongsToTest extends TestCase
 
         self::assertInstanceOf(Collection::class, $result);
         self::assertCount(0, $result);
+    }
+
+    public function testBelongsToManyLazyLoadReturnsEmptyWhenLocalKeyIsBlankString(): void
+    {
+        // A pivot table with a text key column, so that a blank key could match a blank pivot row
+        $this->db->setQuery('CREATE TABLE bt_text_pivot (article_id TEXT NOT NULL, tag_id INTEGER NOT NULL)')->execute();
+        $tagId = $this->insertTag('Orphan');
+        $this->db->setQuery("INSERT INTO bt_text_pivot (article_id, tag_id) VALUES ('', {$tagId})")->execute();
+
+        $article = $this->makeArticle();
+        $article->setFieldValue('article_id', '');
+
+        $relation = $this->makeBelongsToMany($article, null, null, 'bt_text_pivot', 'article_id', 'tag_id');
+
+        self::assertCount(0, $relation->getData());
+    }
+
+    public function testBelongsToManyLazyLoadWithIntegerZeroLocalKeyReturnsOnlyPivotRowsForZero(): void
+    {
+        $tagId1 = $this->insertTag('Linked to nothing');
+        $tagId2 = $this->insertTag('Linked to zero');
+        $this->insertPivot(5, $tagId1);
+        $this->insertPivot(0, $tagId2);
+
+        $article = $this->makeArticle();
+        $article->setFieldValue('article_id', 0);
+
+        $relation = $this->makeBelongsToMany(
+            $article, null, null, 'relbelongsto_article_tag', 'article_id', 'tag_id'
+        );
+
+        $result = $relation->getData();
+
+        self::assertCount(1, $result);
+        self::assertSame('Linked to zero', $result->first()->label);
     }
 
     // =========================================================================

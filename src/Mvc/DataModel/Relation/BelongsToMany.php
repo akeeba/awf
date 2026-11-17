@@ -390,7 +390,8 @@ class BelongsToMany extends DataModel\Relation
 			// Lazy loaded relation; get the single local key
 			$localKey = $this->parentModel->getFieldValue($this->localKey, null);
 
-			if (is_null($localKey))
+			// A missing or blank key relates to nothing. Integer 0 is a real key value and is filtered on.
+			if (is_null($localKey) || ($localKey === ''))
 			{
 				return false;
 			}
