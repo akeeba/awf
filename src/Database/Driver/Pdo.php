@@ -91,6 +91,15 @@ abstract class Pdo extends Driver
 	 */
 	protected $preparedDriverOptions = [];
 
+	/**
+	 * The exception PDO threw when the current statement was prepared, if it did. Some databases (SQLite, PDO MySQL
+	 * with emulated prepares off) validate the SQL when preparing it. setQuery() must not throw, so it keeps the
+	 * exception here and execute() reports it like any other query error.
+	 *
+	 * @var  \PDOException|null
+	 */
+	protected $prepareException = null;
+
 	private $isReconnecting = false;
 
 	private $checkingConnected = false;
@@ -470,6 +479,7 @@ abstract class Pdo extends Driver
 		$offset   = $this->offset;
 		$prepared = $this->prepared;
 		$preparedDriverOptions = $this->preparedDriverOptions;
+		$prepareException      = $this->prepareException;
 
 		try
 		{
@@ -492,6 +502,7 @@ abstract class Pdo extends Driver
 		$this->offset            = $offset;
 		$this->prepared          = $prepared;
 		$this->preparedDriverOptions = $preparedDriverOptions;
+		$this->prepareException  = $prepareException;
 		$this->checkingConnected = false;
 
 		return $status;
@@ -623,6 +634,12 @@ abstract class Pdo extends Driver
 		{
 			// Get the error number and message before we execute any more queries: connected() below runs one, which
 			// clears the error information.
+			if ($nativeException === null && !($this->prepared instanceof \PDOStatement))
+			{
+				// setQuery() could not prepare the statement. This is the exception PDO threw then.
+				$nativeException = $this->prepareException;
+			}
+
 			if ($nativeException !== null)
 			{
 				$errorInfo = $nativeException->errorInfo;
@@ -673,9 +690,7 @@ abstract class Pdo extends Driver
 
 					// The statement was prepared on the dead connection. Prepare it again, on the new one. Any bound
 					// parameters are read from the query object when execute() runs, so they survive.
-					$this->prepared = $this->connection->prepare(
-						$this->buildSql($this->sql), $this->preparedDriverOptions
-					);
+					$this->prepareStatement($this->buildSql($this->sql), $this->preparedDriverOptions);
 
 					// Since we were able to reconnect, run the query again.
 					return $this->execute();
@@ -934,12 +949,40 @@ abstract class Pdo extends Driver
 		// Store reference to the DatabaseQuery instance. This also stores the offset and limit, which buildSql() needs.
 		parent::setQuery($query, $offset, $limit);
 
-		$this->prepared = $this->connection->prepare($this->buildSql($query), $driverOptions);
-
-		// Remember how the statement was prepared, in case it has to be prepared again after a reconnection.
+		// Remember how the statement is prepared, in case it has to be prepared again after a reconnection.
 		$this->preparedDriverOptions = $driverOptions;
 
+		$this->prepareStatement($this->buildSql($query), $driverOptions);
+
 		return $this;
+	}
+
+	/**
+	 * Prepares the statement. A PDOException is not thrown: it is kept, and execute() reports it.
+	 *
+	 * @param   string  $sql            The SQL, with the prefix replaced and the limit applied.
+	 * @param   array   $driverOptions  The PDO driver options.
+	 *
+	 * @return  void
+	 */
+	protected function prepareStatement($sql, $driverOptions)
+	{
+		$this->prepareException = null;
+		$this->prepared         = null;
+
+		try
+		{
+			$prepared = $this->connection->prepare($sql, $driverOptions);
+		}
+		catch (\PDOException $e)
+		{
+			$this->prepareException = $e;
+
+			return;
+		}
+
+		// With ERRMODE_SILENT a failed prepare returns false. execute() asks the connection for the reason.
+		$this->prepared = $prepared;
 	}
 
 	/**
@@ -1152,7 +1195,8 @@ abstract class Pdo extends Driver
 	 */
 	protected function freeResult($cursor = null)
 	{
-		$this->executed = false;
+		$this->executed         = false;
+		$this->prepareException = null;
 
 		if ($cursor instanceof \PDOStatement)
 		{

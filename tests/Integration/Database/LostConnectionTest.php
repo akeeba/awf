@@ -12,6 +12,7 @@ namespace Awf\Tests\Integration\Database;
 
 use Awf\Database\Driver;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
+use Awf\Tests\Integration\Database\Fixture\NativePreparesPdomysql;
 use Awf\Tests\Integration\Database\Fixture\SilentPdomysql;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
@@ -75,6 +76,10 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
 
         if ($variant === 'silent') {
             return new SilentPdomysql($opts);
+        }
+
+        if ($variant === 'native') {
+            return new NativePreparesPdomysql($opts);
         }
 
         return new \Awf\Database\Driver\Pdomysql($opts);
@@ -201,6 +206,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
         return [
             'default (exception)' => [''],
             'silent'              => ['silent'],
+            'native prepares'     => ['native'],
         ];
     }
 
@@ -251,6 +257,42 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             $this->kill($oldId);
 
             self::assertNotSame($oldId, $this->connectionId($db));
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    public function testPdoNativePreparesReconnectsTransparentlyAfterKill(): void
+    {
+        $db = $this->build('pdomysql', 'native');
+
+        try {
+            $oldId = $this->connectionId($db);
+            $this->kill($oldId);
+
+            // The statement is prepared on the dead connection, so setQuery() itself meets the lost connection.
+            self::assertNotSame($oldId, $this->connectionId($db));
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    public function testPdoNativePreparesErrorDoesNotLeakIntoTheNextQuery(): void
+    {
+        $db = $this->build('pdomysql', 'native');
+
+        try {
+            $db->setQuery('SELEC 1');
+
+            try {
+                $db->execute();
+                self::fail('A syntax error must throw.');
+            } catch (RuntimeException $e) {
+                self::assertSame(1064, $e->getCode());
+                self::assertInstanceOf(\PDOException::class, $e->getPrevious());
+            }
+
+            self::assertGreaterThan(0, $this->connectionId($db));
         } finally {
             $db->disconnect();
         }
