@@ -184,4 +184,62 @@ final class PgsqlDriverTest extends AbstractIntegrationTestCase
 
         self::assertTrue($db->connected());
     }
+
+    /**
+     * Run the callback against a fresh table, returning the driver to it; the table is dropped afterwards.
+     */
+    private function withTable(callable $callback): void
+    {
+        $db = new Pgsql($this->options());
+
+        try {
+            $db->setQuery('DROP TABLE IF EXISTS awf_pgsql_txn_test')->execute();
+            $db->setQuery('CREATE TABLE awf_pgsql_txn_test (id INT PRIMARY KEY)')->execute();
+
+            $callback($db);
+        } finally {
+            try {
+                $db->setQuery('DROP TABLE IF EXISTS awf_pgsql_txn_test')->execute();
+            } catch (\Throwable $e) {
+                // The connection may be in a bad state; the table is dropped on the next run.
+            }
+
+            $db->disconnect();
+        }
+    }
+
+    private function ids(Pgsql $db): array
+    {
+        return array_map(
+            'intval',
+            $db->setQuery('SELECT id FROM awf_pgsql_txn_test ORDER BY id')->loadColumn() ?: []
+        );
+    }
+
+    public function testFailedStatementInTransactionDoesNotDropTheTransaction(): void
+    {
+        $this->withTable(function (Pgsql $db): void {
+            $db->transactionStart();
+            $db->setQuery('INSERT INTO awf_pgsql_txn_test (id) VALUES (10)')->execute();
+
+            try {
+                $db->setQuery('SELECT * FROM awf_pgsql_no_such_table')->execute();
+                self::fail('The failing statement must throw.');
+            } catch (RuntimeException $e) {
+                self::assertStringContainsString('awf_pgsql_no_such_table', $e->getMessage());
+            }
+
+            // The transaction is aborted: this must fail, not run on a new connection.
+            try {
+                $db->setQuery('INSERT INTO awf_pgsql_txn_test (id) VALUES (11)')->execute();
+                self::fail('A statement in an aborted transaction must throw.');
+            } catch (RuntimeException $e) {
+                self::assertStringContainsString('current transaction is aborted', $e->getMessage());
+            }
+
+            $db->transactionRollback();
+
+            self::assertSame([], $this->ids($db));
+        });
+    }
 }

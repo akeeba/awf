@@ -235,7 +235,12 @@ class Pgsql extends Postgresql
 			// If we catch an exception here, we must not be connected.
 		catch (\Exception $e)
 		{
-			$status = false;
+			/**
+			 * SQLSTATE 25P02 (in_failed_sql_transaction): the server answered, it just refuses statements until the
+			 * aborted transaction is rolled back. The connection is alive; do not "reconnect", which would silently
+			 * drop the caller's transaction.
+			 */
+			$status = ($e instanceof \PDOException) && isset($e->errorInfo[0]) && $e->errorInfo[0] === '25P02';
 		}
 
 		return $status;
