@@ -173,7 +173,7 @@ class Pgsql extends Postgresql
 			$this->errorNum = 2;
 			$this->errorMsg = 'Could not connect to PDO: ' . $e->getMessage();
 
-			return;
+			throw new \RuntimeException($this->errorMsg, 2, $e);
 		}
 
 		try

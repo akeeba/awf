@@ -128,9 +128,60 @@ final class PgsqlDriverTest extends AbstractIntegrationTestCase
 
         self::assertSame([], $warnings);
 
-        // Nothing listens on the default port 5432 locally, so the connection may fail; it must not warn.
+        // The port falls back to 5432. Whether anything listens there depends on the machine: either the connection
+        // succeeds or it fails with a RuntimeException. Only an undefined-key warning (or another error) is a bug.
         if ($exception !== null) {
             self::assertInstanceOf(RuntimeException::class, $exception);
         }
+    }
+
+    public function testConnectionFailureThrowsRuntimeExceptionWithPdoExceptionChained(): void
+    {
+        $options = $this->options(['password' => 'definitely-the-wrong-password']);
+
+        try {
+            new Pgsql($options);
+            self::fail('No exception was thrown');
+        } catch (RuntimeException $e) {
+            self::assertStringStartsWith('Could not connect to PDO: ', $e->getMessage());
+            self::assertSame(2, $e->getCode());
+            self::assertInstanceOf(\PDOException::class, $e->getPrevious());
+        }
+    }
+
+    public function testConnectionFailureOnUnusedPortThrowsRuntimeException(): void
+    {
+        $options = $this->options(['port' => 1]);
+
+        try {
+            new Pgsql($options);
+            self::fail('No exception was thrown');
+        } catch (RuntimeException $e) {
+            self::assertStringStartsWith('Could not connect to PDO: ', $e->getMessage());
+            self::assertSame(2, $e->getCode());
+            self::assertInstanceOf(\PDOException::class, $e->getPrevious());
+        }
+    }
+
+    public function testDriverFromOptionsReportsConnectionFailure(): void
+    {
+        $options = $this->options(['port' => 1]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to connect to the Database: Could not connect to PDO: ');
+
+        \Awf\Database\Driver::fromOptions($options);
+    }
+
+    public function testQueryReconnectsLazilyAfterDisconnect(): void
+    {
+        $db = new Pgsql($this->options());
+
+        $db->disconnect();
+        self::assertFalse($db->connected());
+
+        $db->setQuery('SELECT 1')->execute();
+
+        self::assertTrue($db->connected());
     }
 }
