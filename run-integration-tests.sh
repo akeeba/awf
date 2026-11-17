@@ -174,12 +174,10 @@ run_suite() {
 	local family="$1"
 
 	if [ "$family" = "postgres" ]; then
-		# The native pgsql driver ignores its "port" option; libpq falls back to PGPORT.
 		env -u AWF_TEST_MYSQL_DSN -u AWF_TEST_MYSQL_USER -u AWF_TEST_MYSQL_PASS \
 			AWF_TEST_PG_DSN="pgsql:host=127.0.0.1;port=${INTEGRATION_PGSQL_HOST_PORT};dbname=${DB_NAME}" \
 			AWF_TEST_PG_USER=postgres \
 			AWF_TEST_PG_PASS="$DB_PASSWORD" \
-			PGPORT="$INTEGRATION_PGSQL_HOST_PORT" \
 			vendor/bin/phpunit --testsuite Integration
 
 		return

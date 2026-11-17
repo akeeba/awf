@@ -137,7 +137,7 @@ class Postgresql extends Driver
 		}
 
 		// Build the DSN for the connection.
-		$dsn = "host={$this->options['host']} dbname={$this->options['database']} user={$this->options['user']} password={$this->options['password']}";
+		$dsn = $this->buildConnectionString();
 
 		// Attempt to connect to the server.
 		if (!($this->connection = @pg_connect($dsn, PGSQL_CONNECT_FORCE_NEW)))
@@ -147,6 +147,39 @@ class Postgresql extends Driver
 
 		pg_set_error_verbosity($this->connection, PGSQL_ERRORS_DEFAULT);
 		pg_query($this->connection, 'SET standard_conforming_strings=off');
+	}
+
+	/**
+	 * Builds the libpq connection string (keyword = 'value' pairs) from the driver options.
+	 *
+	 * Values are single-quoted, with backslashes and single quotes backslash-escaped, so that spaces and quote
+	 * characters in e.g. the password cannot corrupt the connection string. The port is only included when set.
+	 *
+	 * @return  string
+	 */
+	protected function buildConnectionString()
+	{
+		$parts = [
+			'host'     => $this->options['host'],
+			'port'     => isset($this->options['port']) ? $this->options['port'] : '',
+			'dbname'   => $this->options['database'],
+			'user'     => $this->options['user'],
+			'password' => $this->options['password'],
+		];
+
+		$pairs = [];
+
+		foreach ($parts as $keyword => $value)
+		{
+			if ($keyword === 'port' && ($value === '' || $value === null || $value === false || (int) $value <= 0))
+			{
+				continue;
+			}
+
+			$pairs[] = $keyword . " = '" . addcslashes((string) $value, "\\'") . "'";
+		}
+
+		return implode(' ', $pairs);
 	}
 
 	/**

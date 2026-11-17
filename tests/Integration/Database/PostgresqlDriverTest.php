@@ -175,9 +175,79 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
         return (int) $id;
     }
 
+    /**
+     * Connection details (host, port, database, user, password) taken from the test environment.
+     *
+     * @return array{host: string, port: int, database: string, user: string, password: string}
+     */
+    private function connectionOptions(): array
+    {
+        $db = $this->buildDriver($this->requirePostgresql());
+
+        $options = (new \ReflectionProperty(\Awf\Database\Driver::class, 'options'));
+
+        return $options->getValue($db);
+    }
+
     // -------------------------------------------------------------------------
     // Lifecycle / connection
     // -------------------------------------------------------------------------
+
+    public function testConnectHonoursThePortOptionWithoutPgportInTheEnvironment(): void
+    {
+        $oldPgPort = getenv('PGPORT');
+        putenv('PGPORT');
+
+        try {
+            $db = new Postgresql($this->connectionOptions());
+
+            $db->connect();
+
+            self::assertTrue($db->connected(), 'The driver must connect using its "port" option, not libpq defaults.');
+            $db->disconnect();
+        } finally {
+            if ($oldPgPort !== false) {
+                putenv('PGPORT=' . $oldPgPort);
+            }
+        }
+    }
+
+    public function testConnectEscapesSpecialCharactersInTheConnectionString(): void
+    {
+        $role     = 'awf_odd_role';
+        $password = "p a'ss\\word";
+        $quoted   = $this->db->quote($password);
+
+        $this->db->setQuery('DROP ROLE IF EXISTS ' . $this->db->quoteName($role));
+        $this->db->execute();
+        $this->db->setQuery(
+            'CREATE ROLE ' . $this->db->quoteName($role) . ' LOGIN PASSWORD ' . $quoted
+        );
+        $this->db->execute();
+
+        $oldPgPort = getenv('PGPORT');
+        putenv('PGPORT');
+
+        try {
+            $options             = $this->connectionOptions();
+            $options['user']     = $role;
+            $options['password'] = $password;
+
+            $db = new Postgresql($options);
+
+            $db->connect();
+
+            self::assertTrue($db->connected(), 'Spaces, quotes and backslashes in the password must be escaped.');
+            $db->disconnect();
+        } finally {
+            if ($oldPgPort !== false) {
+                putenv('PGPORT=' . $oldPgPort);
+            }
+
+            $this->db->setQuery('DROP ROLE IF EXISTS ' . $this->db->quoteName($role));
+            $this->db->execute();
+        }
+    }
 
     public function testConnectAndConnected(): void
     {
