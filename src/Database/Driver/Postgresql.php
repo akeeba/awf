@@ -349,8 +349,15 @@ class Postgresql extends Driver
 			$this->errorNum = 0;
 			$this->errorMsg = pg_last_error($this->connection) . " SQL=" . $query;
 
+			/**
+			 * Was the connection lost? Ask libpq before connected(): pg_ping() silently resets a broken link, so after it
+			 * runs the connection looks healthy and the failed query would never be retried. A failed statement inside a
+			 * transaction leaves the status at OK, so it does not trigger a reconnect.
+			 */
+			$connectionLost = (pg_connection_status($this->connection) === PGSQL_CONNECTION_BAD);
+
 			// Check if the server was disconnected.
-			if (!$this->connected() && !$this->isReconnecting)
+			if (($connectionLost || !$this->connected()) && !$this->isReconnecting)
 			{
 				$this->isReconnecting = true;
 
