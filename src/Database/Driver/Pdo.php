@@ -533,16 +533,15 @@ abstract class Pdo extends Driver
 			return 'NULL';
 		}
 
-		$text = str_replace("'", "''", $text);
-
-		$result = addcslashes($text, "\000\n\r\\\032");
-
 		if ($extra)
 		{
-			$result = addcslashes($result, '%_');
+			// LIKE metacharacters first, on the raw value; the literal escaping below doubles the backslashes.
+			$text = addcslashes((string) $text, '\\%_');
 		}
 
-		return $result;
+		$text = str_replace("'", "''", $text);
+
+		return addcslashes($text, "\000\n\r\\\032");
 	}
 
 	/**

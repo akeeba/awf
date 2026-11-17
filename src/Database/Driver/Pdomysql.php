@@ -393,14 +393,13 @@ class Pdomysql extends Pdo
 			return 'NULL';
 		}
 
-        $result = substr($this->connection->quote($text), 1, -1);
-
         if ($extra)
         {
-            $result = addcslashes($result, '%_');
+            // LIKE metacharacters first, on the raw value; then literal escaping, which doubles the backslashes.
+            $text = addcslashes((string) $text, '\\%_');
         }
 
-        return $result;
+        return substr($this->connection->quote($text), 1, -1);
     }
 
     /**

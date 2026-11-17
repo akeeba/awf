@@ -346,14 +346,13 @@ class Mysqli extends Driver
 			return 'NULL';
 		}
 
-		$result = mysqli_real_escape_string($this->getConnection(), $text);
-
 		if ($extra)
 		{
-			$result = addcslashes($result, '%_');
+			// LIKE metacharacters first, on the raw value; then literal escaping, which doubles the backslashes.
+			$text = addcslashes((string) $text, '\\%_');
 		}
 
-		return $result;
+		return mysqli_real_escape_string($this->getConnection(), $text);
 	}
 
 	/**

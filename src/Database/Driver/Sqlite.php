@@ -113,14 +113,14 @@ class Sqlite extends Pdo
 			return 'NULL';
 		}
 
-		$result = SQLite3::escapeString($text);
-
 		if ($extra)
 		{
-			$result = addcslashes($result, '%_');
+			// LIKE metacharacters first, on the raw value, so a backslash in the text is itself escaped.
+			// SQLite literals do not process backslashes, so the literal escaping leaves them alone.
+			$text = addcslashes((string) $text, '\\%_');
 		}
 
-		return $result;
+		return SQLite3::escapeString($text);
 	}
 
 	/**

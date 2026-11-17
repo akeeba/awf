@@ -12,7 +12,9 @@ namespace Awf\Tests\Integration\Database;
 
 use Awf\Database\Driver;
 use Awf\Database\Driver\Mysqli;
+use Awf\Database\Driver\Pdomysql;
 use Awf\Database\Driver\Pgsql;
+use Awf\Database\Driver\Sqlite;
 use Awf\Database\Driver\Postgresql;
 use Awf\Mvc\DataModel\Filter\Text;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
@@ -55,6 +57,8 @@ final class LikeSearchTest extends AbstractIntegrationTestCase
             'native PostgreSQL' => ['postgresql'],
             'PDO PostgreSQL'    => ['pgsql'],
             'mysqli'            => ['mysqli'],
+            'PDO MySQL'         => ['pdomysql'],
+            'SQLite'            => ['sqlite'],
         ];
     }
 
@@ -79,14 +83,8 @@ final class LikeSearchTest extends AbstractIntegrationTestCase
 
         self::assertSame(['100% done', '100%'], $this->partial('100%'));
         self::assertSame(['a_b'], $this->partial('a_b'));
-
-        // MySQL's escape($text, true) is not changed by this fix, and it escapes a backslash needle into a pattern
-        // that then reads as an escaped percent sign. Only the PostgreSQL drivers are held to this.
-        if ($driver !== 'mysqli') {
-            self::assertSame(['back\\slash', 'lone\\', 'c:\\%temp%'], $this->partial('\\'));
-            self::assertSame(['c:\\%temp%'], $this->partial('\\%'));
-        }
-
+        self::assertSame(['back\\slash', 'lone\\', 'c:\\%temp%'], $this->partial('\\'));
+        self::assertSame(['c:\\%temp%'], $this->partial('\\%'));
         self::assertSame(["it's", "it's here"], $this->partial("it's"));
         self::assertSame(['plain'], $this->partial('lai'));
     }
@@ -152,7 +150,32 @@ final class LikeSearchTest extends AbstractIntegrationTestCase
 
     private function connect(string $driver): void
     {
-        if ($driver === 'mysqli') {
+        if ($driver === 'sqlite') {
+            if (!Sqlite::isSupported()) {
+                $this->markTestSkipped('The pdo_sqlite extension is not available.');
+            }
+
+            $this->db = new Sqlite(['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => 'tst_']);
+            $idType   = 'INTEGER';
+        } elseif ($driver === 'pdomysql') {
+            if (!Pdomysql::isSupported()) {
+                $this->markTestSkipped('The pdo_mysql extension is not available.');
+            }
+
+            $conn     = $this->requireMysql();
+            $p        = self::parseDsn($conn['dsn'], 3306);
+            $this->db = new Pdomysql([
+                'driver'   => 'pdomysql',
+                'host'     => $p['host'],
+                'port'     => $p['port'],
+                'user'     => $conn['user'],
+                'password' => $conn['pass'],
+                'database' => $p['dbname'],
+                'prefix'   => 'tst_',
+                'select'   => true,
+            ]);
+            $idType   = 'INT NOT NULL AUTO_INCREMENT';
+        } elseif ($driver === 'mysqli') {
             if (!Mysqli::isSupported()) {
                 $this->markTestSkipped('The mysqli extension is not available.');
             }
