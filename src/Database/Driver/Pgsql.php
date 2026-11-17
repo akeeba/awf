@@ -48,6 +48,10 @@ class Pgsql extends Postgresql
 		// Init
 		$this->nameQuote = '"';
 
+		// Default the options connect() reads, as the Mysqli driver does
+		$options['port']   = !empty($options['port']) ? $options['port'] : 5432;
+		$options['select'] = (bool) ($options['select'] ?? true);
+
 		// Finalize initialization
 		parent::__construct($options);
 
