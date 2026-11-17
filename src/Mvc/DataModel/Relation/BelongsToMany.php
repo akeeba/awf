@@ -404,6 +404,12 @@ class BelongsToMany extends DataModel\Relation
 
 			$this->foreignKeyMap[$localKey] = $foreignKeys;
 
+			// No links in the pivot table. An empty IN() list is dropped by where() and would match every foreign row.
+			if (empty($foreignKeys))
+			{
+				return false;
+			}
+
 			$foreignModel->where($this->foreignKey, 'in', $this->foreignKeyMap[$localKey]);
 		}
 
