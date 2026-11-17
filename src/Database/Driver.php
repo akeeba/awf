@@ -412,6 +412,17 @@ abstract class Driver implements DatabaseInterface
 		$this->_database = (isset($options['database'])) ? $options['database'] : '';
 
 		$this->tablePrefix = (isset($options['prefix'])) ? $options['prefix'] : '';
+
+		/**
+		 * replacePrefix() pastes the prefix into the SQL after quoteName() has quoted the "#__" form of a table name, so
+		 * quoteName() never gets to escape it. An identifier quote character in the prefix would end the quoted name
+		 * early, breaking every query and letting the rest of the prefix through as raw SQL.
+		 */
+		if (strpbrk((string) $this->tablePrefix, '`"') !== false)
+		{
+			throw new \InvalidArgumentException('The database table name prefix must not contain backticks or double quotes.');
+		}
+
 		$this->charset = (isset($options['charset'])) ? $options['charset'] : null;
 		$this->count = 0;
 		$this->errorNum = 0;
