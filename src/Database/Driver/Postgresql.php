@@ -952,10 +952,10 @@ class Postgresql extends Driver
 		$query         = trim($query);
 		$replacedQuery = '';
 
-		if (strpos($query, '\''))
+		if (strpos($query, '\'') !== false)
 		{
 			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'currval'))
+			if (strpos($query, 'currval') !== false)
 			{
 				$query = explode('currval', $query);
 				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
@@ -966,7 +966,7 @@ class Postgresql extends Driver
 			}
 
 			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'nextval'))
+			if (strpos($query, 'nextval') !== false)
 			{
 				$query = explode('nextval', $query);
 				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
@@ -977,7 +977,7 @@ class Postgresql extends Driver
 			}
 
 			// Sequence name quoted with ' ' but need to be replaced
-			if (strpos($query, 'setval'))
+			if (strpos($query, 'setval') !== false)
 			{
 				$query = explode('setval', $query);
 				for ($nIndex = 1; $nIndex < count($query); $nIndex = $nIndex + 2)
@@ -991,7 +991,7 @@ class Postgresql extends Driver
 
 			for ($nIndex = 0; $nIndex < count($explodedQuery); $nIndex = $nIndex + 2)
 			{
-				if (strpos($explodedQuery[$nIndex], $prefix))
+				if (strpos($explodedQuery[$nIndex], $prefix) !== false)
 				{
 					$explodedQuery[$nIndex] = str_replace($prefix, $this->tablePrefix, $explodedQuery[$nIndex]);
 				}

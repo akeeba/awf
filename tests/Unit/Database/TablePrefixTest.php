@@ -85,6 +85,43 @@ class TablePrefixTest extends TestCase
     }
 
     /**
+     * @return array<string, array{string, string}>  Query, expected result with the prefix "web-app_".
+     */
+    public static function postgresqlReplacePrefixProvider(): array
+    {
+        return [
+            'placeholder at the very start'          => [
+                '#__foo WHERE a = 1',
+                'web-app_foo WHERE a = 1',
+            ],
+            'placeholder at the start, then literal' => [
+                "#__foo WHERE a = '#__lit'",
+                "web-app_foo WHERE a = '#__lit'",
+            ],
+            'query starts with a quote'              => [
+                "'#__lit' = a AND b IN (SELECT id FROM #__bar)",
+                "'#__lit' = a AND b IN (SELECT id FROM web-app_bar)",
+            ],
+            'segment after a literal starts with it' => [
+                "SELECT 'a'#__foo",
+                "SELECT 'a'web-app_foo",
+            ],
+            'currval at the very start'              => [
+                "currval('#__seq') + 1 FROM #__foo",
+                "currval('web-app_seq') + 1 FROM web-app_foo",
+            ],
+        ];
+    }
+
+    #[DataProvider('postgresqlReplacePrefixProvider')]
+    public function testPostgresqlReplacePrefixHandlesMatchesAtPositionZero(string $query, string $expected): void
+    {
+        $db = $this->makeDriver(Postgresql::class, 'postgresql', 'web-app_');
+
+        self::assertSame($expected, $db->replacePrefix($query));
+    }
+
+    /**
      * @param class-string<Driver> $class
      */
     private function makeDriver(string $class, string $driver, string $prefix): Driver
