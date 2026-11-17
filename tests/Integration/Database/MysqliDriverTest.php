@@ -308,6 +308,78 @@ final class MysqliDriverTest extends AbstractIntegrationTestCase
         self::assertStringContainsStringIgnoringCase('CREATE TABLE', $result[self::TMP_TABLE]);
     }
 
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function awkwardTableNameProvider(): array
+    {
+        return [
+            'single quote' => ["awf_it's_table"],
+            'backslash'    => ['awf_back\\slash_table'],
+            'both'         => ["awf_it\\'s_table"],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('awkwardTableNameProvider')]
+    public function testGetTableColumnsWorksForNamesWithQuotesAndBackslashes(string $name): void
+    {
+        $this->createAwkwardTable($name);
+
+        try {
+            $columns = $this->db->getTableColumns($name, true);
+            self::assertArrayHasKey('id', $columns);
+            self::assertArrayHasKey('label', $columns);
+
+            $full = $this->db->getTableColumns($name, false);
+            self::assertArrayHasKey('id', $full);
+        } finally {
+            $this->dropAwkwardTable($name);
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('awkwardTableNameProvider')]
+    public function testGetTableCreateWorksForNamesWithQuotesAndBackslashes(string $name): void
+    {
+        $this->createAwkwardTable($name);
+
+        try {
+            $result = $this->db->getTableCreate([$name]);
+            self::assertArrayHasKey($name, $result);
+            self::assertStringContainsStringIgnoringCase('CREATE TABLE', $result[$name]);
+        } finally {
+            $this->dropAwkwardTable($name);
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('awkwardTableNameProvider')]
+    public function testGetTableKeysWorksForNamesWithQuotesAndBackslashes(string $name): void
+    {
+        $this->createAwkwardTable($name);
+
+        try {
+            $keys = $this->db->getTableKeys($name);
+            self::assertContains('PRIMARY', array_map(static fn($k) => $k->Key_name, $keys));
+        } finally {
+            $this->dropAwkwardTable($name);
+        }
+    }
+
+    private function createAwkwardTable(string $name): void
+    {
+        $this->dropAwkwardTable($name);
+        $this->db->setQuery(
+            'CREATE TABLE ' . $this->db->quoteName($name)
+            . ' (id INT UNSIGNED NOT NULL AUTO_INCREMENT, label VARCHAR(50) NOT NULL, PRIMARY KEY (id))'
+        );
+        $this->db->execute();
+    }
+
+    private function dropAwkwardTable(string $name): void
+    {
+        $this->db->setQuery('DROP TABLE IF EXISTS ' . $this->db->quoteName($name));
+        $this->db->execute();
+    }
+
     public function testGetCollationReturnsNonEmptyString(): void
     {
         $collation = $this->db->getCollation();

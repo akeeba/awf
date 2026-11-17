@@ -510,7 +510,7 @@ class Mysqli extends Driver
 		$result = [];
 
 		// Set the query to get the table fields statement.
-		$this->setQuery('SHOW FULL COLUMNS FROM ' . $this->quoteName($this->escape($table)));
+		$this->setQuery('SHOW FULL COLUMNS FROM ' . $this->quoteName($table));
 		$fields = $this->loadObjectList();
 
 		// If we only want the type as the value add just that to the list.
@@ -553,7 +553,7 @@ class Mysqli extends Driver
 		foreach ($tables as $table)
 		{
 			// Set the query to get the table CREATE statement.
-			$this->setQuery('SHOW CREATE table ' . $this->quoteName($this->escape($table)));
+			$this->setQuery('SHOW CREATE table ' . $this->quoteName($table));
 			$row = $this->loadRow();
 
 			// Populate the result array based on the create statements.
