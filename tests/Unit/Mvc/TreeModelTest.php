@@ -500,6 +500,24 @@ class TreeModelTest extends TestCase
         $node->getLevel();
     }
 
+    public function testGetLevelReturnsNullForNodeNotInDatabase(): void
+    {
+        $node = $this->makeModel();
+        $node->lft = 101;
+        $node->rgt = 102;
+
+        self::assertNull($node->getLevel());
+    }
+
+    public function testIsRootIsFalseForNodeNotInDatabase(): void
+    {
+        $node = $this->makeModel();
+        $node->lft = 101;
+        $node->rgt = 102;
+
+        self::assertFalse($node->isRoot());
+    }
+
     // -------------------------------------------------------------------------
     // getParent
     // -------------------------------------------------------------------------

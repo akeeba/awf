@@ -1231,7 +1231,7 @@ class TreeModel extends DataModel
 	 *
      * @throws \RuntimeException
      *
-	 * @return int|mixed
+	 * @return int|null The depth (0 for a root), or null if the node's row does not exist in the database
 	 */
 	public function getLevel()
 	{
@@ -1258,7 +1258,16 @@ class TreeModel extends DataModel
 				->group($db->qn('node') . '.' . $fldLft)
 				->order($db->qn('node') . '.' . $fldLft . ' ASC');
 
-			$this->treeDepth = $db->setQuery($query, 0, 1)->loadResult();
+			$depth = $db->setQuery($query, 0, 1)->loadResult();
+
+			// A node which is not in the table has no depth. Report that as null, not as a misleading level 0.
+			if ($depth === null)
+			{
+				return null;
+			}
+
+			// Drivers such as mysqli return numeric strings; a level is an integer.
+			$this->treeDepth = (int) $depth;
 		}
 
 		return $this->treeDepth;
@@ -1322,8 +1331,8 @@ class TreeModel extends DataModel
 			return true;
 		}
 
-		// Otherwise make sure its level is 0
-		return $this->getLevel() == 0;
+		// Otherwise make sure its level is 0. A node which is not in the database has no level (null); it is not a root.
+		return $this->getLevel() === 0;
 	}
 
 	/**
