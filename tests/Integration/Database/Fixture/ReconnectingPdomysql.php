@@ -18,13 +18,4 @@ use Awf\Database\Driver\Pdomysql;
 final class ReconnectingPdomysql extends Pdomysql
 {
 	use ReconnectSteering;
-
-	/**
-	 * Make failed queries return false instead of throwing, which is the only way execute() reaches its reconnect
-	 * branch: with PDO::ERRMODE_EXCEPTION the PDOException escapes before that code runs.
-	 */
-	protected function afterConnect(): void
-	{
-		$this->connection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_SILENT);
-	}
 }

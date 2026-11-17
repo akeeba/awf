@@ -587,6 +587,7 @@ abstract class Pdo extends Driver
 
 		// Execute the query.
 		$this->executed = false;
+		$nativeException = null;
 
 		if ($this->prepared instanceof \PDOStatement)
 		{
@@ -601,15 +602,33 @@ abstract class Pdo extends Driver
 				}
 			}
 
-			$this->executed = $this->prepared->execute();
+			try
+			{
+				$this->executed = $this->prepared->execute();
+			}
+			catch (\PDOException $nativeException)
+			{
+				// With PDO::ERRMODE_EXCEPTION, which Pdomysql forces, a failed query throws. Handle it exactly like the
+				// false return value of PDO::ERRMODE_SILENT.
+				$this->executed = false;
+			}
 		}
 
 		// If an error occurred handle it.
 		if (!$this->executed)
 		{
 			// Get the error number and message before we execute any more queries.
-			$errorNum = (int) $this->connection->errorCode();
-			$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
+			if ($nativeException !== null)
+			{
+				$errorInfo = is_array($nativeException->errorInfo) ? $nativeException->errorInfo : [];
+				$errorNum  = isset($errorInfo[1]) ? (int) $errorInfo[1] : 0;
+				$errorMsg  = (isset($errorInfo[2]) ? (string) $errorInfo[2] : $nativeException->getMessage()) . ' SQL=' . $sql;
+			}
+			else
+			{
+				$errorNum = (int) $this->connection->errorCode();
+				$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
+			}
 
 			// Check if the server was disconnected.
 			if (!$this->connected() && !$this->isReconnecting)
@@ -652,7 +671,7 @@ abstract class Pdo extends Driver
 				$this->errorMsg = $errorMsg;
 
 				// Throw the normal query exception.
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				throw new \RuntimeException($this->errorMsg, $this->errorNum, $nativeException);
 			}
 		}
 

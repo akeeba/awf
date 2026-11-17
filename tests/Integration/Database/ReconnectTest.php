@@ -25,14 +25,6 @@ use RuntimeException;
  */
 final class ReconnectTest extends AbstractIntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        // ReconnectingMysqli switches the process-wide mysqli report mode off. Restore PHP's default.
-        if (extension_loaded('mysqli')) {
-            mysqli_report(PHP_VERSION_ID >= 80100 ? MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT : MYSQLI_REPORT_OFF);
-        }
-    }
-
     public static function drivers(): array
     {
         return [

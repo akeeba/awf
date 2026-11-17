@@ -18,14 +18,4 @@ use Awf\Database\Driver\Mysqli;
 final class ReconnectingMysqli extends Mysqli
 {
 	use ReconnectSteering;
-
-	/**
-	 * Make failed queries return false instead of throwing, which is the only way execute() reaches its reconnect
-	 * branch: since PHP 8.1 mysqli throws mysqli_sql_exception by default, before that code runs. The report mode is
-	 * process-wide, so tests must restore it (see ReconnectTest::tearDown()).
-	 */
-	protected function afterConnect(): void
-	{
-		mysqli_report(MYSQLI_REPORT_OFF);
-	}
 }

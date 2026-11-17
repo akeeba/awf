@@ -393,13 +393,32 @@ class Mysqli extends Driver
 		$this->errorMsg = '';
 
 		// Execute the query. Error suppression is used here to prevent warnings/notices that the connection has been lost.
-		$this->cursor = @mysqli_query($this->connection, $sql);
+		$nativeException = null;
+
+		try
+		{
+			$this->cursor = @mysqli_query($this->connection, $sql);
+		}
+		catch (\mysqli_sql_exception $nativeException)
+		{
+			// PHP 8.1+ reports query errors by throwing, unless the application changed mysqli_report(). Handle them
+			// exactly like the false return value of the older report mode.
+			$this->cursor = false;
+		}
 
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
-			$this->errorNum = (int) mysqli_errno($this->connection);
-			$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
+			if ($nativeException !== null)
+			{
+				$this->errorNum = (int) $nativeException->getCode();
+				$this->errorMsg = (string) $nativeException->getMessage() . ' SQL=' . $sql;
+			}
+			else
+			{
+				$this->errorNum = (int) mysqli_errno($this->connection);
+				$this->errorMsg = (string) mysqli_error($this->connection) . ' SQL=' . $sql;
+			}
 
 			// Check if the server was disconnected.
 			if (!$this->connected() && !$this->isReconnecting)
@@ -435,7 +454,7 @@ class Mysqli extends Driver
 			// The server was not disconnected.
 			else
 			{
-				throw new \RuntimeException($this->errorMsg, $this->errorNum);
+				throw new \RuntimeException($this->errorMsg, $this->errorNum, $nativeException);
 			}
 		}
 

@@ -42,13 +42,6 @@ trait ReconnectSteering
 		parent::connect();
 
 		$this->connectCount++;
-
-		$this->afterConnect();
-	}
-
-	/** Hook for the driver doubles to adjust a freshly opened connection. */
-	protected function afterConnect(): void
-	{
 	}
 
 	public function connected()
