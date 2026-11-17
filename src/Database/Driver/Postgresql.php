@@ -876,7 +876,7 @@ class Postgresql extends Driver
 			foreach ($oldIndexes as $oldIndex)
 			{
 				$changedIdxName = str_replace($oldTable, $newTable, $oldIndex);
-				$this->setQuery('ALTER INDEX ' . $this->escape($oldIndex) . ' RENAME TO ' . $this->escape($changedIdxName));
+				$this->setQuery('ALTER INDEX ' . $this->quoteName($oldIndex) . ' RENAME TO ' . $this->quoteName($changedIdxName));
 				$this->execute();
 			}
 
@@ -898,12 +898,12 @@ class Postgresql extends Driver
 			foreach ($oldSequences as $oldSequence)
 			{
 				$changedSequenceName = str_replace($oldTable, $newTable, $oldSequence);
-				$this->setQuery('ALTER SEQUENCE ' . $this->escape($oldSequence) . ' RENAME TO ' . $this->escape($changedSequenceName));
+				$this->setQuery('ALTER SEQUENCE ' . $this->quoteName($oldSequence) . ' RENAME TO ' . $this->quoteName($changedSequenceName));
 				$this->execute();
 			}
 
 			/* Rename table */
-			$this->setQuery('ALTER TABLE ' . $this->escape($oldTable) . ' RENAME TO ' . $this->escape($newTable));
+			$this->setQuery('ALTER TABLE ' . $this->quoteName($oldTable) . ' RENAME TO ' . $this->quoteName($newTable));
 			$this->execute();
 		}
 
@@ -1132,7 +1132,7 @@ class Postgresql extends Driver
 
 		// Create the base update statement.
 		$query = $this->getQuery(true)
-			->update($table);
+			->update($this->quoteName($table));
 		$stmt  = '%s WHERE %s';
 
 		// Iterate over the object variables to build the query fields/value pairs.

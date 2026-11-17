@@ -1448,7 +1448,7 @@ class DataModel extends Model
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true)
 			->select('*')
-			->from($this->getTableName());
+			->from($db->qn($this->getTableName()));
 
 		// Run the "before build query" hook and behaviours
 		if (method_exists($this, 'onBeforeBuildQuery'))
@@ -1933,7 +1933,7 @@ class DataModel extends Model
 
 		$query = $db->getQuery(true)
 			->delete()
-			->from($this->tableName)
+			->from($db->qn($this->tableName))
 			->where($db->qn($this->idFieldName) . ' = ' . $db->q($id));
 		$db->setQuery($query)->execute();
 

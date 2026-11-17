@@ -160,7 +160,7 @@ class TreeModel extends DataModel
 			// Delete the row by primary key.
 			$query = $db->getQuery(true);
 			$query->delete();
-			$query->from($this->getTableName());
+			$query->from($db->qn($this->getTableName()));
 			$query->where($db->qn($this->getIdFieldName()) . ' = ' . $db->q($pk));
 
 			$db->setQuery($query)->execute();

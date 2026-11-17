@@ -640,7 +640,7 @@ class Mysqli extends Driver
 	 */
 	public function renameTable($oldTable, $newTable, $backup = null, $prefix = null)
 	{
-		$this->setQuery('RENAME TABLE ' . $oldTable . ' TO ' . $newTable)->execute();
+		$this->setQuery('RENAME TABLE ' . $this->quoteName($oldTable) . ' TO ' . $this->quoteName($newTable))->execute();
 
 		return $this;
 	}

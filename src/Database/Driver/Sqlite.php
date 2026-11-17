@@ -195,7 +195,7 @@ class Sqlite extends Pdo
 
 		$table = strtoupper($table);
 
-		$query->setQuery('pragma table_info(' . $table . ')');
+		$query->setQuery('pragma table_info(' . $this->quoteName($table) . ')');
 
 		$this->setQuery($query);
 		$fields = $this->loadObjectList();
@@ -249,7 +249,7 @@ class Sqlite extends Pdo
 		$this->setOption(\PDO::ATTR_CASE, \PDO::CASE_UPPER);
 
 		$table = strtoupper($table);
-		$query->setQuery('pragma table_info( ' . $table . ')');
+		$query->setQuery('pragma table_info( ' . $this->quoteName($table) . ')');
 
 		// $query->bind(':tableName', $table);
 
@@ -382,7 +382,7 @@ class Sqlite extends Pdo
 	 */
 	public function renameTable($oldTable, $newTable, $backup = null, $prefix = null)
 	{
-		$this->setQuery('ALTER TABLE ' . $oldTable . ' RENAME TO ' . $newTable)->execute();
+		$this->setQuery('ALTER TABLE ' . $this->quoteName($oldTable) . ' RENAME TO ' . $this->quoteName($newTable))->execute();
 
 		return $this;
 	}
