@@ -140,7 +140,7 @@ class Postgresql extends Driver
 		$dsn = "host={$this->options['host']} dbname={$this->options['database']} user={$this->options['user']} password={$this->options['password']}";
 
 		// Attempt to connect to the server.
-		if (!($this->connection = @pg_connect($dsn)))
+		if (!($this->connection = @pg_connect($dsn, PGSQL_CONNECT_FORCE_NEW)))
 		{
 			throw new \RuntimeException('Error connecting to PGSQL database.');
 		}

@@ -805,4 +805,24 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
 
         self::assertSame('off', $this->db->loadResult(), 'connect() must turn off standard_conforming_strings.');
     }
+
+    public function testDriversWithIdenticalSettingsUseSeparateConnections(): void
+    {
+        $other = $this->buildDriver($this->requirePostgresql());
+
+        try {
+            $this->db->setQuery('SELECT pg_backend_pid()');
+            $pid = $this->db->loadResult();
+
+            $other->setQuery('SELECT pg_backend_pid()');
+
+            self::assertNotSame($pid, $other->loadResult(), 'Each driver object must open its own connection.');
+
+            $other->disconnect();
+
+            self::assertTrue($this->db->connected(), 'disconnect() must not close another driver\'s connection.');
+        } finally {
+            $other->disconnect();
+        }
+    }
 }
