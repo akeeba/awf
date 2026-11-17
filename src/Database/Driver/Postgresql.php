@@ -110,7 +110,7 @@ class Postgresql extends Driver
 	 */
 	public function __destruct()
 	{
-		if (is_resource($this->connection))
+		if ($this->hasConnection())
 		{
 			pg_close($this->connection);
 		}
@@ -159,7 +159,7 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 
-		if (is_resource($this->connection))
+		if ($this->hasConnection())
 		{
 			return pg_ping($this->connection);
 		}
@@ -176,7 +176,7 @@ class Postgresql extends Driver
 	public function disconnect()
 	{
 		// Close the connection.
-		if (is_resource($this->connection))
+		if ($this->hasConnection())
 		{
 			pg_close($this->connection);
 		}
@@ -247,6 +247,24 @@ class Postgresql extends Driver
 	}
 
 	/**
+	 * Is there an open connection handle?
+	 *
+	 * Before PHP 8.1 pg_connect() returns a resource. Since PHP 8.1 it returns a PgSql\Connection object, for which
+	 * is_resource() is always false.
+	 *
+	 * @return  bool
+	 */
+	private function hasConnection(): bool
+	{
+		if (PHP_VERSION_ID >= 80100)
+		{
+			return $this->connection instanceof \PgSql\Connection;
+		}
+
+		return is_resource($this->connection);
+	}
+
+	/**
 	 * Execute the SQL statement.
 	 *
 	 * @return  mixed  A database cursor resource on success, boolean false on failure.
@@ -257,7 +275,7 @@ class Postgresql extends Driver
 	{
 		$this->connect();
 
-		if (!is_resource($this->connection))
+		if (!$this->hasConnection())
 		{
 			throw new \RuntimeException($this->errorMsg, $this->errorNum);
 		}
@@ -289,8 +307,13 @@ class Postgresql extends Driver
 		// If an error occurred handle it.
 		if (!$this->cursor)
 		{
-			// Get any potential error message before we end up overwriting it
-			$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
+			/**
+			 * Get the error message before we end up overwriting it.
+			 *
+			 * There is no error number: pg_query() returned false, not a result, so there is nothing to pass to
+			 * pg_result_error_field(). Doing so anyway is a TypeError on PHP 8.
+			 */
+			$this->errorNum = 0;
 			$this->errorMsg = pg_last_error($this->connection) . " SQL=" . $query;
 
 			// Check if the server was disconnected.
@@ -307,12 +330,13 @@ class Postgresql extends Driver
 					// If connect fails, ignore that exception and throw the normal exception.
 				catch (\RuntimeException $e)
 				{
-					// Get the error number and message.
-					$this->errorNum = (int) pg_result_error_field($this->cursor, PGSQL_DIAG_SQLSTATE) . ' '; // This will never work as the cursor is false!
-					$this->errorMsg = pg_last_error($this->connection);
-
-					// Throw the normal query exception.
-					throw new \RuntimeException($this->errorMsg, $this->errorNum);
+					/**
+					 * Throw the normal query exception.
+					 *
+					 * Do not call pg_last_error() here: the failed connect() left $this->connection as false, which
+					 * is a TypeError on PHP 8.
+					 */
+					throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
 				}
 
 				// Since we were able to reconnect, run the query again.
