@@ -2655,6 +2655,23 @@ class DataModel extends Model
 				break;
 		}
 
+		// An explicit "equals / in" against an empty array is the empty set: it must match no rows. Mark it for the
+		// Filters behaviour, since the filters themselves treat an empty value as "no filter", which is what a blank
+		// request state value (e.g. an empty form field) means. Negative operators are left alone on purpose: "not in
+		// the empty set" is every row, which is what they already return.
+		if (is_array($values) && (count($values) === 0)
+		    && in_array($method, ['in', '==', '=[]', '=()', '=', 'eq'], true))
+		{
+			$options['matchNone'] = true;
+		}
+
+		// Integer zero is a value, not a blank. The filters see it as empty, unlike the string '0', so hand them the string.
+		// ('=' is not affected: Filter\AbstractFilter::search() sanitises its value first.) Strings are left as they are.
+		if (($values === 0) && ($options['method'] === 'exact'))
+		{
+			$options['value'] = '0';
+		}
+
 		// Handle real methods
 		switch ($options['method'])
 		{

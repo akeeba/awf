@@ -277,6 +277,20 @@ abstract class AbstractFilter
 	}
 
 	/**
+	 * Returns the SQL where clause which matches no rows: the filter for "the value is in the empty set".
+	 *
+	 * Unlike exact([]) and friends, which treat an empty value as "no filter at all", this is what an explicit,
+	 * programmatic DataModel::where($field, 'in', []) asks for. The SQL is valid on every supported database server,
+	 * unlike an empty IN () list.
+	 *
+	 * @return  string  The SQL where clause for this search
+	 */
+	public function matchNone()
+	{
+		return '(1 = 0)';
+	}
+
+	/**
 	 * Perform an exact match (equality matching)
 	 *
 	 * @param   mixed  $value  The value to compare to

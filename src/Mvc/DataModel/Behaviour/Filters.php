@@ -92,6 +92,14 @@ class Filters extends Observer
 				$options->set('value', $filterState);
 			}
 
+			// DataModel::where() with an empty array for an equals / in method: the empty set, matches no rows.
+			if ($options->get('matchNone', false) === true)
+			{
+				$query->where($field->matchNone());
+
+				continue;
+			}
+
 			$methods = $field->getSearchMethods();
 			$method  = $options->get('method', $field->getDefaultSearchMethod());
 

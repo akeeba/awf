@@ -205,6 +205,53 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         self::assertSame(0, $this->countRows('#__branches'));
     }
 
+    public function testExplicitWhereWithEmptyArrayMatchesNoRows(): void
+    {
+        $this->insertWidget('One');
+        $this->insertWidget('Two');
+
+        foreach (['title', 'widget_id'] as $field) {
+            foreach (['in', '==', '=[]', '=()', '='] as $method) {
+                $model = (new Widget($this->container))->setIgnoreRequest(true);
+                $model->where($field, $method, []);
+
+                self::assertCount(0, $model->get(true), "$field $method [] must match nothing");
+                self::assertSame(0, (int) $model->count(), "$field $method [] must count nothing");
+            }
+        }
+    }
+
+    public function testExplicitWhereWithNegatedOrBlankValuesStillMatchesEveryRow(): void
+    {
+        $this->insertWidget('One');
+        $this->insertWidget('Two');
+
+        foreach (['!=', '<>', 'neq'] as $method) {
+            $model = (new Widget($this->container))->setIgnoreRequest(true);
+            $model->where('widget_id', $method, []);
+
+            self::assertCount(2, $model->get(true), "widget_id $method []");
+        }
+
+        // A blank request-state value is not a filter
+        $model = (new Widget($this->container))->setIgnoreRequest(true);
+        $model->setState('title', []);
+
+        self::assertCount(2, $model->get(true));
+    }
+
+    public function testExplicitWhereWithIntegerZeroFiltersOnZero(): void
+    {
+        $this->insertWidget('One');
+
+        foreach (['==', 'in', '='] as $method) {
+            $model = (new Widget($this->container))->setIgnoreRequest(true);
+            $model->where('widget_id', $method, 0);
+
+            self::assertCount(0, $model->get(true), "widget_id $method 0 must not return the non-zero rows");
+        }
+    }
+
     public function testDriverUpdateObjectUpdatesRow(): void
     {
         $id = $this->insertWidget('Before');
