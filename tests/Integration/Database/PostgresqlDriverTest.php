@@ -12,6 +12,7 @@ namespace Awf\Tests\Integration\Database;
 
 use Awf\Database\Driver\Postgresql;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
+use Awf\Tests\Integration\Database\Fixture\ReconnectingPostgresql;
 use PHPUnit\Framework\Attributes\CoversClass;
 use RuntimeException;
 
@@ -94,7 +95,10 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
      *
      * @param array{dsn: string, user: string, pass: string} $conn
      */
-    private function buildDriver(array $conn): Postgresql
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    private function buildDriver(array $conn, string $class = Postgresql::class): Postgresql
     {
         $dsn  = $conn['dsn'];
         $user = $conn['user'];
@@ -132,7 +136,7 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
             }
         }
 
-        return new Postgresql([
+        return new $class([
             'driver'   => 'postgresql',
             'host'     => $host,
             'port'     => $port,
@@ -824,5 +828,90 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
         } finally {
             $other->disconnect();
         }
+    }
+
+    public function testFailedReconnectDoesNotDisableLaterReconnects(): void
+    {
+        $db = $this->buildReconnectingDriver();
+
+        try {
+            // A temporary table only exists in the session that created it: creating it twice fails, unless a
+            // reconnection opened a new session in between.
+            $create = 'CREATE TEMPORARY TABLE awf_reconnect_probe (id INT)';
+            $db->setQuery($create);
+            $db->execute();
+
+            // The connection is lost, and so is the server.
+            $db->reportDisconnected = true;
+            $db->failConnect        = true;
+
+            try {
+                $db->setQuery($create);
+                $db->execute();
+                self::fail('execute() must throw when it cannot reconnect.');
+            } catch (RuntimeException) {
+                // Expected.
+            }
+
+            // The server is back. The next query opens a new session.
+            $db->reportDisconnected = false;
+            $db->failConnect        = false;
+            $db->setQuery($create);
+            $db->execute();
+
+            // The connection is lost again. execute() must reconnect and run the query again in a new session.
+            $db->reportDisconnected = true;
+            $db->setQuery($create);
+            $db->execute();
+
+            self::assertSame(3, $db->connectCount, 'execute() must reconnect after an earlier reconnection failed.');
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    public function testFailedRetryDoesNotDisableLaterReconnects(): void
+    {
+        $db = $this->buildReconnectingDriver();
+
+        try {
+            // The connection is lost, and the query still fails after reconnecting.
+            $db->reportDisconnected = true;
+
+            try {
+                $db->setQuery('SELECT * FROM awf_reconnect_no_such_table');
+                $db->execute();
+                self::fail('execute() must throw when the query fails after reconnecting.');
+            } catch (RuntimeException) {
+                // Expected.
+            }
+
+            // A temporary table only exists in the session that created it: creating it twice fails, unless a
+            // reconnection opened a new session in between.
+            $create = 'CREATE TEMPORARY TABLE awf_reconnect_probe (id INT)';
+            $db->reportDisconnected = false;
+            $db->setQuery($create);
+            $db->execute();
+
+            // The connection is lost again. execute() must reconnect and run the query again in a new session.
+            $db->reportDisconnected = true;
+            $db->setQuery($create);
+            $db->execute();
+
+            self::assertSame(3, $db->connectCount, 'execute() must reconnect after an earlier retried query failed.');
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    /**
+     * A driver whose connection loss and reconnection failures the test controls.
+     */
+    private function buildReconnectingDriver(): ReconnectingPostgresql
+    {
+        $db =$this->buildDriver($this->requirePostgresql(), ReconnectingPostgresql::class);
+        \assert($db instanceof ReconnectingPostgresql);
+
+        return $db;
     }
 }

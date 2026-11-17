@@ -319,29 +319,34 @@ class Postgresql extends Driver
 			{
 				$this->isReconnecting = true;
 
+				// Clear the flag however this ends; otherwise this object would never try to reconnect again.
 				try
 				{
-					// Attempt to reconnect.
-					$this->connection = null;
-					$this->connect();
+					try
+					{
+						// Attempt to reconnect.
+						$this->connection = null;
+						$this->connect();
+					}
+						// If connect fails, ignore that exception and throw the normal exception.
+					catch (\RuntimeException $e)
+					{
+						/**
+						 * Throw the normal query exception.
+						 *
+						 * Do not call pg_last_error() here: the failed connect() left $this->connection as false,
+						 * which is a TypeError on PHP 8.
+						 */
+						throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
+					}
+
+					// Since we were able to reconnect, run the query again.
+					return $this->execute();
 				}
-					// If connect fails, ignore that exception and throw the normal exception.
-				catch (\RuntimeException $e)
+				finally
 				{
-					/**
-					 * Throw the normal query exception.
-					 *
-					 * Do not call pg_last_error() here: the failed connect() left $this->connection as false, which
-					 * is a TypeError on PHP 8.
-					 */
-					throw new \RuntimeException($this->errorMsg, $this->errorNum, $e);
+					$this->isReconnecting = false;
 				}
-
-				// Since we were able to reconnect, run the query again.
-				$result               = $this->execute();
-				$this->isReconnecting = false;
-
-				return $result;
 			}
 			// The server was not disconnected.
 			else
