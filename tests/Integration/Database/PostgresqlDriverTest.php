@@ -773,4 +773,36 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
         self::assertTrue($result, 'insertObject() must return true on success.');
         self::assertGreaterThan(0, (int) $obj->id, 'insertObject() must populate the key property with the new id.');
     }
+
+    // -------------------------------------------------------------------------
+    // Connection set-up and reconnection
+    // -------------------------------------------------------------------------
+
+    public function testConnectRaisesNoDeprecationAndTurnsOffStandardConformingStrings(): void
+    {
+        $this->db->disconnect();
+
+        $deprecations = [];
+
+        set_error_handler(
+            static function (int $errno, string $errstr) use (&$deprecations): bool {
+                $deprecations[] = $errstr;
+
+                return true;
+            },
+            E_DEPRECATED | E_USER_DEPRECATED
+        );
+
+        try {
+            $this->db->connect();
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations, 'connect() must not raise deprecation notices.');
+
+        $this->db->setQuery('SHOW standard_conforming_strings');
+
+        self::assertSame('off', $this->db->loadResult(), 'connect() must turn off standard_conforming_strings.');
+    }
 }
