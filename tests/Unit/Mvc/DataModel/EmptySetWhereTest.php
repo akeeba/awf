@@ -219,6 +219,7 @@ class EmptySetWhereTest extends TestCase
             '<> on Number'  => ['enabled', '<>'],
             'neq on Number' => ['enabled', 'neq'],
             '!= on Text'    => ['title', '!='],
+            '!= on Boolean' => ['flag', '!='],
             'like on Text'  => ['title', 'like'],
             'between'       => ['enabled', '[]'],
             'outside'       => ['enabled', ')('],
@@ -243,6 +244,7 @@ class EmptySetWhereTest extends TestCase
             'Number ""'  => ['enabled', ''],
             'Text []'    => ['title', []],
             'Text ""'    => ['title', ''],
+            'Boolean []' => ['flag', []],
             'Boolean ""' => ['flag', ''],
         ];
     }
@@ -278,5 +280,39 @@ class EmptySetWhereTest extends TestCase
     public function testBlankStringStillMeansNoFilterInExplicitWhere(): void
     {
         self::assertSame(['0', 'a', 'b'], $this->titles($this->makeModel()->where('enabled', '==', '')));
+    }
+
+    // ---- Item 21: Boolean filter -------------------------------------------------------------------------------------
+
+    public function testBooleanEmptyArrayInExplicitWhereIsValidSqlAndMatchesNothing(): void
+    {
+        $model = $this->makeModel();
+        $model->where('flag', 'in', []);
+
+        self::assertStringNotContainsString('IN ()', (string) $model->buildQuery(true));
+        self::assertSame([], $this->titles($model));
+    }
+
+    public function testBooleanEmptyArrayInRequestStateIsNotAFilter(): void
+    {
+        $model = $this->makeModel();
+        $model->setState('flag', []);
+
+        self::assertStringNotContainsString('IN ()', (string) $model->buildQuery(true));
+        self::assertSame(['0', 'a', 'b'], $this->titles($model));
+    }
+
+    public function testBooleanFilterTreatsEmptyArrayAsEmpty(): void
+    {
+        $filter = new \Awf\Mvc\DataModel\Filter\Boolean(
+            $this->db,
+            (object) ['name' => 'flag', 'type' => 'tinyint']
+        );
+
+        self::assertTrue($filter->isEmpty([]));
+        self::assertSame('', $filter->exact([]));
+        self::assertFalse($filter->isEmpty([0]));
+        self::assertFalse($filter->isEmpty(0));
+        self::assertFalse($filter->isEmpty('0'));
     }
 }

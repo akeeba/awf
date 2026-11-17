@@ -35,6 +35,14 @@ abstract class MysqlHyphenatedPrefixTestCase extends HyphenatedPrefixTestCase
                 PRIMARY KEY (id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
         )->execute();
+
+        $this->db->setQuery(
+            'CREATE TABLE ' . $this->db->qn('#__flags') . ' (
+                flag_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                flag    TINYINT      NOT NULL DEFAULT 0,
+                PRIMARY KEY (flag_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
+        )->execute();
     }
 
     /**

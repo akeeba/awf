@@ -19,6 +19,7 @@ class Boolean extends Number
 	 */
 	public function isEmpty($value)
 	{
-		return is_null($value) || ($value === '');
+		// An empty array is a blank too, like for every other filter: it would otherwise produce "IN ()", a syntax error.
+		return is_null($value) || ($value === '') || ($value === []);
 	}
 } 

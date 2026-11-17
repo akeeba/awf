@@ -33,6 +33,13 @@ abstract class PostgresqlHyphenatedPrefixTestCase extends HyphenatedPrefixTestCa
                 rgt   INT          NOT NULL DEFAULT 0
             )'
         )->execute();
+
+        $this->db->setQuery(
+            'CREATE TABLE ' . $this->db->qn('#__flags') . ' (
+                flag_id SERIAL   PRIMARY KEY,
+                flag    SMALLINT NOT NULL DEFAULT 0
+            )'
+        )->execute();
     }
 
     public function testGetTableColumnsRaisesNoDeprecationForColumnWithoutDefault(): void

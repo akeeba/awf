@@ -17,6 +17,7 @@ use Awf\Input\Input;
 use Awf\Session\Segment;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
 use Awf\Tests\Integration\Mvc\HyphenatedPrefix\Model\Branch;
+use Awf\Tests\Integration\Mvc\HyphenatedPrefix\Model\Flag;
 use Awf\Tests\Integration\Mvc\HyphenatedPrefix\Model\Widget;
 use Awf\Text\Language;
 use Awf\User\ManagerInterface as UserManagerInterface;
@@ -34,7 +35,7 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
     protected const PREFIX = 'web-app_';
 
     /** Every table a test may leave behind, with the "#__" placeholder. */
-    private const TABLES = ['#__widgets', '#__gadgets', '#__branches'];
+    private const TABLES = ['#__widgets', '#__gadgets', '#__branches', '#__flags'];
 
     protected ?Driver $db = null;
 
@@ -46,8 +47,9 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
     abstract protected function connectDriver(): Driver;
 
     /**
-     * Create #__widgets (widget_id auto-increment primary key, title string) and #__branches (id auto-increment
-     * primary key, title string, lft int, rgt int).
+     * Create #__widgets (widget_id auto-increment primary key, title string), #__branches (id auto-increment
+     * primary key, title string, lft int, rgt int) and #__flags (flag_id auto-increment primary key, flag small
+     * integer).
      */
     abstract protected function createSchema(): void;
 
@@ -57,6 +59,7 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
 
         Widget::flushCaches();
         Branch::flushCaches();
+        Flag::flushCaches();
 
         $this->dropTables();
         $this->createSchema();
@@ -73,6 +76,7 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
 
         Widget::flushCaches();
         Branch::flushCaches();
+        Flag::flushCaches();
 
         $this->db        = null;
         $this->container = null;
@@ -250,6 +254,42 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
 
             self::assertCount(0, $model->get(true), "widget_id $method 0 must not return the non-zero rows");
         }
+    }
+
+    public function testBooleanFilterWithEmptyArrayProducesValidSql(): void
+    {
+        foreach ([0, 1, 1] as $flag) {
+            $row = (object) ['flag' => $flag];
+            $this->db->insertObject('#__flags', $row, 'flag_id');
+        }
+
+        // Explicit where(): the empty set, matches nothing
+        foreach (['in', '==', '=[]', '=()', '='] as $method) {
+            $model = (new Flag($this->container))->setIgnoreRequest(true);
+            $model->where('flag', $method, []);
+
+            self::assertCount(0, $model->get(true), "flag $method [] must match nothing");
+            self::assertSame(0, (int) $model->count(), "flag $method [] must count nothing");
+        }
+
+        // Request state: a blank value is not a filter (used to be "IN ()", a syntax error on every server)
+        $model = (new Flag($this->container))->setIgnoreRequest(true);
+        $model->setState('flag', []);
+
+        self::assertCount(3, $model->get(true));
+        self::assertSame(3, (int) $model->count());
+
+        // Negative operator with the empty set: every row
+        $model = (new Flag($this->container))->setIgnoreRequest(true);
+        $model->where('flag', '!=', []);
+
+        self::assertCount(3, $model->get(true));
+
+        // Integer 0 is a value
+        $model = (new Flag($this->container))->setIgnoreRequest(true);
+        $model->where('flag', 'in', 0);
+
+        self::assertCount(1, $model->get(true));
     }
 
     public function testDriverUpdateObjectUpdatesRow(): void
