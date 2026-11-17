@@ -13,6 +13,7 @@ namespace Awf\Tests\Integration\Database;
 use Awf\Database\Driver;
 use Awf\Tests\Integration\AbstractIntegrationTestCase;
 use Awf\Tests\Integration\Database\Fixture\BindingPdomysql;
+use Awf\Tests\Integration\Database\Fixture\SilentPdomysql;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 
@@ -31,7 +32,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
         ];
     }
 
-    private function build(string $family, bool $withBinding = false): Driver
+    private function build(string $family, string $variant = ''): Driver
     {
         if ($family === 'pdomysql' && !extension_loaded('pdo_mysql')) {
             $this->markTestSkipped('The pdo_mysql extension is not available.');
@@ -73,7 +74,15 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             return new \Awf\Database\Driver\Mysqli($opts);
         }
 
-        return $withBinding ? new BindingPdomysql($opts) : new \Awf\Database\Driver\Pdomysql($opts);
+        if ($variant === 'binding') {
+            return new BindingPdomysql($opts);
+        }
+
+        if ($variant === 'silent') {
+            return new SilentPdomysql($opts);
+        }
+
+        return new \Awf\Database\Driver\Pdomysql($opts);
     }
 
     /** Kill a server-side connection from a second, independent connection. */
@@ -128,7 +137,7 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
 
     public function testPdoReconnectKeepsBoundParametersAndLimit(): void
     {
-        $db = $this->build('pdomysql', true);
+        $db = $this->build('pdomysql', 'binding');
 
         try {
             $oldId = $this->connectionId($db);
@@ -187,6 +196,66 @@ final class LostConnectionTest extends AbstractIntegrationTestCase
             self::assertSame(1146, $e->getCode());
             self::assertStringContainsString("awf_no_such_table_at_all' doesn't exist", $e->getMessage());
             $this->assertNativeExceptionChained($family, $e);
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    public static function pdoModes(): array
+    {
+        return [
+            'default (exception)' => [''],
+            'silent'              => ['silent'],
+        ];
+    }
+
+    #[DataProvider('pdoModes')]
+    public function testPdoSyntaxErrorReportsTheStatementsDriverError(string $variant): void
+    {
+        $db = $this->build('pdomysql', $variant);
+
+        try {
+            $db->setQuery('SELEC 1');
+            $db->execute();
+            self::fail('A syntax error must throw.');
+        } catch (RuntimeException $e) {
+            $this->assertNotNative($e);
+            self::assertSame(1064, $e->getCode());
+            self::assertStringContainsString('You have an error in your SQL syntax', $e->getMessage());
+            self::assertStringContainsString('SELEC 1', $e->getMessage());
+            self::assertStringNotContainsString('SQL: 00000', $e->getMessage());
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    #[DataProvider('pdoModes')]
+    public function testPdoMissingTableReportsTheStatementsDriverError(string $variant): void
+    {
+        $db = $this->build('pdomysql', $variant);
+
+        try {
+            $db->setQuery('SELECT * FROM awf_no_such_table_at_all');
+            $db->execute();
+            self::fail('A missing table must throw.');
+        } catch (RuntimeException $e) {
+            $this->assertNotNative($e);
+            self::assertSame(1146, $e->getCode());
+            self::assertStringContainsString("awf_no_such_table_at_all' doesn't exist", $e->getMessage());
+        } finally {
+            $db->disconnect();
+        }
+    }
+
+    public function testPdoSilentModeReconnectsTransparentlyAfterKill(): void
+    {
+        $db = $this->build('pdomysql', 'silent');
+
+        try {
+            $oldId = $this->connectionId($db);
+            $this->kill($oldId);
+
+            self::assertNotSame($oldId, $this->connectionId($db));
         } finally {
             $db->disconnect();
         }

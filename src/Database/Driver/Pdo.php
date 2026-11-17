@@ -627,18 +627,30 @@ abstract class Pdo extends Driver
 		// If an error occurred handle it.
 		if (!$this->executed)
 		{
-			// Get the error number and message before we execute any more queries.
+			// Get the error number and message before we execute any more queries: connected() below runs one, which
+			// clears the error information.
 			if ($nativeException !== null)
 			{
-				$errorInfo = is_array($nativeException->errorInfo) ? $nativeException->errorInfo : [];
-				$errorNum  = isset($errorInfo[1]) ? (int) $errorInfo[1] : 0;
-				$errorMsg  = (isset($errorInfo[2]) ? (string) $errorInfo[2] : $nativeException->getMessage()) . ' SQL=' . $sql;
+				$errorInfo = $nativeException->errorInfo;
+				$fallback  = $nativeException->getMessage();
+			}
+			elseif ($this->prepared instanceof \PDOStatement)
+			{
+				// The error belongs to the statement which failed, not to the connection.
+				$errorInfo = $this->prepared->errorInfo();
+				$fallback  = '';
 			}
 			else
 			{
-				$errorNum = (int) $this->connection->errorCode();
-				$errorMsg = (string) 'SQL: ' . implode(", ", $this->connection->errorInfo());
+				// The statement could not even be prepared. The connection knows why.
+				$errorInfo = $this->connection->errorInfo();
+				$fallback  = '';
 			}
+
+			// errorInfo is [SQLSTATE, driver error code, driver message]. The driver error code is what callers need.
+			$errorInfo = is_array($errorInfo) ? $errorInfo : [];
+			$errorNum  = isset($errorInfo[1]) ? (int) $errorInfo[1] : 0;
+			$errorMsg  = (isset($errorInfo[2]) ? (string) $errorInfo[2] : $fallback) . ' SQL=' . $sql;
 
 			// Check if the server was disconnected.
 			if (!$this->connected() && !$this->isReconnecting)
