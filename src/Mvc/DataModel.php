@@ -43,14 +43,23 @@ use Awf\Text\Language;
  */
 class DataModel extends Model
 {
-	/** @var   array  A list of tables in the database */
+	/** @var   array  Lists of tables in the database, keyed per database connection (see getConnectionCacheKey) */
 	protected static $tableCache = [];
 
-	/** @var   array  A list of table fields, keyed per table */
+	/** @var   array  Lists of table fields, keyed per database connection, then per resolved table name */
 	protected static $tableFieldCache = [];
 
-	/** @var   array  A list of permutations of the prefix with upper/lowercase letters */
+	/** @var   array  Permutations of the prefix with upper/lowercase letters, keyed per prefix */
 	protected static $prefixCasePermutations = [];
+
+	/**
+	 * Weak references to the database drivers whose object IDs are used as keys in the static caches. They let us
+	 * detect that PHP recycled the ID of a garbage collected driver for a different one, without keeping the driver
+	 * (and its connection) alive.
+	 *
+	 * @var   \WeakReference[]
+	 */
+	private static $cachedConnections = [];
 
 	/** @var   array  Table field name aliases, defined as aliasFieldName => actualFieldName */
 	protected $aliasFields = [];
@@ -612,21 +621,32 @@ class DataModel extends Model
 	 */
 	public function getTableFields($tableName = null)
 	{
+		$connectionKey = $this->getConnectionCacheKey();
+
 		// Make sure we have a list of tables in this db
-		if (empty(static::$tableCache))
+		if (empty(static::$tableCache[$connectionKey]))
 		{
-			static::$tableCache = $this->getDbo()->getTableList();
+			static::$tableCache[$connectionKey] = $this->getDbo()->getTableList();
 		}
+
+		$tableList = static::$tableCache[$connectionKey];
 
 		if (!$tableName)
 		{
 			$tableName = $this->tableName;
 		}
 
+		// The cache is keyed on the table name with the prefix resolved. Within a connection that is equivalent to
+		// the unresolved name, and it keeps the entries readable.
+		$cacheName = (substr($tableName, 0, 3) == '#__')
+			? $this->getDbo()->getPrefix() . substr($tableName, 3)
+			: $tableName;
+
 		// Try to load again column specifications if the table is not loaded OR if it's loaded and
 		// the previous call returned an error
-		if (!array_key_exists($tableName, static::$tableFieldCache) ||
-			(isset(static::$tableFieldCache[$tableName]) && !static::$tableFieldCache[$tableName])
+		if (!isset(static::$tableFieldCache[$connectionKey])
+			|| !array_key_exists($cacheName, static::$tableFieldCache[$connectionKey])
+			|| !static::$tableFieldCache[$connectionKey][$cacheName]
 		)
 		{
 			// Lookup the fields for this table only once.
@@ -644,7 +664,7 @@ class DataModel extends Model
 			}
 
 			// Iterate through all lower/uppercase permutations of the prefix if we have a prefix with at least one uppercase letter
-			if (!in_array($checkName, static::$tableCache) && preg_match('/[A-Z]/', $prefix) && (substr($name, 0, 3) == '#__'))
+			if (!in_array($checkName, $tableList) && preg_match('/[A-Z]/', $prefix) && (substr($name, 0, 3) == '#__'))
 			{
 				$prefixPermutations = $this->getPrefixCasePermutations();
 				$partialCheckName   = substr($name, 3);
@@ -653,17 +673,17 @@ class DataModel extends Model
 				{
 					$checkName = $permutatedPrefix . $partialCheckName;
 
-					if (in_array($checkName, static::$tableCache))
+					if (in_array($checkName, $tableList))
 					{
 						break;
 					}
 				}
 			}
 
-			if (!in_array($checkName, static::$tableCache))
+			if (!in_array($checkName, $tableList))
 			{
 				// The table doesn't exist. Return false.
-				static::$tableFieldCache[$tableName] = false;
+				static::$tableFieldCache[$connectionKey][$cacheName] = false;
 			}
 			else
 			{
@@ -674,13 +694,13 @@ class DataModel extends Model
 					$fields = false;
 				}
 
-				static::$tableFieldCache[$tableName] = $fields;
+				static::$tableFieldCache[$connectionKey][$cacheName] = $fields;
 			}
 
 			// PostgreSQL date type compatibility
-			if (in_array($this->getDbo()->name, ['postgresql', 'pgsql']) && (static::$tableFieldCache[$tableName] != false))
+			if (in_array($this->getDbo()->name, ['postgresql', 'pgsql']) && (static::$tableFieldCache[$connectionKey][$cacheName] != false))
 			{
-				foreach (static::$tableFieldCache[$tableName] as $field)
+				foreach (static::$tableFieldCache[$connectionKey][$cacheName] as $field)
 				{
 					if (strtolower($field->type) == 'timestamp without time zone')
 					{
@@ -694,7 +714,38 @@ class DataModel extends Model
 			}
 		}
 
-		return static::$tableFieldCache[$tableName];
+		return static::$tableFieldCache[$connectionKey][$cacheName];
+	}
+
+	/**
+	 * Returns the key under which this model's database connection is stored in the static table and field caches.
+	 *
+	 * The key is the object ID of the database driver. Content-based keys (driver, host, database, prefix) would let
+	 * several driver objects pointing to the same database share a cache, but AWF drivers do not expose their host,
+	 * and two in-memory SQLite databases look identical yet are different databases. The object ID is always correct;
+	 * the price is that two driver objects for the same database do not share their cache. In practice a container
+	 * holds one driver, so models share it.
+	 *
+	 * PHP reuses the ID of a garbage collected object. A weak reference to the driver is recorded for each ID; if the
+	 * ID is seen again with a different driver behind it, the old driver is gone and the entries cached under that ID
+	 * are dropped. Unlike a strong reference this does not keep drivers and their connections alive.
+	 *
+	 * @return  int
+	 */
+	protected function getConnectionCacheKey()
+	{
+		$db  = $this->getDbo();
+		$key = spl_object_id($db);
+
+		if (!isset(self::$cachedConnections[$key]) || (self::$cachedConnections[$key]->get() !== $db))
+		{
+			// New driver, or the ID of a collected driver was reused: whatever is cached under this ID is not ours.
+			unset(static::$tableCache[$key], static::$tableFieldCache[$key]);
+
+			self::$cachedConnections[$key] = \WeakReference::create($db);
+		}
+
+		return $key;
 	}
 
 	/**
@@ -3073,9 +3124,11 @@ class DataModel extends Model
 	 */
 	protected function getPrefixCasePermutations()
 	{
-		if (empty(self::$prefixCasePermutations))
+		$prefixKey = $this->getDbo()->getPrefix();
+
+		if (empty(self::$prefixCasePermutations[$prefixKey]))
 		{
-			$prefix = $this->getDbo()->getPrefix();
+			$prefix = $prefixKey;
 			$suffix = '';
 
 			if (substr($prefix, -1) == '_')
@@ -3114,10 +3167,10 @@ class DataModel extends Model
 				return $x . $suffix;
 			}, $permutations);
 
-			self::$prefixCasePermutations = array_unique($permutations);
+			self::$prefixCasePermutations[$prefixKey] = array_unique($permutations);
 		}
 
-		return self::$prefixCasePermutations;
+		return self::$prefixCasePermutations[$prefixKey];
 	}
 
 	/**
