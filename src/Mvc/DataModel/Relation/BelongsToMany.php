@@ -334,6 +334,12 @@ class BelongsToMany extends DataModel\Relation
 				// Keep only unique values
 				$values = array_unique($values);
 
+				// No usable local key: nothing can be related, and IN() would be a syntax error.
+				if (empty($values))
+				{
+					return false;
+				}
+
 				$values = array_map(
 					function ($x) use (&$db) {
 						return $db->q($x);

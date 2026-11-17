@@ -424,6 +424,17 @@ abstract class HyphenatedPrefixTestCase extends AbstractIntegrationTestCase
         self::assertSame([2], $this->ids($tags));
     }
 
+    public function testEagerBelongsToManyWithOnlyNullOrBlankLocalKeysLoadsNothing(): void
+    {
+        $this->seedEagerRows();
+
+        foreach ([[null], [null, null], [''], ['', null]] as $keys) {
+            $tags = $this->belongsToMany()->getData(null, $this->parents($keys));
+
+            self::assertCount(0, $tags, 'keys: ' . json_encode($keys));
+        }
+    }
+
     public function testDriverUpdateObjectUpdatesRow(): void
     {
         $id = $this->insertWidget('Before');
