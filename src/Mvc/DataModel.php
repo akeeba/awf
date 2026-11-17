@@ -373,6 +373,14 @@ class DataModel extends Model
 			return null;
 		}
 
+		// PostgreSQL reports a SERIAL / IDENTITY-style column default as an expression, e.g. nextval('foo_seq'::regclass).
+		// It is the database's way of generating a key on INSERT, not a value. Using it would make a new record look
+		// like an existing one (UPDATE instead of INSERT). Literal defaults on other columns are unaffected.
+		if (is_string($information->Default) && preg_match('/^\s*nextval\s*\(/i', $information->Default))
+		{
+			return null;
+		}
+
 		$typeParts = explode(' ', $type);
 
 		if (
@@ -670,13 +678,13 @@ class DataModel extends Model
 			}
 
 			// PostgreSQL date type compatibility
-			if (($this->getDbo()->name == 'postgresql') && (static::$tableFieldCache[$tableName] != false))
+			if (in_array($this->getDbo()->name, ['postgresql', 'pgsql']) && (static::$tableFieldCache[$tableName] != false))
 			{
 				foreach (static::$tableFieldCache[$tableName] as $field)
 				{
 					if (strtolower($field->type) == 'timestamp without time zone')
 					{
-						if (stristr($field->Default, '\'::timestamp without time zone'))
+						if (stristr((string) $field->Default, '\'::timestamp without time zone'))
 						{
 							[$date,] = explode('::', $field->Default, 2);
 							$field->Default = trim($date, "'");

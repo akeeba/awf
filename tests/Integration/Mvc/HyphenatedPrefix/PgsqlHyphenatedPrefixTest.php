@@ -46,22 +46,4 @@ final class PgsqlHyphenatedPrefixTest extends PostgresqlHyphenatedPrefixTestCase
             'select'   => true,
         ]);
     }
-
-    /**
-     * Not a table name prefix issue. On PostgreSQL a new DataModel record takes the SERIAL column's default,
-     * "nextval(...)", as its key value, so save() runs an UPDATE instead of an INSERT and nothing is created.
-     */
-    public function testSaveInsertsThenUpdatesRecord(): void
-    {
-        $this->markTestSkipped('DataModel::save() cannot create records on PostgreSQL: the key takes the nextval() column default.');
-    }
-
-    /**
-     * Not a table name prefix issue; see testSaveInsertsThenUpdatesRecord(). insertAsRoot() refuses the new node
-     * because its key already holds the nextval() column default.
-     */
-    public function testTreeModelForceDeleteRemovesNode(): void
-    {
-        $this->markTestSkipped('TreeModel::insertAsRoot() cannot create nodes on PostgreSQL: the key takes the nextval() column default.');
-    }
 }
