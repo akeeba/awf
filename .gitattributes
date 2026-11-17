@@ -44,3 +44,5 @@ RELEASENOTES text eol=lf
 /phpunit.xml        export-ignore
 /rector.php         export-ignore
 /AGENTS.md          export-ignore
+/build.xml          export-ignore
+/run-integration-tests.sh export-ignore

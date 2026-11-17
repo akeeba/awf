@@ -53,9 +53,20 @@
     }
   },
   "scripts": {
-    "test": "phpunit",
+    "test": [
+      "@test:unit",
+      "@test:integration"
+    ],
     "test:unit": "phpunit --testsuite Unit",
-    "test:integration": "phpunit --testsuite Integration"
+    "test:integration": [
+      "Composer\\Config::disableProcessTimeout",
+      "./run-integration-tests.sh"
+    ]
+  },
+  "scripts-descriptions": {
+    "test": "Run the unit tests, then the integration tests",
+    "test:unit": "Run the unit tests. No network, no Docker",
+    "test:integration": "Run the Integration suite against throwaway MySQL, MariaDB and PostgreSQL Docker containers"
   },
   "archive": {
     "exclude": [
@@ -65,6 +76,8 @@
       ".gitignore",
       ".travis.yml",
       "phpunit*",
+      "build.xml",
+      "run-integration-tests.sh",
       "MIGRATION.md"
     ]
   }
