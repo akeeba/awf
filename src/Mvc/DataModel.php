@@ -1957,7 +1957,7 @@ class DataModel extends Model
 	 *
 	 * @return  static  Self, for chaining
 	 *
-	 * @throws  \RuntimeException  When the row is not found
+	 * @throws  RecordNotLoaded  When the row is not found (a \RuntimeException with code 404)
 	 */
 	public function findOrFail($keys = null)
 	{
@@ -1969,7 +1969,7 @@ class DataModel extends Model
 
 		if (empty($value))
 		{
-			throw new \RuntimeException('Could not load record', 404);
+			throw new RecordNotLoaded('Could not load record', 404);
 		}
 
 		return $this;
