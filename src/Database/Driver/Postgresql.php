@@ -927,56 +927,176 @@ class Postgresql extends Driver
 			// Origin Table not found
 			throw new \RuntimeException('Table not found in Postgresql database.');
 		}
+
+		// Find the table itself: the one the search path resolves the name to, and its schema.
+		$this->setQuery(
+			'SELECT c.oid AS "oid", n.nspname AS "schema"
+				FROM pg_class c
+				INNER JOIN pg_namespace n ON n.oid = c.relnamespace
+				WHERE c.relname = ' . $this->quote($oldTable) . '
+				AND c.relkind IN (\'r\', \'p\')
+				AND pg_table_is_visible(c.oid)'
+		);
+		$tableInfo = $this->loadObject();
+
+		if (!is_object($tableInfo))
+		{
+			throw new \RuntimeException('Table not found in Postgresql database.');
+		}
+
+		$tableOid = (int) $tableInfo->oid;
+		$schema   = $tableInfo->schema;
+
+		// The table's own indexes (renaming an index also renames the constraint it backs, e.g. the primary key).
+		$this->setQuery(
+			'SELECT ic.relname
+				FROM pg_index i
+				INNER JOIN pg_class ic ON ic.oid = i.indexrelid
+				WHERE i.indrelid = ' . $tableOid . '
+				ORDER BY ic.relname'
+		);
+		$indexes = $this->loadColumn();
+
+		/**
+		 * The sequences owned by the table's columns: 'a' (auto) dependencies for SERIAL columns, 'i' (internal)
+		 * dependencies for IDENTITY columns. PostgreSQL does not rename either kind when the table is renamed.
+		 */
+		$this->setQuery(
+			'SELECT sc.relname AS "relname", sn.nspname AS "schema"
+				FROM pg_depend d
+				INNER JOIN pg_class sc ON sc.oid = d.objid
+				INNER JOIN pg_namespace sn ON sn.oid = sc.relnamespace
+				WHERE d.classid = \'pg_class\'::regclass
+				AND d.refclassid = \'pg_class\'::regclass
+				AND d.refobjid = ' . $tableOid . '
+				AND d.deptype IN (\'a\', \'i\')
+				AND sc.relkind = \'S\'
+				ORDER BY sc.relname'
+		);
+		$sequences = $this->loadObjectList();
+
+		// Run the whole rename atomically: PostgreSQL DDL is transactional. Transactions do not nest, so inside the
+		// caller's transaction we use a savepoint instead.
+		$ownTransaction = !$this->isInTransaction();
+		$savepoint      = 'awf_rename_table';
+
+		if ($ownTransaction)
+		{
+			$this->transactionStart();
+		}
 		else
 		{
-			/* Rename indexes */
-			$this->setQuery(
-				'SELECT relname
-								FROM pg_class
-								WHERE oid IN (
-									SELECT indexrelid
-									FROM pg_index, pg_class
-									WHERE pg_class.relname=' . $this->quote($oldTable, true) . '
-									AND pg_class.oid=pg_index.indrelid );'
-			);
+			$this->setQuery('SAVEPOINT ' . $savepoint)->execute();
+		}
 
-			$oldIndexes = $this->loadColumn();
-			foreach ($oldIndexes as $oldIndex)
+		try
+		{
+			foreach ($indexes as $oldIndex)
 			{
-				$changedIdxName = str_replace($oldTable, $newTable, $oldIndex);
-				$this->setQuery('ALTER INDEX ' . $this->quoteName($oldIndex) . ' RENAME TO ' . $this->quoteName($changedIdxName));
+				$changedIndexName = $this->replaceLeadingTableName($oldIndex, $oldTable, $newTable);
+
+				if ($changedIndexName === $oldIndex)
+				{
+					continue;
+				}
+
+				$this->setQuery(
+					'ALTER INDEX ' . $this->quoteNameStr([$schema]) . '.' . $this->quoteNameStr([$oldIndex])
+					. ' RENAME TO ' . $this->quoteNameStr([$changedIndexName])
+				);
 				$this->execute();
 			}
 
-			/* Rename sequence */
-			$this->setQuery(
-				'SELECT relname
-								FROM pg_class
-								WHERE relkind = \'S\'
-								AND relnamespace IN (
-									SELECT oid
-									FROM pg_namespace
-									WHERE nspname NOT LIKE \'pg_%\'
-									AND nspname != \'information_schema\'
-								)
-								AND relname LIKE ' . $this->quote('%' . strtr($oldTable, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%')
-								. ' ESCAPE \'!\' ;'
-			);
-
-			$oldSequences = $this->loadColumn();
-			foreach ($oldSequences as $oldSequence)
+			foreach ($sequences as $sequence)
 			{
-				$changedSequenceName = str_replace($oldTable, $newTable, $oldSequence);
-				$this->setQuery('ALTER SEQUENCE ' . $this->quoteName($oldSequence) . ' RENAME TO ' . $this->quoteName($changedSequenceName));
+				$changedSequenceName = $this->replaceLeadingTableName($sequence->relname, $oldTable, $newTable);
+
+				if ($changedSequenceName === $sequence->relname)
+				{
+					continue;
+				}
+
+				$this->setQuery(
+					'ALTER SEQUENCE ' . $this->quoteNameStr([$sequence->schema]) . '.' . $this->quoteNameStr([$sequence->relname])
+					. ' RENAME TO ' . $this->quoteNameStr([$changedSequenceName])
+				);
 				$this->execute();
 			}
 
-			/* Rename table */
-			$this->setQuery('ALTER TABLE ' . $this->quoteName($oldTable) . ' RENAME TO ' . $this->quoteName($newTable));
+			$this->setQuery(
+				'ALTER TABLE ' . $this->quoteNameStr([$schema]) . '.' . $this->quoteNameStr([$oldTable])
+				. ' RENAME TO ' . $this->quoteNameStr([$newTable])
+			);
 			$this->execute();
+		}
+		catch (\Throwable $e)
+		{
+			try
+			{
+				if ($ownTransaction)
+				{
+					$this->transactionRollback();
+				}
+				else
+				{
+					// Not transactionRollback($savepoint): the PDO driver ignores the savepoint and rolls everything back.
+					$this->setQuery('ROLLBACK TO SAVEPOINT ' . $savepoint)->execute();
+					$this->setQuery('RELEASE SAVEPOINT ' . $savepoint)->execute();
+				}
+			}
+			catch (\Throwable $rollbackException)
+			{
+				// Report the original failure, not the failure to roll back.
+			}
+
+			throw $e;
+		}
+
+		if ($ownTransaction)
+		{
+			$this->transactionCommit();
+		}
+		else
+		{
+			$this->setQuery('RELEASE SAVEPOINT ' . $savepoint)->execute();
 		}
 
 		return true;
+	}
+
+	/**
+	 * Replaces the table name at the START of a dependent object's name (e.g. an index or a sequence). Names which do
+	 * not start with the table name are returned as they were.
+	 *
+	 * @param   string  $name      The name of the index or sequence.
+	 * @param   string  $oldTable  The old table name.
+	 * @param   string  $newTable  The new table name.
+	 *
+	 * @return  string
+	 */
+	private function replaceLeadingTableName($name, $oldTable, $newTable)
+	{
+		if ($oldTable === '' || strpos($name, $oldTable) !== 0)
+		{
+			return $name;
+		}
+
+		return $newTable . substr($name, strlen($oldTable));
+	}
+
+	/**
+	 * Is there a transaction open on the current connection?
+	 *
+	 * @return  boolean
+	 */
+	private function isInTransaction()
+	{
+		if ($this->connection instanceof \PDO)
+		{
+			return $this->connection->inTransaction();
+		}
+
+		return pg_transaction_status($this->connection) !== PGSQL_TRANSACTION_IDLE;
 	}
 
 	/**

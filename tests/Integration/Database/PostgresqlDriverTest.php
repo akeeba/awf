@@ -741,6 +741,234 @@ final class PostgresqlDriverTest extends AbstractIntegrationTestCase
         ));
     }
 
+    // -------------------------------------------------------------------------
+    // renameTable(): sequence and index handling (item 25 of #18)
+    // -------------------------------------------------------------------------
+
+    /**
+     * The drivers which share Postgresql::renameTable().
+     *
+     * @return array<string, array{0: class-string<Postgresql>}>
+     */
+    public static function renameDriverProvider(): array
+    {
+        return [
+            'native pgsql' => [Postgresql::class],
+            'PDO pgsql'    => [\Awf\Database\Driver\Pgsql::class],
+        ];
+    }
+
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    private function buildRenameDriver(string $class): Postgresql
+    {
+        if ($class === \Awf\Database\Driver\Pgsql::class && !extension_loaded('pdo_pgsql')) {
+            $this->markTestSkipped('The pdo_pgsql PHP extension is not available.');
+        }
+
+        return $this->buildDriver($this->requirePostgresql(), $class);
+    }
+
+    /**
+     * @param string[] $tables
+     */
+    private function dropTables(Postgresql $db, array $tables): void
+    {
+        foreach ($tables as $name) {
+            $db->setQuery('DROP TABLE IF EXISTS ' . $db->quoteName($name));
+            $db->execute();
+        }
+    }
+
+    /**
+     * Every table, index and sequence outside the system schemas, as "kind:schema.name", sorted.
+     *
+     * @return string[]
+     */
+    private function relationNames(Postgresql $db): array
+    {
+        $db->setQuery(
+            "SELECT c.relkind::text || ':' || n.nspname || '.' || c.relname
+               FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE c.relkind IN ('r', 'p', 'i', 'S')
+                AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+                AND n.nspname NOT LIKE 'pg\\_toast%'
+              ORDER BY 1"
+        );
+
+        return $db->loadColumn();
+    }
+
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('renameDriverProvider')]
+    public function testRenameTableRenamesOnlyTheLeadingPrefixOfDependentNames(string $class): void
+    {
+        $db = $this->buildRenameDriver($class);
+        $this->dropTables($db, ['id', 'ord']);
+
+        $db->setQuery('CREATE TABLE ' . $db->quoteName('id') . ' (id SERIAL PRIMARY KEY)');
+        $db->execute();
+
+        try {
+            $db->renameTable('id', 'ord');
+            $names = $this->relationNames($db);
+
+            self::assertContains('S:public.ord_id_seq', $names);
+            self::assertContains('i:public.ord_pkey', $names);
+            self::assertNotContains('S:public.ord_ord_seq', $names);
+            self::assertNotContains('S:public.id_id_seq', $names);
+        } finally {
+            $this->dropTables($db, ['id', 'ord']);
+        }
+    }
+
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('renameDriverProvider')]
+    public function testRenameTableLeavesSequencesOfOtherTablesAlone(string $class): void
+    {
+        $db     = $this->buildRenameDriver($class);
+        $tables = ['foo', 'foobar', 'xfoo', 'qux'];
+        $this->dropTables($db, $tables);
+
+        foreach (['foo', 'foobar', 'xfoo'] as $name) {
+            $db->setQuery('CREATE TABLE ' . $db->quoteName($name) . ' (id SERIAL PRIMARY KEY)');
+            $db->execute();
+        }
+
+        try {
+            $db->renameTable('foo', 'qux');
+            $names = $this->relationNames($db);
+
+            self::assertContains('S:public.foobar_id_seq', $names);
+            self::assertContains('S:public.xfoo_id_seq', $names);
+            self::assertContains('i:public.foobar_pkey', $names);
+            self::assertContains('i:public.xfoo_pkey', $names);
+            self::assertContains('S:public.qux_id_seq', $names);
+            self::assertContains('i:public.qux_pkey', $names);
+            self::assertContains('r:public.qux', $names);
+            self::assertNotContains('r:public.foo', $names);
+            self::assertNotContains('S:public.quxbar_id_seq', $names);
+            self::assertNotContains('S:public.xqux_id_seq', $names);
+        } finally {
+            $this->dropTables($db, $tables);
+        }
+    }
+
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('renameDriverProvider')]
+    public function testRenameTableRenamesTheSequenceOfAnIdentityColumn(string $class): void
+    {
+        $db = $this->buildRenameDriver($class);
+        $this->dropTables($db, ['awf_rn_ident', 'awf_rn_ident2']);
+
+        $db->setQuery(
+            'CREATE TABLE ' . $db->quoteName('awf_rn_ident')
+            . ' (id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, n SERIAL)'
+        );
+        $db->execute();
+
+        try {
+            $db->renameTable('awf_rn_ident', 'awf_rn_ident2');
+            $names = $this->relationNames($db);
+
+            self::assertContains('S:public.awf_rn_ident2_id_seq', $names);
+            self::assertContains('S:public.awf_rn_ident2_n_seq', $names);
+            self::assertNotContains('S:public.awf_rn_ident_id_seq', $names);
+
+            // The renamed sequences are still the ones feeding the columns.
+            $db->setQuery('INSERT INTO ' . $db->quoteName('awf_rn_ident2') . ' DEFAULT VALUES RETURNING id');
+            self::assertSame(1, (int) $db->loadResult());
+        } finally {
+            $this->dropTables($db, ['awf_rn_ident', 'awf_rn_ident2']);
+        }
+    }
+
+    /**
+     * @param class-string<Postgresql> $class
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('renameDriverProvider')]
+    public function testRenameTableCollisionThrowsAndChangesNothing(string $class): void
+    {
+        $db = $this->buildRenameDriver($class);
+        $this->dropTables($db, ['awf_rn_c1', 'awf_rn_c2']);
+
+        $db->setQuery('CREATE TABLE ' . $db->quoteName('awf_rn_c1') . ' (id SERIAL PRIMARY KEY, v INT)');
+        $db->execute();
+        $db->setQuery('CREATE INDEX ' . $db->quoteName('awf_rn_c1_v_idx') . ' ON ' . $db->quoteName('awf_rn_c1') . ' (v)');
+        $db->execute();
+        // No index and no sequence: only the table rename itself collides.
+        $db->setQuery('CREATE TABLE ' . $db->quoteName('awf_rn_c2') . ' (id INT)');
+        $db->execute();
+
+        try {
+            $before = $this->relationNames($db);
+
+            try {
+                $db->renameTable('awf_rn_c1', 'awf_rn_c2');
+                self::fail('Renaming onto an existing table must throw.');
+            } catch (RuntimeException $e) {
+                // Expected.
+            }
+
+            self::assertSame($before, $this->relationNames($db), 'A failed rename must change nothing.');
+
+            // The connection must be usable, i.e. no aborted transaction was left behind.
+            $db->setQuery('SELECT 1');
+            self::assertSame('1', (string) $db->loadResult());
+        } finally {
+            $this->dropTables($db, ['awf_rn_c1', 'awf_rn_c2']);
+        }
+    }
+
+    /**
+     * Native driver only: Pgsql::execute() treats any failed statement inside a transaction as a lost connection
+     * (its "SELECT 1" probe fails in an aborted transaction), reconnects, and thereby discards the caller's
+     * transaction before renameTable() gets to roll back to its savepoint.
+     */
+    public function testRenameTableInsideACallerTransactionHonoursTheCallersTransaction(): void
+    {
+        $db = $this->buildRenameDriver(Postgresql::class);
+        $this->dropTables($db, ['awf_rn_t1', 'awf_rn_t2', 'awf_rn_t3']);
+
+        $db->setQuery('CREATE TABLE ' . $db->quoteName('awf_rn_t1') . ' (id SERIAL PRIMARY KEY)');
+        $db->execute();
+        $db->setQuery('CREATE TABLE ' . $db->quoteName('awf_rn_t3') . ' (id INT)');
+        $db->execute();
+
+        try {
+            $before = $this->relationNames($db);
+
+            $db->transactionStart();
+
+            try {
+                // A failure inside the caller's transaction leaves the caller's transaction usable...
+                try {
+                    $db->renameTable('awf_rn_t1', 'awf_rn_t3');
+                    self::fail('Renaming onto an existing table must throw.');
+                } catch (RuntimeException $e) {
+                    // Expected.
+                }
+
+                // ...and successful renames stay part of it, so the caller can still roll them back.
+                $db->renameTable('awf_rn_t1', 'awf_rn_t2');
+                self::assertContains('r:public.awf_rn_t2', $this->relationNames($db));
+            } finally {
+                $db->transactionRollback();
+            }
+
+            self::assertSame($before, $this->relationNames($db), 'The caller\'s rollback must undo the rename.');
+        } finally {
+            $this->dropTables($db, ['awf_rn_t1', 'awf_rn_t2', 'awf_rn_t3']);
+        }
+    }
+
     public function testRenameTableOnNonExistentTableThrows(): void
     {
         $this->expectException(RuntimeException::class);
