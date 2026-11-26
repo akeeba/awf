@@ -82,7 +82,7 @@ class HelperService implements ContainerAwareInterface
 			);
 		}
 
-		if (!is_a($class, HelperInterface::class) && !in_array(HelperInterface::class, class_implements($class)))
+		if (!is_a($class, HelperInterface::class, true))
 		{
 			throw new InvalidArgumentException(
 				sprintf('Class %s is not an HTML Helper.', $class), 500

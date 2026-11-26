@@ -267,6 +267,40 @@ class HelperServiceTest extends TestCase
 		$service->registerHelperClass(NotAHelper::class);
 	}
 
+	/**
+	 * PHP 8.6 deprecates calling is_a() with a class name string unless $allow_string is true.
+	 *
+	 * @see https://github.com/akeeba/awf/issues/19
+	 */
+	public function testRegisterHelperClassRaisesNoDeprecation(): void
+	{
+		$service      = $this->makeService();
+		$deprecations = [];
+
+		set_error_handler(
+			static function (int $errno, string $errstr) use (&$deprecations): bool {
+				$deprecations[] = $errstr;
+
+				return true;
+			},
+			E_DEPRECATED | E_USER_DEPRECATED
+		);
+
+		try
+		{
+			$service->registerHelperClass(FakeHelper::class);
+			$service->registerHelperClass(PlainHelper::class);
+		}
+		finally
+		{
+			restore_error_handler();
+		}
+
+		self::assertSame([], $deprecations);
+		self::assertTrue($service->hasHelper('fake'));
+		self::assertTrue($service->hasHelper('plain'));
+	}
+
 	// =========================================================================
 	// unregisterHelper / unregisterHelperClass
 	// =========================================================================
